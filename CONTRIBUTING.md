@@ -1,0 +1,58 @@
+# Contributing to Turnkey
+
+Thanks for helping. Turnkey is a small, independent project, and bug reports, fixes, translations and ideas are all welcome.
+
+## Ways to help
+
+- **Found a bug?** Open an issue with the bug form. The export from **Turnkey settings → Diagnostics → Export diagnostics** helps a lot; it leaves out tokens and pair links.
+- **Have an idea?** Start a thread in [Discussions → Ideas](../../discussions/categories/ideas). Talking it through first saves you from building something that doesn't fit, and it's a good place to sketch how it would look on keys and dials.
+- **Want to fix something?** Small, focused fixes can go straight to a pull request. For bigger changes or new actions, say hello in an issue or discussion first so we can agree on the shape.
+- **Speak another language?** Corrections to the translations in `com.alejandrom2.turnkey.sdPlugin/<language>.json` are very welcome. They were machine-made.
+
+## Setting up
+
+You need Node 24, the [Stream Deck app](https://www.elgato.com/downloads) 7.6 or newer, and [T3 Code](https://github.com/pingdotgg/t3code) running somewhere you can pair with.
+
+```sh
+npm install
+npx streamdeck link com.alejandrom2.turnkey.sdPlugin
+npm run watch          # rebuilds and restarts the plugin as you edit
+```
+
+Turn on Stream Deck's developer mode (`npx streamdeck dev`) if linking complains. Then open any Turnkey action's settings and pair with a link from T3 Code (Settings → Sharing & access → Create link).
+
+## Before you open a pull request
+
+```sh
+npm run typecheck
+npm test
+npx oxlint src
+npm run assets        # regenerates settings pages, icons, profiles and the manifest version: commit what it changes
+npm run build
+npx streamdeck validate com.alejandrom2.turnkey.sdPlugin
+```
+
+CI runs the same checks.
+
+A few house rules keep the plugin consistent:
+
+- **Every user-facing string** goes in `en.json` and in all seven translations. The i18n test fails if a key is missing. A best-effort translation is fine; mention it in the PR.
+- **Settings pages, icons and profiles are generated** by `scripts/`. Edit the scripts, not the generated files.
+- **American English** in code, comments and copy. T3 Code's own wire values stay as T3 Code spells them.
+- **A press that works shows no confirmation**: the key or strip just shows its new state. Failures say why. Anything destructive asks for a hold.
+- **No polling while actions are hidden**, and animation follows the Motion setting.
+- **Don't copy Elgato's or anyone's art.** Icons come from Lucide (the set T3 Code uses) or are drawn in code.
+
+## Commits and pull requests
+
+Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org): `fix: the Power dial no longer flashes red without a fast mode`, `feat: …`, `docs: …`. Pull requests are squash-merged, so the title becomes the commit and the release note. `git config core.hooksPath .githooks` checks your messages locally.
+
+Keep a pull request to one change. For anything you can see on a key or strip, add a photo or short video from your Stream Deck, and say which model you tested on.
+
+## Using a coding agent
+
+Agent-written pull requests are welcome too. Point your agent at [AGENTS.md](AGENTS.md), check what it did on a real device, and mention the model and tool you used in the PR.
+
+## Code of conduct
+
+Be kind and assume good intent. Harassment or personal attacks aren't welcome here.
