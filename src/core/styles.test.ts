@@ -69,8 +69,8 @@ describe("listFeedback", () => {
 	});
 
 	it("gives the last row to a note", () => {
-		const feedback = listFeedback(content, list(2, 0, { note: { text: "Press to apply", color: "#FF8549" } }), { appearance: DEFAULT_APPEARANCE, scroll: "horizontal" });
-		expect(feedback.after).toEqual({ value: "Press to apply", color: "#FF8549" });
+		const feedback = listFeedback(content, list(2, 0, { note: { text: "Press to apply", color: "#FCD34D" } }), { appearance: DEFAULT_APPEARANCE, scroll: "horizontal" });
+		expect(feedback.after).toEqual({ value: "Press to apply", color: "#FCD34D" });
 	});
 
 	it("draws an overflowing selection as a picture that follows the text scroll", () => {
