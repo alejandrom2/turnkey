@@ -77,18 +77,17 @@ for (const [name, mark] of Object.entries(ACTIONS)) {
 
 /**
  * Turnkey's mark: three keys stacked like a deck of threads, the front one turning, with a prompt on it whose cursor is
- * an agent's spark. On the marketplace tile the spark wears T3 Code's accent blue; the category icon stays plain white,
- * as the Stream Deck guidelines ask, with the prompt and spark cut through the front key.
+ * an agent's spark. On the marketplace tile the spark wears T3 Code's accent blue; the category icon keeps to white and gray,
+ * with the prompt and spark drawn dark on the front key.
  */
 const T3_BLUE = "#4a68f0";
 // Flat SVG only: Stream Deck's renderer draws a nested <svg> or a mask as nothing.
 const logo = (size: number, tile: boolean) => {
 	const back = (x: number, y: number, opacity: number) => `<rect x="${x}" y="${y}" width="104" height="104" rx="22" fill="#ffffff" fill-opacity="${opacity}"/>`;
 	const spark = "M190 100 Q192.5 117.5 210 120 Q192.5 122.5 190 140 Q187.5 122.5 170 120 Q187.5 117.5 190 100Z";
-	const front = tile
-		? `<rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff"/><path d="M142 104 L160 120 L142 136" fill="none" stroke="#000000" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="${spark}" fill="${T3_BLUE}"/>`
-		: // The key's outline with the prompt and spark as holes (even-odd), so the plain white mark shows them cut through.
-			`<path fill-rule="evenodd" fill="#ffffff" d="M142 68 H202 A22 22 0 0 1 224 90 V150 A22 22 0 0 1 202 172 H142 A22 22 0 0 1 120 150 V90 A22 22 0 0 1 142 68 Z M135 109 L146 98 L168 120 L146 142 L135 131 L146 120 Z ${spark}"/>`;
+	// On the category icon the marks are drawn in Stream Deck's sidebar gray: as holes they showed the keys behind them.
+	const ink = tile ? "#000000" : "#262626";
+	const front = `<rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff"/><path d="M142 104 L160 120 L142 136" fill="none" stroke="${ink}" stroke-width="${tile ? 12 : 16}" stroke-linecap="round" stroke-linejoin="round"/><path d="${spark}" fill="${tile ? T3_BLUE : ink}"/>`;
 	const art = `${back(64, 116, tile ? 0.22 : 0.4)}${back(92, 92, tile ? 0.45 : 0.65)}<g transform="rotate(14 172 120)">${front}</g>`;
 	// Scaled into `size` with one transform; the category icon drops the tile and fills its box.
 	const scale = size / 288;
