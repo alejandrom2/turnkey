@@ -1003,7 +1003,6 @@
 			"mergeBack": "Merge back",
 			"into": "Into {thread}",
 			"notFork": "Not a fork",
-			"parentGone": "Its thread is gone",
 			"finishRunFirst": "Finish a turn first",
 			"finishTurn": "Wait for the turn",
 			"nothingToFork": "Nothing to fork yet",
