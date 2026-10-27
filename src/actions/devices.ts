@@ -43,6 +43,8 @@ class DeviceWatch {
 	readonly #shown = new Map<string, string | undefined>();
 	readonly #streams = new Map<string, () => void>();
 	readonly #states = new Map<string, DeviceState>();
+	/** Machines whose devices couldn't be read (an older T3 Code, a hub error) since their last state. */
+	readonly #failed = new Set<string>();
 
 	show(id: string, url: string | undefined): void {
 		this.#shown.set(id, url);
@@ -58,9 +60,19 @@ class DeviceWatch {
 		return this.#states.get(machine.url);
 	}
 
+	failed(machine: Machine): boolean {
+		return this.#failed.has(machine.url);
+	}
+
 	/** Asks the machine to look for devices again (`device.list`), as T3 Code's Device panel does when it opens. */
 	async list(machine: Machine): Promise<void> {
-		this.#set(machine, await machine.call("device.list", {}));
+		try {
+			this.#set(machine, await machine.call("device.list", {}));
+		} catch (error) {
+			this.#failed.add(machine.url);
+			deck.repaint();
+			throw error;
+		}
 	}
 
 	sync(): void {
@@ -71,6 +83,7 @@ class DeviceWatch {
 			release();
 			this.#streams.delete(url);
 			this.#states.delete(url);
+			this.#failed.delete(url);
 		}
 		for (const machine of deck.machines) {
 			if (!wanted.has(machine.url) || this.#streams.has(machine.url)) continue;
@@ -83,6 +96,7 @@ class DeviceWatch {
 		const state = readDeviceState(value);
 		if (state === undefined || (this.#states.get(machine.url)?.revision ?? -1) > state.revision) return;
 		this.#states.set(machine.url, state);
+		this.#failed.delete(machine.url);
 		deck.repaint();
 	}
 }
@@ -113,11 +127,12 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 	}
 
 	override needs(action: Action<DevicesDialSettings>): Need[] {
-		const { thread, hub, problem, rows } = this.#state(action);
+		const { thread, machine, hub, problem, rows } = this.#state(action);
 		const target = this.target(action);
+		const failed = machine !== undefined && watch.failed(machine);
 		return [
 			...threadNeeds(this.machineOf(action), thread, true, target.pinned ? pinnedName(this.settingsOf(action)) : undefined),
-			{ kind: "devices", ok: hub === undefined ? undefined : problem === undefined && rows.length > 0 },
+			{ kind: "devices", ok: hub === undefined ? (failed ? false : undefined) : problem === undefined && rows.length > 0 },
 		];
 	}
 
@@ -125,8 +140,9 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 		const header = t("devices.title");
 		const offline = disconnectedStrip(header, this.machineOf(action));
 		if (offline) return offline;
-		const { thread, gone, hub, problem, rows, index, row } = this.#state(action);
+		const { thread, gone, machine, hub, problem, rows, index, row } = this.#state(action);
 		const muted = (value: string, detail?: string, color: string = COLORS.muted): StripContent => ({ header, icon: glyphArt("device", color), accent: color, value, detail });
+		if (hub === undefined && machine !== undefined && watch.failed(machine)) return muted(t("devices.unreadable"), t("devices.touchToCheck"));
 		if (hub === undefined) return { ...muted(t("devices.loading")), loading: true };
 		if (problem?.kind === "off") return muted(t("devices.off"), t("devices.turnOn"));
 		if (problem?.kind === "starting") return { ...muted(t("devices.hubStarting")), loading: true };
