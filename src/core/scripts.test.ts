@@ -35,6 +35,7 @@ describe("terminal metadata", () => {
 		expect(terminals.get(key)?.hasRunningSubprocess).toBe(false);
 		terminals = applyTerminalEvent(terminals, { type: "upsert", terminal: summary({ hasRunningSubprocess: true }) });
 		expect(terminals.get(key)?.hasRunningSubprocess).toBe(true);
+		expect(applyTerminalEvent(terminals, { type: "upsert", terminal: summary({ hasRunningSubprocess: true, label: "node" }) })).toBe(terminals);
 		const same = applyTerminalEvent(terminals, { type: "mystery" });
 		expect(same).toBe(terminals);
 		expect(applyTerminalEvent(terminals, { type: "remove", threadId: "t1", terminalId: "deck-dev" }).size).toBe(0);

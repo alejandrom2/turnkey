@@ -310,7 +310,10 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 	protected override async paint(action: Action<ScriptSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const offline = connectionFace(this.machineOf(action));
-		if (offline) return void (await this.setImage(action, offline));
+		if (offline) {
+			this.animate(action, false);
+			return void (await this.setImage(action, offline));
+		}
 		const { thread, script, name, reason, pinned } = this.#state(action);
 		terminals.show(action.id, script === undefined ? undefined : thread?.machine.url);
 		const title = name || t("script.title");
@@ -318,7 +321,10 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 			this.animate(action, false);
 			return void (await this.setImage(action, renderInfoKey({ glyph: scriptGlyph(script?.icon), title, detail: reason, available: false, pinned })));
 		}
-		if (awaitingPairing(thread.machine, SCRIPT_SCOPES)) return void (await this.setImage(action, accessFace("terminal", t("script.needsAccess"))));
+		if (awaitingPairing(thread.machine, SCRIPT_SCOPES)) {
+			this.animate(action, false);
+			return void (await this.setImage(action, accessFace("terminal", t("script.needsAccess"))));
+		}
 		const { state, local } = this.#run(thread, script);
 		const busy = scriptBusy(state) ? busyGlyph(scriptGlyph(script.icon)) : undefined;
 		this.animate(action, busy?.moving === true);
@@ -348,10 +354,12 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 	}
 
 	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<ScriptSettings>): Promise<void> {
+		const before = this.settingsOf(ev.action).script;
 		super.onDidReceiveSettings(ev);
-		// Picking a script is the user turning it on: its machine's next pairing asks for terminal access.
+		// Picking a script is the user turning it on: its machine's next pairing asks for terminal access. Only on a
+		// new pick, so Don't ask in the machine card sticks.
 		const { thread, script } = this.#state(ev.action);
-		if (thread !== undefined && script !== undefined) await ensureScopes(thread.machine, SCRIPT_SCOPES);
+		if (thread !== undefined && script !== undefined && script.id !== before) await ensureScopes(thread.machine, SCRIPT_SCOPES);
 		if (streamDeck.ui.action?.id === ev.action.id) await this.#sendScripts(ev.action);
 	}
 
@@ -362,6 +370,9 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 	override async onKeyUp(ev: KeyUpEvent<ScriptSettings>): Promise<void> {
 		const held = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
+		// Scripts come from the server config, which nothing keeps live here: a script added since needs a fresh read.
+		const before = this.#state(ev.action);
+		if (before.thread !== undefined && before.script === undefined) await deck.refreshConfigs(before.thread.machine.url);
 		const { thread, project, script, reason } = this.#state(ev.action);
 		if (reason !== undefined || thread === undefined || project === undefined || script === undefined) return void (await this.flash(ev.action, false, reason ?? t("failure.failed")));
 		const machine = thread.machine;
@@ -393,6 +404,8 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 
 	/** The Script setting's choices: the target thread's project scripts, and a saved one that is gone. */
 	async #sendScripts(action: Action<ScriptSettings>): Promise<void> {
+		const thread = this.#state(action).thread;
+		if (thread !== undefined) await deck.refreshConfigs(thread.machine.url);
 		const { scripts } = this.#state(action);
 		const settings = this.settingsOf(action);
 		const items = [{ label: t("datasource.chooseScript"), value: "" }, ...scripts.map((script) => ({ label: script.name, value: script.id }))];
@@ -479,6 +492,9 @@ export class ShareKey extends DeckAction<ShareSettings> {
 	override async onKeyUp(ev: KeyUpEvent<ShareSettings>): Promise<void> {
 		const held = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
+		// Guest links may have been turned on in Labs since the config was read; nothing keeps it live here.
+		const before = this.#state(ev.action);
+		if (before.thread !== undefined && !before.thread.machine.guestLinksEnabled) await deck.refreshConfigs(before.thread.machine.url);
 		const { thread, share, view, reason } = this.#state(ev.action);
 		if (reason !== undefined || thread === undefined) return void (await this.flash(ev.action, false, reason ?? t("failure.failed")));
 		if (view === undefined) return;
