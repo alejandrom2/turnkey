@@ -593,17 +593,21 @@ describe("Machine workflows", () => {
 
 describe("Machine lineage", () => {
 	/** Answers the bounded thread snapshot a verb reads first with these runs. */
-	const snapshotWith = async (socket: FakeSocket, runs: object[]) => {
+	const snapshotWith = async (socket: FakeSocket, runs: object[], turnItems: object[] = []) => {
 		await flush();
-		socket.receive({ _tag: "Chunk", requestId: socket.request("orchestration.subscribeThread").id, values: [{ kind: "snapshot", projection: { runs } }] });
+		socket.receive({ _tag: "Chunk", requestId: socket.request("orchestration.subscribeThread").id, values: [{ kind: "snapshot", projection: { runs, turnItems } }] });
 		await flush();
 	};
 
-	it("forks from the newest finished run under an id it picks, named as T3 Code names forks", async () => {
+	it("forks from the newest finished reply under an id it picks, named as T3 Code names forks", async () => {
 		const h = setup();
 		const socket = await connect(h);
 		const forking = h.machine.fork(row(h.machine));
-		await snapshotWith(socket, [{ id: "run:3", status: "completed", ordinal: 3 }, { id: "run:4", status: "running", ordinal: 4 }]);
+		await snapshotWith(
+			socket,
+			[{ id: "run:3", status: "completed", ordinal: 3 }, { id: "run:4", status: "running", ordinal: 4 }],
+			[{ type: "assistant_message", runId: "run:3", status: "completed" }, { type: "assistant_message", runId: "run:4", status: "running" }],
+		);
 		expect(socket.request("orchestration.dispatchCommand").payload).toMatchObject({
 			type: "thread.fork",
 			createdBy: "user",

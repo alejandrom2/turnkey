@@ -30,9 +30,18 @@ export function latestMergeBackRun(runs: readonly ProjectedRun[]): ProjectedRun 
 /** Run statuses the server forks from (`isForkableSourceRunStatus`). */
 const FORKABLE = new Set(["completed", "waiting", "failed", "interrupted", "cancelled"]);
 
-/** The run a fork starts from: the newest one that ended, like T3 Code's fork button on the latest reply. */
-export function forkSourceRun(runs: readonly ProjectedRun[]): ProjectedRun | undefined {
-	return runs.reduce<ProjectedRun | undefined>((best, run) => (FORKABLE.has(run.status) && (best === undefined || run.ordinal > best.ordinal) ? run : best), undefined);
+export type ProjectedTurnItem = { type: string; runId?: string | null; status?: string };
+
+/**
+ * The run a fork starts from: the newest one with a finished reply, where T3 Code's timeline offers Fork
+ * (`canForkProjectedAssistantItem`), and that the server forks from.
+ */
+export function forkSourceRun(runs: readonly ProjectedRun[], items: readonly ProjectedTurnItem[]): ProjectedRun | undefined {
+	const replied = new Set(items.filter((item) => item.type === "assistant_message" && item.status === "completed" && item.runId != null).map((item) => item.runId));
+	return runs.reduce<ProjectedRun | undefined>(
+		(best, run) => (replied.has(run.id) && FORKABLE.has(run.status) && (best === undefined || run.ordinal > best.ordinal) ? run : best),
+		undefined,
+	);
 }
 
 /** A fork's title, as T3 Code names it. */
