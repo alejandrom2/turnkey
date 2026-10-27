@@ -746,6 +746,12 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.model")}>
 				<sdpi-select setting="model" datasource="getModels" hot-reload ${attr("loading", "inspector.loading.models")} default=""></sdpi-select>
 			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.model.nameColor")}>
+				<sdpi-select setting="nameColor" default="model">
+					<option value="model"${text("inspector.model.nameModel")}</option>
+					<option value="white"${text("inspector.model.nameWhite")}</option>
+				</sdpi-select>
+			</sdpi-item>
 			<p class="hint"${text("inspector.model.hint")}</p>`,
 		targetScript,
 	),
