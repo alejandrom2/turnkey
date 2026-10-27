@@ -40,14 +40,15 @@ const platformName = (row: DeviceRow) => t(row.device.platform === "ios" ? "devi
  * once per connection (which, as T3 Code's Device panel does, starts the hub when devices are turned on there).
  */
 class DeviceWatch {
-	readonly #shown = new Map<string, string | undefined>();
+	/** Per visible dial, the machine it shows now: only those machines' hubs are watched (and listing may start one). */
+	readonly #shown = new Map<string, () => Machine | undefined>();
 	readonly #streams = new Map<string, () => void>();
 	readonly #states = new Map<string, DeviceState>();
 	/** Machines whose devices couldn't be read (an older T3 Code, a hub error) since their last state. */
 	readonly #failed = new Set<string>();
 
-	show(id: string, url: string | undefined): void {
-		this.#shown.set(id, url);
+	show(id: string, machine: () => Machine | undefined): void {
+		this.#shown.set(id, machine);
 		this.sync();
 	}
 
@@ -76,8 +77,11 @@ class DeviceWatch {
 	}
 
 	sync(): void {
-		const urls = [...this.#shown.values()];
-		const wanted = new Set(deck.machines.filter((machine) => urls.some((url) => url === undefined || url === machine.url)).map((machine) => machine.url));
+		const wanted = new Map<string, Machine>();
+		for (const resolve of this.#shown.values()) {
+			const machine = resolve();
+			if (machine !== undefined) wanted.set(machine.url, machine);
+		}
 		for (const [url, release] of this.#streams) {
 			if (wanted.has(url)) continue;
 			release();
@@ -85,9 +89,14 @@ class DeviceWatch {
 			this.#states.delete(url);
 			this.#failed.delete(url);
 		}
-		for (const machine of deck.machines) {
-			if (!wanted.has(machine.url) || this.#streams.has(machine.url)) continue;
-			const opened = () => void this.list(machine).catch(() => undefined);
+		for (const machine of wanted.values()) {
+			if (this.#streams.has(machine.url)) continue;
+			// A new connection may be a restarted T3 Code, whose revisions start over: drop the old state first.
+			const opened = () => {
+				this.#states.delete(machine.url);
+				this.#failed.delete(machine.url);
+				void this.list(machine).catch(() => undefined);
+			};
 			this.#streams.set(machine.url, machine.live("subscribeDeviceState", {}, (value) => this.#set(machine, value), opened));
 		}
 	}
@@ -113,10 +122,15 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 	/** The device each dial shows, by key, so it stays put as the list changes. */
 	readonly #shown = new Map<string, string>();
 
+	/** The machine whose devices the dial shows: its target thread's, else the first ready one it follows. */
+	#machine(action: Action<DevicesDialSettings>, thread: DeckThread | undefined = this.target(action).thread): Machine | undefined {
+		const url = this.machineOf(action);
+		return thread?.machine ?? deck.machines.find((candidate) => candidate.state.kind === "ready" && (url === undefined || candidate.url === url));
+	}
+
 	#state(action: Action<DevicesDialSettings>) {
 		const { thread, gone, pinned } = this.target(action);
-		const url = this.machineOf(action);
-		const machine: Machine | undefined = thread?.machine ?? deck.machines.find((candidate) => candidate.state.kind === "ready" && (url === undefined || candidate.url === url));
+		const machine = this.#machine(action, thread);
 		const hub = machine && watch.of(machine);
 		const rows = hub === undefined ? [] : deviceRows(hub, thread?.threadId);
 		const index = Math.max(
@@ -209,12 +223,12 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 
 	override onWillAppear(ev: WillAppearEvent<DevicesDialSettings>): void {
 		super.onWillAppear(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
+		watch.show(ev.action.id, () => this.#machine(ev.action));
 	}
 
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<DevicesDialSettings>): void {
 		super.onDidReceiveSettings(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
+		watch.sync();
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<DevicesDialSettings>): void {
