@@ -1,0 +1,506 @@
+{
+	"Name": "T3 Deck",
+	"Description": "Watch and steer T3 Code threads from Stream Deck: thread status, stop, prompts, model options and answers, across every provider.",
+	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.activity": {
+		"Name": "Activity",
+		"Tooltip": "The most urgent thread matching a filter. Tap opens it in T3 Code."
+	},
+	"com.alejandrom2.t3deck.new": {
+		"Name": "New Thread",
+		"Tooltip": "Starts a new thread in the selected thread's project, no project, or a chosen one; with a saved prompt or empty."
+	},
+	"com.alejandrom2.t3deck.send": {
+		"Name": "Send Prompt",
+		"Tooltip": "Sends a saved prompt to the selected thread. Hold to interrupt and restart with it."
+	},
+	"com.alejandrom2.t3deck.steer": {
+		"Name": "Steer",
+		"Tooltip": "Adds a saved instruction to the selected thread's running turn."
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "Quick Prompt",
+		"Tooltip": "Sends an everyday prompt to the selected thread: continue, fix tests, diagnose, explain, commit, or your own."
+	},
+	"com.alejandrom2.t3deck.stop": {
+		"Name": "Stop",
+		"Tooltip": "Stops the running turn of the thread selected in T3 Code."
+	},
+	"com.alejandrom2.t3deck.model": {
+		"Name": "Model",
+		"Tooltip": "Switches the selected thread to a favorite model, or to the next of T3 Code's favorites."
+	},
+	"com.alejandrom2.t3deck.effort": {
+		"Name": "Effort",
+		"Tooltip": "Sets the selected thread's reasoning effort, or steps through what its model offers."
+	},
+	"com.alejandrom2.t3deck.speed": {
+		"Name": "Speed",
+		"Tooltip": "Toggles fast mode on the selected thread where its model offers it."
+	},
+	"com.alejandrom2.t3deck.permissions": {
+		"Name": "Permissions",
+		"Tooltip": "Sets the selected thread's access, from Supervised to Full access, or steps through them."
+	},
+	"com.alejandrom2.t3deck.plan": {
+		"Name": "Plan",
+		"Tooltip": "Switches the selected thread between Build and Plan."
+	},
+	"com.alejandrom2.t3deck.approve": {
+		"Name": "Approve",
+		"Tooltip": "Answers the selected thread's approval as far as its settings allow, or opens it in T3 Code."
+	},
+	"com.alejandrom2.t3deck.deny": {
+		"Name": "Deny",
+		"Tooltip": "Declines the selected thread's approval."
+	},
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "Thread",
+		"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it."
+	},
+	"com.alejandrom2.t3deck.organize": {
+		"Name": "Organize",
+		"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread."
+	},
+	"com.alejandrom2.t3deck.pr": {
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state. Tap opens it."
+	},
+	"com.alejandrom2.t3deck.branch": {
+		"Name": "Branch",
+		"Tooltip": "The selected thread's branch. Tap opens the thread in T3 Code."
+	},
+	"com.alejandrom2.t3deck.health": {
+		"Name": "Health",
+		"Tooltip": "The connection to T3 Code: ready, connecting, needs pairing or failing. Tap reconnects."
+	},
+	"com.alejandrom2.t3deck.dial.threads": {
+		"Name": "Threads Dial",
+		"Tooltip": "Rotate through the threads that match its filter, selecting them in T3 Code; press or tap to open one.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Select thread", "Push": "Open in T3 Code", "Touch": "Open in T3 Code" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.model": {
+		"Name": "Power Dial",
+		"Tooltip": "Changes the selected thread's model, effort or access; press or tap switches Speed where offered.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Preview", "Push": "Apply (or toggle speed)", "Touch": "Toggle speed" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.prompts": {
+		"Name": "Prompts Dial",
+		"Tooltip": "Rotate through your prompts and templates. Press sends to the selected thread; hold starts a new thread.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose prompt", "Push": "Send (hold: new thread)", "Touch": "Send" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.answer": {
+		"Name": "Answer Dial",
+		"Tooltip": "Answers an agent's question choice by choice, and approvals as far as its settings allow.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose answer", "Push": "Answer (hold by default)", "Touch": "Open thread" }
+		}
+	},
+	"Localization": {
+		"result": {
+			"done": "Done",
+			"opened": "Opened",
+			"selected": "Selected",
+			"stopped": "Stopped",
+			"sent": "Sent",
+			"steered": "Steered",
+			"restarted": "Restarted",
+			"started": "Started",
+			"denied": "Denied",
+			"allowed": "Allowed",
+			"answered": "Answered",
+			"reconnecting": "Reconnecting",
+			"loading": "Loading…",
+			"holdToAllow": "Hold to allow",
+			"holdToAnswer": "Hold to answer",
+			"notWebLink": "Not a web link"
+		},
+		"face": {
+			"noThread": "No thread",
+			"allQuiet": "All quiet",
+			"model": "Model",
+			"effort": "Effort",
+			"speed": "Speed",
+			"access": "Access",
+			"plan": "Plan",
+			"build": "Build",
+			"deny": "Deny",
+			"pullRequest": "Pull request",
+			"branch": "Branch",
+			"loading": "Loading…",
+			"needsYou": "Needs you",
+			"prompt": "Prompt"
+		},
+		"organize": {
+			"settle": "Settle",
+			"settled": "Settled",
+			"pin": "Pin",
+			"pinned": "Pinned",
+			"unpin": "Unpin",
+			"unpinned": "Unpinned",
+			"snooze": "Snooze",
+			"snoozed": "Snoozed",
+			"archive": "Archive",
+			"archived": "Archived",
+			"markUnread": "Unread",
+			"markedUnread": "Marked unread"
+		},
+		"notice": {
+			"openT3Code": "Open T3 Code",
+			"thenPress": "then press",
+			"notFound": "T3 Code not found",
+			"openThenPress": "Open it, then press",
+			"machineRemoved": "Machine removed",
+			"pickAnother": "Pick another",
+			"pickAnotherMachine": "Pick another machine",
+			"pickAnotherInSettings": "Pick another in settings",
+			"pairDeck": "Pair T3 Deck",
+			"pastePairLink": "Paste a pair link in settings",
+			"connecting": "Connecting…",
+			"pressToRetry": "Press to retry"
+		},
+		"health": {
+			"allConnected": "All connected",
+			"offline": "Offline",
+			"someOffline": "Some offline",
+			"readyCount": "{ready} of {total} ready",
+			"connected": "Connected",
+			"readOnly": "Read only",
+			"connecting": "Connecting…",
+			"needsPairing": "Needs pairing"
+		},
+		"pr": {
+			"open": "Open",
+			"merged": "Merged",
+			"closed": "Closed"
+		},
+		"reason": {
+			"noPrompt": "No prompt",
+			"readOnly": "Read only",
+			"nothingPending": "Nothing pending",
+			"noThread": "No thread",
+			"noPr": "No PR",
+			"noBranch": "No branch",
+			"notRunning": "Not running",
+			"pinned": "Pinned",
+			"notPinned": "Not pinned",
+			"pickProject": "Pick a project",
+			"noProject": "No project",
+			"unavailable": "Unavailable",
+			"noModels": "No models",
+			"noEffort": "No effort",
+			"noModes": "No modes",
+			"notOffered": "Not offered",
+			"noFastMode": "No fast mode",
+			"noPlanMode": "No plan mode"
+		},
+		"failure": {
+			"readOnly": "Read only",
+			"offline": "Offline",
+			"updateT3": "Update T3 Code",
+			"noModel": "No model",
+			"noMachine": "No machine",
+			"timedOut": "Timed out",
+			"failed": "Failed"
+		},
+		"status": {
+			"needsApproval": "Needs approval",
+			"hasQuestion": "Has a question",
+			"running": "Running {time}",
+			"queued": "Queued",
+			"done": "Done",
+			"failed": "Failed",
+			"stopped": "Stopped",
+			"idle": "Idle"
+		},
+		"filter": {
+			"all": "Threads",
+			"attention": "Needs you",
+			"active": "Working",
+			"unread": "Unread"
+		},
+		"strip": {
+			"done": "Done",
+			"notNow": "Not now",
+			"noThread": "No thread",
+			"noThreads": "No threads",
+			"allQuiet": "All quiet",
+			"default": "Default",
+			"pressToApply": "Press to apply",
+			"speed": "Speed: {speed}",
+			"prompts": "Prompts",
+			"noPrompts": "No prompts",
+			"addPrompts": "Add them in settings",
+			"answer": "Answer",
+			"nothingPending": "Nothing pending",
+			"approvals": "Approvals: {authority}",
+			"approval": "Approval",
+			"question": "Question",
+			"loading": "Loading…",
+			"pressToOpen": "Press to open in T3 Code",
+			"openInT3Code": "Open in T3 Code",
+			"withHold": "{label} · hold"
+		},
+		"approval": {
+			"open": "Open in T3",
+			"once": "Allow once",
+			"session": "Allow session",
+			"always": "Always allow",
+			"deny": "Deny",
+			"needsYou": "Needs you in T3 Code",
+			"command": "Command approval",
+			"fileRead": "File read approval",
+			"fileChange": "File change approval",
+			"permission": "App permission approval",
+			"mcpElicitation": "App access approval"
+		},
+		"mode": {
+			"approvalRequired": "Supervised",
+			"autoAcceptEdits": "Auto-accept edits",
+			"auto": "Auto",
+			"fullAccess": "Full access"
+		},
+		"option": {
+			"off": "Off",
+			"on": "On",
+			"fast": "Fast",
+			"normal": "Normal"
+		},
+		"quick": {
+			"continue": "Continue",
+			"test": "Fix tests",
+			"fix": "Diagnose",
+			"explain": "Explain",
+			"commit": "Commit"
+		},
+		"time": {
+			"minutes": "{minutes}:{seconds}",
+			"hours": "{hours}h{minutes}"
+		},
+		"datasource": {
+			"cycleFavorites": "Cycle favorites",
+			"cycleModels": "Cycle models",
+			"cycleEfforts": "Cycle efforts",
+			"anyProject": "Any project",
+			"noProject": "No project"
+		},
+		"machine": {
+			"thisMachine": "This machine",
+			"pairingExpired": "This pairing expired. Paste a new pair link.",
+			"cannotRead": "This pairing can't read threads. Paste a new pair link."
+		},
+		"pairing": {
+			"notALink": "That doesn't look like a T3 Code pair link. Copy it from Settings → Sharing & access.",
+			"unreachable": "Can't reach T3 Code at {host}. Check that it's running and reachable from this computer.",
+			"notT3": "{host} doesn't look like a T3 Code server.",
+			"tooOld": "T3 Code on that machine is too old for T3 Deck. Update T3 Code.",
+			"tooNew": "This T3 Code is newer than T3 Deck understands. Update T3 Deck.",
+			"linkUsed": "That pair link was already used or has expired. Create a new one in Settings → Sharing & access.",
+			"noAccess": "That pair link doesn't give access to threads. Create one that does.",
+			"refused": "T3 Code refused the pair link ({status}).",
+			"noRead": "That pair link doesn't allow reading threads. Create one that does.",
+			"different": "A different T3 Code now answers at {host}.",
+			"ended": "T3 Code ended this pairing. Paste a new pair link to reconnect.",
+			"cannotOpen": "T3 Code could not open a connection ({status})."
+		},
+		"connection": {
+			"noAnswer": "T3 Code did not answer in time.",
+			"closed": "The connection to T3 Code closed.",
+			"failed": "The connection to T3 Code failed.",
+			"silent": "T3 Code stopped answering.",
+			"feedEnded": "T3 Code ended the thread feed.",
+			"disconnected": "Disconnected from T3 Code."
+		},
+		"inspector": {
+			"card": {
+				"choose": "Choose a machine",
+				"looking": "Looking for T3 Code on this machine…",
+				"machineGroup": "Machine for this action",
+				"addMachine": "Add a machine",
+				"linkPlaceholder": "Paste a pair link from Settings → Sharing & access",
+				"connect": "Connect",
+				"connecting": "Connecting…",
+				"accessHelp": "T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.",
+				"shared": "Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.",
+				"connectTitle": "Connect T3 Deck",
+				"pairTitle": "Pair T3 Deck",
+				"notRunning": "T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.",
+				"howToPair": "In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.",
+				"picked": "This action shows and acts on threads from the machine you pick.",
+				"allMachines": "All machines",
+				"noneYet": "None yet",
+				"connectedCount": "{ready} of {total} connected",
+				"connected": "Connected",
+				"readOnly": "Read only",
+				"signOut": "Sign out",
+				"tryAgain": "Try again",
+				"needsPairing": "Needs pairing",
+				"remove": "Remove",
+				"pasteFromMachine": "Paste a pair link from this machine below.",
+				"pairing": "Connecting with the pair link…"
+			},
+			"advanced": {
+				"title": "Advanced",
+				"appLink": "App link",
+				"appLinkHint": "Use t3code-dev to open threads in a development build.",
+				"dialStrips": "Dial strips",
+				"stateLine": "State line",
+				"stateLineLabel": "Show the colored line under each strip",
+				"stateHint": "Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.",
+				"stripStyle": "Strip style",
+				"styleHint": "List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll."
+			},
+			"field": {
+				"strip": "Strip",
+				"stripColor": "Strip color",
+				"style": "Style",
+				"longText": "Long text",
+				"show": "Show",
+				"project": "Project",
+				"prompt": "Prompt",
+				"keyTitle": "Key title",
+				"approvals": "Approvals",
+				"toAnswer": "To answer",
+				"model": "Model",
+				"effort": "Effort",
+				"access": "Access"
+			},
+			"background": {
+				"global": "Use global",
+				"t3": "T3 Code",
+				"elgato": "Elgato gradient",
+				"state": "Thread state",
+				"custom": "Custom color"
+			},
+			"style": {
+				"classic": "Classic",
+				"list": "List",
+				"carousel": "Carousel"
+			},
+			"scroll": {
+				"horizontal": "Scroll sideways",
+				"vertical": "Roll up line by line",
+				"off": "Don't scroll"
+			},
+			"loading": {
+				"projects": "Loading projects…",
+				"models": "Loading models…",
+				"efforts": "Loading efforts…"
+			},
+			"filter": {
+				"all": "All threads",
+				"attention": "Needs you: approval, question, failure or unread result",
+				"active": "Working or queued",
+				"unread": "Unread"
+			},
+			"authority": {
+				"open": "Open in T3 Code",
+				"once": "Allow once",
+				"session": "Allow for the session",
+				"always": "Always allow"
+			},
+			"slot": {
+				"label": "Slot",
+				"byPosition": "By key position",
+				"selected": "Selected thread",
+				"first": "1 (most urgent)",
+				"hint": "By key position fills Thread keys left to right, top to bottom. Threads are ordered: needs approval, has a question, running, then the rest. Tap opens, hold selects."
+			},
+			"activity": {
+				"hint": "Shows the most urgent matching thread. More Activity keys with the same settings show the next ones, by key position."
+			},
+			"answer": {
+				"hold": "Hold the dial",
+				"press": "Press the dial",
+				"hint": "Turn between this choice and Deny. A request that doesn't offer the choice opens in T3 Code instead. Touch and hold the strip to read a long request in full."
+			},
+			"send": {
+				"titlePlaceholder": "Fix tests",
+				"promptPlaceholder": "Run the tests and fix what fails",
+				"hint": "Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it."
+			},
+			"steer": {
+				"titlePlaceholder": "Keep it small",
+				"promptPlaceholder": "Keep the change small and skip the refactor",
+				"hint": "Adds to the selected thread's running turn. It's dimmed while the thread is idle."
+			},
+			"quick": {
+				"titlePlaceholder": "Optional label for this key",
+				"type": "Prompt type",
+				"continue": "Continue",
+				"test": "Run tests and fix failures",
+				"fix": "Diagnose and fix",
+				"explain": "Explain the current state",
+				"commit": "Commit your changes",
+				"custom": "Custom prompt",
+				"customPlaceholder": "Type the prompt this key sends",
+				"hint": "Goes to the thread selected in T3 Code. Hold the key to interrupt and restart with it."
+			},
+			"new": {
+				"createIn": "Create in",
+				"selected": "Selected thread's project",
+				"scratch": "No project",
+				"project": "Chosen project",
+				"promptPlaceholder": "Optional: Review the open pull request",
+				"title": "Thread title",
+				"titlePlaceholder": "Review PR",
+				"hint": "With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access."
+			},
+			"model": {
+				"hint": "Cycling steps through T3 Code's favorite models, across providers, or the thread's provider's models when you have none. Picking another provider's model hands the thread over, as T3 Code's model picker does."
+			},
+			"effort": {
+				"hint": "Cycling steps through the efforts the selected thread's model offers. A set effort its model doesn't offer dims the key. Ultrathink doesn't change the effort: like T3 Code, it prefixes the prompts the deck sends to that thread until you pick another effort."
+			},
+			"permissions": {
+				"cycle": "Cycle access modes",
+				"approvalRequired": "Supervised",
+				"autoAcceptEdits": "Auto-accept edits",
+				"auto": "Auto",
+				"fullAccess": "Full access",
+				"hint": "Applies to the selected thread from its next step. Only the modes its provider supports are offered."
+			},
+			"approve": {
+				"hold": "Hold the key",
+				"tap": "Tap the key",
+				"hint": "Answers the selected thread's approval. A request that doesn't offer this choice, or that the deck can't answer, opens in T3 Code. Deny is its own key."
+			},
+			"organize": {
+				"action": "Action",
+				"settle": "Settle",
+				"pin": "Pin",
+				"unpin": "Unpin",
+				"snooze": "Snooze",
+				"archive": "Archive",
+				"markUnread": "Mark unread",
+				"snoozeMinutes": "Snooze minutes"
+			},
+			"prompts": {
+				"label": "Prompts",
+				"placeholder": "One prompt per line",
+				"templates": "Templates",
+				"templatesLabel": "Add Continue, Fix tests, Diagnose, Explain and Commit",
+				"hint": "Rotate to choose, press to send to the selected thread, hold to start a new thread."
+			},
+			"threads": {
+				"recency": "From the last",
+				"noLimit": "No limit",
+				"day": "24 hours",
+				"twoDays": "48 hours",
+				"threeDays": "3 days",
+				"week": "7 days",
+				"hint": "Rotate through the matching threads, most urgent first; the one the dial rests on becomes T3 Code's selection. Press or tap opens it."
+			},
+			"power": {
+				"controls": "This dial controls",
+				"hint": "Rotate to preview, press to apply to the selected thread. Model turns through T3 Code's favorite models across providers. Press with nothing to apply, or tap, to switch Speed when the model offers it. Ultrathink, where Claude offers it, prefixes the deck's next prompts to the thread."
+			}
+		}
+	}
+}

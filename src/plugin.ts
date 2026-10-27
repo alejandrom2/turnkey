@@ -21,10 +21,12 @@ import {
 	Stop,
 	ThreadSlot,
 } from "./actions/keys.js";
+import { setTranslator } from "./core/i18n.js";
 import { deck } from "./deck.js";
 
 // Never "trace": it would log the access tokens kept in global settings.
 streamDeck.logger.setLevel("info");
+setTranslator((key) => streamDeck.i18n.translate(key));
 
 for (const instance of [
 	new Activity(),

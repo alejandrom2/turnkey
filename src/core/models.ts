@@ -3,6 +3,7 @@
  * visible models (apps/web/src/components/chat/ModelPickerContent.tsx, apps/web/src/modelSelection.ts), with
  * labels, effort and speed options, and provider marks. Pure, apart from the injected ACP icon fetch.
  */
+import { type MessageKey, t } from "./i18n.js";
 import { initialsBadgeSvg, PROVIDER_MARKS, providerInstanceInitials } from "./providerIcons.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 
@@ -63,8 +64,8 @@ export function optionInfo(descriptor: ProviderOptionDescriptor): ModelOptionInf
 			label: descriptor.label,
 			type: "boolean",
 			values: [
-				{ value: false, label: "Off" },
-				{ value: true, label: "On" },
+				{ value: false, label: t("option.off") },
+				{ value: true, label: t("option.on") },
 			],
 			default: descriptor.currentValue ?? false,
 		};
@@ -261,17 +262,21 @@ export function switchSelection(target: CatalogModel, current: ModelSelection): 
 }
 
 /** T3 Code's access modes, in its menu order and words. */
-export const RUNTIME_MODES: readonly { value: RuntimeMode; label: string }[] = [
-	{ value: "approval-required", label: "Supervised" },
-	{ value: "auto-accept-edits", label: "Auto-accept edits" },
-	{ value: "auto", label: "Auto" },
-	{ value: "full-access", label: "Full access" },
-];
+const MODE_LABEL: Record<RuntimeMode, MessageKey> = {
+	"approval-required": "mode.approvalRequired",
+	"auto-accept-edits": "mode.autoAcceptEdits",
+	auto: "mode.auto",
+	"full-access": "mode.fullAccess",
+};
+
+export const RUNTIME_MODES = Object.keys(MODE_LABEL) as readonly RuntimeMode[];
+
+export const modeLabel = (mode: RuntimeMode): string => t(MODE_LABEL[mode]);
 
 /** The access modes `instanceId` supports; every mode when the provider doesn't say. */
 export function runtimeModes(config: ModelConfig | undefined, instanceId: string): readonly { value: RuntimeMode; label: string }[] {
 	const supported = config?.providers?.find((provider) => provider.instanceId === instanceId)?.supportedRuntimeModes;
-	return supported === undefined ? RUNTIME_MODES : RUNTIME_MODES.filter((mode) => supported.includes(mode.value));
+	return RUNTIME_MODES.filter((mode) => supported === undefined || supported.includes(mode)).map((mode) => ({ value: mode, label: modeLabel(mode) }));
 }
 
 /** The value after `current` in `values`, wrapping; the first when `current` is not among them. */
@@ -316,7 +321,7 @@ export function speedToggle(model: Pick<CatalogModel, "options" | "driver"> | un
 	const fastMode = model?.options.find((option) => option.id === "fastMode" && option.type === "boolean");
 	if (fastMode !== undefined) {
 		const fast = currentOptionValue(selection, fastMode) === true;
-		return { option: fastMode, fast, label: fast ? "Fast" : "Normal", next: !fast, nextLabel: fast ? "Normal" : "Fast" };
+		return { option: fastMode, fast, label: t(fast ? "option.fast" : "option.normal"), next: !fast, nextLabel: t(fast ? "option.normal" : "option.fast") };
 	}
 	const tier = model?.driver === "codex" ? model.options.find((option) => option.id === "serviceTier" && option.type === "select") : undefined;
 	const fastTier = tier?.values.find((choice) => choice.label === "Fast");

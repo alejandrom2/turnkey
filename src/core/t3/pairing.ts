@@ -1,5 +1,7 @@
 import { networkInterfaces } from "node:os";
 
+import { t } from "../i18n.js";
+
 /**
  * Pair links, environment preflight, token exchange and WebSocket tickets: the HTTP half of T3 Code's
  * client API (packages/client-runtime/src/authorization/remote.ts in the T3 Code repo).
@@ -98,7 +100,7 @@ export function parsePairingLink(raw: string): PairLink | undefined {
 
 const wsBase = (url: string) => url.replace(/^http/, "ws");
 const hostOf = (url: string) => new URL(url).host;
-const unreachable = (url: string) => new PairingError(`Can't reach T3 Code at ${hostOf(url)}. Check that it's running and reachable from this computer.`);
+const unreachable = (url: string) => new PairingError(t("pairing.unreachable", { host: hostOf(url) }));
 
 async function errorBody(response: Response): Promise<{ _tag?: string; reason?: string }> {
 	return (await response.json().catch(() => ({}))) as { _tag?: string; reason?: string };
@@ -113,10 +115,10 @@ export async function readEnvironment(url: string, fetchFn: typeof fetch, timeou
 		throw unreachable(url);
 	}
 	const body = (await response.json().catch(() => undefined)) as Partial<EnvironmentDescriptor> | undefined;
-	if (!response.ok || typeof body?.environmentId !== "string") throw new PairingError(`${hostOf(url)} doesn't look like a T3 Code server.`);
+	if (!response.ok || typeof body?.environmentId !== "string") throw new PairingError(t("pairing.notT3", { host: hostOf(url) }));
 	const version = body.orchestrationProtocolVersion ?? 1;
-	if (version < PROTOCOL_VERSION) throw new PairingError("T3 Code on that machine is too old for T3 Deck. Update T3 Code.", "incompatible");
-	if (version > PROTOCOL_VERSION) throw new PairingError("This T3 Code is newer than T3 Deck understands. Update T3 Deck.", "incompatible");
+	if (version < PROTOCOL_VERSION) throw new PairingError(t("pairing.tooOld"), "incompatible");
+	if (version > PROTOCOL_VERSION) throw new PairingError(t("pairing.tooNew"), "incompatible");
 	return { environmentId: body.environmentId, label: body.label ?? hostOf(url), orchestrationProtocolVersion: version };
 }
 
@@ -150,13 +152,13 @@ export async function redeemPairingCode(url: string, code: string, fetchFn: type
 	}
 	if (!response.ok) {
 		const { reason } = await errorBody(response);
-		if (response.status === 401) throw new PairingError("That pair link was already used or has expired. Create a new one in Settings → Sharing & access.");
-		if (reason === "scope_not_granted" || reason === "invalid_scope") throw new PairingError("That pair link doesn't give access to threads. Create one that does.");
-		throw new PairingError(`T3 Code refused the pair link (${response.status}).`);
+		if (response.status === 401) throw new PairingError(t("pairing.linkUsed"));
+		if (reason === "scope_not_granted" || reason === "invalid_scope") throw new PairingError(t("pairing.noAccess"));
+		throw new PairingError(t("pairing.refused", { status: response.status }));
 	}
 	const body = (await response.json()) as { access_token: string; expires_in: number; scope?: string };
 	const scopes = (body.scope ?? "").split(" ").filter(Boolean);
-	if (!scopes.includes(READ_SCOPE)) throw new PairingError("That pair link doesn't allow reading threads. Create one that does.");
+	if (!scopes.includes(READ_SCOPE)) throw new PairingError(t("pairing.noRead"));
 	return { token: body.access_token, expiresAt: now + body.expires_in * 1000, scopes, label: environment.label, environmentId: environment.environmentId };
 }
 
@@ -166,7 +168,7 @@ export async function redeemPairingCode(url: string, code: string, fetchFn: type
  */
 export async function socketUrl(url: string, credential: Credential, fetchFn: typeof fetch): Promise<string> {
 	const environment = await readEnvironment(url, fetchFn);
-	if (environment.environmentId !== credential.environmentId) throw new Error(`A different T3 Code now answers at ${hostOf(url)}.`);
+	if (environment.environmentId !== credential.environmentId) throw new Error(t("pairing.different", { host: hostOf(url) }));
 	const mint = async (path: string) => {
 		try {
 			return await fetchFn(`${url}${path}`, {
@@ -181,8 +183,8 @@ export async function socketUrl(url: string, credential: Credential, fetchFn: ty
 	let response = await mint("/api/auth/websocket-ticket/rpc");
 	// Servers before ticket uses only serve the unbound path.
 	if (response.status === 404) response = await mint("/api/auth/websocket-ticket");
-	if (response.status === 401) throw new PairingError("T3 Code ended this pairing. Paste a new pair link to reconnect.", "repair");
-	if (!response.ok) throw new Error(`T3 Code could not open a connection (${response.status}).`);
+	if (response.status === 401) throw new PairingError(t("pairing.ended"), "repair");
+	if (!response.ok) throw new Error(t("pairing.cannotOpen", { status: response.status }));
 	const { ticket } = (await response.json()) as { ticket: string };
 	return `${wsBase(url)}/ws?orchestrationProtocol=${PROTOCOL_VERSION}&wsTicket=${encodeURIComponent(ticket)}`;
 }
