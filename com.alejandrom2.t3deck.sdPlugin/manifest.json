@@ -256,7 +256,7 @@
 			"Name": "Health",
 			"UUID": "com.alejandrom2.t3deck.health",
 			"Icon": "imgs/actions/health/icon",
-			"Tooltip": "The connection to T3 Code: ready, connecting, needs pairing or failing. Tap reconnects.",
+			"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, signed out, update required, check failed). Tap reconnects.",
 			"PropertyInspectorPath": "ui/environments.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/health/key", "ShowTitle": false }]
