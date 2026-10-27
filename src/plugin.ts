@@ -34,7 +34,7 @@ import {
 import { setTranslator } from "./core/i18n.js";
 import { deck } from "./deck.js";
 
-// Never "trace": it would log the access tokens kept in global settings.
+// Never "trace": it would log the access tokens kept in global settings. Verbose logging raises this to "debug" (deck.ts).
 streamDeck.logger.setLevel("info");
 setTranslator((key) => streamDeck.i18n.translate(key));
 
