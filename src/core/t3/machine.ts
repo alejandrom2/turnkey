@@ -2,6 +2,7 @@ import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
 import { type QueueProjection, type ThreadQueue, threadQueue } from "./queue.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
@@ -93,6 +94,13 @@ type ConfigEvent = {
 	payload?: { providers?: ConfigProvider[]; settings?: ServerConfig["settings"]; sources?: UsageLimitSourceSnapshot[] };
 };
 
+/** T3 Code's composer retries a checkout's skills read this long after a failure, at most three times in a row. */
+const WORKSPACE_RETRY_MS = 10_000;
+const WORKSPACE_MAX_FAILURES = 3;
+
+/** One checkout's skills read: the snapshot T3 Code sent, when it was asked for, and its failures in a row. */
+type WorkspaceRead = { snapshot?: WorkspaceSnapshot; requestedAt?: number; retryAt?: number; failures: number; pending?: Promise<void> };
+
 /** How long the config subscription outlives its last watcher, so flipping pages doesn't resubscribe. */
 export const CONFIG_WATCH_LINGER_MS = 60_000;
 type ThreadRef = Pick<ShellRow, "threadId">;
@@ -157,6 +165,8 @@ export class Machine {
 	#untaskTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Bumped when the task list changes, so the deck repaints faces drawn from it. */
 	tasksVersion = 0;
+	/** Per provider instance and checkout, its skills snapshot: config replies leave these out, so they are read on demand. */
+	readonly #workspaces = new Map<string, WorkspaceRead>();
 	readonly #now: () => number;
 	readonly #uuid: () => string;
 
@@ -332,6 +342,7 @@ export class Machine {
 		this.#tasks = undefined;
 		this.#tasksError = undefined;
 		this.#configLoad = undefined;
+		this.#workspaces.clear();
 		this.#rows = [];
 		this.#everyRow = undefined;
 	}
@@ -591,6 +602,54 @@ export class Machine {
 	/** Reloads model prices from T3 Code's rate table; it doesn't rescan, so read the summary again after. */
 	async refreshUsageRates(): Promise<void> {
 		await this.call("server.refreshUsageRates", {}, DIAGNOSTICS_SCOPE);
+	}
+
+	/**
+	 * The skills a thread on `instanceId` working in `cwd` can run, as its composer lists them; `loading` while its
+	 * checkout's first read runs. The checkout is read again once T3 Code's snapshot goes stale, so only call this for
+	 * a thread a visible face shows.
+	 */
+	skills(instanceId: string, cwd: string | undefined): { skills: ProviderSkill[]; loading: boolean } {
+		const provider = this.#config?.providers?.find((candidate) => candidate.instanceId === instanceId);
+		if (provider === undefined || cwd === undefined) return { skills: threadSkills(provider, undefined), loading: false };
+		const read = this.#workspaceRead(instanceId, cwd);
+		const snapshot = read.snapshot ?? provider.workspaceSnapshots?.find((candidate) => candidate.cwd === cwd);
+		return { skills: threadSkills(provider, snapshot), loading: snapshot === undefined && read.pending !== undefined };
+	}
+
+	/** The same list once its checkout's read has landed, for an inspector's choices. */
+	async readSkills(instanceId: string, cwd: string | undefined): Promise<ProviderSkill[]> {
+		if (cwd !== undefined) await this.#workspaceRead(instanceId, cwd).pending;
+		return this.skills(instanceId, cwd).skills;
+	}
+
+	/** Starts a checkout's read when it has none, or a stale one, unless failures hold it back (`planProviderWorkspaceSnapshotRefresh`). */
+	#workspaceRead(instanceId: string, cwd: string): WorkspaceRead {
+		const key = `${instanceId}\n${cwd}`;
+		const read = this.#workspaces.get(key) ?? { failures: 0 };
+		this.#workspaces.set(key, read);
+		const now = this.#now();
+		const due = read.requestedAt === undefined || now - read.requestedAt >= WORKSPACE_SNAPSHOT_TTL_MS;
+		if (read.pending !== undefined || !due || (read.retryAt ?? 0) > now || read.failures >= WORKSPACE_MAX_FAILURES || this.state.kind !== "ready") return read;
+		read.requestedAt = now;
+		read.pending = this.#rpcFor(false)
+			.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { instanceId, cwd, workspaceSnapshotsOnDemand: true })
+			.then(({ providers }) => providers?.find((provider) => provider.instanceId === instanceId)?.workspaceSnapshots?.find((snapshot) => snapshot.cwd === cwd))
+			.catch(() => undefined)
+			.then((snapshot) => {
+				read.pending = undefined;
+				if (this.#workspaces.get(key) !== read) return;
+				if (snapshot === undefined || snapshot.slashCommandsPending === true) {
+					read.failures++;
+					read.requestedAt = undefined;
+					read.retryAt = this.#now() + WORKSPACE_RETRY_MS;
+				} else {
+					read.snapshot = snapshot;
+					read.failures = 0;
+				}
+				this.onChange();
+			});
+		return read;
 	}
 
 	/** Spends one banked reset credit on a provider account or hub account. */

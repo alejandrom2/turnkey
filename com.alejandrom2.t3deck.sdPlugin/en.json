@@ -114,6 +114,10 @@
 		"Name": "Run Task",
 		"Tooltip": "One of T3 Code's scheduled tasks: its name and when it runs next. Press runs it now."
 	},
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "Run Skill",
+		"Tooltip": "Runs one of the thread's provider skills, the way picking it in T3 Code's composer and sending does."
+	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Threads Dial",
 		"Tooltip": "Rotate through the threads that match its filter, selecting them in T3 Code; press or tap to open one.",
@@ -154,6 +158,13 @@
 		"Tooltip": "Rotate through T3 Code's scheduled tasks, with when each runs next. Press runs the shown task now; tap turns it off or back on.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choose task", "Push": "Run now", "Touch": "Turn on or off" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.skills": {
+		"Name": "Skills Dial",
+		"Tooltip": "Rotate through the thread's provider skills. Press or tap runs the shown one; touch and hold reads its description.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose skill", "Push": "Run skill", "Touch": "Run skill", "LongTouch": "Read description" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.pr": {
@@ -224,7 +235,8 @@
 			"snooze": "Snooze {duration}?",
 			"pressAgain": "Press again",
 			"pressToSend": "Press again to send",
-			"to": "To {thread}"
+			"to": "To {thread}",
+			"runSkill": "Run skill?"
 		},
 		"organize": {
 			"settle": "Settle",
@@ -709,7 +721,8 @@
 				"providers": "Loading providers…",
 				"windows": "Loading windows…",
 				"threads": "Loading threads…",
-				"tasks": "Loading tasks…"
+				"tasks": "Loading tasks…",
+				"skills": "Loading skills…"
 			},
 			"filter": {
 				"all": "All threads",
@@ -866,6 +879,14 @@
 				"label": "Task",
 				"hint": "Press runs the task now, as T3 Code's Run now does; it keeps its schedule. Tasks come from T3 Code's Settings → Scheduled tasks.",
 				"dialHint": "Rotate through the machine's scheduled tasks. Press runs the shown one now; tap turns it off, and tapping again turns it back on."
+			},
+			"skill": {
+				"label": "Skill",
+				"extra": "With",
+				"extraPlaceholder": "Optional: what to tell it, after the skill",
+				"titlePlaceholder": "The skill's name",
+				"hint": "Sends the skill to the thread as T3 Code's composer does ($name, then your text). Skills come from the thread's provider for its checkout: Codex, Claude and Antigravity list them.",
+				"dialHint": "Rotate through the thread's provider skills for its checkout. Press or tap runs the shown one, touch and hold reads its description."
 			}
 		},
 		"usage": {
@@ -930,6 +951,14 @@
 			"pickTask": "Pick a task",
 			"gone": "Not available: {task}",
 			"chooseTask": "Choose a task…"
+		},
+		"skills": {
+			"title": "Skills",
+			"pickSkill": "Pick a skill",
+			"none": "No skills",
+			"gone": "Not available: {skill}",
+			"chooseSkill": "Choose a skill…",
+			"aSkill": "A skill the thread's provider offers"
 		}
 	}
 }
