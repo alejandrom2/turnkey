@@ -292,7 +292,7 @@ class Deck implements CredentialStore {
 	/** Machine updates arrive per streamed row; repaint only when a connection state, the config or a shown field changed. */
 	#changed(): void {
 		this.board.update();
-		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion]));
+		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion, machine.tasksVersion]));
 		if (states === this.#machineStates) return;
 		this.#machineStates = states;
 		this.repaint();

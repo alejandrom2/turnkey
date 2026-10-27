@@ -262,6 +262,15 @@
 			"States": [{ "Image": "imgs/actions/health/key", "ShowTitle": false }]
 		},
 		{
+			"Name": "Run Task",
+			"UUID": "com.alejandrom2.t3deck.task",
+			"Icon": "imgs/actions/task/icon",
+			"Tooltip": "One of T3 Code's scheduled tasks: its name and when it runs next. Press runs it now.",
+			"PropertyInspectorPath": "ui/task.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/task/key" }]
+		},
+		{
 			"Name": "Limits",
 			"UUID": "com.alejandrom2.t3deck.limits",
 			"Icon": "imgs/actions/limits/icon",
@@ -348,6 +357,20 @@
 				"TriggerDescription": { "Rotate": "Choose message", "Push": "Send now (hold: remove)", "Touch": "Open thread" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-queue/key" }]
+		},
+		{
+			"Name": "Tasks Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.tasks",
+			"Icon": "imgs/actions/dial-tasks/icon",
+			"Tooltip": "Rotate through T3 Code's scheduled tasks, with when each runs next. Press runs the shown task now; tap turns it off or back on.",
+			"PropertyInspectorPath": "ui/tasks-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-tasks/icon",
+				"TriggerDescription": { "Rotate": "Choose task", "Push": "Run now", "Touch": "Turn on or off" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-tasks/key" }]
 		},
 		{
 			"Name": "PR Dial",

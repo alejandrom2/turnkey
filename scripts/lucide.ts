@@ -63,6 +63,7 @@ const NAME = {
   hammer: "hammer", // T3's Fix findings
   book: "book-open", // T3's Explain
   editor: "code", // closest: T3 shows each editor's brand mark
+  task: "calendar-clock", // T3's Scheduled tasks
 } as const;
 
 const dir = process.argv[2];

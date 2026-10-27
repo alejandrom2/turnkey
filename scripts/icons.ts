@@ -30,6 +30,8 @@ const ACTIONS: Record<string, GlyphName> = {
 	"dial-prompts": "spark",
 	"dial-answer": "question",
 	"dial-queue": "queued",
+	task: "task",
+	"dial-tasks": "task",
 	"git-commit": "gitCommit",
 	"git-push": "gitPush",
 	"git-pr": "gitPrCreate",
