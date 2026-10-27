@@ -9,6 +9,7 @@ import {
 	findModel,
 	type ModelConfig,
 	modelCatalog,
+	modelColor,
 	nextModel,
 	officialAcpIconUrl,
 	parseModelKey,
@@ -270,5 +271,15 @@ describe("ACP registry icons", () => {
 		expect(icons.get(ok)).toEqual({ viewBox: "0 0 8 8", body: `<path d="M0 0"/>` });
 		expect(icons.get(bad)).toBeUndefined();
 		expect(fetchFn).toHaveBeenCalledTimes(2);
+	});
+});
+
+describe("modelColor", () => {
+	it("prefers the instance's accent, then the brand color, and leaves white marks white", () => {
+		expect(modelColor({ driver: "codex", accentColor: "#336699" })).toBe("#336699");
+		expect(modelColor({ driver: "codex", accentColor: undefined })).toBe("#4C9BFF");
+		expect(modelColor({ driver: "claudeAgent", accentColor: undefined })).toBe("#d97757");
+		expect(modelColor({ driver: "cursor", accentColor: undefined })).toBeUndefined();
+		expect(modelColor({ driver: "unknown", accentColor: "not a color" })).toBeUndefined();
 	});
 });
