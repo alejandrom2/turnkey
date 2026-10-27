@@ -423,21 +423,11 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	}
 
 	/** Runs a deck command, then flashes `success`, or a short reason (logged in full) when it fails. */
-	/** Like `run`, but a success just shows the live face with its new value, no result card. */
-	protected async apply(action: Action<T>, work: () => Promise<unknown>): Promise<void> {
+	/** Runs a press's work: a success just shows the live face again, a failure shows why for a moment. */
+	protected async run(action: Action<T>, work: () => Promise<unknown>): Promise<void> {
 		try {
 			await work();
 			await this.paint(action);
-		} catch (error) {
-			logger.warn(`${this.manifestId} failed: ${message(error)}`);
-			await this.flash(action, false, failureLabel(error));
-		}
-	}
-
-	protected async run(action: Action<T>, work: () => Promise<unknown>, success = t("result.done")): Promise<void> {
-		try {
-			await work();
-			await this.flash(action, true, success);
 		} catch (error) {
 			// The message only: errors never carry tokens or ticket URLs, but their causes might.
 			logger.warn(`${this.manifestId} failed: ${message(error)}`);

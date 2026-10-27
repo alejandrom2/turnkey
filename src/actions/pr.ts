@@ -2,7 +2,6 @@ import streamDeck, { type Action, action, type DialAction, type KeyDownEvent, ty
 
 import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { DeckThread } from "../core/board.js";
-import { failureLabel } from "../core/feedback.js";
 import { type MessageKey, t } from "../core/i18n.js";
 import {
 	buildExplainPullRequestHandoff,
@@ -257,12 +256,7 @@ abstract class PrHandoffKey extends DeckAction<PrKeySettings> {
 		const confirm = this.settingsOf(ev.action).confirm;
 		const hold = confirm === "hold" || (confirm !== "tap" && this.holdByDefault);
 		if (hold && held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("repo.holdTo")));
-		try {
-			await this.flash(ev.action, true, await this.act(check.thread, check.ref));
-		} catch (error) {
-			logger.warn(`${this.manifestId} failed: ${error instanceof Error ? error.message : String(error)}`);
-			await this.flash(ev.action, false, failureLabel(error));
-		}
+		await this.run(ev.action, () => this.act(check.thread, check.ref));
 	}
 
 	override needs(action: Action<PrKeySettings>): Need[] {
@@ -514,20 +508,14 @@ export class PrDial extends StripDial<PrDialSettings> {
 		if (current === undefined) return void (await this.flash(dial, false, t("pr.dial.none")));
 		if (!current.machine.canOperate) return void (await this.flash(dial, false, t("reason.readOnly")));
 		if (this.settingsOf(dial).confirm !== "tap" && heldMs < HOLD_CONFIRM_MS) return void (await this.flash(dial, false, t("repo.holdTo")));
-		try {
-			const label = await fixFindings(current.machine, this.#refOf(current.entry), selectedThread(machine));
-			await this.flash(dial, true, label);
-		} catch (error) {
-			logger.warn(`Fix findings failed: ${error instanceof Error ? error.message : String(error)}`);
-			await this.flash(dial, false, failureLabel(error));
-		}
+		await this.run(dial, () => fixFindings(current.machine, this.#refOf(current.entry), selectedThread(machine)));
 	}
 
 	protected override async tapped(dial: DialAction<PrDialSettings>): Promise<void> {
 		const { current } = this.#list(dial);
 		if (current === undefined) return;
 		if (!URL.canParse(current.entry.url) || new URL(current.entry.url).protocol !== "https:") return void (await this.flash(dial, false, t("result.notWebLink")));
-		await this.run(dial, () => streamDeck.system.openUrl(current.entry.url), t("result.opened"));
+		await this.run(dial, () => streamDeck.system.openUrl(current.entry.url));
 	}
 
 	override needs(action: Action<PrDialSettings>): Need[] {
