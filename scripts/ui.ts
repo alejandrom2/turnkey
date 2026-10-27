@@ -739,6 +739,20 @@ const pages: Record<string, string> = {
 			</sdpi-item>`,
 		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) + targetScript,
 	),
+	"task.html": page(
+		"Run Task",
+		`
+			<sdpi-item ${attr("label", "inspector.task.label")}>
+				<sdpi-select setting="task" datasource="getTasks" hot-reload ${attr("loading", "inspector.loading.tasks")}></sdpi-select>
+			</sdpi-item>
+			<p class="hint"${text("inspector.task.hint")}</p>`,
+	),
+	"tasks-dial.html": page(
+		"Tasks Dial",
+		`
+			<p class="hint"${text("inspector.task.dialHint")}</p>${dialAppearance}`,
+		dialAppearanceScript,
+	),
 	"queue-dial.html": page(
 		"Queue Dial",
 		`

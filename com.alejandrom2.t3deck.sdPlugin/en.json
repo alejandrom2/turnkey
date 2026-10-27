@@ -110,6 +110,10 @@
 		"Name": "Health",
 		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, signed out, update required, check failed). Tap reconnects."
 	},
+	"com.alejandrom2.t3deck.task": {
+		"Name": "Run Task",
+		"Tooltip": "One of T3 Code's scheduled tasks: its name and when it runs next. Press runs it now."
+	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Threads Dial",
 		"Tooltip": "Rotate through the threads that match its filter, selecting them in T3 Code; press or tap to open one.",
@@ -143,6 +147,13 @@
 		"Tooltip": "Rotate through the selected thread's queued messages. Press sends one now (steering it in, or starting it while nothing runs); hold removes it.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choose message", "Push": "Send now (hold: remove)", "Touch": "Open thread" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.tasks": {
+		"Name": "Tasks Dial",
+		"Tooltip": "Rotate through T3 Code's scheduled tasks, with when each runs next. Press runs the shown task now; tap turns it off or back on.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose task", "Push": "Run now", "Touch": "Turn on or off" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.pr": {
@@ -551,11 +562,13 @@
 				"pickAnother": "Pick another value above.",
 				"noFindings": "Nothing is failing or unresolved on it.",
 				"providersInT3": "Fix them in T3 Code under Settings → Providers.",
-				"queueMessage": "Send a message while the thread works; it waits in its queue."
+				"queueMessage": "Send a message while the thread works; it waits in its queue.",
+				"addTask": "Add one in T3 Code under Settings → Scheduled tasks."
 			},
 			"findings": "Findings to fix",
 			"providers": "Providers ready",
-			"queued": "A queued message"
+			"queued": "A queued message",
+			"tasks": "A scheduled task"
 		},
 		"editor": {
 			"title": "Open in editor",
@@ -695,7 +708,8 @@
 				"efforts": "Loading efforts…",
 				"providers": "Loading providers…",
 				"windows": "Loading windows…",
-				"threads": "Loading threads…"
+				"threads": "Loading threads…",
+				"tasks": "Loading tasks…"
 			},
 			"filter": {
 				"all": "All threads",
@@ -847,6 +861,11 @@
 			},
 			"queue": {
 				"hint": "Follows the selected thread's queue. Press sends the shown message now: into the running turn where the provider takes steering, or as the next turn when nothing runs, which also releases a queue Stop held. Hold removes it."
+			},
+			"task": {
+				"label": "Task",
+				"hint": "Press runs the task now, as T3 Code's Run now does; it keeps its schedule. Tasks come from T3 Code's Settings → Scheduled tasks.",
+				"dialHint": "Rotate through the machine's scheduled tasks. Press runs the shown one now; tap turns it off, and tapping again turns it back on."
 			}
 		},
 		"usage": {
@@ -892,6 +911,25 @@
 				"noCredit": "No reset left",
 				"alreadyRedeemed": "Already redeemed"
 			}
+		},
+		"tasks": {
+			"title": "Tasks",
+			"now": "Now",
+			"in": "in {time}",
+			"running": "Running",
+			"off": "Off",
+			"onWebhook": "On webhook",
+			"notScheduled": "Not scheduled",
+			"lastFailed": "Last run failed · {when}",
+			"noTasks": "No scheduled tasks",
+			"addInT3": "Add them in T3 Code",
+			"updateT3": "Update T3 Code for tasks",
+			"loading": "Loading tasks…",
+			"pressToRun": "Press runs it now · tap turns it off",
+			"pressToRunOff": "Press runs it now · tap turns it on",
+			"pickTask": "Pick a task",
+			"gone": "Not available: {task}",
+			"chooseTask": "Choose a task…"
 		}
 	}
 }

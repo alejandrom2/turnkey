@@ -107,12 +107,15 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		const settings = this.settingsOf(action);
 		const target = targetOf(settings, this.machineOf(action));
 		const title = target.pinned ? target.thread?.title : undefined;
-		if (title !== undefined && title !== settings.threadTitle) {
-			const next = { ...settings, threadTitle: title } as T;
-			this.#settings.set(action.id, next);
-			void action.setSettings(next);
-		}
+		if (title !== undefined && title !== settings.threadTitle) this.remember(action, { threadTitle: title });
 		return target;
+	}
+
+	/** Saves a setting the plugin learned (a pinned thread's or task's title), here and in the action's settings. */
+	protected remember(action: Action<T>, patch: JsonObject): void {
+		const next = { ...this.settingsOf(action), ...patch } as T;
+		this.#settings.set(action.id, next);
+		void action.setSettings(next);
 	}
 
 	protected settingsOf(action: Action<T>): T {
