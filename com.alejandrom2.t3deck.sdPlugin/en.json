@@ -512,7 +512,8 @@
 				"remarks": "{count} remarks",
 				"remarkOne": "1 remark",
 				"checks": "{count} checks",
-				"checkOne": "1 check"
+				"checkOne": "1 check",
+				"named": "{findings}: {names}"
 			},
 			"explain": {
 				"title": "Explain {term}"
@@ -605,6 +606,8 @@
 			"preview": "A preview or HTML render",
 			"devices": "A simulator or emulator",
 			"notAvailable": "Not available: {value}",
+			"problem": "{subject}: {text}",
+			"problemOn": "{subject} ({machine}): {text}",
 			"fix": {
 				"openT3": "Open T3 Code on this computer, then press the key.",
 				"addMachine": "Or paste a pair link under Add a machine.",
