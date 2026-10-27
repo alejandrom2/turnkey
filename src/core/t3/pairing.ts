@@ -7,7 +7,7 @@ import { t } from "../i18n.js";
  * client API (packages/client-runtime/src/authorization/remote.ts in the T3 Code repo).
  */
 
-export const PROTOCOL_VERSION = 2;
+const PROTOCOL_VERSION = 2;
 export const READ_SCOPE = "orchestration:read";
 export const OPERATE_SCOPE = "orchestration:operate";
 export const DIAGNOSTICS_SCOPE = "diagnostics:read";
@@ -26,7 +26,7 @@ export const ACCESS_SCOPE = "access:write";
  * What every pairing asks for. The server grants the overlap with what the pair link allows and drops names it
  * doesn't know, so asking for more never fails a pairing; T3 Code's standard links grant all four.
  */
-export const REQUESTED_SCOPES = [READ_SCOPE, OPERATE_SCOPE, DIAGNOSTICS_SCOPE, SOURCE_CONTROL_SCOPE] as const;
+const REQUESTED_SCOPES = [READ_SCOPE, OPERATE_SCOPE, DIAGNOSTICS_SCOPE, SOURCE_CONTROL_SCOPE] as const;
 /** Broader scopes a machine asks for only after the user turns on an action that needs one there. */
 export const OPT_IN_SCOPES = [PROVIDERS_SCOPE, TERMINAL_SCOPE, TERMINAL_READ_SCOPE, ACCESS_SCOPE, MAINTAIN_SCOPE] as const;
 export type OptInScope = (typeof OPT_IN_SCOPES)[number];
@@ -45,13 +45,13 @@ export type Credential = {
 	environmentId: string;
 };
 
-export type EnvironmentDescriptor = {
+type EnvironmentDescriptor = {
 	environmentId: string;
 	label: string;
 	orchestrationProtocolVersion?: number;
 };
 
-export type PairLink = { url: string; code: string };
+type PairLink = { url: string; code: string };
 
 /**
  * A user-facing failure. `repair`: the credential is no good and only a new pair link helps.
@@ -70,11 +70,17 @@ export class PairingError extends Error {
 	}
 }
 
-const isLoopback = (hostname: string) => hostname === "127.0.0.1" || hostname === "localhost" || hostname === "[::1]";
+/** Hosts that mean "this computer" wherever they're read: loopback addresses and `localhost` names. */
+export function isLoopbackHost(hostname: string): boolean {
+	const host = hostname.replace(/^\[|\]$/g, "").toLowerCase();
+	return host === "localhost" || host.endsWith(".localhost") || host === "::1" || host === "0.0.0.0" || host.startsWith("127.");
+}
+
+export const isLoopbackUrl = (url: string): boolean => isLoopbackHost(new URL(url).hostname);
 
 /** True when `hostname` names this computer: loopback or one of its interface addresses. */
 export function isThisComputer(hostname: string, interfaces = networkInterfaces()): boolean {
-	if (isLoopback(hostname)) return true;
+	if (isLoopbackHost(hostname)) return true;
 	const bare = hostname.replace(/^\[|\]$/g, "");
 	return Object.values(interfaces)
 		.flat()
@@ -131,7 +137,7 @@ async function errorBody(response: Response): Promise<{ _tag?: string; reason?: 
 }
 
 /** `GET /.well-known/t3/environment`: unauthenticated, and the only protocol gate a WebSocket client can see. */
-export async function readEnvironment(url: string, fetchFn: typeof fetch, timeoutMs = 10_000): Promise<EnvironmentDescriptor> {
+async function readEnvironment(url: string, fetchFn: typeof fetch, timeoutMs = 10_000): Promise<EnvironmentDescriptor> {
 	let response: Response;
 	try {
 		response = await fetchFn(`${url}/.well-known/t3/environment`, { signal: AbortSignal.timeout(timeoutMs) });
@@ -146,10 +152,12 @@ export async function readEnvironment(url: string, fetchFn: typeof fetch, timeou
 	return { environmentId: body.environmentId, label: body.label ?? hostOf(url), orchestrationProtocolVersion: version };
 }
 
+const SESSION_SECONDS = 30 * 86_400;
+
 const CLIENT_OS: Partial<Record<NodeJS.Platform, string>> = { darwin: "macOS", win32: "Windows", linux: "Linux" };
 
 /** The token exchange body. No DPoP header, so T3 Code issues a 30-day Bearer session. */
-export function tokenExchangeBody(code: string, platform: NodeJS.Platform = process.platform, scopes: readonly string[] = REQUESTED_SCOPES): URLSearchParams {
+function tokenExchangeBody(code: string, platform: NodeJS.Platform = process.platform, scopes: readonly string[] = REQUESTED_SCOPES): URLSearchParams {
 	return new URLSearchParams({
 		grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
 		subject_token: code,
@@ -180,10 +188,13 @@ export async function redeemPairingCode(url: string, code: string, fetchFn: type
 		if (reason === "scope_not_granted" || reason === "invalid_scope") throw new PairingError(t("pairing.noAccess"));
 		throw new PairingError(t("pairing.refused", { status: response.status }));
 	}
-	const body = (await response.json()) as { access_token: string; expires_in: number; scope?: string };
-	const scopes = (body.scope ?? "").split(" ").filter(Boolean);
+	const body = (await response.json().catch(() => undefined)) as { access_token?: unknown; expires_in?: unknown; scope?: unknown } | undefined;
+	if (typeof body?.access_token !== "string" || body.access_token === "") throw new PairingError(t("pairing.notT3", { host: hostOf(url) }));
+	const scopes = (typeof body.scope === "string" ? body.scope : "").split(" ").filter(Boolean);
 	if (!scopes.includes(READ_SCOPE)) throw new PairingError(t("pairing.noRead"));
-	return { token: body.access_token, expiresAt: now + body.expires_in * 1000, scopes, label: environment.label, environmentId: environment.environmentId };
+	// The code is spent by now, so a missing lifetime falls back to T3 Code's 30-day session; a 401 later still ends it.
+	const lifetime = typeof body.expires_in === "number" && Number.isFinite(body.expires_in) && body.expires_in > 0 ? body.expires_in : SESSION_SECONDS;
+	return { token: body.access_token, expiresAt: now + lifetime * 1000, scopes, label: environment.label, environmentId: environment.environmentId };
 }
 
 /**

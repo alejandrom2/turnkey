@@ -1,6 +1,5 @@
-import streamDeck, { type Action, action, type KeyDownEvent, type KeyUpEvent } from "@elgato/streamdeck";
+import { type Action, action, type KeyUpEvent } from "@elgato/streamdeck";
 
-import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { DeckThread } from "../core/board.js";
 import { failureLabel } from "../core/feedback.js";
 import {
@@ -8,7 +7,6 @@ import {
 	gitBlocker,
 	gitCwd,
 	gitSummary,
-	isStackedAction,
 	needsDefaultBranchHold,
 	progressLabel,
 	pull,
@@ -26,11 +24,10 @@ import { grants, needsAccessLabel } from "../core/scopes.js";
 import type { Machine } from "../core/t3/machine.js";
 import { SOURCE_CONTROL_SCOPE } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
-import { canOperate, connectionFace, DeckAction, pressWhileDisconnected, selectedThread } from "./base.js";
+import { canOperate, DeckAction, held, pressWhileDisconnected, selectedThread } from "./base.js";
 import { threadNeeds } from "./needs.js";
 
 const ID = "com.alejandrom2.turnkey";
-const logger = streamDeck.logger.createScope("git");
 
 /** The checkout a git key acts on: the selected thread's worktree, else its project's root. */
 export type GitTarget = { thread: DeckThread; machine: Machine; cwd: string | undefined };
@@ -133,11 +130,8 @@ abstract class GitAction extends DeckAction<GitSettings> {
 		return { ok: true, target: target as GitTarget & { cwd: string }, status };
 	}
 
-	protected override async paint(action: Action<GitSettings>): Promise<void> {
+	protected override async draw(action: Action<GitSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const machine = this.machineOf(action);
-		const offline = connectionFace(machine);
-		if (offline) return void (await this.setImage(action, offline));
 		const settings = this.settingsOf(action);
 		const which = this.gitAction(settings);
 		const title = settings.title?.trim() || t(LABEL[which]);
@@ -155,12 +149,8 @@ abstract class GitAction extends DeckAction<GitSettings> {
 		await this.setImage(action, renderInfoKey({ glyph: GLYPH[which], title, detail }));
 	}
 
-	override onKeyDown(ev: KeyDownEvent<GitSettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent<GitSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
+		const heldMs = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		if (this.#busy.has(ev.action.id)) return void (await this.flash(ev.action, false, t("repo.running")));
 		const first = this.#check(ev.action);
@@ -175,47 +165,33 @@ abstract class GitAction extends DeckAction<GitSettings> {
 		}
 		const blocker = gitBlocker(status, which);
 		if (blocker) return void (await this.flash(ev.action, false, reasonText(blocker)));
-		if (holdRequired(settings.confirm, which, status) && held < HOLD_CONFIRM_MS) {
+		if (holdRequired(settings.confirm, which, status) && !held(heldMs)) {
 			const key = needsDefaultBranchHold(status, which) ? "repo.holdOnDefault" : "repo.holdTo";
 			return void (await this.flash(ev.action, false, t(key, { branch: status.refName ?? "", action: t(LABEL[which]) })));
 		}
 		await this.#execute(ev.action, first.target, which, settings);
 	}
 
+	/** Shows the action's progress on the key while it runs; a success then shows on the live face (changes, ahead and behind). */
 	async #execute(action: Action<GitSettings>, target: GitTarget & { cwd: string }, which: GitKeyAction, settings: GitSettings): Promise<void> {
 		this.#busy.set(action.id, t("repo.starting"));
 		this.forgetSent(action.id);
 		void this.paint(action);
-		let ok = false;
-		let label: string;
-		try {
-			if (which === "pull") {
-				const result = await pull(target.machine, target.cwd);
-				label = t(result.status === "pulled" ? "repo.pulled" : "repo.upToDate");
-			} else if (isStackedAction(which)) {
-				const result = await runStackedAction(
-					target.machine,
-					{ actionId: crypto.randomUUID(), cwd: target.cwd, action: which, commitMessage: settings.commitMessage, threadId: target.thread.threadId },
-					(progress) => {
-						const text = progressLabel(progress);
-						if (text === undefined || !this.#busy.has(action.id)) return;
-						this.#busy.set(action.id, text);
-						void this.paint(action);
-					},
-				);
-				label = result.toast.title;
-			} else label = t("result.done");
-			ok = true;
-		} catch (error) {
-			logger.warn(`${which} failed: ${error instanceof Error ? error.message : String(error)}`);
-			label = failureLabel(error);
-		} finally {
-			this.#busy.delete(action.id);
-		}
-		void statuses.refresh(target).catch(() => undefined);
-		// A success shows on the live face (changes, ahead and behind); only a failure says why.
-		if (ok) await this.paint(action);
-		else await this.flash(action, false, label);
+		await this.run(action, async () => {
+			try {
+				if (which === "pull") return await pull(target.machine, target.cwd);
+				const input = { actionId: crypto.randomUUID(), cwd: target.cwd, action: which, commitMessage: settings.commitMessage, threadId: target.thread.threadId };
+				await runStackedAction(target.machine, input, (progress) => {
+					const text = progressLabel(progress);
+					if (text === undefined || !this.#busy.has(action.id)) return;
+					this.#busy.set(action.id, text);
+					void this.paint(action);
+				});
+			} finally {
+				this.#busy.delete(action.id);
+				void statuses.refresh(target).catch(() => undefined);
+			}
+		});
 	}
 
 	/** The inspector's checklist: a paired machine that may act, a thread, source control access and a checkout ready for it. */

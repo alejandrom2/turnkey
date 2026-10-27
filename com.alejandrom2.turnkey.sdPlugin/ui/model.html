@@ -5,7 +5,7 @@
 		<title>Model</title>
 		<script src="sdpi-components.js"></script>
 		<style>
-			:root { color-scheme: dark; --t3-warning: #fcd34d; }
+			:root { color-scheme: dark; --t3-ok: #40C977; --t3-warning: #FCD34D; --t3-error: #f87171; }
 			body { font-family: "Segoe UI", Arial, Roboto, Helvetica, sans-serif; font-size: 9pt; }
 			[hidden] { display: none !important; }
 			.native { width: 100%; box-sizing: border-box; height: 24px; padding: 0 6px; font: inherit; color: #d8d8d8; background: #3d3d3d; border: 0; border-radius: 3px; }
@@ -16,15 +16,14 @@
 			button.text { padding: 0; font: inherit; color: #8fb3ff; background: none; border: 0; cursor: pointer; }
 			.state { white-space: nowrap; }
 			.state::before { content: "●"; margin-right: 4px; }
-			.state.ok { color: #40c977; }
+			.state.ok { color: var(--t3-ok); }
 			.state.wait { color: var(--t3-warning); }
 			.state.muted { color: #8f8f8f; }
-			.state.error { color: #f87171; }
+			.state.error, .hint.error { color: var(--t3-error); }
 			main { display: grid; gap: 2px; }
 			.hint { color: #a8a8a8; line-height: 1.4; margin: -2px 0 8px 106px; font-size: 9pt; }
 			/* What broader access an action needs, said plainly. */
 			.hint.access { color: var(--t3-warning); }
-			.hint.error { color: #f87171; }
 			.link { width: 100%; box-sizing: border-box; padding: 4px 6px; font: inherit; color: #d8d8d8; background: #2d2d2d; border: 1px solid #3d3d3d; border-radius: 3px; }
 			.open { display: flex; align-items: center; gap: 6px; min-width: 0; }
 			.open .state { overflow: hidden; text-overflow: ellipsis; }
@@ -34,14 +33,13 @@
 				cursor: pointer; margin: 0 0 8px; font-size: 8.5pt; font-weight: 600;
 				letter-spacing: .06em; text-transform: uppercase; color: #a8a8a8;
 			}
-		</style>
-		<style>
-			details.needs > summary .count.unmet { color: #f87171; }
+			/* Elgato's "What this action needs": each condition met (✓), not met (✗) or being checked (⋯), with its fixes. */
+			details.needs > summary .count.unmet { color: var(--t3-error); }
 			.needs ul { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 6px; }
 			.needs li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 6px; font-size: 9pt; line-height: 1.35; color: #d8d8d8; }
 			.needs li .mark { font-weight: 700; text-align: center; }
-			.needs li[data-state="met"] .mark { color: #34d399; }
-			.needs li[data-state="unmet"] .mark { color: #f87171; }
+			.needs li[data-state="met"] .mark { color: var(--t3-ok); }
+			.needs li[data-state="unmet"] .mark { color: var(--t3-error); }
 			.needs li[data-state="checking"] .mark { color: #a8a8a8; }
 			.needs li .fix { grid-column: 2; color: #a8a8a8; }
 		</style>

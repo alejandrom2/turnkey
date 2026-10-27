@@ -15,6 +15,7 @@ import {
 	type StripList,
 	styleFlash,
 	styleLine,
+	threadRowsArt,
 } from "./styles.js";
 
 const svg = (dataUrl: unknown) => Buffer.from(String(dataUrl).replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
@@ -126,5 +127,12 @@ describe("carousel", () => {
 		expect(styleFlash("carousel", true, "Sent", DEFAULT_APPEARANCE).title).toMatchObject({ value: "Sent" });
 		expect(svg(styleFlash("carousel", false, LONG, DEFAULT_APPEARANCE).art)).toContain("Refactor");
 		expect(styleFlash("list", false, LONG, DEFAULT_APPEARANCE)).toMatchObject({ heading: "Not now", next: { value: expect.stringMatching(/\w/) } });
+	});
+});
+
+describe("threadRowsArt", () => {
+	it("fades a bold top title that fits only at regular weight", () => {
+		expect(svg(threadRowsArt([{ title: "a".repeat(16), art: glyphArt("check") }]))).toContain("mask=");
+		expect(svg(threadRowsArt([{ title: "a".repeat(12), art: glyphArt("check") }]))).not.toContain("mask=");
 	});
 });

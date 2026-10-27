@@ -5,7 +5,7 @@
 
 type MachineState = { state: string };
 
-export type SummaryTone = "ok" | "wait" | "muted";
+type SummaryTone = "ok" | "wait" | "muted";
 
 /** The panel's one-line machine summary: how many are connected, amber when one needs pairing or failed. */
 export function machineSummary(environments: readonly MachineState[]): { tone: SummaryTone; key: string; params: Record<string, number> } {

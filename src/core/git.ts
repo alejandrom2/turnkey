@@ -10,9 +10,6 @@ import { RpcError } from "./t3/rpc.js";
 export type GitStackedAction = "commit" | "push" | "create_pr" | "commit_push" | "commit_push_pr";
 export type GitKeyAction = GitStackedAction | "pull";
 
-export const STACKED_ACTIONS: readonly GitStackedAction[] = ["commit", "push", "create_pr", "commit_push", "commit_push_pr"];
-export const isStackedAction = (value: unknown): value is GitStackedAction => STACKED_ACTIONS.includes(value as GitStackedAction);
-
 /** The `VcsStatusResult` fields the deck reads. */
 export type VcsStatus = {
 	isRepo: boolean;

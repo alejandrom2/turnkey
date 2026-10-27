@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { dialGroups, dialRuns, flowArt } from "./flow.js";
+import { dialGroups, dialRuns } from "./flow.js";
+import { flowArt } from "./render.js";
 
 describe("dialRuns", () => {
 	it("groups adjacent dial columns per device, and a gap breaks a run", () => {

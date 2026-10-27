@@ -21,7 +21,7 @@ export interface EnvironmentUsage {
 	readonly summary: UsageSummary;
 }
 
-export interface ProviderTotals {
+interface ProviderTotals {
 	readonly provider: UsageProviderKind;
 	readonly costUsd: number;
 	readonly totalTokens: number;
@@ -31,7 +31,7 @@ export interface ProviderTotals {
 	readonly tokenShare: number;
 }
 
-export interface ModelTotals {
+interface ModelTotals {
 	readonly model: string;
 	readonly provider: UsageProviderKind;
 	readonly costUsd: number;
@@ -49,44 +49,7 @@ export function isModelCostUnknown(model: ModelTotals): boolean {
 	return model.records > 0 && model.unpricedRecords >= model.records;
 }
 
-export interface DailyTotals {
-	readonly day: string;
-	readonly costUsd: number;
-	readonly totalTokens: number;
-	readonly byProvider: ReadonlyMap<UsageProviderKind, { costUsd: number; totalTokens: number }>;
-}
-
-export interface HourlyTotals {
-	readonly day: string;
-	readonly hourStart: string;
-	readonly costUsd: number;
-	readonly totalTokens: number;
-	readonly byProvider: ReadonlyMap<UsageProviderKind, { costUsd: number; totalTokens: number }>;
-}
-
-export interface CostQuality {
-	readonly providerReportedShare: number;
-	readonly modelPricedShare: number;
-	readonly unpricedShare: number;
-	readonly cacheSavingsUsd: number;
-}
-
-export interface CategoryCost {
-	readonly input: number;
-	readonly cacheRead: number;
-	readonly cacheWrite: number;
-	readonly output: number;
-	readonly unsplit: number;
-}
-
-export interface SpeedCost {
-	readonly standard: number;
-	readonly fast: number;
-	readonly ultrafast: number;
-	readonly premium: number;
-}
-
-export interface UsageContractMismatch {
+interface UsageContractMismatch {
 	readonly environmentId: EnvironmentId;
 	readonly direction: "serverBehind" | "clientBehind";
 	readonly contractVersion: number;
@@ -104,11 +67,6 @@ export interface MergedUsage {
 	readonly sessions: number;
 	readonly providers: readonly ProviderTotals[];
 	readonly models: readonly ModelTotals[];
-	readonly daily: readonly DailyTotals[];
-	readonly hourly: readonly HourlyTotals[];
-	readonly costQuality: CostQuality;
-	readonly categoryCost: CategoryCost;
-	readonly speedCost: SpeedCost;
 	readonly duplicateSources: readonly string[];
 	readonly contributingEnvironments: readonly EnvironmentId[];
 	readonly contractMismatches: readonly UsageContractMismatch[];
@@ -271,7 +229,7 @@ function bucketTokens(bucket: UsageBucket): number {
 	);
 }
 
-export function isCompatibleUsageContractVersion(version: number, expected: number): boolean {
+function isCompatibleUsageContractVersion(version: number, expected: number): boolean {
 	return version >= USAGE_MERGE_COMPATIBLE_SINCE && version <= expected;
 }
 
@@ -287,16 +245,6 @@ const EMPTY_MERGED: MergedUsage = {
 	sessions: 0,
 	providers: [],
 	models: [],
-	daily: [],
-	hourly: [],
-	costQuality: {
-		providerReportedShare: 0,
-		modelPricedShare: 0,
-		unpricedShare: 0,
-		cacheSavingsUsd: 0,
-	},
-	categoryCost: { input: 0, cacheRead: 0, cacheWrite: 0, output: 0, unsplit: 0 },
-	speedCost: { standard: 0, fast: 0, ultrafast: 0, premium: 0 },
 	duplicateSources: [],
 	contributingEnvironments: [],
 	contractMismatches: [],
@@ -342,11 +290,6 @@ export function mergeUsage(
 	let reasoningTokens = 0;
 	let records = 0;
 	let sessions = 0;
-	let cacheSavingsUsd = 0;
-	let providerReportedRecords = 0;
-	let unpricedRecords = 0;
-	const categoryCost = { input: 0, cacheRead: 0, cacheWrite: 0, output: 0 };
-	const speedCost = { fast: 0, ultrafast: 0, premium: 0 };
 
 	const providerAccumulator = new Map<
 		UsageProviderKind,
@@ -362,24 +305,6 @@ export function mergeUsage(
 			records: number;
 			unpricedRecords: number;
 			unpricedTokens: number;
-		}
-	>();
-	const dailyAccumulator = new Map<
-		string,
-		{
-			costUsd: number;
-			totalTokens: number;
-			byProvider: Map<UsageProviderKind, { costUsd: number; totalTokens: number }>;
-		}
-	>();
-	const hourlyAccumulator = new Map<
-		string,
-		{
-			day: string;
-			hourStart: string;
-			costUsd: number;
-			totalTokens: number;
-			byProvider: Map<UsageProviderKind, { costUsd: number; totalTokens: number }>;
 		}
 	>();
 	const contributingEnvironments: EnvironmentId[] = [];
@@ -410,24 +335,12 @@ export function mergeUsage(
 			const tokens = bucketTokens(bucket);
 
 			costUsd += bucket.costUsd;
-			cacheSavingsUsd += bucket.cacheSavingsUsd;
 			uncachedInputTokens += bucket.totals.uncachedInputTokens;
 			cachedInputTokens += bucket.totals.cachedInputTokens;
 			cacheCreationTokens += bucket.totals.cacheCreationTokens;
 			outputTokens += bucket.totals.outputTokens;
 			reasoningTokens += bucket.totals.reasoningTokens;
 			records += bucket.records;
-			unpricedRecords += bucket.unpricedRecords;
-			if (bucket.costSource === "providerReported") providerReportedRecords += bucket.records;
-			if (bucket.categoryCostUsd !== undefined) {
-				categoryCost.input += bucket.categoryCostUsd.input;
-				categoryCost.cacheRead += bucket.categoryCostUsd.cacheRead;
-				categoryCost.cacheWrite += bucket.categoryCostUsd.cacheWrite;
-				categoryCost.output += bucket.categoryCostUsd.output;
-			}
-			speedCost.fast += bucket.fastCostUsd ?? 0;
-			speedCost.ultrafast += bucket.ultrafastCostUsd ?? 0;
-			speedCost.premium += bucket.speedPremiumUsd ?? 0;
 
 			const provider = providerAccumulator.get(bucket.provider) ?? {
 				costUsd: 0,
@@ -471,39 +384,6 @@ export function mergeUsage(
 				model.unpricedTokens += (tokens * bucket.unpricedRecords) / bucket.records;
 			}
 			modelAccumulator.set(modelKey, model);
-
-			const day = dailyAccumulator.get(bucket.day) ?? {
-				costUsd: 0,
-				totalTokens: 0,
-				byProvider: new Map<UsageProviderKind, { costUsd: number; totalTokens: number }>(),
-			};
-			day.costUsd += bucket.costUsd;
-			day.totalTokens += tokens;
-			const dayProvider = day.byProvider.get(bucket.provider) ?? { costUsd: 0, totalTokens: 0 };
-			dayProvider.costUsd += bucket.costUsd;
-			dayProvider.totalTokens += tokens;
-			day.byProvider.set(bucket.provider, dayProvider);
-			dailyAccumulator.set(bucket.day, day);
-
-			if (bucket.hourStart !== undefined) {
-				const hour = hourlyAccumulator.get(bucket.hourStart) ?? {
-					day: bucket.day,
-					hourStart: bucket.hourStart,
-					costUsd: 0,
-					totalTokens: 0,
-					byProvider: new Map<UsageProviderKind, { costUsd: number; totalTokens: number }>(),
-				};
-				hour.costUsd += bucket.costUsd;
-				hour.totalTokens += tokens;
-				const hourProvider = hour.byProvider.get(bucket.provider) ?? {
-					costUsd: 0,
-					totalTokens: 0,
-				};
-				hourProvider.costUsd += bucket.costUsd;
-				hourProvider.totalTokens += tokens;
-				hour.byProvider.set(bucket.provider, hourProvider);
-				hourlyAccumulator.set(bucket.hourStart, hour);
-			}
 		}
 	}
 
@@ -536,19 +416,6 @@ export function mergeUsage(
 		}))
 		.sort((a, b) => b.costUsd - a.costUsd || b.totalTokens - a.totalTokens);
 
-	const daily: DailyTotals[] = [...dailyAccumulator.entries()]
-		.map(([day, totals]) => ({
-			day,
-			costUsd: totals.costUsd,
-			totalTokens: totals.totalTokens,
-			byProvider: totals.byProvider,
-		}))
-		.sort((a, b) => a.day.localeCompare(b.day));
-
-	const hourly: HourlyTotals[] = [...hourlyAccumulator.values()].sort((a, b) =>
-		a.hourStart.localeCompare(b.hourStart),
-	);
-
 	return {
 		costUsd,
 		uncachedInputTokens,
@@ -561,30 +428,6 @@ export function mergeUsage(
 		sessions,
 		providers,
 		models,
-		daily,
-		hourly,
-		costQuality: {
-			providerReportedShare: records === 0 ? 0 : providerReportedRecords / records,
-			unpricedShare: records === 0 ? 0 : unpricedRecords / records,
-			modelPricedShare:
-				records === 0 ? 0 : (records - providerReportedRecords - unpricedRecords) / records,
-			cacheSavingsUsd,
-		},
-		categoryCost: {
-			...categoryCost,
-			unsplit: Math.max(
-				0,
-				costUsd -
-					categoryCost.input -
-					categoryCost.cacheRead -
-					categoryCost.cacheWrite -
-					categoryCost.output,
-			),
-		},
-		speedCost: {
-			...speedCost,
-			standard: Math.max(0, costUsd - speedCost.fast - speedCost.ultrafast),
-		},
 		duplicateSources: duplicates,
 		contributingEnvironments,
 		contractMismatches,

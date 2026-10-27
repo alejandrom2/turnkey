@@ -11,7 +11,7 @@ import { AcpIcons } from "./core/models.js";
 import { Animator, motionMode, nextMinute, Transitions } from "./core/motion.js";
 import { UltrathinkArming } from "./core/ultrathink.js";
 import { type CredentialStore, Machine } from "./core/t3/machine.js";
-import { type Credential, findLocalEnvironment, normalizeEnvironmentUrl, type OptInScope, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
+import { type Credential, findLocalEnvironment, isLoopbackUrl, normalizeEnvironmentUrl, type OptInScope, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
 import type { SocketLike } from "./core/t3/rpc.js";
 
 /**
@@ -56,7 +56,8 @@ const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, 
 
 const logger = streamDeck.logger.createScope("deck");
 
-const isLoopbackUrl = (url: string) => ["127.0.0.1", "localhost", "[::1]"].includes(new URL(url).hostname);
+/** A URL scheme as RFC 3986 spells one: anything else in the setting could turn the app link into another command. */
+const SCHEME = /^[a-z][a-z0-9+.-]*$/i;
 
 const parseList = (raw: string | undefined): string[] => [
 	...new Set(
@@ -144,10 +145,20 @@ class Deck implements CredentialStore {
 	#statusSent: string | undefined;
 	#machineStates = "";
 	#pairing: PairingStatus = { state: "idle" };
+	/** Machines whose pair link is being redeemed: they count as wanted until it settles, though not saved yet. */
+	readonly #pairingUrls = new Set<string>();
+	/** Applies run one at a time, so a slow one can't finish last on settings that changed meanwhile. */
+	#applying: Promise<void> = Promise.resolve();
+	#changeQueued = false;
+	/** The open inspector's action and the machine its settings pick, re-read only when forced or another action opens. */
+	#inspected: { id: string; machine: string } | undefined;
 	#checklist: ((action: Action<JsonObject>) => JsonValue | undefined) | undefined;
 
 	async init(): Promise<void> {
 		streamDeck.settings.onDidReceiveGlobalSettings<GlobalSettings>((ev) => void this.#apply(ev.settings));
+		streamDeck.settings.onDidReceiveSettings<{ machine?: string }>((ev) => {
+			if (this.#inspected?.id === ev.action.id) this.#inspected = { id: ev.action.id, machine: ev.payload.settings.machine ?? "" };
+		});
 		streamDeck.ui.onDidAppear(() => {
 			void this.pushStatus(true);
 			void this.refreshConfigs();
@@ -221,7 +232,8 @@ class Deck implements CredentialStore {
 	}
 
 	get scheme(): string {
-		return this.#settings.scheme?.trim() || "t3code";
+		const scheme = this.#settings.scheme?.trim() ?? "";
+		return SCHEME.test(scheme) ? scheme : "t3code";
 	}
 
 	load(url: string): Credential | undefined {
@@ -242,6 +254,7 @@ class Deck implements CredentialStore {
 		this.#setPairing({ state: "working" });
 		const existing = this.#machines.get(url);
 		const machine = existing ?? this.#create(url);
+		this.#pairingUrls.add(url);
 		try {
 			const credential = await machine.pair(parsed.code, this.#scopeRequests[url] ?? []);
 			this.#scopeRequests = settleScopeRequests(this.#scopeRequests, url, credential.scopes);
@@ -253,10 +266,12 @@ class Deck implements CredentialStore {
 		} catch (error) {
 			if (existing === undefined) {
 				machine.stop();
-				this.#machines.delete(url);
+				if (this.#machines.get(url) === machine) this.#machines.delete(url);
 			}
 			if (!(error instanceof PairingError)) logger.warn(`Pairing with ${new URL(url).host} failed`, error instanceof Error ? error.message : error);
 			this.#setPairing({ state: "error", message: error instanceof Error ? error.message : String(error) });
+		} finally {
+			this.#pairingUrls.delete(url);
 		}
 		this.#changed();
 	}
@@ -266,7 +281,7 @@ class Deck implements CredentialStore {
 		await this.#machines.get(url)?.signOut();
 		this.#settings = { ...this.#settings, environments: parseList(this.#settings.environments).filter((listed) => listed !== url).join("\n") };
 		await this.#persist();
-		await this.#apply(this.#settings);
+		await this.#apply();
 	}
 
 	/** Flags broader scopes for the machine's next pairing, when the user turns on an action that needs them there. */
@@ -298,7 +313,7 @@ class Deck implements CredentialStore {
 
 	/** Looks for this machine again and reconnects now: after a wake, a retry press or a key press while offline. */
 	async retry(url?: string): Promise<void> {
-		await this.#apply(this.#settings);
+		await this.#apply();
 		for (const machine of this.machines) if (url === undefined || machine.url === url) machine.wake();
 	}
 
@@ -336,17 +351,21 @@ class Deck implements CredentialStore {
 
 	/** Connection status for the open property inspector; sent only when it changes unless `force`d. */
 	async pushStatus(force = false): Promise<void> {
-		if (streamDeck.ui.action === undefined) return;
-		// The inspector can close mid-request; the app then never answers and the SDK rejects after a timeout.
-		const settings = (await streamDeck.ui.action.getSettings().catch(() => undefined)) as { machine?: string } | undefined;
-		if (settings === undefined) return;
+		const action = streamDeck.ui.action;
+		if (action === undefined) return;
+		if (force || this.#inspected?.id !== action.id) {
+			// The inspector can close mid-request; the app then never answers and the SDK rejects after a timeout.
+			const settings = (await action.getSettings().catch(() => undefined)) as { machine?: string } | undefined;
+			if (settings === undefined) return;
+			this.#inspected = { id: action.id, machine: settings.machine ?? "" };
+		}
 		const status = {
 			event: "status",
 			environments: this.machines.map((machine) => environmentStatus(machine, this.#scopeRequests)),
-			selected: normalizeEnvironmentUrl(settings.machine ?? "") ?? "",
+			selected: normalizeEnvironmentUrl(this.#inspected.machine) ?? "",
 			pairing: this.#pairing,
 			verboseUntil: this.#verboseUntil ?? null,
-			requirements: this.#checklist?.(streamDeck.ui.action),
+			requirements: this.#checklist?.(action),
 		};
 		const signature = JSON.stringify(status);
 		if (!force && signature === this.#statusSent) return;
@@ -364,8 +383,21 @@ class Deck implements CredentialStore {
 		if (wait !== undefined) this.#clock = setTimeout(() => this.repaint(), wait + 50);
 	}
 
-	/** Machine updates arrive per streamed row; repaint only when a connection state, the config or a shown field changed. */
+	/** Machine updates arrive in bursts; the board is rebuilt once per burst, and repainted only when a connection state, the config or a shown field changed. */
 	#changed(): void {
+		if (this.#changeQueued) return;
+		this.#changeQueued = true;
+		queueMicrotask(() => {
+			this.#changeQueued = false;
+			try {
+				this.#update();
+			} catch (error) {
+				logger.warn(`Couldn't update the board: ${error instanceof Error ? error.message : String(error)}`);
+			}
+		});
+	}
+
+	#update(): void {
 		this.board.update();
 		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion, machine.tasksVersion, machine.terminalsVersion]));
 		if (states === this.#machineStates) return;
@@ -381,42 +413,61 @@ class Deck implements CredentialStore {
 	#create(url: string): Machine {
 		// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
 		const socket = (socketUrl: string) => new WebSocket(socketUrl) as unknown as SocketLike;
-		const machine = new Machine(url, this, { fetch, socket }, () => this.#changed());
+		const machine = new Machine(url, this, { fetch, socket, warn: (message) => logger.warn(`${new URL(url).host}: ${message}`) }, () => this.#changed());
 		this.#machines.set(url, machine);
 		return machine;
 	}
 
-	async #apply(settings: GlobalSettings): Promise<void> {
+	/** Applies global settings from Stream Deck, or re-applies the current ones without `incoming`. */
+	#apply(incoming?: GlobalSettings): Promise<void> {
+		const persist = incoming !== undefined && this.#take(incoming);
+		const run = this.#applying.then(async () => {
+			if (persist) await this.#persist();
+			await this.#sync();
+		});
+		this.#applying = run.catch((error: unknown) => void logger.warn(`Couldn't apply settings: ${error instanceof Error ? error.message : String(error)}`));
+		return run;
+	}
+
+	/** Takes in settings from Stream Deck; true when the plugin's own copy has to be written back. */
+	#take(incoming: GlobalSettings): boolean {
+		let settings = incoming;
 		// The Elgato gradient option is gone; its users get T3 Code's background.
 		const migrated = settings.stripBackground === "elgato";
 		if (migrated) settings = { ...settings, stripBackground: "t3" };
+		// The inspector writes from its own copy of global settings; the plugin's machines and tokens stay authoritative.
+		if (this.#authLoaded) settings = { ...settings, environments: this.#settings.environments };
 		const restyled = JSON.stringify(appearanceOf(settings)) !== JSON.stringify(appearanceOf(this.#settings));
 		this.#settings = settings;
 		this.animator.mode = motionMode(settings.motion);
 		if (restyled) this.repaint();
-		// The inspector writes from its own copy of global settings; keep our tokens authoritative.
 		if (!this.#authLoaded) {
 			this.#authLoaded = true;
 			this.#auth = readCredentials(settings.auth);
 			this.#scopeRequests = readScopeRequests(settings.scopeRequests);
-			this.#verboseUntil = typeof settings.verboseUntil === "number" ? settings.verboseUntil : undefined;
+			this.#verboseUntil = Number.isFinite(settings.verboseUntil) ? settings.verboseUntil : undefined;
 			this.#syncVerbose();
-			if (migrated || this.#stale(settings)) await this.#persist();
-		} else if (migrated || this.#stale(settings)) await this.#persist();
+		}
+		return migrated || this.#stale(incoming);
+	}
 
+	/** Starts and stops machines to match the current settings, after looking for T3 Code on this computer. */
+	async #sync(): Promise<void> {
 		// This machine joins the list whenever T3 Code runs here, and stays once paired; a retry or a wake looks again.
 		const localReady = this.machines.some((machine) => isLoopbackUrl(machine.url) && machine.state.kind === "ready");
 		const local = localReady ? undefined : await findLocalEnvironment(fetch);
 		if (local !== undefined) await this.#followLocal(local.url, local.environmentId);
 		const wanted = new Set([
-			...parseList(settings.environments),
+			...parseList(this.#settings.environments),
 			...Object.keys(this.#auth).filter(isLoopbackUrl),
 			...this.machines.filter((machine) => localReady && isLoopbackUrl(machine.url)).map((machine) => machine.url),
 			...(local === undefined ? [] : [local.url]),
+			...this.#pairingUrls,
 		]);
 		for (const [url, machine] of this.#machines) {
 			if (wanted.has(url)) continue;
 			this.#machines.delete(url);
+			this.#loggedStates.delete(url);
 			machine.stop();
 		}
 		for (const url of wanted) if (!this.#machines.has(url)) this.#create(url).start();
@@ -435,9 +486,10 @@ class Deck implements CredentialStore {
 		await this.save(url, credential);
 	}
 
-	/** The inspector's copy of global settings lags behind the plugin's tokens and scope requests. */
+	/** The inspector's copy of global settings lags behind the plugin's machines, tokens and scope requests. */
 	#stale(settings: GlobalSettings): boolean {
 		return (
+			(settings.environments ?? "") !== (this.#settings.environments ?? "") ||
 			JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth) ||
 			JSON.stringify(settings.scopeRequests ?? {}) !== JSON.stringify(this.#scopeRequests) ||
 			settings.verboseUntil !== this.#verboseUntil

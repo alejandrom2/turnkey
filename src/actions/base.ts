@@ -2,6 +2,7 @@ import streamDeck, {
 	type Action,
 	type DidReceiveSettingsEvent,
 	type FeedbackPayload,
+	type KeyDownEvent,
 	type SendToPluginEvent,
 	SingletonAction,
 	type WillAppearEvent,
@@ -15,24 +16,76 @@ import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
-import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels } from "../core/models.js";
-import { COLORS, type GlyphName, maxEffortStyle, type Paint, providerGradient, renderNoticeKey, renderResultKey, renderReviewKey, renderSkeletonKey, stripCanvas, stripIcon } from "../core/render.js";
+import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
+import { powerArt } from "../core/power.js";
+import {
+	COLORS,
+	type GlyphName,
+	type MarkPainter,
+	maxEffortStyle,
+	type Paint,
+	providerGradient,
+	renderNoticeKey,
+	renderResultKey,
+	renderReviewKey,
+	renderSkeletonKey,
+	stripCanvas,
+	stripIcon,
+} from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
 import { pinnedKey, pinnedName, resolveTarget, type Target, type TargetSettings } from "../core/target.js";
-import type { SendMode } from "../core/t3/machine.js";
+import type { Machine, SendMode } from "../core/t3/machine.js";
 import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 import { exportDiagnostics, openLogsFolder } from "../diagnostics.js";
+import type { MachineWatch } from "./watch.js";
 
 export const LONG_PRESS_MS = 500;
 /** At most one animation write per instance in this long. */
 export const FRAME_GAP_MS = 100;
 const logger = streamDeck.logger.createScope("actions");
 
-const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
+export const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+/** Whether a press was held long enough to confirm what can't be undone. */
+export const held = (ms: number): boolean => ms >= HOLD_CONFIRM_MS;
+
+/** Every machine an instance following `url` (or every machine) shows, whatever its connection. */
+export const machinesOn = (url: string | undefined): Machine[] => deck.machines.filter((machine) => url === undefined || machine.url === url);
+
+/** The connected machines an instance following `url` (or every machine) reads from. */
+export const readyMachines = (url: string | undefined): Machine[] =>
+	machinesOn(url).filter((machine) => machine.state.kind === "ready" && machine.environmentId !== undefined);
+
+/** A machine's name: its label once connected, else the pairing's, else its host. */
+export const machineName = (machine: Machine): string =>
+	machine.state.kind === "ready" ? machine.state.label : machine.credential?.label || new URL(machine.url).host;
+
+/** A model's provider mark, as the Model key draws it. */
+export const markArt = (model: CatalogModel): MarkPainter => powerArt({ kind: "mark", model }, { acpIcons: deck.acpIcons });
+
+/** A provider's name from its driver alone (`codex`, `claudeAgent`, …). */
+export const driverName = (driver: string): string => providerDisplayName({ instanceId: driver, driver });
+
+/** A provider's mark from its driver alone. */
+export const driverMark =
+	(driver: string): MarkPainter =>
+	(x, y, size) =>
+		providerMark({ driver, providerName: driverName(driver), accentColor: undefined, iconUrl: undefined, badge: false }, x, y, size);
+
+type Choice = { label: string; value: string };
+
+/**
+ * Sends a setting's choices to the open inspector. A saved value none of them matches stays listed right after the
+ * first (default) choice, named by `missing`, so the setting keeps showing it.
+ */
+export function sendChoices(event: string, items: Choice[], saved: string | undefined, missing: (saved: string) => string, matches = (item: Choice, saved: string) => item.value === saved): Promise<void> {
+	if (saved && !items.some((item) => matches(item, saved))) items.splice(1, 0, { label: missing(saved), value: saved });
+	return streamDeck.ui.sendToPropertyInspector({ event, items });
+}
 
 type Placement = { device: string; position?: { row: number; column: number } };
 
@@ -72,11 +125,15 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	#frame = false;
 	/** Instances showing a review card; live repaints wait until it is confirmed, expires or goes stale. */
 	readonly #reviewing = new Set<string>();
+	/** Subscriptions kept open while an instance shows, on the machines `watched` names. */
+	protected readonly watcher: MachineWatch | undefined = undefined;
+	/** Whether a key shows its machine's connection problem in place of its own face. */
+	protected readonly showsConnection: boolean = true;
 
 	constructor() {
 		super();
 		deckActions.add(this as unknown as DeckAction<JsonObject>);
-		deck.onRepaint(() => this.#repaintAll());
+		deck.onRepaint(() => this.repaintAll());
 	}
 
 	/** What the inspector's "What this action needs" lists; empty falls back to the shared table in needs.ts. */
@@ -89,7 +146,20 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		return this.settingsOf(action);
 	}
 
-	protected abstract paint(action: Action<T>): Promise<void> | void;
+	protected abstract draw(action: Action<T>): Promise<void> | void;
+
+	/** Repaints an instance: on a key, the connection's face while its machine is unusable, else the action's own. */
+	protected async paint(action: Action<T>): Promise<void> {
+		const offline = action.isKey() && this.showsConnection ? connectionFace(this.machineOf(action)) : undefined;
+		if (offline === undefined) return this.draw(action);
+		this.animate(action, false);
+		await this.setImage(action, offline);
+	}
+
+	/** The machines this instance's `watcher` subscriptions cover: by default every machine it follows. */
+	protected watched(action: Action<T>): readonly Machine[] {
+		return machinesOn(this.machineOf(action));
+	}
 
 	/** Settings rewritten from an older shape, saved once; undefined when they are current. */
 	protected migrateSettings(_settings: T): T | undefined {
@@ -233,10 +303,13 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		this.#placed.set(ev.action.id, { device: ev.action.device.id, position: ev.action.isKey() ? ev.action.coordinates : undefined });
 		this.forgetSent(ev.action.id);
 		deck.setVisible(ev.action.id, true);
-		this.#repaintAll();
+		this.repaintAll();
+		this.watcher?.show(ev.action.id, () => this.watched(ev.action));
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<T>): void {
+		this.watcher?.hide(ev.action.id);
+		this.#pressedAt.delete(ev.action.id);
 		this.#settings.delete(ev.action.id);
 		deck.board.pin(ev.action.id, undefined);
 		this.#placed.delete(ev.action.id);
@@ -248,16 +321,21 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		reviews.cancel(ev.action.id);
 		this.#endReview(ev.action.id);
 		deck.setVisible(ev.action.id, false);
-		this.#repaintAll();
+		this.repaintAll();
 	}
 
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<T>): void {
 		this.#store(ev.action, ev.payload.settings);
-		this.#repaintAll();
+		this.repaintAll();
+		this.watcher?.sync();
+	}
+
+	override onKeyDown(ev: KeyDownEvent<T>): void {
+		this.pressStarted(ev.action.id);
 	}
 
 	/** One key's position or slot moves the others, so every visible instance repaints; `#sent` drops repeats. */
-	#repaintAll(): void {
+	protected repaintAll(): void {
 		for (const action of this.actions) if (this.#placed.has(action.id)) void this.paint(action);
 	}
 
@@ -271,7 +349,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 			case "previewPet":
 				return deck.previewPet();
 			case "getPairLink":
-				return deck.openPairPage(payload.url).catch((error: unknown) => void logger.warn(`Couldn't open the pair page: ${message(error)}`));
+				return deck.openPairPage(payload.url).catch((error: unknown) => void logger.warn(`Couldn't open the pair page: ${errorMessage(error)}`));
 			case "exportDiagnostics":
 				return this.#diagnostics(() => exportDiagnostics(visibleActions()));
 			case "retry":
@@ -292,7 +370,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				const settings = { ...this.settingsOf(ev.action), machine: payload.url ?? "" } as T;
 				this.#settings.set(ev.action.id, settings);
 				await ev.action.setSettings(settings);
-				this.#repaintAll();
+				this.repaintAll();
 				await this.#sendProjects(ev.action);
 				return deck.pushStatus(true);
 			}
@@ -319,20 +397,15 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 			await work();
 			await streamDeck.ui.sendToPropertyInspector({ event: "diagnostics", ok: true });
 		} catch (error) {
-			logger.warn(`Diagnostics failed: ${message(error)}`);
+			logger.warn(`Diagnostics failed: ${errorMessage(error)}`);
 			await streamDeck.ui.sendToPropertyInspector({ event: "diagnostics", ok: false });
 		}
-	}
-
-	#readyMachines(action: Action<T>) {
-		const url = this.machineOf(action);
-		return deck.machines.filter((machine) => machine.state.kind === "ready" && (url === undefined || machine.url === url));
 	}
 
 	/** The Model key's choices: T3 Code's favorites (or every visible model), read fresh as the inspector opens. */
 	async #sendModels(action: Action<T>): Promise<void> {
 		await deck.refreshConfigs(this.machineOf(action));
-		const machines = this.#readyMachines(action);
+		const machines = readyMachines(this.machineOf(action));
 		const favorites = machines.some((machine) => favoriteModels(machine.modelConfig) !== undefined);
 		const items = [{ label: t(favorites ? "datasource.cycleFavorites" : "datasource.cycleModels"), value: "" }];
 		for (const machine of machines) {
@@ -344,7 +417,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	async #sendEfforts(action: Action<T>): Promise<void> {
 		await deck.refreshConfigs(this.machineOf(action));
 		const items = [{ label: t("datasource.cycleEfforts"), value: "" }];
-		for (const machine of this.#readyMachines(action)) {
+		for (const machine of readyMachines(this.machineOf(action))) {
 			for (const effort of effortValues(machine.modelConfig)) if (!items.some((item) => item.value === effort.value)) items.push(effort);
 		}
 		await streamDeck.ui.sendToPropertyInspector({ event: "getEfforts", items });
@@ -355,21 +428,17 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	 * first. A pinned thread that is gone stays in the list as "Not available", so the saved choice keeps showing.
 	 */
 	async #sendThreads(action: Action<T>): Promise<void> {
-		const machines = this.#readyMachines(action);
+		const machines = readyMachines(this.machineOf(action));
 		const items = [{ label: t("datasource.chooseThread"), value: "" }];
 		for (const machine of machines) {
-			const where = machines.length > 1 && machine.state.kind === "ready" ? ` · ${machine.state.label}` : "";
-			const environmentId = machine.environmentId;
-			if (environmentId === undefined) continue;
+			const where = machines.length > 1 ? ` · ${machineName(machine)}` : "";
 			for (const row of machine.everyRow) {
 				const project = machine.isScratch(row.projectId) ? t("datasource.noProject") : row.projectTitle;
-				items.push({ label: `${row.title}${project ? ` · ${project}` : ""}${where}`, value: `${environmentId}/${row.threadId}` });
+				items.push({ label: `${row.title}${project ? ` · ${project}` : ""}${where}`, value: `${machine.environmentId}/${row.threadId}` });
 			}
 		}
 		const settings = this.settingsOf(action);
-		const saved = pinnedKey(settings);
-		if (saved && !items.some((item) => item.value === saved)) items.splice(1, 0, { label: t("reason.targetGone", { thread: pinnedName(settings) }), value: saved });
-		await streamDeck.ui.sendToPropertyInspector({ event: "getThreads", items });
+		await sendChoices("getThreads", items, pinnedKey(settings), () => t("reason.targetGone", { thread: pinnedName(settings) }));
 	}
 
 	/**
@@ -377,10 +446,10 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	 * starts with "Any project"; New Thread's lists real projects only, since "No project" is its own choice.
 	 */
 	async #sendProjects(action: Action<T>, event: "getProjects" | "getLaunchProjects" = "getProjects"): Promise<void> {
-		const machines = this.#readyMachines(action);
+		const machines = readyMachines(this.machineOf(action));
 		const items = event === "getProjects" ? [{ label: t("datasource.anyProject"), value: "" }] : [];
 		for (const machine of machines) {
-			const where = machines.length > 1 && machine.state.kind === "ready" ? ` · ${machine.state.label}` : "";
+			const where = machines.length > 1 ? ` · ${machineName(machine)}` : "";
 			for (const project of machine.projects) {
 				const scratch = machine.isScratch(project.id);
 				if (scratch && event === "getLaunchProjects") continue;
@@ -497,7 +566,6 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		return false;
 	}
 
-	/** Runs a deck command, then flashes `success`, or a short reason (logged in full) when it fails. */
 	/** Runs a press's work: a success just shows the live face again, a failure shows why for a moment. */
 	protected async run(action: Action<T>, work: () => Promise<unknown>): Promise<void> {
 		try {
@@ -506,7 +574,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 			await this.paint(action);
 		} catch (error) {
 			// The message only: errors never carry tokens or ticket URLs, but their causes might.
-			logger.warn(`${this.manifestId} failed: ${message(error)}`);
+			logger.warn(`${this.manifestId} failed: ${errorMessage(error)}`);
 			await this.flash(action, false, failureLabel(error));
 		}
 	}
@@ -545,9 +613,14 @@ export async function openThread(thread: DeckThread): Promise<void> {
 	await openExternal(threadDeepLink(thread, deck.scheme));
 }
 
+/** Selects a thread `machine` just made, before its shell lists it. */
+export function selectNew(machine: Machine, threadId: string): void {
+	if (machine.environmentId !== undefined) selectThread({ key: `${machine.environmentId}/${threadId}`, machine });
+}
+
 /** Selects the thread without opening the app; a failed visit only leaves T3 Code's stamp behind. */
 export function selectThread(thread: Pick<DeckThread, "key" | "machine">): void {
-	void deck.board.select(thread.key, thread.machine.url).catch((error: unknown) => logger.warn(`Selecting a thread failed: ${message(error)}`));
+	void deck.board.select(thread.key, thread.machine.url).catch((error: unknown) => logger.warn(`Selecting a thread failed: ${errorMessage(error)}`));
 }
 
 export type ConnectionProblem = "loading" | "none" | "missing" | "pair" | "offline";
@@ -595,9 +668,9 @@ export async function pressWhileDisconnected(machine?: string): Promise<boolean>
 	return true;
 }
 
-/** Whether the machine that owns `thread` (or any machine) may act, not just read. */
-export const canOperate = (thread?: DeckThread): boolean =>
-	thread !== undefined ? thread.machine.canOperate : deck.machines.some((machine) => machine.canOperate);
+/** Whether the machine that owns `thread`, else one the action follows (`machine`, or any), may act, not just read. */
+export const canOperate = (thread?: DeckThread, machine?: string): boolean =>
+	thread !== undefined ? thread.machine.canOperate : machinesOn(machine).some((candidate) => candidate.canOperate);
 
 /** The thread every "selected thread" action targets: T3 Code's selection on the action's machine, or across all. */
 export const selectedThread = (machine?: string): DeckThread | undefined => deck.board.selectedOn(machine);

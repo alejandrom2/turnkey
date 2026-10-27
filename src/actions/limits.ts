@@ -1,13 +1,11 @@
-import streamDeck, { type Action, action, type DialAction, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type SendToPluginEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { type Action, action, type DialAction, type DidReceiveSettingsEvent, type KeyUpEvent, type SendToPluginEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 
-import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import { openExternal } from "../core/commands.js";
 import { failureLabel } from "../core/feedback.js";
 import { gaugeStripArt, renderGaugeKey } from "../core/gauge.js";
-import { t } from "../core/i18n.js";
-import { providerDisplayName, providerMark } from "../core/models.js";
-import { COLORS, glyphArt, type MarkPainter, renderInfoKey } from "../core/render.js";
+import { htmlLang, t } from "../core/i18n.js";
+import { COLORS, glyphArt, renderInfoKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { grants, needsAccessLabel } from "../core/scopes.js";
 import type { StripContent } from "../core/strip.js";
@@ -33,18 +31,13 @@ import {
 } from "../core/usage/limitsView.js";
 import { LimitsRefresher } from "../core/usage/refresh.js";
 import { deck } from "../deck.js";
-import { connectionFace, DeckAction, pressWhileDisconnected } from "./base.js";
+import { DeckAction, driverMark, driverName, errorMessage, held, pressWhileDisconnected, readyMachines, sendChoices } from "./base.js";
 import { connectionOf } from "./needs.js";
-import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
+import { type DialSettings, StripDial } from "./strip.js";
+import { MachineWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("limits");
-
-const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
-
-/** The ready machines an instance following `url` (or every machine) reads limits from. */
-const readyMachines = (url: string | undefined): Machine[] =>
-	deck.machines.filter((machine) => machine.state.kind === "ready" && machine.environmentId !== undefined && (url === undefined || machine.url === url));
 
 const pools = (url: string | undefined, now = Date.now()): readonly LimitPool[] =>
 	limitPools(
@@ -57,94 +50,40 @@ const pools = (url: string | undefined, now = Date.now()): readonly LimitPool[] 
 		now,
 	);
 
-const providerName = (driver: string) => providerDisplayName({ instanceId: driver, driver });
-
-const mark =
-	(driver: string): MarkPainter =>
-	(x, y, size) =>
-		providerMark({ driver, providerName: providerName(driver), accentColor: undefined, iconUrl: undefined, badge: false }, x, y, size);
+const refresher = new LimitsRefresher();
 
 /**
- * Which machines visible Limits instances read, kept on the config subscription meanwhile. Limits refresh when an
- * instance shows them, when they go stale (T3 Code's widget rule) and on a press, through T3 Code's throttle; a
- * minute tick re-checks staleness and redraws while any shows, and nothing runs while none does.
+ * Re-reads one machine's limits. Automatic refreshes keep to T3 Code's five-minute gap; a manual one shares a refresh
+ * in flight, or with `after` runs again once it ends, as after spending a reset.
  */
-class LimitsWatch {
-	readonly refresher = new LimitsRefresher();
-	readonly #shown = new Map<string, string | undefined>();
-	readonly #watched = new Map<string, () => void>();
-	readonly #painters = new Set<() => void>();
-	#tick: ReturnType<typeof setInterval> | undefined;
-
-	show(id: string, url: string | undefined): void {
-		this.#shown.set(id, url);
-		this.sync(true);
-	}
-
-	hide(id: string): void {
-		this.#shown.delete(id);
-		this.sync();
-	}
-
-	onTick(paint: () => void): void {
-		this.#painters.add(paint);
-	}
-
-	/** Watches what visible instances read; newly watched machines (or all, on `appeared`) get an automatic refresh. */
-	sync(appeared = false): void {
-		const urls = [...this.#shown.values()];
-		const wanted = new Map(readyMachines(undefined).filter((machine) => urls.some((url) => url === undefined || url === machine.url)).map((machine) => [machine.url, machine]));
-		for (const [url, release] of this.#watched) {
-			if (wanted.has(url)) continue;
-			release();
-			this.#watched.delete(url);
-		}
-		for (const [url, machine] of wanted) {
-			const fresh = !this.#watched.has(url);
-			if (fresh) this.#watched.set(url, machine.watchConfig());
-			if (fresh || appeared) this.#automatic(machine);
-		}
-		if (this.#shown.size === 0) {
-			clearInterval(this.#tick);
-			this.#tick = undefined;
-		} else this.#tick ??= setInterval(() => this.#onTick(), 60_000);
-	}
-
-	/**
-	 * Re-reads one machine's limits. Automatic refreshes keep to T3 Code's five-minute gap; a manual one shares a refresh
-	 * in flight, or with `after` runs again once it ends, as after spending a reset.
-	 */
-	refresh(machine: Machine, automatic: boolean, after = false): Promise<void> {
-		const environmentId = machine.environmentId;
-		if (environmentId === undefined) return Promise.resolve();
-		const done = this.refresher.refresh(environmentId, () => machine.refreshProviders(), automatic, after).then(() => undefined);
-		deck.repaint();
-		return done.finally(() => deck.repaint());
-	}
-
-	#automatic(machine: Machine): void {
-		void this.refresh(machine, true).catch((error: unknown) => logger.warn(`Refreshing limits failed: ${message(error)}`));
-	}
-
-	refreshing(url: string | undefined): boolean {
-		return readyMachines(url).some((machine) => machine.environmentId !== undefined && this.refresher.pending(machine.environmentId));
-	}
-
-	#onTick(): void {
-		const now = Date.now();
-		for (const machine of readyMachines(undefined)) {
-			if (!this.#watched.has(machine.url)) continue;
-			if (pools(machine.url, now).some((pool) => limitsStale(pool, now))) this.#automatic(machine);
-		}
-		for (const paint of this.#painters) paint();
-	}
+function refresh(machine: Machine, automatic: boolean, after = false): Promise<void> {
+	const environmentId = machine.environmentId;
+	if (environmentId === undefined) return Promise.resolve();
+	const done = refresher.refresh(environmentId, () => machine.refreshProviders(), automatic, after).then(() => undefined);
+	deck.repaint();
+	return done.finally(() => deck.repaint());
 }
 
-const watch = new LimitsWatch();
-deck.onRepaint(() => watch.sync());
+const automatic = (machine: Machine): void => void refresh(machine, true).catch((error: unknown) => logger.warn(`Refreshing limits failed: ${errorMessage(error)}`));
+
+const refreshing = (url: string | undefined): boolean => readyMachines(url).some((machine) => refresher.pending(machine.environmentId!));
+
+/**
+ * The machines visible Limits instances read stay on the config subscription. Limits refresh when a machine is first
+ * watched and whenever an instance shows them, when they go stale (T3 Code's widget rule, checked on the minute tick
+ * that also redraws) and on a press, all through T3 Code's throttle.
+ */
+const watch = new MachineWatch({ open: (machine) => machine.watchConfig(), opened: automatic });
+watch.onTick(() => {
+	const now = Date.now();
+	for (const machine of watch.machines()) if (pools(machine.url, now).some((pool) => limitsStale(pool, now))) automatic(machine);
+});
+
+/** An instance appeared or changed: every watched machine gets an automatic refresh. */
+const refreshWatched = () => watch.machines().forEach(automatic);
 
 /** A manual refresh of every machine an instance reads; resolves when all are back. */
-const refreshAll = (url: string | undefined) => Promise.all(readyMachines(url).map((machine) => watch.refresh(machine, false)));
+const refreshAll = (url: string | undefined) => Promise.all(readyMachines(url).map((machine) => refresh(machine, false)));
 
 type LimitsSettings = { machine?: string; provider?: string; window?: string; show?: string; resetAction?: string };
 
@@ -167,7 +106,7 @@ async function useReset(pool: LimitPool | undefined, settings: LimitsSettings): 
 			await openExternal(`${deck.scheme}://usage`);
 			return { ok: true, label: t("result.opened") };
 		} catch (error) {
-			logger.warn(`Opening T3 Code failed: ${message(error)}`);
+			logger.warn(`Opening T3 Code failed: ${errorMessage(error)}`);
 			return { ok: false, label: failureLabel(error) };
 		}
 	}
@@ -181,10 +120,10 @@ async function useReset(pool: LimitPool | undefined, settings: LimitsSettings): 
 		const result = await plan.machine.consumeResetCredit(plan.redeem.input);
 		return { ok: result.outcome === "reset", label: `${accountName(plan.account)}: ${outcomeText(result)}` };
 	} catch (error) {
-		logger.warn(`Using a reset failed: ${message(error)}`);
+		logger.warn(`Using a reset failed: ${errorMessage(error)}`);
 		return { ok: false, label: failureLabel(error) };
 	} finally {
-		void watch.refresh(plan.machine, false, true).catch(() => undefined);
+		void refresh(plan.machine, false, true).catch(() => undefined);
 	}
 }
 
@@ -219,7 +158,7 @@ function spendNeeds(url: string | undefined, settings: LimitsSettings): Need[] {
  * spending them needs provider access the pool's machine lacks.
  */
 function gaugeLines(gauge: LimitGauge, pool: LimitPool, url: string | undefined, settings: LimitsSettings, now: number): [string, string | { text: string; color: string }] {
-	const first = watch.refreshing(url) ? t("limits.refreshing") : gauge.stale ? t("limits.pressToRefresh") : gauge.resetAt === undefined ? "" : resetText(gauge.resetAt, now);
+	const first = refreshing(url) ? t("limits.refreshing") : gauge.stale ? t("limits.pressToRefresh") : gauge.resetAt === undefined ? "" : resetText(gauge.resetAt, now, htmlLang(streamDeck.i18n.language));
 	const plan = resetAction(settings.resetAction) === "spend" ? resetPlan(pool) : undefined;
 	if (plan !== undefined && !grants(plan.machine.scopes, PROVIDERS_SCOPE)) return [first, { text: t("limits.needsProviders"), color: COLORS.attention }];
 	return [first, creditsText(gauge.credits)];
@@ -234,9 +173,15 @@ const lineText = (line: string | { text: string }) => (typeof line === "string" 
  */
 @action({ UUID: `${ID}.limits` })
 export class LimitsKey extends DeckAction<LimitsSettings> {
+	protected override readonly watcher = watch;
+
 	constructor() {
 		super();
-		watch.onTick(() => this.#paintShown());
+		watch.onTick(() => this.repaintAll());
+	}
+
+	protected override watched(action: Action<LimitsSettings>): readonly Machine[] {
+		return readyMachines(this.machineOf(action));
 	}
 
 	#state(action: Action<LimitsSettings>) {
@@ -247,14 +192,12 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 		return { url, settings, all, pool, window: pool && findWindow(pool, settings.window) };
 	}
 
-	protected override async paint(action: Action<LimitsSettings>): Promise<void> {
+	protected override async draw(action: Action<LimitsSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		if (offline) return void (await this.setImage(action, offline));
 		const { url, settings, all, pool, window } = this.#state(action);
 		if (all.length === 0) return void (await this.setImage(action, renderInfoKey({ glyph: "gauge", title: t("limits.title"), detail: t("limits.none"), available: false })));
 		if (pool === undefined || window === undefined) {
-			const missing = pool === undefined ? providerName(settings.provider ?? "") : (settings.window ?? "");
+			const missing = pool === undefined ? driverName(settings.provider ?? "") : (settings.window ?? "");
 			return void (await this.setImage(action, renderInfoKey({ glyph: "gauge", title: t("limits.title"), detail: t("needs.notAvailable", { value: missing }), available: false })));
 		}
 		const now = Date.now();
@@ -263,7 +206,7 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 		await this.setImage(
 			action,
 			renderGaugeKey({
-				mark: mark(pool.driver),
+				mark: driverMark(pool.driver),
 				label: gauge.label,
 				value: `${gauge.percent}%`,
 				lines: gaugeLines(gauge, pool, url, settings, now),
@@ -276,35 +219,22 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 
 	override onWillAppear(ev: WillAppearEvent<LimitsSettings>): void {
 		super.onWillAppear(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<LimitsSettings>): void {
-		watch.hide(ev.action.id);
-		super.onWillDisappear(ev);
+		refreshWatched();
 	}
 
 	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<LimitsSettings>): Promise<void> {
 		const before = this.settingsOf(ev.action).resetAction;
 		super.onDidReceiveSettings(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
+		refreshWatched();
 		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action), before);
 		if (streamDeck.ui.action?.id === ev.action.id) await this.#sendWindows(ev.action);
 	}
 
-	#paintShown(): void {
-		for (const instance of this.actions) void this.paint(instance);
-	}
-
-	override onKeyDown(ev: KeyDownEvent<LimitsSettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent<LimitsSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
+		const heldMs = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { url, settings, pool } = this.#state(ev.action);
-		if (held >= HOLD_CONFIRM_MS) {
+		if (held(heldMs)) {
 			const result = await useReset(pool, settings);
 			return result.ok ? this.paint(ev.action) : this.flash(ev.action, false, result.label);
 		}
@@ -322,19 +252,14 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 	}
 
 	async #sendProviders(action: Action<LimitsSettings>): Promise<void> {
-		const all = pools(this.machineOf(action));
-		const items = [{ label: t("datasource.firstProvider"), value: "" }, ...all.map((pool) => ({ label: providerName(pool.driver), value: pool.driver }))];
-		const saved = this.settingsOf(action).provider;
-		if (saved && !all.some((pool) => pool.driver === saved)) items.push({ label: t("needs.notAvailable", { value: providerName(saved) }), value: saved });
-		await streamDeck.ui.sendToPropertyInspector({ event: "getLimitProviders", items });
+		const items = [{ label: t("datasource.firstProvider"), value: "" }, ...pools(this.machineOf(action)).map((pool) => ({ label: driverName(pool.driver), value: pool.driver }))];
+		await sendChoices("getLimitProviders", items, this.settingsOf(action).provider, (saved) => t("needs.notAvailable", { value: driverName(saved) }));
 	}
 
 	async #sendWindows(action: Action<LimitsSettings>): Promise<void> {
 		const { settings, pool } = this.#state(action);
 		const choices = pool ? windowChoices(pool) : [];
-		const items = [{ label: t("datasource.firstWindow"), value: "" }, ...choices];
-		if (settings.window && !choices.some((choice) => choice.value === settings.window)) items.push({ label: t("needs.notAvailable", { value: settings.window }), value: settings.window });
-		await streamDeck.ui.sendToPropertyInspector({ event: "getLimitWindows", items });
+		await sendChoices("getLimitWindows", [{ label: t("datasource.firstWindow"), value: "" }, ...choices], settings.window, (value) => t("needs.notAvailable", { value }));
 	}
 
 	override needs(action: Action<LimitsSettings>): Need[] {
@@ -343,7 +268,7 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 		return [
 			{ kind: "paired", connection: connectionOf(url) },
 			{ kind: "limits", ok: ready ? all.length > 0 : false },
-			...(ready && settings.provider ? [{ kind: "value", value: providerName(settings.provider), ok: pool !== undefined } satisfies Need] : []),
+			...(ready && settings.provider ? [{ kind: "value", value: driverName(settings.provider), ok: pool !== undefined } satisfies Need] : []),
 			...(ready && pool && settings.window ? [{ kind: "value", value: settings.window, ok: window !== undefined } satisfies Need] : []),
 			...spendNeeds(url, settings),
 		];
@@ -359,10 +284,19 @@ type LimitsDialSettings = DialSettings & { show?: string; resetAction?: string }
 @action({ UUID: `${ID}.dial.limits` })
 export class LimitsDial extends StripDial<LimitsDialSettings> {
 	readonly #selected = new Map<string, string>();
+	protected override readonly watcher = watch;
 
 	constructor() {
 		super();
-		watch.onTick(() => this.#paintShown());
+		watch.onTick(() => this.repaintAll());
+	}
+
+	protected override watched(action: Action<LimitsDialSettings>): readonly Machine[] {
+		return readyMachines(this.machineOf(action));
+	}
+
+	protected heading(): string {
+		return t("limits.title");
 	}
 
 	#tiles(action: Action<LimitsDialSettings>): { tiles: LimitTile[]; index: number } {
@@ -376,18 +310,16 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 	}
 
 	protected face(action: Action<LimitsDialSettings>): StripContent {
-		const offline = disconnectedStrip(t("limits.title"), this.machineOf(action));
-		if (offline) return offline;
 		const { tiles, index } = this.#tiles(action);
 		const tile = tiles[index];
 		if (tile === undefined) return { header: t("limits.title"), icon: glyphArt("gauge", COLORS.muted), accent: COLORS.muted, value: t("limits.none"), detail: t("limits.noneDetail") };
 		const now = Date.now();
 		const gauge = this.#gauge(action, tile, now);
 		const [when, credits] = gaugeLines(gauge, tile.pool, this.machineOf(action), this.settingsOf(action), now).map(lineText);
-		const reset = gauge.resetAt === undefined || gauge.resetAt <= now ? "" : t("limits.resetsIn", { time: resetText(gauge.resetAt, now) });
+		const reset = gauge.resetAt === undefined || gauge.resetAt <= now ? "" : t("limits.resetsIn", { time: resetText(gauge.resetAt, now, htmlLang(streamDeck.i18n.language)) });
 		return {
-			header: providerName(tile.pool.driver),
-			icon: mark(tile.pool.driver),
+			header: driverName(tile.pool.driver),
+			icon: driverMark(tile.pool.driver),
 			accent: COLORS.accent,
 			value: `${gauge.label} · ${gauge.percent}%`,
 			detail: [gauge.stale ? when : reset || when, credits, gauge.accounts > 1 ? t("limits.pooled", { count: gauge.accounts }) : ""].filter(Boolean).join(" · "),
@@ -395,7 +327,6 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 	}
 
 	protected override picture(action: Action<LimitsDialSettings>): string | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const { tiles, index } = this.#tiles(action);
 		const tile = tiles[index];
 		if (tile === undefined) return undefined;
@@ -403,20 +334,19 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 		const gauge = this.#gauge(action, tile, now);
 		const [when, credits] = gaugeLines(gauge, tile.pool, this.machineOf(action), this.settingsOf(action), now);
 		return gaugeStripArt({
-			mark: mark(tile.pool.driver),
+			mark: driverMark(tile.pool.driver),
 			label: gauge.label,
 			value: `${gauge.percent}%`,
 			lines: [when, credits],
 			fill: gauge.percent / 100,
 			...(gauge.pace === undefined ? {} : { marker: gauge.pace / 100 }),
 			dim: gauge.stale,
-			footer: gauge.accounts > 1 ? `${providerName(tile.pool.driver)} · ${t("limits.pooled", { count: gauge.accounts })}` : providerName(tile.pool.driver),
+			footer: gauge.accounts > 1 ? `${driverName(tile.pool.driver)} · ${t("limits.pooled", { count: gauge.accounts })}` : driverName(tile.pool.driver),
 			position: tiles.length > 1 ? `${index + 1}/${tiles.length}` : "",
 		});
 	}
 
 	protected override list(action: Action<LimitsDialSettings>): StripList | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const { tiles, index } = this.#tiles(action);
 		if (tiles.length === 0) return undefined;
 		const now = Date.now();
@@ -426,7 +356,7 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 			heading: t("limits.title"),
 			items: tiles.map((tile) => {
 				const gauge = this.#gauge(action, tile, now);
-				return { key: tile.key, label: `${providerName(tile.pool.driver)} · ${gauge.label} · ${gauge.percent}%`, art: mark(tile.pool.driver), caption: `${gauge.percent}%` };
+				return { key: tile.key, label: `${driverName(tile.pool.driver)} · ${gauge.label} · ${gauge.percent}%`, art: driverMark(tile.pool.driver), caption: `${gauge.percent}%` };
 			}),
 			index,
 			note: { text: [when, credits].filter(Boolean).join(" · ") || shown.label },
@@ -440,9 +370,9 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 		this.#selected.set(dial.id, next.key);
 	}
 
-	protected override async pressed(dial: DialAction<LimitsDialSettings>, held: number): Promise<void> {
+	protected override async pressed(dial: DialAction<LimitsDialSettings>, heldMs: number): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(dial))) return;
-		if (held >= HOLD_CONFIRM_MS) {
+		if (held(heldMs)) {
 			const { tiles, index } = this.#tiles(dial);
 			const result = await useReset(tiles[index]?.pool, this.settingsOf(dial));
 			return result.ok ? this.paint(dial) : this.flash(dial, false, result.label);
@@ -466,11 +396,10 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 
 	override onWillAppear(ev: WillAppearEvent<LimitsDialSettings>): void {
 		super.onWillAppear(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
+		refreshWatched();
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<LimitsDialSettings>): void {
-		watch.hide(ev.action.id);
 		this.#selected.delete(ev.action.id);
 		super.onWillDisappear(ev);
 	}
@@ -478,12 +407,8 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<LimitsDialSettings>): void {
 		const before = this.settingsOf(ev.action).resetAction;
 		super.onDidReceiveSettings(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
+		refreshWatched();
 		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action), before);
-	}
-
-	#paintShown(): void {
-		for (const instance of this.actions) void this.paint(instance);
 	}
 
 	override needs(action: Action<LimitsDialSettings>): Need[] {

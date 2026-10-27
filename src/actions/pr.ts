@@ -1,6 +1,5 @@
-import streamDeck, { type Action, action, type DialAction, type KeyDownEvent, type KeyUpEvent } from "@elgato/streamdeck";
+import streamDeck, { type Action, action, type DialAction, type KeyUpEvent } from "@elgato/streamdeck";
 
-import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { DeckThread } from "../core/board.js";
 import { availability } from "../core/availability.js";
 import { type MessageKey, t } from "../core/i18n.js";
@@ -10,6 +9,7 @@ import {
 	buildFixFindingsHandoff,
 	changeRequestLabel,
 	classifyChecks,
+	failing,
 	findings,
 	guideState,
 	handoffMessage,
@@ -20,6 +20,7 @@ import {
 	type PullRequestSummary,
 	prRequests,
 	type ReviewGuideResult,
+	threadPullRequest,
 	threadPullRequestRef,
 } from "../core/pr.js";
 import { COLORS, glyphArt, type GlyphName, renderInfoKey } from "../core/render.js";
@@ -32,9 +33,9 @@ import { SOURCE_CONTROL_SCOPE } from "../core/t3/pairing.js";
 import { RpcError } from "../core/t3/rpc.js";
 import type { ThreadPullRequest } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
-import { canOperate, connectionFace, DeckAction, openThread, pressWhileDisconnected, selectedThread, selectThread, ultrathinkPrompt } from "./base.js";
+import { canOperate, DeckAction, errorMessage, held, openThread, pressWhileDisconnected, readyMachines, selectedThread, selectNew, ultrathinkPrompt } from "./base.js";
 import { connectionOf, threadNeeds } from "./needs.js";
-import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
+import { type DialSettings, StripDial } from "./strip.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("pr");
@@ -101,8 +102,7 @@ const store = new PrStore();
 /** The selected thread's pull request: the open one for its branch (not another layer of a stack), else any open one, else its first. */
 export function threadPr(machine?: string): { thread: DeckThread; pr: ThreadPullRequest; ref: PullRequestRef | undefined } | undefined {
 	const thread = selectedThread(machine);
-	const open = thread?.pullRequests.filter((link) => link.state === "open") ?? [];
-	const pr = open.find((link) => link.headBranch !== undefined && link.headBranch === thread?.branch) ?? open[0] ?? thread?.pullRequests[0];
+	const pr = thread && threadPullRequest(thread.pullRequests, thread.branch);
 	if (thread === undefined || pr === undefined) return undefined;
 	return { thread, pr, ref: threadPullRequestRef(thread.projectId, pr) };
 }
@@ -121,8 +121,8 @@ function prStatusLine(info: PrInfo | undefined): { text?: string; tint?: string 
 	if (info === undefined) return {};
 	const checks = info.checks ?? [];
 	const found = info.activity && findings({ ...info.activity, checks });
-	const failing = checks.filter((check) => check.status === "failure" || check.status === "cancelled").length;
-	if (failing > 0) return { text: counted(failing, "pr.face.failingOne", "pr.face.failing"), tint: COLORS.error };
+	const failed = checks.filter(failing).length;
+	if (failed > 0) return { text: counted(failed, "pr.face.failingOne", "pr.face.failing"), tint: COLORS.error };
 	if (found && found.total > 0) return { text: counted(found.total, "pr.face.findingsOne", "pr.face.findings"), tint: COLORS.attention };
 	const state = classifyChecks(checks);
 	if (state === "pending") return { text: t("pr.face.running") };
@@ -191,7 +191,7 @@ export async function fixFindings(machine: Machine, ref: PullRequestRef, prefer?
 		context: message.context,
 		workspaceStrategy: prepared.worktreePath === null ? { type: "root", branch: prepared.branch } : { type: "existing_worktree", worktreePath: prepared.worktreePath, branch: prepared.branch },
 	});
-	if (machine.environmentId !== undefined) selectThread({ key: `${machine.environmentId}/${threadId}`, machine });
+	selectNew(machine, threadId);
 	return t(prepared.isOnPullRequestHead === false ? "pr.result.offHead" : "result.started");
 }
 
@@ -202,7 +202,7 @@ export async function explainPr(machine: Machine, ref: PullRequestRef, prefer?: 
 	const message = handoffMessage(buildExplainPullRequestHandoff(detail));
 	if (prefer !== undefined && linksPr(prefer, machine, ref)) return sendTo(prefer, message);
 	const { threadId } = await machine.launch({ projectId: detail.projectId }, message.text, { context: message.context });
-	if (machine.environmentId !== undefined) selectThread({ key: `${machine.environmentId}/${threadId}`, machine });
+	selectNew(machine, threadId);
 	return t("result.started");
 }
 
@@ -265,7 +265,7 @@ async function pollGuide(thread: DeckThread, ref: PullRequestRef, entry: { resul
 		}
 		if (entry.result && guideState(entry.result) === "ready") await openThread(thread);
 	} catch (error) {
-		logger.warn(`Review guide polling stopped: ${error instanceof Error ? error.message : String(error)}`);
+		logger.warn(`Review guide polling stopped: ${errorMessage(error)}`);
 	} finally {
 		entry.polling = false;
 	}
@@ -358,17 +358,16 @@ abstract class PullRequestAction extends DeckAction<PrKeySettings> {
 		return modeOf("pr", this.manifestId, this.settingsOf(action));
 	}
 
+	/** The same pull request the handoffs act on. */
 	#shown(action: Action<PrKeySettings>) {
 		const thread = selectedThread(this.machineOf(action));
-		const pr = thread?.pullRequests.find((link) => link.state === "open") ?? thread?.pullRequests[0];
+		const pr = thread && threadPullRequest(thread.pullRequests, thread.branch);
 		return { thread, pr, check: availability("pr", { thread, canOperate: true }) };
 	}
 
-	protected override async paint(action: Action<PrKeySettings>): Promise<void> {
+	protected override async draw(action: Action<PrKeySettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
-		const offline = connectionFace(machine);
-		if (offline) return void (await this.setImage(action, offline));
 		const mode = this.#mode(action);
 		if (mode === "show") {
 			const { thread, pr, check } = this.#shown(action);
@@ -382,12 +381,8 @@ abstract class PullRequestAction extends DeckAction<PrKeySettings> {
 		await this.setImage(action, renderInfoKey({ glyph: handoff.glyph, title: handoff.label(check.pr.url), detail: detail.text, available: detail.available, tint: detail.tint }));
 	}
 
-	override onKeyDown(ev: KeyDownEvent<PrKeySettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent<PrKeySettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
+		const heldMs = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const mode = this.#mode(ev.action);
 		if (mode === "show") {
@@ -402,7 +397,7 @@ abstract class PullRequestAction extends DeckAction<PrKeySettings> {
 		const detail = handoff.detail?.(check.thread, check.pr, check.ref) ?? defaultDetail(check.pr);
 		if (!detail.available) return void (await this.flash(ev.action, false, detail.text ?? t("strip.notNow")));
 		// Only Fix findings asks for a hold (its To send setting), since it sends review comments to an agent.
-		if (mode === "fix" && this.settingsOf(ev.action).confirm !== "tap" && held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("repo.holdTo")));
+		if (mode === "fix" && this.settingsOf(ev.action).confirm !== "tap" && !held(heldMs)) return void (await this.flash(ev.action, false, t("repo.holdTo")));
 		await this.run(ev.action, () => handoff.act(check.thread, check.ref));
 	}
 
@@ -438,6 +433,9 @@ export class ReviewGuideKey extends PullRequestAction {}
 
 type PrDialSettings = DialSettings & { confirm?: string };
 
+/** A listed pull request's identity across list reads. */
+const prKey = ({ machine, entry }: { machine: Machine; entry: PullRequestListEntry }) => `${machine.url}|${entry.repository}#${entry.number}`;
+
 const CHECK_COLOR: Record<string, string> = { failing: COLORS.error, pending: COLORS.accent, passing: COLORS.done };
 
 /**
@@ -446,7 +444,8 @@ const CHECK_COLOR: Record<string, string> = { failing: COLORS.error, pending: CO
  */
 @action({ UUID: `${ID}.dial.pr` })
 export class PrDial extends StripDial<PrDialSettings> {
-	readonly #index = new Map<string, number>();
+	/** The pull request each dial shows, by key, so it stays put as the list changes. */
+	readonly #shown = new Map<string, string>();
 	readonly #lists = new Map<string, { entries: { machine: Machine; entry: PullRequestListEntry }[]; loadedAt: number; loading: boolean }>();
 
 	#list(action: Action<PrDialSettings>) {
@@ -457,7 +456,7 @@ export class PrDial extends StripDial<PrDialSettings> {
 			const next = { entries: list?.entries ?? [], loadedAt: list?.loadedAt ?? 0, loading: true };
 			this.#lists.set(key, next);
 			list = next;
-			const machines = deck.machines.filter((candidate) => candidate.state.kind === "ready" && (machine === undefined || candidate.url === machine));
+			const machines = readyMachines(machine);
 			void Promise.all(machines.map((candidate) => prRequests.list(candidate).then((result) => result.entries.map((entry) => ({ machine: candidate, entry })), () => [])))
 				.then((lists) => {
 					next.entries = lists.flat();
@@ -468,7 +467,10 @@ export class PrDial extends StripDial<PrDialSettings> {
 					deck.repaint();
 				});
 		}
-		const index = Math.min(this.#index.get(action.id) ?? 0, Math.max(0, list.entries.length - 1));
+		const index = Math.max(
+			0,
+			list.entries.findIndex((item) => prKey(item) === this.#shown.get(action.id)),
+		);
 		return { entries: list.entries, index, current: list.entries[index], loading: list.loading };
 	}
 
@@ -490,10 +492,12 @@ export class PrDial extends StripDial<PrDialSettings> {
 			.join(" · ");
 	}
 
+	protected heading(): string {
+		return t("pr.dial.title");
+	}
+
 	protected face(action: Action<PrDialSettings>): StripContent {
-		const header = t("pr.dial.title");
-		const offline = disconnectedStrip(header, this.machineOf(action));
-		if (offline) return offline;
+		const header = this.heading();
 		const { entries, index, current, loading } = this.#list(action);
 		if (current === undefined) return { header, icon: glyphArt("pullRequest", COLORS.muted), accent: COLORS.muted, value: loading ? "" : t("pr.dial.none"), loading };
 		const color = CHECK_COLOR[current.entry.checksState ?? ""] ?? COLORS.text;
@@ -510,24 +514,24 @@ export class PrDial extends StripDial<PrDialSettings> {
 	}
 
 	protected override list(action: Action<PrDialSettings>): StripList | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const { entries, index } = this.#list(action);
 		if (entries.length === 0) return undefined;
 		return {
 			heading: t("pr.dial.title"),
 			index,
-			items: entries.map(({ machine, entry }, at) => ({
-				key: `${machine.url}|${entry.repository}#${entry.number}`,
-				label: entry.title,
-				art: glyphArt("pullRequest", CHECK_COLOR[entry.checksState ?? ""] ?? COLORS.text),
-				detail: at === index ? [`#${entry.number} · ${entry.repository}`, this.#findingsText(machine, entry)].filter(Boolean).join("\n") : undefined,
+			items: entries.map((item, at) => ({
+				key: prKey(item),
+				label: item.entry.title,
+				art: glyphArt("pullRequest", CHECK_COLOR[item.entry.checksState ?? ""] ?? COLORS.text),
+				detail: at === index ? [`#${item.entry.number} · ${item.entry.repository}`, this.#findingsText(item.machine, item.entry)].filter(Boolean).join("\n") : undefined,
 			})),
 		};
 	}
 
 	protected override rotated(dial: DialAction<PrDialSettings>, ticks: number): void {
 		const { entries, index } = this.#list(dial);
-		if (entries.length > 0) this.#index.set(dial.id, Math.min(entries.length - 1, Math.max(0, index + ticks)));
+		const next = entries[Math.min(entries.length - 1, Math.max(0, index + ticks))];
+		if (next !== undefined) this.#shown.set(dial.id, prKey(next));
 	}
 
 	protected override async pressed(dial: DialAction<PrDialSettings>, heldMs: number): Promise<void> {
@@ -536,7 +540,7 @@ export class PrDial extends StripDial<PrDialSettings> {
 		const { current } = this.#list(dial);
 		if (current === undefined) return void (await this.flash(dial, false, t("pr.dial.none")));
 		if (!current.machine.canOperate) return void (await this.flash(dial, false, t("reason.readOnly")));
-		if (this.settingsOf(dial).confirm !== "tap" && heldMs < HOLD_CONFIRM_MS) return void (await this.flash(dial, false, t("repo.holdTo")));
+		if (this.settingsOf(dial).confirm !== "tap" && !held(heldMs)) return void (await this.flash(dial, false, t("repo.holdTo")));
 		await this.run(dial, () => fixFindings(current.machine, this.#refOf(current.entry), selectedThread(machine)));
 	}
 
@@ -550,7 +554,7 @@ export class PrDial extends StripDial<PrDialSettings> {
 	override needs(action: Action<PrDialSettings>): Need[] {
 		const machine = this.machineOf(action);
 		const { current, loading } = this.#list(action);
-		const operate = current?.machine.canOperate ?? deck.machines.some((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine));
+		const operate = current?.machine.canOperate ?? canOperate(undefined, machine);
 		return [
 			{ kind: "paired", connection: connectionOf(machine) },
 			{ kind: "operate", ok: operate },
