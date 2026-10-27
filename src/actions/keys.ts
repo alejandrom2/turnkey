@@ -810,7 +810,9 @@ export class Health extends DeckAction {
 
 	override needs(action: Action<JsonObject>): Need[] {
 		const machines = this.#machines(action);
-		const problems = healthIssues(machines.filter((machine) => machine.state.kind === "ready").map(healthMachine)).map((issue) =>
+		const issues = healthIssues(machines.filter((machine) => machine.state.kind === "ready").map(healthMachine));
+		// Notes (an update available, a provider turned off on purpose) never fail the check.
+		const problems = issues.filter((issue) => issue.level !== "note").map((issue) =>
 			machines.length > 1 ? `${issue.subject} (${issue.machine}): ${issue.text}` : `${issue.subject}: ${issue.text}`,
 		);
 		return [{ kind: "paired", connection: connectionOf(this.machineOf(action)) }, { kind: "providers", problems }];

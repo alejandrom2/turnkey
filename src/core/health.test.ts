@@ -67,6 +67,11 @@ describe("summarizeHealth", () => {
 		});
 	});
 
+	it("marks notes so they never fail the checklist", () => {
+		const issues = healthIssues([machine({ providers: [provider({ enabled: false }), provider({ versionAdvisory: { status: "behind_latest" } })] })]);
+		expect(issues.map((issue) => issue.level)).toEqual(["note", "note"]);
+	});
+
 	it("waits quietly while a single machine connects", () => {
 		expect(summarizeHealth([machine({ state: "connecting", providers: undefined })])).toEqual({ level: "connecting", title: "Studio", detail: "Connecting…" });
 	});
