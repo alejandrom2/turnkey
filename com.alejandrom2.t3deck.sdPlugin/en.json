@@ -716,8 +716,7 @@
 			"organize": {
 				"action": "Action",
 				"settle": "Settle",
-				"pin": "Pin",
-				"unpin": "Unpin",
+				"pin": "Pin / Unpin",
 				"snooze": "Snooze",
 				"archive": "Archive",
 				"markUnread": "Mark unread",

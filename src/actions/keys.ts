@@ -408,21 +408,24 @@ const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey, MessageKey]>
 	mark_unread: ["chat", "organize.markUnread", "organize.markedUnread"],
 };
 
-/** Settle, pin, snooze, archive or mark the selected thread unread; the reverse lives in T3 Code or another key. */
+/** Settle, pin or unpin, snooze, archive or mark the selected thread unread. Pin toggles; the rest are undone in T3 Code. */
 @action({ UUID: `${ID}.organize` })
 export class Organize extends DeckAction<OrganizeSettings> {
 	#check(action: Action<OrganizeSettings>) {
-		const which = this.settingsOf(action).organize ?? "settle";
+		const setting = this.settingsOf(action).organize ?? "settle";
 		const thread = selectedThread(this.machineOf(action));
-		const kind = which === "pin" || which === "unpin" ? which : "organize";
-		return { which, thread, check: availability(kind, { thread, canOperate: canOperate(thread) }) };
+		const pinning = setting === "pin" || setting === "unpin";
+		const pin = thread?.pinned ? "unpin" : "pin";
+		const which: OrganizeAction = pinning ? pin : setting;
+		const kind = pinning ? pin : "organize";
+		return { which, pinned: pinning && thread?.pinned === true, thread, check: availability(kind, { thread, canOperate: canOperate(thread) }) };
 	}
 
 	protected override async paint(action: Action<OrganizeSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const { which, check } = this.#check(action);
+		const { which, pinned, check } = this.#check(action);
 		const [glyph, label] = ORGANIZE_FACE[which];
-		await this.setImage(action, renderControlKey({ glyph, label: t(label), available: check.available }));
+		await this.setImage(action, renderControlKey({ glyph, label: t(label), available: check.available, active: pinned }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<OrganizeSettings>): Promise<void> {
