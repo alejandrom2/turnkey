@@ -44,6 +44,9 @@ const DIALS: Placed[] = [
 	{ action: "dial.answer", name: "Answer Dial" },
 ];
 
+const limits = (provider: string, window: string): Placed => ({ action: "limits", name: "Limits", settings: { provider, window } });
+const usage = (period: string): Placed => ({ action: "usage", name: "Usage", settings: { period } });
+
 const quick = (template: string): Placed => ({ action: "quick", name: "Quick Prompt", settings: { template } });
 const organize = (which: string): Placed => ({ action: "organize", name: "Organize", settings: { organize: which } });
 
@@ -143,6 +146,14 @@ const PROFILES: Profile[] = [
 					],
 				],
 				dials: [{ action: "dial.pr", name: "PR Dial" }, DIALS[0]!, DIALS[2]!, DIALS[3]!],
+			},
+			{
+				name: "USAGE",
+				keys: [
+					[limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly")],
+					[usage("1"), usage("7"), usage("30"), usage("90")],
+				],
+				dials: [{ action: "dial.limits", name: "Limits Dial" }, { action: "dial.usage", name: "Usage Dial", settings: { period: "7" } }, DIALS[0]!, DIALS[3]!],
 			},
 		],
 	},
