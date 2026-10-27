@@ -927,8 +927,12 @@ const pages: Record<string, string> = {
 					<option value="permissions"${text("inspector.field.access")}</option>
 				</sdpi-select>
 			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.power.bottomRow")} id="model-row">
+				<sdpi-checkbox setting="showSpeed" default="true" ${attr("label", "inspector.power.showSpeed")}></sdpi-checkbox>
+				<sdpi-checkbox setting="showEffort" default="true" ${attr("label", "inspector.power.showEffort")}></sdpi-checkbox>
+			</sdpi-item>
 			<p class="hint"${text("inspector.power.hint")}</p>${dialAppearance}`,
-		dialAppearanceScript,
+		dialAppearanceScript + showWhen("dialControls", "model-row", `value === "" || value === "model"`),
 	),
 	"git-commit.html": page(
 		"Commit",
