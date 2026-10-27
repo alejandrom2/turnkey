@@ -290,8 +290,10 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const { thread, control } = context;
 		if (thread === undefined) return void (await this.allowed(dial, availability(CONTROL[control].kind, { canOperate: false })));
 		const toggle = speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
-		const speedCheck = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
+		const speedCheck = availability("speed", { thread, canOperate: canOperate(thread) });
 		const pending = context.pending;
+		// A tap on a model without a Speed option is not a mistake worth an error face.
+		if (wants === "speed" && toggle === undefined) return;
 		if (!(await this.allowed(dial, wants === "apply" ? context.check : speedCheck))) return;
 		const work = wants === "apply" && pending ? this.#apply(thread, pending, context.armed) : undefined;
 		if (wants === "apply") {
@@ -302,7 +304,6 @@ export class ModelDial extends StripDial<PowerSettings> {
 				preview.key = undefined;
 			});
 		}
-		if (toggle === undefined) return void (await this.allowed(dial, speedCheck));
 		await this.apply(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)));
 	}
 
