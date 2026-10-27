@@ -8,279 +8,419 @@
 	html, body { background: #fff; overflow: hidden; }
 	body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; -webkit-font-smoothing: antialiased; }
 	#stage { position: relative; width: 1920px; height: 960px; overflow: hidden; background: #fff; }
-	.wash { position: absolute; inset: 0; }
-	.scene { position: absolute; inset: 0; }
-	.headline { position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-size: 92px; font-weight: 600; letter-spacing: -1.4px; color: #0b0b0c; }
-	.el { position: absolute; will-change: transform, opacity; }
-	/* The video frame is 120px taller than a gallery image: its pieces sit 60px lower. */
-	.video .el, .video .headline { margin-top: 60px; }
-
-	/* A key: a glossy black bezel around the 144px face. */
-	.key { width: 280px; height: 280px; border-radius: 62px; padding: 17px;
-		background: linear-gradient(155deg, #3a3a3c 0%, #0d0d0e 38%, #000 70%, #1d1d1f 100%);
-		box-shadow: inset 0 2px 1px rgba(255,255,255,.28), inset 0 -3px 6px rgba(0,0,0,.9), inset 0 0 0 2px #000, 0 30px 50px -18px rgba(40,20,60,.45), 0 8px 16px -6px rgba(0,0,0,.35); }
-	.key img { display: block; width: 246px; height: 246px; border-radius: 46px; box-shadow: 0 0 0 3px #000, inset 0 0 0 1px rgba(255,255,255,.05); }
-	.key .gloss { position: absolute; inset: 17px; border-radius: 46px; pointer-events: none;
-		background: linear-gradient(160deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 32%); }
-
-	/* The Stream Deck + touch strip: an LCD behind glass, with glare. */
-	.lcd { background: #000; border-radius: 22px; padding: 46px 52px; display: flex; gap: 0;
-		box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 40px 70px -24px rgba(40,20,60,.5), 0 10px 20px -8px rgba(0,0,0,.4); }
-	.lcd::after { content: ""; position: absolute; inset: 0; border-radius: 22px; pointer-events: none;
-		background: linear-gradient(115deg, rgba(255,255,255,0) 55%, rgba(255,255,255,.10) 72%, rgba(255,255,255,0) 86%); }
-	.strip { position: relative; width: 200px; height: 100px; overflow: hidden; transform-origin: 0 0; flex: none; }
-	.strip img { position: absolute; display: block; }
-	.strip .t { position: absolute; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-	.strip .t span { overflow: hidden; text-overflow: ellipsis; display: block; width: 100%; }
-	.sep { width: 2px; background: #000; flex: none; }
-
-	/* A dial: graphite, a fine knurled rim around a spun-metal top. */
-	.knob { width: 330px; height: 330px; border-radius: 50%;
-		background:
-			radial-gradient(circle at 50% 50%, #5d5f65 0 55%, #1e1f22 56% 57.5%, rgba(0,0,0,0) 58%),
-			repeating-conic-gradient(from 0deg, #2a2b2f 0deg 1.6deg, #6a6c72 1.6deg 3.2deg);
-		box-shadow: 0 30px 50px -16px rgba(40,20,60,.45), inset 0 0 0 2px rgba(0,0,0,.5); }
-	.knob::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
-		background:
-			radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 55%, rgba(0,0,0,.35) 100%),
-			radial-gradient(circle at 36% 26%, rgba(255,255,255,.42), rgba(255,255,255,0) 42%),
-			repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 3px, rgba(255,255,255,.045) 3px 4px); }
-
-	/* Thumbnail and video title card. */
-	.brand { position: absolute; display: flex; flex-direction: column; }
+	#stage > * { position: absolute; }
+	.wash { inset: 0; }
+	canvas { inset: 0; }
+	.headline { left: 0; right: 0; top: 112px; text-align: center; font-size: 92px; font-weight: 600; letter-spacing: -1.4px; color: #0b0b0c; }
+	.brand { display: flex; flex-direction: column; }
 	.brand .icon { width: 168px; height: 168px; border-radius: 38px; box-shadow: 0 24px 40px -14px rgba(40,20,60,.45); }
 	.brand h1 { font-size: 132px; font-weight: 700; letter-spacing: -4px; color: #0b0b0c; line-height: 1; margin-top: 46px; }
 	.brand h2 { font-size: 64px; font-weight: 600; letter-spacing: -1.5px; color: #0b0b0c; opacity: .55; line-height: 1.05; margin-top: 10px; }
 	.brand p { font-size: 40px; font-weight: 500; letter-spacing: -.5px; color: #2b2b30; margin-top: 34px; line-height: 1.25; }
-
-	/* A Stream Deck +, front on. */
-	.deck { width: 1010px; height: 820px; border-radius: 60px; padding: 52px 56px;
-		background: linear-gradient(170deg, #2b2b2e, #0c0c0d 45%, #050505);
-		box-shadow: inset 0 2px 1px rgba(255,255,255,.18), inset 0 -4px 8px rgba(0,0,0,.8), 0 60px 90px -30px rgba(40,20,60,.55), 0 14px 30px -10px rgba(0,0,0,.4); }
-	.deck .keys { display: grid; grid-template-columns: repeat(4, 206px); gap: 26px; }
-	.deck .key { width: 206px; height: 206px; border-radius: 44px; padding: 12px; }
-	.deck .key img { width: 182px; height: 182px; border-radius: 34px; }
-	.deck .key .gloss { inset: 12px; border-radius: 34px; }
-	.deck .bar { margin-top: 30px; height: 126px; background: #000; border-radius: 16px; padding: 5px 7px; display: flex; gap: 4px; position: relative; box-shadow: inset 0 0 0 2px #1a1a1b; }
-		.deck .bar .cell { width: 224px; height: 112px; overflow: hidden; border-radius: 6px; flex: none; }
-	.deck .knobs { display: flex; justify-content: space-around; margin-top: 34px; }
-	.deck .knobs .knob { position: relative; width: 150px; height: 150px; }
 </style>
+<script type="importmap">
+{ "imports": {
+	"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+	"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
 </head>
 <body>
 <div id="stage"></div>
 <script src="faces.js"></script>
-<script>
+<script type="module">
+import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
 const F = window.FACES;
 const params = new URLSearchParams(location.search);
+const VIDEO = params.has("video");
+const W = 1920, H = VIDEO ? 1080 : 960;
+/* Scenes are laid out for a 960px frame; the video frame centers them. */
+const OFFSET = VIDEO ? 60 : 0;
 const stage = document.getElementById("stage");
+stage.style.height = H + "px";
+
+/* ---------- Renderer: a perspective camera framed so the z = 0 plane maps 1:1 to stage pixels. ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(2);
+renderer.setSize(W, H);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.VSMShadowMap;
+
+const FOV = 22;
+const camera = new THREE.PerspectiveCamera(FOV, W / H, 10, 20000);
+camera.position.set(0, 0, H / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2)));
+const world = new THREE.Scene();
+world.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+world.environmentIntensity = 0.32;
+
+/* A soft key light from above and in front, casting onto an invisible backdrop just behind the hardware. */
+const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+sun.position.set(0, 900, 1600);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.radius = 40;
+sun.shadow.blurSamples = 25;
+Object.assign(sun.shadow.camera, { left: -1300, right: 1300, top: 800, bottom: -800, near: 100, far: 4000 });
+world.add(sun, new THREE.AmbientLight(0xffffff, 0.25));
+const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(6000, 4000), new THREE.ShadowMaterial({ opacity: 0.13, color: 0x2a1840 }));
+backdrop.position.z = -90;
+backdrop.receiveShadow = true;
+world.add(backdrop);
+
+/* ---------- Textures ---------- */
+const loadImage = (src) => new Promise((resolve) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = () => resolve(null); i.src = src; });
+function texture(canvas) {
+	const t = new THREE.CanvasTexture(canvas);
+	t.colorSpace = THREE.SRGBColorSpace;
+	t.anisotropy = 8;
+	return t;
+}
+/** A 144px key face, drawn at 4x so it stays crisp at gallery size. */
+async function keyTexture(src) {
+	const c = document.createElement("canvas");
+	c.width = c.height = 576;
+	c.getContext("2d").drawImage(await loadImage(src), 0, 0, 576, 576);
+	return texture(c);
+}
 
 /* Layout rects from com.alejandrom2.turnkey.sdPlugin/layouts: [x, y, w, h, size, weight, color, align]. */
 const LAYOUTS = {
 	strip: {
-		header: [8, 2, 184, 26, 16, 700, "#F5F7FB"], value: [56, 30, 136, 22, 16, 650, "#FFFFFF"], detail: [56, 52, 136, 23, 14, 600, "#B8BCC6"],
+		text: { header: [8, 2, 184, 26, 16, 700, "#F5F7FB"], value: [56, 30, 136, 22, 16, 650, "#FFFFFF"], detail: [56, 52, 136, 23, 14, 600, "#B8BCC6"] },
 		pix: { glyph: [10, 34, 38, 38], valueArt: [56, 30, 136, 22], detailArt: [56, 52, 136, 23] },
 	},
 	list: {
-		heading: [8, 1, 144, 19, 14, 650, "#F5F7FB"], counter: [152, 1, 40, 19, 13, 500, "#8A8F98", "right"],
-		previous: [30, 22, 162, 17, 13, 300, "#9A9FA8"], selected: [30, 40, 162, 20, 15, 600, "#FFFFFF"],
-		next: [30, 61, 162, 17, 14, 300, "#B8BCC6"], after: [30, 79, 162, 16, 13, 300, "#73787F"],
+		text: {
+			heading: [8, 1, 144, 19, 14, 650, "#F5F7FB"], counter: [152, 1, 40, 19, 13, 500, "#8A8F98", "right"],
+			previous: [30, 22, 162, 17, 13, 300, "#9A9FA8"], selected: [30, 40, 162, 20, 15, 600, "#FFFFFF"],
+			next: [30, 61, 162, 17, 14, 300, "#B8BCC6"], after: [30, 79, 162, 16, 13, 300, "#73787F"],
+		},
 		pix: { glyph: [8, 41, 18, 18] },
 	},
 };
+const BLANK = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz4";
 
-function stripEl(face, scale) {
-	const box = document.createElement("div");
-	box.className = "strip";
-	box.style.transform = `scale(${scale})`;
-	const layout = LAYOUTS[face.layout];
-	const img = (src, [x, y, w, h]) => {
-		if (!src) return;
-		const i = new Image();
-		i.src = src;
-		Object.assign(i.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
-		box.appendChild(i);
-	};
-	img(face.canvas, [0, 0, 200, 100]);
-	for (const [key, spec] of Object.entries(layout)) {
-		if (key === "pix") continue;
-		const raw = face[key];
-		if (!raw) continue;
-		const value = typeof raw === "string" ? raw : raw.value;
-		if (!value) continue;
-		const [x, y, w, h, size, weight, color, align] = spec;
-		const t = document.createElement("div");
-		t.className = "t";
-		Object.assign(t.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px", fontSize: size + "px", fontWeight: weight, color: (typeof raw === "object" && raw.color) || color, textAlign: align || "left" });
-		t.innerHTML = `<span></span>`;
-		t.firstChild.textContent = value;
-		box.appendChild(t);
+/** Dial faces side by side, as the touch strip shows them, drawn like Stream Deck draws a layout. */
+async function stripTexture(faces, s = 6) {
+	const c = document.createElement("canvas");
+	c.width = (faces.length * 200 + (faces.length - 1) * 2) * s;
+	c.height = 100 * s;
+	const g = c.getContext("2d");
+	g.fillStyle = "#000";
+	g.fillRect(0, 0, c.width, c.height);
+	for (const [index, face] of faces.entries()) {
+		g.save();
+		g.translate(index * 202 * s, 0);
+		g.scale(s, s);
+		g.beginPath(); g.rect(0, 0, 200, 100); g.clip();
+		const layout = LAYOUTS[face.layout];
+		g.drawImage(await loadImage(face.canvas), 0, 0, 200, 100);
+		for (const [key, [x, y, w, h, size, weight, color, align]] of Object.entries(layout.text)) {
+			const raw = face[key];
+			let value = typeof raw === "string" ? raw : raw?.value;
+			if (!value) continue;
+			g.font = `${weight} ${size}px -apple-system, "SF Pro Text", sans-serif`;
+			g.fillStyle = (typeof raw === "object" && raw.color) || color;
+			g.textBaseline = "middle";
+			if (g.measureText(value).width > w) { while (value.length && g.measureText(value + "…").width > w) value = value.slice(0, -1); value = value.trimEnd() + "…"; }
+			g.textAlign = align === "right" ? "right" : "left";
+			g.fillText(value, align === "right" ? x + w : x, y + h / 2 + 0.5);
+		}
+		for (const [key, [x, y, w, h]] of Object.entries(layout.pix)) {
+			if (face[key] && !face[key].startsWith(BLANK)) { const i = await loadImage(face[key]); if (i) g.drawImage(i, x, y, w, h); }
+		}
+		g.restore();
 	}
-	for (const [key, rect] of Object.entries(layout.pix)) {
-		const src = face[key];
-		if (src && !src.startsWith("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz4")) img(src, rect);
-	}
-	return box;
+	return texture(c);
 }
 
-/* Builders: each returns an element placed at (x, y) in stage pixels, with an entrance order. */
-const place = (el, x, y, rotate = 0) => { el.classList.add("el"); el.style.left = x + "px"; el.style.top = y + "px"; el.dataset.rotate = rotate; return el; };
-function key(src, x, y, rotate = 0) {
-	const el = document.createElement("div");
-	el.className = "key";
-	el.innerHTML = `<img><div class="gloss"></div>`;
-	el.firstChild.src = src;
-	return place(el, x, y, rotate);
+/** Fine vertical ridges for a knurled rim, and spun-metal rings for a dial's top, as bump maps. */
+function ridges() {
+	const c = document.createElement("canvas");
+	c.width = 2048; c.height = 8;
+	const g = c.getContext("2d");
+	for (let x = 0; x < 2048; x += 16) { const grad = g.createLinearGradient(x, 0, x + 16, 0); grad.addColorStop(0, "#000"); grad.addColorStop(0.5, "#fff"); grad.addColorStop(1, "#000"); g.fillStyle = grad; g.fillRect(x, 0, 16, 8); }
+	const t = new THREE.CanvasTexture(c);
+	t.wrapS = THREE.RepeatWrapping;
+	return t;
 }
-function lcd(faces, x, y, scale = 2.4, bleed = "right") {
-	const el = document.createElement("div");
-	el.className = "lcd";
-	// Runs off the frame on one side.
-	if (bleed === "right") el.style.paddingRight = "400px";
-	faces.forEach((face, i) => {
-		if (i) { const s = document.createElement("div"); s.className = "sep"; s.style.height = 100 * scale + "px"; el.appendChild(s); }
-		const cell = document.createElement("div");
-		cell.style.cssText = `width:${200 * scale}px;height:${100 * scale}px;flex:none;overflow:hidden;border-radius:4px`;
-		cell.appendChild(stripEl(face, scale));
-		el.appendChild(cell);
-	});
-	return place(el, x, y);
+function rings() {
+	const c = document.createElement("canvas");
+	c.width = c.height = 1024;
+	const g = c.getContext("2d");
+	g.fillStyle = "#808080"; g.fillRect(0, 0, 1024, 1024);
+	for (let r = 512; r > 0; r -= 3) { g.strokeStyle = `rgba(${Math.random() > 0.5 ? "255,255,255" : "0,0,0"},${0.05 + Math.random() * 0.1})`; g.lineWidth = 1.5; g.beginPath(); g.arc(512, 512, r, 0, Math.PI * 2); g.stroke(); }
+	return new THREE.CanvasTexture(c);
 }
-function knob(x, y, size = 330) {
-	const el = document.createElement("div");
-	el.className = "knob";
-	el.style.width = el.style.height = size + "px";
-	return place(el, x, y);
+function glare() {
+	const c = document.createElement("canvas");
+	c.width = 1024; c.height = 256;
+	const g = c.getContext("2d");
+	const grad = g.createLinearGradient(0, 0, 1024, 256);
+	grad.addColorStop(0.5, "rgba(255,255,255,0)"); grad.addColorStop(0.66, "rgba(255,255,255,.10)"); grad.addColorStop(0.8, "rgba(255,255,255,0)");
+	g.fillStyle = grad; g.fillRect(0, 0, 1024, 256);
+	return texture(c);
 }
-function headline(text) {
-	const el = document.createElement("div");
-	el.className = "headline";
-	el.textContent = text;
-	el.dataset.headline = "1";
-	return el;
+/** Spun metal's look baked in: the bow-tie sheen anisotropic rings throw, under fine concentric grooves. */
+function spun() {
+	const c = document.createElement("canvas");
+	c.width = c.height = 1024;
+	const g = c.getContext("2d");
+	const sheen = g.createConicGradient(-0.5, 512, 512);
+	for (const [at, color] of [[0, "#3a3b40"], [0.12, "#9a9ca3"], [0.25, "#45474c"], [0.5, "#2c2d31"], [0.62, "#7d7f86"], [0.75, "#3a3b40"], [1, "#3a3b40"]]) sheen.addColorStop(at, color);
+	g.fillStyle = sheen; g.fillRect(0, 0, 1024, 1024);
+	for (let r = 512; r > 0; r -= 2.5) { g.strokeStyle = `rgba(${Math.random() > 0.5 ? "255,255,255" : "0,0,0"},${0.03 + Math.random() * 0.07})`; g.lineWidth = 1.2; g.beginPath(); g.arc(512, 512, r, 0, Math.PI * 2); g.stroke(); }
+	return texture(c);
 }
-/* White at the top, pastel light pooling at the bottom. */
-function wash(blobs) {
-	const el = document.createElement("div");
-	el.className = "wash";
-	el.style.background = blobs.map(([x, y, color, r = 900]) => `radial-gradient(${r}px ${r * 0.62}px at ${x}% ${y}%, ${color}, rgba(255,255,255,0))`).join(",") + ", #fff";
-	return el;
+const RIDGES = ridges(), RINGS = rings(), GLARE = glare(), SPUN = spun();
+
+/* ---------- Hardware ---------- */
+function roundedShape(w, h, r) {
+	const s = new THREE.Shape();
+	const x = -w / 2, y = -h / 2;
+	s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+	s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
+	return s;
 }
+/** A body with large corner radii and soft, rounded edges, centered on z = 0, its front at z = depth / 2. */
+function slab(w, h, depth, r, bevel) {
+	const geometry = new THREE.ExtrudeGeometry(roundedShape(w - bevel * 2, h - bevel * 2, Math.max(1, r - bevel)), { depth: depth - bevel * 2, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 10, curveSegments: 32 });
+	geometry.translate(0, 0, -(depth - bevel * 2) / 2);
+	return geometry;
+}
+function roundedRect(w, h, r) {
+	const s = new THREE.Shape();
+	const x = -w / 2, y = -h / 2;
+	s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+	s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
+	const geometry = new THREE.ShapeGeometry(s, 24);
+	// ShapeGeometry's UVs follow its coordinates; map them onto 0..1.
+	const uv = geometry.attributes.uv, pos = geometry.attributes.position;
+	for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) - x) / w, (pos.getY(i) - y) / h);
+	return geometry;
+}
+const plastic = () => new THREE.MeshPhysicalMaterial({ color: 0x050506, roughness: 0.5, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08 });
+/** The screen, unlit so its colors stay true, under a glass layer that only adds reflections. */
+function screen(map, w, h, r, z) {
+	const group = new THREE.Group();
+	const face = new THREE.Mesh(roundedRect(w, h, r), new THREE.MeshBasicMaterial({ map, toneMapped: false }));
+	face.position.z = z;
+	const glass = new THREE.Mesh(roundedRect(w, h, r), new THREE.MeshPhysicalMaterial({ color: 0x000000, roughness: 0.18, metalness: 0, clearcoat: 0.6, blending: THREE.AdditiveBlending, transparent: true, envMapIntensity: 0.22 }));
+	glass.position.z = z + 0.4;
+	group.add(face, glass);
+	return group;
+}
+const shadows = (object) => object.traverse((o) => { if (o.isMesh) { o.castShadow = true; } });
+
+async function keyObject(src, size = 280) {
+	const group = new THREE.Group();
+	const depth = size * 0.17;
+	const body = new THREE.Mesh(slab(size, size, depth, size * 0.22, size * 0.045), plastic());
+	group.add(body);
+	// The face sits a hair below the bezel's rim, as a key's screen does.
+	const face = screen(await keyTexture(src), size * 0.84, size * 0.84, size * 0.15, depth / 2 + 0.6);
+	// The running thread's face, which the video swaps for each spinner frame.
+	if (src === F.keys.running) face.children[0].material.userData.running = true;
+	group.add(face);
+	shadows(group);
+	return group;
+}
+
+async function lcdObject(faces, scale, bleed) {
+	const group = new THREE.Group();
+	const w = (faces.length * 202 - 2) * scale, h = 100 * scale;
+	const pad = 50, extra = bleed ? 500 : 0;
+	const body = new THREE.Mesh(slab(w + pad * 2 + extra, h + pad * 2, 36, 26, 8), plastic());
+	body.position.x = bleed === "right" ? extra / 2 : bleed === "left" ? -extra / 2 : 0;
+	group.add(body, screen(await stripTexture(faces), w, h, 6, 18.6));
+	// A soft diagonal glare across the glass.
+	const glare = new THREE.Mesh(new THREE.PlaneGeometry(w + pad * 2, h + pad * 2), new THREE.MeshBasicMaterial({ map: GLARE, blending: THREE.AdditiveBlending, transparent: true, toneMapped: false }));
+	glare.position.z = 19.2;
+	group.add(glare);
+	shadows(group);
+	return group;
+}
+
+function knobObject(size = 330) {
+	const group = new THREE.Group();
+	const r = size / 2, height = size * 0.42;
+	// Brushed graphite: little direct specular, so the key light never blows the top out.
+	const metal = { color: 0x55575c, metalness: 0.25, roughness: 0.5, specularIntensity: 0.3, envMapIntensity: 0.6 };
+	const rim = new THREE.Mesh(new THREE.CylinderGeometry(r, r, height, 256, 1, true), new THREE.MeshPhysicalMaterial({ ...metal, color: 0x3d3f43, bumpMap: RIDGES, bumpScale: 2.5 }));
+	RIDGES.repeat.set(1, 1);
+	const top = new THREE.Mesh(new THREE.CircleGeometry(r * 0.985, 128), new THREE.MeshPhysicalMaterial({ ...metal, color: 0xffffff, map: SPUN, bumpMap: RINGS, bumpScale: 0.6 }));
+	top.rotation.x = -Math.PI / 2;
+	top.position.y = height / 2;
+	const bevel = new THREE.Mesh(new THREE.TorusGeometry(r * 0.985, 2.5, 12, 128), new THREE.MeshPhysicalMaterial({ ...metal, color: 0x9a9ca2, roughness: 0.3 }));
+	bevel.rotation.x = Math.PI / 2;
+	bevel.position.y = height / 2;
+	group.add(rim, top, bevel);
+	// Axis toward the camera, tipped so the knurled side shows below the top.
+	group.rotation.x = Math.PI / 2 - 0.42;
+	shadows(group);
+	return group;
+}
+
+/** A Stream Deck +: eight keys, the touch strip and four dials in one body. */
+async function deckObject() {
+	const group = new THREE.Group();
+	const body = new THREE.Mesh(slab(1040, 860, 90, 70, 22), new THREE.MeshPhysicalMaterial({ color: 0x111113, roughness: 0.55, metalness: 0.1, clearcoat: 0.4, clearcoatRoughness: 0.4 }));
+	group.add(body);
+	const names = ["running", "approval", "done", "question", "send", "stop", "model", "effort"];
+	for (const [i, name] of names.entries()) {
+		const key = await keyObject(F.keys[name], 196);
+		key.position.set(-348 + (i % 4) * 232, 290 - Math.floor(i / 4) * 232, 45);
+		group.add(key);
+	}
+	const strip = await stripTexture(["threads", "power", "usage", "pr"].map((n) => F.strips[n]));
+	const bar = screen(strip, 4 * 202 * 1.13, 113, 8, 45.6);
+	bar.position.y = -136;
+	const well = new THREE.Mesh(roundedRect(4 * 202 * 1.13 + 24, 137, 14), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+	well.position.set(0, -136, 45.3);
+	group.add(well, bar);
+	for (let i = 0; i < 4; i++) {
+		const knob = knobObject(150);
+		knob.rotation.x = Math.PI / 2;
+		knob.position.set(-348 + i * 232, -318, 45 + 32);
+		group.add(knob);
+	}
+	shadows(group);
+	return group;
+}
+
+/* ---------- Scenes: pieces in stage pixels (x, y of the top-left corner) ---------- */
+const key = (src, x, y, rotate = 0, tilt = 0) => ({ build: () => keyObject(src), w: 280, h: 280, x, y, rotate, tilt });
+const lcd = (faces, x, y, bleed = "right", scale = 2.4) => ({ build: () => lcdObject(faces, scale, bleed), w: (faces.length * 202 - 2) * scale + 100, h: 100 * scale + 100, x, y, bleed });
+const knob = (x, y) => ({ build: async () => knobObject(), w: 330, h: 330, x, y });
+const deck = (x, y, s = 0.86) => ({ build: deckObject, w: 1040, h: 860, x, y, scale: s, hero: true });
+
 const PEACH = "rgba(255,196,170,.75)", LILAC = "rgba(214,186,240,.85)", BLUE = "rgba(178,214,250,.85)", MINT = "rgba(186,236,214,.8)", AMBER = "rgba(253,222,150,.75)";
-
-function deck() {
-	const el = document.createElement("div");
-	el.className = "deck";
-	const keys = document.createElement("div");
-	keys.className = "keys";
-	for (const name of ["running", "approval", "done", "question", "send", "stop", "model", "effort"]) {
-		const k = key(F.keys[name], 0, 0);
-		k.classList.remove("el");
-		k.style.position = "relative";
-		keys.appendChild(k);
-	}
-	el.appendChild(keys);
-	const bar = document.createElement("div");
-	bar.className = "bar";
-	for (const name of ["threads", "power", "usage", "pr"]) {
-		const cell = document.createElement("div");
-		cell.className = "cell";
-		cell.appendChild(stripEl(F.strips[name], 1.12));
-		bar.appendChild(cell);
-	}
-	el.appendChild(bar);
-	const knobs = document.createElement("div");
-	knobs.className = "knobs";
-	for (let i = 0; i < 4; i++) { const k = document.createElement("div"); k.className = "knob"; knobs.appendChild(k); }
-	el.appendChild(knobs);
-	return el;
-}
-
-function brand(x, y, lines) {
-	const el = document.createElement("div");
-	el.className = "brand";
-	el.innerHTML = `<img class="icon" src="icon.svg"><h1>Turnkey</h1><h2>for T3 Code</h2>` + (lines ? `<p>${lines}</p>` : "");
-	return place(el, x, y);
-}
-
-/* Each scene: a wash, a headline, and its pieces in entrance order. */
+const BRAND_WASH = [[12, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]];
 const SCENES = {
-	threads: () => [wash([[18, 108, PEACH], [80, 110, LILAC]]), headline("See every agent thread at a glance"),
-		key(F.keys.running, 110, 330), key(F.keys.approval, 430, 330), key(F.keys.done, 750, 330),
-		lcd([F.strips.threads], 1150, 340), knob(1430, 790)],
-	answer: () => [wash([[25, 110, AMBER], [85, 105, PEACH]]), headline("Approve and answer from a key"),
-		key(F.keys.approval, 150, 330, -6), key(F.keys.approve, 470, 360), key(F.keys.deny, 790, 330, 6),
-		lcd([F.strips.answer], 1180, 340), knob(1460, 790)],
-	model: () => [wash([[15, 105, BLUE], [70, 112, LILAC], [100, 90, PEACH, 600]]), headline("Switch model, effort and speed"),
-		key(F.keys.model, 110, 330), key(F.keys.effort, 430, 330), key(F.keys.speed, 750, 330),
-		lcd([F.strips.power], 1150, 340), knob(1430, 790)],
-	prompts: () => [wash([[30, 112, LILAC], [75, 108, BLUE]]), headline("Start, prompt, steer and stop"),
-		key(F.keys.newThread, 300, 480, -16), key(F.keys.send, 660, 360, -6), key(F.keys.steer, 990, 360, 6), key(F.keys.stop, 1340, 480, 16)],
-	git: () => [wash([[20, 110, MINT], [80, 108, BLUE]]), headline("Commit, push and fix pull requests"),
-		lcd([F.strips.pr], -60, 340, 2.4, "left"), knob(67, 790),
-		key(F.keys.branch, 830, 330), key(F.keys.git, 1150, 330), key(F.keys.prFix, 1470, 330)],
-	usage: () => [wash([[25, 110, PEACH], [78, 110, MINT]]), headline("Keep an eye on usage and limits"),
-		lcd([F.strips.usage, F.strips.limits], -120, 340, 2.4, "left"), knob(7, 790), knob(489, 790),
-		key(F.keys.usage, 1150, 330), key(F.keys.limits, 1470, 330)],
-	thumbnail: () => [wash([[12, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]]),
-		brand(130, 150, "Your agents, on Stream Deck."), (() => { const d = place(deck(), 900, 150); d.style.transform = "scale(.86)"; d.style.transformOrigin = "0 0"; return d; })()],
-	intro: () => [wash([[15, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]]),
-		brand(150, 210, "Watch and steer every T3 Code thread<br>from Stream Deck.")],
-	outro: () => [wash([[15, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]]),
-		brand(150, 210, "Every provider. Every machine.<br>Get it on the Stream Deck Marketplace."), (() => { const d = place(deck(), 900, 150); d.style.transform = "scale(.86)"; d.style.transformOrigin = "0 0"; return d; })()],
+	threads: { wash: [[18, 108, PEACH], [80, 110, LILAC]], headline: "See every agent thread at a glance",
+		pieces: [key(F.keys.running, 110, 340), key(F.keys.approval, 430, 340), key(F.keys.done, 750, 340), lcd([F.strips.threads], 1150, 345), knob(1440, 800)] },
+	answer: { wash: [[25, 110, AMBER], [85, 105, PEACH]], headline: "Approve and answer from a key",
+		pieces: [key(F.keys.approval, 140, 340, -6), key(F.keys.approve, 460, 370), key(F.keys.deny, 780, 340, 6), lcd([F.strips.answer], 1180, 345), knob(1470, 800)] },
+	model: { wash: [[15, 105, BLUE], [70, 112, LILAC], [100, 90, PEACH, 600]], headline: "Switch model, effort and speed",
+		pieces: [key(F.keys.model, 110, 340), key(F.keys.effort, 430, 340), key(F.keys.speed, 750, 340), lcd([F.strips.power], 1150, 345), knob(1440, 800)] },
+	prompts: { wash: [[30, 112, LILAC], [75, 108, BLUE]], headline: "Start, prompt, steer and stop",
+		pieces: [key(F.keys.newThread, 290, 500, -16, 0.25), key(F.keys.send, 650, 380, -6, 0.25), key(F.keys.steer, 990, 380, 6, 0.25), key(F.keys.stop, 1350, 500, 16, 0.25)] },
+	git: { wash: [[20, 110, MINT], [80, 108, BLUE]], headline: "Commit, push and fix pull requests",
+		pieces: [lcd([F.strips.pr], -40, 345, "left"), knob(97, 800), key(F.keys.branch, 830, 340), key(F.keys.git, 1150, 340), key(F.keys.prFix, 1470, 340)] },
+	usage: { wash: [[25, 110, PEACH], [78, 110, MINT]], headline: "Keep an eye on usage and limits",
+		pieces: [lcd([F.strips.usage, F.strips.limits], 30, 345, "left"), knob(155, 800), knob(640, 800), key(F.keys.usage, 1210, 340), key(F.keys.limits, 1530, 340)] },
+	thumbnail: { wash: BRAND_WASH, brand: [130, 150, "Your agents, on Stream Deck."], pieces: [deck(880, 80)] },
+	intro: { wash: BRAND_WASH, brand: [150, 210, "Watch and steer every T3 Code thread<br>from Stream Deck."], pieces: [] },
+	outro: { wash: BRAND_WASH, brand: [130, 150, "Every provider. Every machine.<br>On the Stream Deck Marketplace."], pieces: [deck(880, 80)] },
 };
 
-function mount(name) {
+/* ---------- Mounting and posing ---------- */
+const canvas = renderer.domElement;
+let current;
+async function mount(name) {
+	const def = SCENES[name];
 	stage.innerHTML = "";
-	const scene = document.createElement("div");
-	scene.className = "scene";
-	for (const el of SCENES[name]()) scene.appendChild(el);
-	stage.appendChild(scene);
-	return scene;
-}
-
-/* Entrance: each piece rises and fades in, staggered; `t` is seconds since the scene started (Infinity for stills). */
-const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
-function pose(scene, t, out = 0) {
-	let order = 0;
-	for (const el of scene.querySelectorAll(".el, .headline")) {
-		const p = ease((t - 0.12 * order++) / 0.6);
-		const rotate = +(el.dataset.rotate || 0);
-		const base = el.style.transform.replace(/translateY\([^)]*\)|rotate\([^)]*\)/g, "").trim();
-		el.style.opacity = p * (1 - out);
-		el.style.transform = `${base} translateY(${(1 - p) * 60 - out * 30}px) rotate(${rotate}deg)`.trim();
+	const wash = document.createElement("div");
+	wash.className = "wash";
+	wash.style.background = def.wash.map(([x, y, color, r = 900]) => `radial-gradient(${r}px ${r * 0.62}px at ${x}% ${y}%, ${color}, rgba(255,255,255,0))`).join(",") + ", #fff";
+	stage.appendChild(wash);
+	const overlay = [];
+	if (def.headline) {
+		const h = document.createElement("div");
+		h.className = "headline";
+		h.style.top = 112 + OFFSET + "px";
+		h.textContent = def.headline;
+		stage.appendChild(h);
+		overlay.push(h);
 	}
+	if (def.brand) {
+		const [x, y, line] = def.brand;
+		const b = document.createElement("div");
+		b.className = "brand";
+		b.style.left = x + "px";
+		b.style.top = y + OFFSET + "px";
+		b.innerHTML = `<img class="icon" src="icon.svg"><h1>Turnkey</h1><h2>for T3 Code</h2><p>${line}</p>`;
+		stage.appendChild(b);
+		overlay.push(b);
+	}
+	stage.appendChild(canvas);
+	for (const piece of current?.pieces ?? []) world.remove(piece.object);
+	const pieces = [];
+	for (const piece of def.pieces) {
+		const object = await piece.build();
+		const holder = new THREE.Group();
+		holder.add(object);
+		world.add(holder);
+		pieces.push({ ...piece, object: holder, inner: object });
+	}
+	current = { name, pieces, overlay };
+	await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+	await document.fonts.ready;
+	return current;
 }
 
-/* Video: the scenes in turn, ~3.6s each, with the thread key's spinner turning. */
+const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+/** `t` is seconds since the scene started (Infinity for stills); `out` fades the scene away, 0 to 1. */
+function pose(t, out = 0) {
+	let order = 0;
+	for (const el of current.overlay) {
+		const p = ease((t - 0.12 * order++) / 0.6);
+		el.style.opacity = p * (1 - out);
+		el.style.transform = `translateY(${(1 - p) * 50 - out * 30}px)`;
+	}
+	for (const piece of current.pieces) {
+		const p = ease((t - 0.12 * order++) / 0.7);
+		const s = piece.scale ?? 1;
+		// The piece's center, in world units, from its top-left corner in stage pixels; a bleeding strip centers on its screen.
+		const cx = piece.x + (piece.w * s) / 2 - W / 2;
+		const cy = H / 2 - (piece.y + OFFSET + (piece.h * s) / 2);
+		const lift = (1 - p) * -70 + out * -40;
+		piece.object.position.set(cx, cy + lift, (1 - p) * -120);
+		piece.object.scale.setScalar(s * (0.94 + 0.06 * p));
+		piece.object.rotation.set(0.05 + (piece.tilt ?? 0) * 0.3, 0, THREE.MathUtils.degToRad(-(piece.rotate ?? 0)));
+		if (piece.hero) piece.object.rotation.set(0.32, -0.38, 0.06);
+		const opacity = p * (1 - out);
+		piece.object.traverse((o) => {
+			if (!o.isMesh) return;
+			const m = o.material;
+			m.userData.base ??= m.opacity;
+			m.transparent = opacity < 1 || m.blending === THREE.AdditiveBlending;
+			m.opacity = m.userData.base * opacity;
+		});
+	}
+	renderer.render(world, camera);
+}
+
+/* Video: the scenes in turn, with the running thread key's spinner turning. */
 const TIMELINE = [["intro", 3.2], ["threads", 4], ["answer", 3.6], ["model", 3.6], ["prompts", 3.6], ["git", 3.6], ["usage", 3.6], ["outro", 4.4]];
-const VIDEO_LENGTH = TIMELINE.reduce((sum, [, d]) => sum + d, 0);
-let mounted;
-window.render = (t) => {
+window.VIDEO_LENGTH = TIMELINE.reduce((sum, [, d]) => sum + d, 0);
+const spinTextures = [];
+window.render = async (t) => {
 	let start = 0;
 	for (const [name, length] of TIMELINE) {
 		if (t < start + length || name === "outro") {
-			if (!mounted || mounted.name !== name) mounted = { name, scene: mount(name) };
+			if (current?.name !== name) await mount(name);
 			const local = t - start;
-			pose(mounted.scene, local, Math.max(0, (local - (length - 0.35)) / 0.35) * (name === "outro" ? 0 : 1));
-			const spin = F.keys.runningSpin[Math.floor(t * 30) % F.keys.runningSpin.length];
-			for (const img of mounted.scene.querySelectorAll("img")) if (img.dataset.spin || img.src === F.keys.running) { img.dataset.spin = 1; img.src = spin; }
+			// The running key's face is swapped for the next spinner frame.
+			const frame = Math.floor(t * 30) % F.keys.runningSpin.length;
+			spinTextures[frame] ??= await keyTexture(F.keys.runningSpin[frame]);
+			for (const piece of current.pieces) piece.object.traverse((o) => { if (o.isMesh && o.material.map && o.material.userData.running) o.material.map = spinTextures[frame]; });
+			pose(local, name === "outro" ? 0 : Math.max(0, (local - (length - 0.35)) / 0.35));
 			return;
 		}
 		start += length;
 	}
 };
-window.VIDEO_LENGTH = VIDEO_LENGTH;
-window.ready = () => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))).then(() => document.fonts.ready);
 
-const scene = params.get("scene");
-if (params.get("video")) {
-	stage.style.height = "1080px";
-	document.body.classList.add("video");
-	render(0);
-} else if (scene) {
-	pose(mount(scene), Infinity);
-}
+window.ready = () => Promise.resolve(window.__mounted);
+if (VIDEO) window.__mounted = window.render(0);
+else if (params.get("scene")) window.__mounted = mount(params.get("scene")).then(() => pose(Infinity));
 </script>
 </body>
 </html>
