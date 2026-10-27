@@ -2,6 +2,7 @@ import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { type VcsRef, worktreeBase } from "../git.js";
 import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun } from "../lineage.js";
 import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
@@ -49,7 +50,7 @@ type Capabilities = ThreadCapabilities & {
 	threadVisitedTracking?: boolean;
 };
 
-type ProjectDefaults = { defaultModelSelection?: ModelSelection | null; defaultRuntimeMode?: RuntimeMode };
+type ProjectDefaults = { defaultModelSelection?: ModelSelection | null; defaultRuntimeMode?: RuntimeMode; newWorktreesStartFromOrigin?: boolean };
 
 /** The settings a usage scan depends on: a change makes T3 Code's own clients read usage again. */
 type UsageSettings = { usagePriceOverrides?: unknown; usageModelAliases?: unknown; cursorKeychainUsageEnabled?: unknown };
@@ -71,7 +72,10 @@ type ServerConfig = {
 export type MessageContext = { version: 1; records: Record<string, unknown>[] };
 
 /** Where a launched thread works (`OrchestrationV2ThreadLaunchWorkspaceStrategy`). */
-export type WorkspaceStrategy = { type: "root"; branch?: string } | { type: "existing_worktree"; worktreePath: string; branch?: string };
+export type WorkspaceStrategy =
+	| { type: "root"; branch?: string }
+	| { type: "existing_worktree"; worktreePath: string; branch?: string }
+	| { type: "worktree"; baseRef: string; branch?: string; startFromOrigin?: boolean };
 
 export type Decision = "accept" | "acceptForSession" | "acceptAlways" | "decline" | "cancel";
 export type Question = {
@@ -784,6 +788,21 @@ export class Machine {
 			...(text === "" ? {} : { initialMessage: { messageId: this.#uuid(), text: message, ...(options.context === undefined ? {} : { context: options.context }), attachments: [] } }),
 		});
 		return { threadId };
+	}
+
+	/**
+	 * Where a new worktree for `projectId` starts, as T3 Code's composer launches one: from the repository's default
+	 * branch, under a branch name the server picks, from origin when the project's setting says so.
+	 */
+	async worktreeStrategy(projectId: string): Promise<WorkspaceStrategy> {
+		const root = this.#shell?.projects.get(projectId)?.workspaceRoot;
+		if (root === undefined) throw new RpcError("NoProject", "The project is gone.", t("worktree.noProject"));
+		const listed = await this.call<{ isRepo?: boolean; refs?: VcsRef[] }>("vcs.listRefs", { cwd: root, limit: 100 });
+		const baseRef = listed.isRepo === false ? undefined : worktreeBase(listed.refs ?? []);
+		if (baseRef === undefined) throw new RpcError("NoBaseRef", "No branch to start a worktree from.", t(listed.isRepo === false ? "worktree.notRepo" : "worktree.noBranch"));
+		const settings = this.#config?.settings;
+		const fromOrigin = settings?.projectSettingsOverrides?.[projectId]?.newWorktreesStartFromOrigin ?? settings?.newWorktreesStartFromOrigin ?? true;
+		return { type: "worktree", baseRef, ...(fromOrigin ? { startFromOrigin: true } : {}) };
 	}
 
 	#firstDefaultModel(): ModelSelection | undefined {

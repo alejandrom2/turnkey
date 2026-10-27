@@ -632,6 +632,32 @@ describe("Machine lineage", () => {
 	});
 });
 
+describe("Machine worktrees", () => {
+	it("starts a worktree from the default branch, from origin as T3 Code's setting defaults", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const strategy = h.machine.worktreeStrategy("p-1");
+		await flush();
+		expect(socket.request("vcs.listRefs").payload).toEqual({ cwd: "/Users/me/code/app", limit: 100 });
+		socket.reply("vcs.listRefs", { isRepo: true, refs: [{ name: "feature", current: true, isDefault: false }, { name: "main", current: false, isDefault: true }] });
+		expect(await strategy).toEqual({ type: "worktree", baseRef: "main", startFromOrigin: true });
+
+		const notRepo = expect(h.machine.worktreeStrategy("p-1")).rejects.toMatchObject({ reason: "Not a git repository" });
+		await flush();
+		socket.reply("vcs.listRefs", { isRepo: false, refs: [] });
+		await notRepo;
+	});
+
+	it("follows the project's own start-from-origin setting", async () => {
+		const h = setup({ config: { ...CONFIG, settings: { ...CONFIG.settings, newWorktreesStartFromOrigin: true, projectSettingsOverrides: { "p-1": { newWorktreesStartFromOrigin: false } } } } });
+		const socket = await connect(h);
+		const strategy = h.machine.worktreeStrategy("p-1");
+		await flush();
+		socket.reply("vcs.listRefs", { isRepo: true, refs: [{ name: "main", current: true, isDefault: true }] });
+		expect(await strategy).toEqual({ type: "worktree", baseRef: "main" });
+	});
+});
+
 describe("Machine skills", () => {
 	const skill = (name: string) => ({ name, path: `/skills/${name}`, enabled: true });
 	const withSkills = { ...CONFIG, providers: [{ ...CONFIG.providers[0], skills: [skill("global")] }] };
