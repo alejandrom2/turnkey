@@ -2,6 +2,7 @@ import streamDeck, { type Action } from "@elgato/streamdeck";
 import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
+import { QueueStore } from "./core/queues.js";
 import { readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
 import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
@@ -117,6 +118,8 @@ class Deck implements CredentialStore {
 	readonly ultrathink = new UltrathinkArming(() => this.repaint());
 	readonly animator = new Animator();
 	readonly transitions = new Transitions();
+	/** Queues of the threads visible faces show, read only when one changes. */
+	readonly queues = new QueueStore(() => this.repaint());
 	readonly #machines = new Map<string, Machine>();
 	readonly #visible = new Set<string>();
 	readonly #painters = new Set<() => void>();
@@ -289,7 +292,7 @@ class Deck implements CredentialStore {
 	/** Machine updates arrive per streamed row; repaint only when a connection state, the config or a shown field changed. */
 	#changed(): void {
 		this.board.update();
-		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion]));
+		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion, machine.tasksVersion]));
 		if (states === this.#machineStates) return;
 		this.#machineStates = states;
 		this.repaint();
