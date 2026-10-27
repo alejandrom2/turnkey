@@ -917,6 +917,9 @@
 				"worktreeHint": "Un nouveau worktree part de la branche par défaut du dépôt, comme le fait le compositeur de T3 Code, et tire son nom de branche du prompt ; il nécessite un prompt et un projet."
 			},
 			"model": {
+				"nameColor": "Couleur du nom",
+				"nameModel": "Couleur du modèle",
+				"nameWhite": "Blanc",
 				"hint": "Le parcours passe par les modèles favoris de T3 Code, tous fournisseurs confondus, ou par les modèles du fournisseur du fil si vous n'en avez pas. Choisir le modèle d'un autre fournisseur lui transfère le fil, comme le sélecteur de modèle de T3 Code."
 			},
 			"effort": {
@@ -974,6 +977,9 @@
 			},
 			"power": {
 				"controls": "Cette molette contrôle",
+				"bottomRow": "La vue modèle affiche",
+				"showSpeed": "Vitesse",
+				"showEffort": "Effort",
 				"hint": "Tournez pour prévisualiser, appuyez pour appliquer au fil sélectionné. Modèle parcourt les modèles favoris de T3 Code, tous fournisseurs confondus. Appuyez sans rien à appliquer, ou touchez, pour basculer la Vitesse quand le modèle la propose. Ultrathink, là où Claude le propose, préfixe les prochains prompts du deck au fil."
 			},
 			"limits": {
