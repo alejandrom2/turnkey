@@ -47,6 +47,9 @@ const DIALS: Placed[] = [
 const limits = (provider: string, window: string): Placed => ({ action: "limits", name: "Limits", settings: { provider, window } });
 const usage = (period: string): Placed => ({ action: "usage", name: "Usage", settings: { period } });
 
+/** Run Task keys start unpicked: tasks are the user's own. */
+const task = (): Placed => ({ action: "task", name: "Run Task" });
+
 const quick = (template: string): Placed => ({ action: "quick", name: "Quick Prompt", settings: { template } });
 const organize = (which: string): Placed => ({ action: "organize", name: "Organize", settings: { organize: which } });
 
@@ -109,7 +112,7 @@ const PROFILES: Profile[] = [
 					[quick("continue"), quick("test"), quick("fix"), quick("explain")],
 					[quick("commit"), organize("settle"), organize("pin"), organize("snooze")],
 				],
-				dials: [DIALS[0]!, DIALS[2]!, power("model"), DIALS[3]!],
+				dials: [DIALS[0]!, DIALS[2]!, { action: "dial.queue", name: "Queue Dial" }, DIALS[3]!],
 			},
 			{
 				name: "GIT",
@@ -146,6 +149,14 @@ const PROFILES: Profile[] = [
 					],
 				],
 				dials: [{ action: "dial.pr", name: "PR Dial" }, DIALS[0]!, DIALS[2]!, DIALS[3]!],
+			},
+			{
+				name: "TASKS",
+				keys: [
+					[task(), task(), task(), task()],
+					[quick("continue"), { action: "stop", name: "Stop" }, { action: "approve", name: "Approve" }, { action: "health", name: "Health" }],
+				],
+				dials: [{ action: "dial.tasks", name: "Tasks Dial" }, { action: "dial.queue", name: "Queue Dial" }, DIALS[0]!, DIALS[3]!],
 			},
 			{
 				name: "USAGE",

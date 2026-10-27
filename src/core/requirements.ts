@@ -15,6 +15,8 @@ export type Need =
 	| { kind: "thread"; ok: boolean }
 	| { kind: "running"; ok: boolean }
 	| { kind: "pending"; ok: boolean }
+	| { kind: "queued"; ok: boolean | undefined }
+	| { kind: "tasks"; ok: boolean | undefined }
 	| { kind: "prompt"; ok: boolean }
 	| { kind: "scope"; scope: string; ok: boolean }
 	| { kind: "option"; option: string; ok: boolean }
@@ -24,6 +26,8 @@ export type Need =
 	| { kind: "repo"; ok: boolean | undefined; reason?: string }
 	| { kind: "editor"; ok: boolean }
 	| { kind: "limits"; ok: boolean }
+	/** Every provider ready; `problems` names what isn't ("Claude: Signed out"). */
+	| { kind: "providers"; problems: string[] }
 	/** A saved setting that no longer matches anything: a model, effort, mode, project or editor. */
 	| { kind: "value"; value: string; ok: boolean };
 
@@ -66,6 +70,10 @@ function describe(need: Need): Requirement {
 			return make("running", t("needs.running"), need.ok, ["needs.fix.startTurn"]);
 		case "pending":
 			return make("pending", t("needs.pending"), need.ok, ["needs.fix.waitForAgent"]);
+		case "tasks":
+			return make("tasks", t("needs.tasks"), need.ok, ["needs.fix.addTask"]);
+		case "queued":
+			return make("queued", t("needs.queued"), need.ok, ["needs.fix.queueMessage"]);
 		case "prompt":
 			return make("prompt", t("needs.prompt"), need.ok, ["needs.fix.typePrompt"]);
 		case "scope":
@@ -84,6 +92,8 @@ function describe(need: Need): Requirement {
 			return make("editor", t("needs.editor"), need.ok, ["needs.fix.installEditor"]);
 		case "limits":
 			return make("limits", t("needs.limits"), need.ok, ["needs.fix.signInProvider"]);
+		case "providers":
+			return make("providers", t("needs.providers"), need.problems.length === 0, ["needs.fix.providersInT3"], need.problems);
 		case "value":
 			return make(`value:${need.value}`, need.ok ? need.value : t("needs.notAvailable", { value: need.value }), need.ok, ["needs.fix.pickAnother"]);
 	}

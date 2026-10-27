@@ -108,7 +108,11 @@
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Health",
-		"Tooltip": "The connection to T3 Code: ready, connecting, needs pairing or failing. Tap reconnects."
+		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, signed out, update required, check failed). Tap reconnects."
+	},
+	"com.alejandrom2.t3deck.task": {
+		"Name": "Run Task",
+		"Tooltip": "One of T3 Code's scheduled tasks: its name and when it runs next. Press runs it now."
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Threads Dial",
@@ -136,6 +140,20 @@
 		"Tooltip": "Answers an agent's question choice by choice, and approvals as far as its settings allow.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choose answer", "Push": "Answer (hold by default)", "Touch": "Open thread" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.queue": {
+		"Name": "Queue Dial",
+		"Tooltip": "Rotate through the selected thread's queued messages. Press sends one now (steering it in, or starting it while nothing runs); hold removes it.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose message", "Push": "Send now (hold: remove)", "Touch": "Open thread" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.tasks": {
+		"Name": "Tasks Dial",
+		"Tooltip": "Rotate through T3 Code's scheduled tasks, with when each runs next. Press runs the shown task now; tap turns it off or back on.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose task", "Push": "Run now", "Touch": "Turn on or off" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.pr": {
@@ -179,7 +197,9 @@
 			"holdToSend": "Hold to send",
 			"holdToSettle": "Hold to settle",
 			"holdToSnooze": "Hold to snooze",
-			"notWebLink": "Not a web link"
+			"notWebLink": "Not a web link",
+			"holdToRemove": "Hold to remove",
+			"cantSteerYet": "Can't steer it in yet"
 		},
 		"face": {
 			"noThread": "No thread",
@@ -237,7 +257,17 @@
 			"connected": "Connected",
 			"readOnly": "Read only",
 			"connecting": "Connecting…",
-			"needsPairing": "Needs pairing"
+			"needsPairing": "Needs pairing",
+			"notFound": "Not installed",
+			"checkFailed": "Check failed",
+			"signedOut": "Signed out",
+			"updateRequired": "Update required",
+			"needsAttention": "Needs attention",
+			"updateAvailable": "Update available",
+			"disabled": "Disabled",
+			"providerUpdate": "{provider} update available",
+			"providerOff": "{provider} is off",
+			"more": "+{count} more"
 		},
 		"reason": {
 			"noPrompt": "No prompt",
@@ -257,7 +287,9 @@
 			"noModes": "No modes",
 			"notOffered": "Not offered",
 			"noFastMode": "No fast mode",
-			"noPlanMode": "No plan mode"
+			"noPlanMode": "No plan mode",
+			"pickThread": "Pick a thread",
+			"targetGone": "Not available: {thread}"
 		},
 		"failure": {
 			"readOnly": "Read only",
@@ -276,7 +308,8 @@
 			"done": "Done",
 			"failed": "Failed",
 			"stopped": "Stopped",
-			"idle": "Idle"
+			"idle": "Idle",
+			"queuedCount": "+{count} queued"
 		},
 		"filter": {
 			"all": "Threads",
@@ -303,7 +336,14 @@
 			"question": "Question",
 			"pressToOpen": "Press to open in T3 Code",
 			"openInT3Code": "Open in T3 Code",
-			"withHold": "{label} · hold"
+			"withHold": "{label} · hold",
+			"queue": "Queue",
+			"nothingQueued": "Nothing queued",
+			"queuedMessage": "Queued message",
+			"queueHeld": "Held · press sends it now",
+			"queueSendNow": "Press sends now · hold removes",
+			"queueSteer": "Press steers it in · hold removes",
+			"queueRemoveOnly": "Hold to remove"
 		},
 		"power": {
 			"quicker": "Quicker",
@@ -356,7 +396,8 @@
 			"noProject": "No project",
 			"defaultEditor": "T3 Code's default",
 			"firstProvider": "First with limits",
-			"firstWindow": "Shortest window"
+			"firstWindow": "Shortest window",
+			"chooseThread": "Choose a thread…"
 		},
 		"machine": {
 			"thisMachine": "This machine",
@@ -519,9 +560,15 @@
 				"installEditor": "Install an editor T3 Code supports, like VS Code or Cursor.",
 				"signInProvider": "Sign in to Codex or Claude in T3 Code; they report subscription limits.",
 				"pickAnother": "Pick another value above.",
-				"noFindings": "Nothing is failing or unresolved on it."
+				"noFindings": "Nothing is failing or unresolved on it.",
+				"providersInT3": "Fix them in T3 Code under Settings → Providers.",
+				"queueMessage": "Send a message while the thread works; it waits in its queue.",
+				"addTask": "Add one in T3 Code under Settings → Scheduled tasks."
 			},
-			"findings": "Findings to fix"
+			"findings": "Findings to fix",
+			"providers": "Providers ready",
+			"queued": "A queued message",
+			"tasks": "A scheduled task"
 		},
 		"editor": {
 			"title": "Open in editor",
@@ -660,7 +707,9 @@
 				"models": "Loading models…",
 				"efforts": "Loading efforts…",
 				"providers": "Loading providers…",
-				"windows": "Loading windows…"
+				"windows": "Loading windows…",
+				"threads": "Loading threads…",
+				"tasks": "Loading tasks…"
 			},
 			"filter": {
 				"all": "All threads",
@@ -802,6 +851,21 @@
 				"quarter": "90 days",
 				"hint": "T3 Code's API estimate for the period, across the chosen machines; a folder two machines share counts once. Tap reads again, hold also reloads model prices. Needs usage access.",
 				"dialHint": "Rotate from the period's total through each model, by cost. Press or tap reads again; a long press also reloads model prices. Needs usage access."
+			},
+			"target": {
+				"label": "Target",
+				"selected": "Selected thread",
+				"thread": "This thread",
+				"pick": "Thread",
+				"hint": "The key acts on this thread even when another is selected, and shows a small pin. Archived or deleted, it shows as not available until you pick another."
+			},
+			"queue": {
+				"hint": "Follows the selected thread's queue. Press sends the shown message now: into the running turn where the provider takes steering, or as the next turn when nothing runs, which also releases a queue Stop held. Hold removes it."
+			},
+			"task": {
+				"label": "Task",
+				"hint": "Press runs the task now, as T3 Code's Run now does; it keeps its schedule. Tasks come from T3 Code's Settings → Scheduled tasks.",
+				"dialHint": "Rotate through the machine's scheduled tasks. Press runs the shown one now; tap turns it off, and tapping again turns it back on."
 			}
 		},
 		"usage": {
@@ -840,13 +904,32 @@
 			"pressToRefresh": "Press to refresh",
 			"holdToReset": "Hold to use reset",
 			"noResets": "No resets banked",
-		"needsProviders": "Needs provider access",
+			"needsProviders": "Needs provider access",
 			"outcome": {
 				"reset": "Reset applied",
 				"nothingToReset": "Nothing to reset",
 				"noCredit": "No reset left",
 				"alreadyRedeemed": "Already redeemed"
 			}
+		},
+		"tasks": {
+			"title": "Tasks",
+			"now": "Now",
+			"in": "in {time}",
+			"running": "Running",
+			"off": "Off",
+			"onWebhook": "On webhook",
+			"notScheduled": "Not scheduled",
+			"lastFailed": "Last run failed · {when}",
+			"noTasks": "No scheduled tasks",
+			"addInT3": "Add them in T3 Code",
+			"updateT3": "Update T3 Code for tasks",
+			"loading": "Loading tasks…",
+			"pressToRun": "Press runs it now · tap turns it off",
+			"pressToRunOff": "Press runs it now · tap turns it on",
+			"pickTask": "Pick a task",
+			"gone": "Not available: {task}",
+			"chooseTask": "Choose a task…"
 		}
 	}
 }

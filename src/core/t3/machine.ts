@@ -2,6 +2,8 @@ import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { readTasks, type ScheduledTask } from "../tasks.js";
+import { type QueueProjection, type ThreadQueue, threadQueue } from "./queue.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
 	applyShellItem,
@@ -137,6 +139,8 @@ export class Machine {
 	/** Bumped on every config read, so the deck repaints faces drawn from it. */
 	configVersion = 0;
 	#rows: ShellRow[] = [];
+	/** Every top-level thread by id, settled and snoozed too; built on first use after each change. */
+	#everyRow: Map<string, ShellRow> | undefined;
 	#subscribed = false;
 	#snoozeTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Hub accounts' limits, from the config subscription; undefined until it reports them. */
@@ -144,6 +148,15 @@ export class Machine {
 	#configWatchers = 0;
 	#configWatch: { rpc: RpcSocket; stop: () => void } | undefined;
 	#unwatchTimer: ReturnType<typeof setTimeout> | undefined;
+	/** Scheduled tasks while something watches them; undefined until the first list. */
+	#tasks: ScheduledTask[] | undefined;
+	/** Why tasks can't be listed (an older T3 Code), if they can't. */
+	#tasksError: string | undefined;
+	#taskWatchers = 0;
+	#taskWatch: { rpc: RpcSocket; stop: () => void } | undefined;
+	#untaskTimer: ReturnType<typeof setTimeout> | undefined;
+	/** Bumped when the task list changes, so the deck repaints faces drawn from it. */
+	tasksVersion = 0;
 	readonly #now: () => number;
 	readonly #uuid: () => string;
 
@@ -176,6 +189,25 @@ export class Machine {
 
 	get projects(): ProjectShell[] {
 		return [...(this.#shell?.projects.values() ?? [])];
+	}
+
+	/**
+	 * One top-level thread, listed or not (settled, snoozed): null once the shell no longer has it (archived or deleted),
+	 * undefined while there is no shell yet to tell.
+	 */
+	threadRow(threadId: string): ShellRow | null | undefined {
+		return this.#allRows()?.get(threadId) ?? (this.#shell === undefined ? undefined : null);
+	}
+
+	/** Every top-level thread, listed or not, newest first: the choices for a key aimed at one thread. */
+	get everyRow(): ShellRow[] {
+		return [...(this.#allRows()?.values() ?? [])].sort((a, b) => b.updatedAt - a.updatedAt);
+	}
+
+	#allRows(): Map<string, ShellRow> | undefined {
+		if (this.#shell === undefined) return undefined;
+		this.#everyRow ??= new Map(shellRows(this.#shell, this.#capabilities, this.#now(), true).map((row) => [row.threadId, row]));
+		return this.#everyRow;
 	}
 
 	project(projectId: string): ProjectShell | undefined {
@@ -264,6 +296,7 @@ export class Machine {
 		this.#rpc = undefined;
 		this.#subscribed = false;
 		this.#configWatch = undefined;
+		this.#taskWatch = undefined;
 		clearTimeout(this.#snoozeTimer);
 		rpc?.stop();
 	}
@@ -296,8 +329,11 @@ export class Machine {
 		this.#shell = undefined;
 		this.#config = undefined;
 		this.#limitSources = undefined;
+		this.#tasks = undefined;
+		this.#tasksError = undefined;
 		this.#configLoad = undefined;
 		this.#rows = [];
+		this.#everyRow = undefined;
 	}
 
 	#onSocket(state: RpcState): void {
@@ -314,6 +350,7 @@ export class Machine {
 				this.#rpc = undefined;
 				this.#subscribed = false;
 				this.#configWatch = undefined;
+				this.#taskWatch = undefined;
 				if (error instanceof PairingError && error.kind === "repair") {
 					void this.store.save(this.url, undefined);
 					this.#reset();
@@ -349,6 +386,7 @@ export class Machine {
 			canOperate: credential.scopes.includes(OPERATE_SCOPE),
 		});
 		this.#syncConfigWatch();
+		this.#syncTaskWatch();
 		this.#derive();
 	}
 
@@ -475,6 +513,76 @@ export class Machine {
 		this.onChange();
 	}
 
+	/** The machine's scheduled tasks, live while watched; undefined until listed. */
+	get tasks(): readonly ScheduledTask[] | undefined {
+		return this.#tasks;
+	}
+
+	get tasksError(): string | undefined {
+		return this.#tasksError;
+	}
+
+	/** Keeps the task list live (T3 Code resends it whole on every change) while something shows it; returns the release. */
+	watchTasks(): () => void {
+		this.#taskWatchers++;
+		clearTimeout(this.#untaskTimer);
+		this.#syncTaskWatch();
+		let released = false;
+		return () => {
+			if (released) return;
+			released = true;
+			this.#taskWatchers--;
+			if (this.#taskWatchers === 0) this.#untaskTimer = setTimeout(() => this.#syncTaskWatch(), CONFIG_WATCH_LINGER_MS);
+		};
+	}
+
+	#syncTaskWatch(): void {
+		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
+		const wanted = this.#taskWatchers > 0 ? rpc : undefined;
+		if (this.#taskWatch !== undefined && this.#taskWatch.rpc !== wanted) {
+			this.#taskWatch.stop();
+			this.#taskWatch = undefined;
+		}
+		if (wanted === undefined || this.#taskWatch !== undefined) return;
+		const watch = {
+			rpc: wanted,
+			stop: wanted.subscribe("scheduledTasks.subscribe", () => ({}), (value) => this.#setTasks(wanted, readTasks(value), undefined), {
+				persistent: true,
+				// An older T3 Code has no tasks; not retried until the next connection.
+				onEnd: (error) => {
+					if (this.#taskWatch !== watch) return;
+					watch.stop();
+					this.#taskWatch = undefined;
+					if (error !== undefined) this.#setTasks(wanted, this.#tasks, error.message);
+				},
+			}),
+		};
+		this.#taskWatch = watch;
+	}
+
+	#setTasks(rpc: RpcSocket, tasks: ScheduledTask[] | undefined, error: string | undefined): void {
+		if (this.#rpc !== rpc) return;
+		this.#tasks = tasks;
+		this.#tasksError = error;
+		this.tasksVersion++;
+		this.onChange();
+	}
+
+	/** The task list once, for an inspector's choices while nothing watches it. */
+	async listTasks(): Promise<readonly ScheduledTask[]> {
+		return this.#tasks ?? readTasks(await this.call("scheduledTasks.list", {}));
+	}
+
+	/** Starts a scheduled task now, as T3 Code's Run now does. */
+	async runTask(id: string): Promise<void> {
+		await this.call("scheduledTasks.runNow", { id }, OPERATE_SCOPE);
+	}
+
+	/** Turns a scheduled task on or off. */
+	async setTaskEnabled(id: string, enabled: boolean): Promise<void> {
+		await this.call("scheduledTasks.setEnabled", { id, enabled }, OPERATE_SCOPE);
+	}
+
 	/** Cost and tokens for a window; T3 Code scans its transcript folders for every call, so callers cache. */
 	async usageSummary(input: UsageSummaryInput): Promise<UsageSummary> {
 		return readUsageSummary(await this.call<unknown>("server.getUsageSummary", input, DIAGNOSTICS_SCOPE));
@@ -520,6 +628,7 @@ export class Machine {
 		const shell = this.#shell;
 		const now = this.#now();
 		this.#rows = shell === undefined ? [] : shellRows(shell, this.#capabilities, now);
+		this.#everyRow = undefined;
 		const wake = shell === undefined ? undefined : nextSnoozeWake(shell, now);
 		// Timers overflow past 2^31 ms; a far-off wake just re-arms.
 		if (wake !== undefined) this.#snoozeTimer = setTimeout(() => this.#derive(), Math.min(wake - now + 10, 2 ** 31 - 1));
@@ -721,10 +830,19 @@ export class Machine {
 	}
 
 	/** Takes the first bounded snapshot of a thread and unsubscribes. `live` is false when the provider can't take an answer. */
-	#fromThreadSnapshot(rpc: RpcSocket, threadId: string, requestId: string): Promise<{ item: TurnItem | undefined; live: boolean } | undefined> {
+	async #fromThreadSnapshot(rpc: RpcSocket, threadId: string, requestId: string): Promise<{ item: TurnItem | undefined; live: boolean } | undefined> {
+		const projection = (await this.#threadSnapshot(rpc, threadId)) as { turnItems?: TurnItem[]; runtimeRequests?: { id: string; responseCapability?: { type?: string } }[] } | undefined;
+		if (projection === undefined) return undefined;
+		const item = projection.turnItems?.findLast((candidate) => candidate.requestId === requestId);
+		const capability = projection.runtimeRequests?.find((request) => request.id === requestId)?.responseCapability?.type;
+		return { item, live: capability !== "not_resumable" };
+	}
+
+	/** One bounded thread snapshot: the latest window plus every queued run and its message (threadHistoryPaging.ts). */
+	#threadSnapshot(rpc: RpcSocket, threadId: string): Promise<unknown> {
 		return new Promise((resolve) => {
 			let settled = false;
-			const finish = (result: { item: TurnItem | undefined; live: boolean } | undefined) => {
+			const finish = (result: unknown) => {
 				if (settled) return;
 				settled = true;
 				clearTimeout(timer);
@@ -736,15 +854,34 @@ export class Machine {
 				"orchestration.subscribeThread",
 				() => ({ threadId, acceptBoundedSnapshot: true }),
 				(value) => {
-					const snapshot = value as { kind?: string; projection?: { turnItems?: TurnItem[]; runtimeRequests?: { id: string; responseCapability?: { type?: string } }[] } };
-					if (snapshot.kind !== "snapshot") return;
-					const item = snapshot.projection?.turnItems?.findLast((candidate) => candidate.requestId === requestId);
-					const capability = snapshot.projection?.runtimeRequests?.find((request) => request.id === requestId)?.responseCapability?.type;
-					finish({ item, live: capability !== "not_resumable" });
+					const snapshot = value as { kind?: string; projection?: unknown };
+					if (snapshot.kind === "snapshot") finish(snapshot.projection);
 				},
 				{ onEnd: () => finish(undefined) },
 			);
 		});
+	}
+
+	/** The thread's queue, read from one bounded snapshot; T3 Code's shell carries no queue, so callers read it on change. */
+	async queue(thread: ThreadRef): Promise<ThreadQueue> {
+		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		return threadQueue(projection as QueueProjection);
+	}
+
+	/** Steers the running turn with a queued message (T3 Code's "Steer now"). */
+	async promoteQueued(thread: ThreadRef, queuedRunId: string, targetRunId: string): Promise<void> {
+		await this.#dispatch({ type: "queued-message.promote-to-steer", threadId: thread.threadId, queuedRunId, targetRunId });
+	}
+
+	/** Starts a queued message now while nothing runs, which also releases a held queue ("Send now"). */
+	async startQueued(thread: ThreadRef, runId: string): Promise<void> {
+		await this.#dispatch({ type: "queued-run.start", threadId: thread.threadId, runId });
+	}
+
+	/** Removes a queued message. */
+	async cancelQueued(thread: ThreadRef, runId: string): Promise<void> {
+		await this.#dispatch({ type: "queued-run.cancel", threadId: thread.threadId, runId });
 	}
 
 	async respond(threadId: string, requestId: string, decision: Decision): Promise<void> {

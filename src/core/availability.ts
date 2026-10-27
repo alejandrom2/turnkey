@@ -30,6 +30,8 @@ export type AvailabilityInput = {
 	canOperate: boolean;
 	/** A saved prompt is set, for actions that send one. */
 	hasPrompt?: boolean;
+	/** Why the pinned thread can't be acted on (archived, deleted, none picked): it outranks every other reason. */
+	gone?: string;
 	/** Why the thread's model or provider (or New Thread's destination) can't take this, when it can't: "No fast mode". */
 	missing?: string;
 };
@@ -42,6 +44,7 @@ const no = (reason: string): Availability => ({ available: false, reason });
 /** Whether an action can act right now, and the short reason drawn on its key when it can't. */
 export function availability(kind: ActionKind, input: AvailabilityInput): Availability {
 	const { thread } = input;
+	if (input.gone !== undefined) return no(input.gone);
 	if ((kind === "send" || kind === "steer" || kind === "new") && !input.hasPrompt) return no(t("reason.noPrompt"));
 	if (kind === "new" || kind === "launch") return input.missing ? no(input.missing) : input.canOperate ? yes : no(t("reason.readOnly"));
 	if (thread === undefined) return no(kind === "answer" || kind === "approve" || kind === "deny" ? t("reason.nothingPending") : t("reason.noThread"));

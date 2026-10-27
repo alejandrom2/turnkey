@@ -32,13 +32,20 @@ import type { StripContent } from "../core/strip.js";
 import { type StripItem, type StripList, threadRowsArt } from "../core/styles.js";
 import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
-import { canOperate, colorStyle, LONG_PRESS_MS, openThread, pressWhileDisconnected, selectedThread, sendToThread, speedPaint, ultrathinkArmed } from "./base.js";
+import { canOperate, colorStyle, LONG_PRESS_MS, openThread, pressWhileDisconnected, queuedCount, selectedThread, sendToThread, speedPaint, ultrathinkArmed } from "./base.js";
 import { applyEffort, launchable, requestFor, startThread } from "./keys.js";
 import { type DialSettings, disconnectedStrip, markArt, StripDial } from "./strip.js";
 
 const ID = "com.alejandrom2.t3deck";
 
+/** A thread's state in a line, with its queue when messages wait there. */
 function statusLine(thread: DeckThread): string {
+	const queued = queuedCount(thread);
+	const line = stateLine(thread);
+	return queued > 0 ? `${line} · ${t("status.queuedCount", { count: queued })}` : line;
+}
+
+function stateLine(thread: DeckThread): string {
 	const diff = thread.active ? undefined : thread.machine.turnDiff(thread);
 	const lines = diff ? ` · +${diff.additions} −${diff.deletions}` : "";
 	switch (thread.deck) {
@@ -141,7 +148,7 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 		return threadRowsArt(
 			threads.slice(at, at + 3).map((row) => {
 				const color = threadTint(row.deck, row.unseen) ?? COLORS.text;
-				return { title: row.title, art: glyphArt(THREAD_GLYPH[row.deck], color) };
+				return { title: row.title, art: glyphArt(THREAD_GLYPH[row.deck], color), queued: row === thread ? queuedCount(row) : undefined };
 			}),
 		);
 	}
