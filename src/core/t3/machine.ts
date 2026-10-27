@@ -137,6 +137,8 @@ export class Machine {
 	/** Bumped on every config read, so the deck repaints faces drawn from it. */
 	configVersion = 0;
 	#rows: ShellRow[] = [];
+	/** Every top-level thread by id, settled and snoozed too; built on first use after each change. */
+	#everyRow: Map<string, ShellRow> | undefined;
 	#subscribed = false;
 	#snoozeTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Hub accounts' limits, from the config subscription; undefined until it reports them. */
@@ -176,6 +178,25 @@ export class Machine {
 
 	get projects(): ProjectShell[] {
 		return [...(this.#shell?.projects.values() ?? [])];
+	}
+
+	/**
+	 * One top-level thread, listed or not (settled, snoozed): null once the shell no longer has it (archived or deleted),
+	 * undefined while there is no shell yet to tell.
+	 */
+	threadRow(threadId: string): ShellRow | null | undefined {
+		return this.#allRows()?.get(threadId) ?? (this.#shell === undefined ? undefined : null);
+	}
+
+	/** Every top-level thread, listed or not, newest first: the choices for a key aimed at one thread. */
+	get everyRow(): ShellRow[] {
+		return [...(this.#allRows()?.values() ?? [])].sort((a, b) => b.updatedAt - a.updatedAt);
+	}
+
+	#allRows(): Map<string, ShellRow> | undefined {
+		if (this.#shell === undefined) return undefined;
+		this.#everyRow ??= new Map(shellRows(this.#shell, this.#capabilities, this.#now(), true).map((row) => [row.threadId, row]));
+		return this.#everyRow;
 	}
 
 	project(projectId: string): ProjectShell | undefined {
@@ -298,6 +319,7 @@ export class Machine {
 		this.#limitSources = undefined;
 		this.#configLoad = undefined;
 		this.#rows = [];
+		this.#everyRow = undefined;
 	}
 
 	#onSocket(state: RpcState): void {
@@ -520,6 +542,7 @@ export class Machine {
 		const shell = this.#shell;
 		const now = this.#now();
 		this.#rows = shell === undefined ? [] : shellRows(shell, this.#capabilities, now);
+		this.#everyRow = undefined;
 		const wake = shell === undefined ? undefined : nextSnoozeWake(shell, now);
 		// Timers overflow past 2^31 ms; a far-off wake just re-arms.
 		if (wake !== undefined) this.#snoozeTimer = setTimeout(() => this.#derive(), Math.min(wake - now + 10, 2 ** 31 - 1));

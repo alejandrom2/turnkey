@@ -257,7 +257,9 @@
 			"noModes": "No modes",
 			"notOffered": "Not offered",
 			"noFastMode": "No fast mode",
-			"noPlanMode": "No plan mode"
+			"noPlanMode": "No plan mode",
+			"pickThread": "Pick a thread",
+			"targetGone": "Not available: {thread}"
 		},
 		"failure": {
 			"readOnly": "Read only",
@@ -660,7 +662,8 @@
 				"models": "Loading models…",
 				"efforts": "Loading efforts…",
 				"providers": "Loading providers…",
-				"windows": "Loading windows…"
+				"windows": "Loading windows…",
+				"threads": "Loading threads…"
 			},
 			"filter": {
 				"all": "All threads",
@@ -802,6 +805,13 @@
 				"quarter": "90 days",
 				"hint": "T3 Code's API estimate for the period, across the chosen machines; a folder two machines share counts once. Tap reads again, hold also reloads model prices. Needs usage access.",
 				"dialHint": "Rotate from the period's total through each model, by cost. Press or tap reads again; a long press also reloads model prices. Needs usage access."
+			},
+			"target": {
+				"label": "Target",
+				"selected": "Selected thread",
+				"thread": "This thread",
+				"pick": "Thread",
+				"hint": "The key acts on this thread even when another is selected, and shows a small pin. Archived or deleted, it shows as not available until you pick another."
 			}
 		},
 		"usage": {
@@ -840,7 +850,7 @@
 			"pressToRefresh": "Press to refresh",
 			"holdToReset": "Hold to use reset",
 			"noResets": "No resets banked",
-		"needsProviders": "Needs provider access",
+			"needsProviders": "Needs provider access",
 			"outcome": {
 				"reset": "Reset applied",
 				"nothingToReset": "Nothing to reset",
