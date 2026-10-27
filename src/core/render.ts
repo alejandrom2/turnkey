@@ -636,7 +636,7 @@ function stripFill(appearance: StripAppearance, tone: StripTone): string {
 
 /** Touch-strip background, with a hairline tinted by state unless turned off, and T3 Code's Ultrathink frame when armed. */
 export function stripCanvas(accent: string = COLORS.accent, appearance: StripAppearance = DEFAULT_APPEARANCE, tone: StripTone = "neutral", ultrathink = false): string {
-	const hairline = appearance.hairline ? `<rect y="97" width="200" height="3" fill="${accent}" fill-opacity=".85"/>` : "";
+	const hairline = appearance.hairline ? `<rect y="95" width="200" height="5" fill="${accent}"/>` : "";
 	return svgDataUrl(
 		`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${stripFill(appearance, tone)}${hairline}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}</svg>`,
 	);
