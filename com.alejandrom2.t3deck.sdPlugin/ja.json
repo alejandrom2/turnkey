@@ -716,7 +716,11 @@
 				"pullHint": "選択中スレッドのブランチがアップストリームより遅れているとき、アップストリームからプルします。"
 			},
 			"card": {
-				"choose": "マシンを選択",
+				"machine": "マシン",
+				"machines": "マシン一覧",
+				"getLink": "ペアリングリンクを取得",
+				"getLinkRow": "リンクを取得",
+				"pasteLink": "リンクを貼り付け",
 				"looking": "このマシンで T3 Code を検索中…",
 				"machineGroup": "このアクションのマシン",
 				"addMachine": "マシンを追加",
@@ -725,8 +729,6 @@
 				"connecting": "接続中…",
 				"accessHelp": "T3 Deck は、リンクが許可する範囲でスレッドの読み取りと操作を要求します。取り消しは「Settings → Sharing & access」で行えます。",
 				"shared": "追加したマシンはすべての T3 Deck アクションで共有されます。各アクションは上で選択したマシンに従います。",
-				"connectTitle": "T3 Deck を接続",
-				"pairTitle": "T3 Deck をペアリング",
 				"notRunning": "このマシンで T3 Code が実行されていません。T3 Code を開くか、下に別のマシンのペアリングリンクを貼り付けてください。",
 				"howToPair": "T3 Code で「Settings → Sharing & access」を開き、ペアリングリンクを作成して下に貼り付けてください。",
 				"picked": "このアクションは、選択したマシンのスレッドを表示・操作します。",

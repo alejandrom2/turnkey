@@ -716,7 +716,11 @@
 				"pullHint": "Hace pull de la rama del hilo seleccionado desde su upstream cuando va por detrás."
 			},
 			"card": {
-				"choose": "Elige una máquina",
+				"machine": "Equipo",
+				"machines": "Equipos",
+				"getLink": "Obtener enlace",
+				"getLinkRow": "Obtener enlace",
+				"pasteLink": "Pegar enlace",
 				"looking": "Buscando T3 Code en esta máquina…",
 				"machineGroup": "Máquina para esta acción",
 				"addMachine": "Añadir una máquina",
@@ -725,8 +729,6 @@
 				"connecting": "Conectando…",
 				"accessHelp": "T3 Deck pide leer hilos y actuar sobre ellos, dentro de lo que permite el enlace. Revócalo en Settings → Sharing & access.",
 				"shared": "Todas las acciones de T3 Deck comparten cada máquina que añadas. Cada acción sigue la máquina elegida arriba.",
-				"connectTitle": "Conectar T3 Deck",
-				"pairTitle": "Vincular T3 Deck",
 				"notRunning": "T3 Code no está en marcha en esta máquina. Ábrelo, o pega abajo un enlace de vinculación de otra máquina.",
 				"howToPair": "En T3 Code, abre Settings → Sharing & access, crea un enlace de vinculación y pégalo abajo.",
 				"picked": "Esta acción muestra hilos de la máquina que elijas y actúa sobre ellos.",

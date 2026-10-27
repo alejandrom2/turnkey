@@ -716,7 +716,11 @@
 				"pullHint": "Fait un pull de la branche du fil sélectionné depuis son upstream quand elle est en retard."
 			},
 			"card": {
-				"choose": "Choisir une machine",
+				"machine": "Machine",
+				"machines": "Machines",
+				"getLink": "Obtenir un lien",
+				"getLinkRow": "Obtenir le lien",
+				"pasteLink": "Coller le lien",
 				"looking": "Recherche de T3 Code sur cette machine…",
 				"machineGroup": "Machine pour cette action",
 				"addMachine": "Ajouter une machine",
@@ -725,8 +729,6 @@
 				"connecting": "Connexion…",
 				"accessHelp": "T3 Deck demande à lire les fils et à agir dessus, dans les limites du lien. Révoquez-le dans « Settings → Sharing & access ».",
 				"shared": "Chaque machine ajoutée est partagée par toutes les actions T3 Deck. Chaque action suit la machine choisie ci-dessus.",
-				"connectTitle": "Connecter T3 Deck",
-				"pairTitle": "Associer T3 Deck",
 				"notRunning": "T3 Code ne tourne pas sur cette machine. Ouvrez-le, ou collez ci-dessous un lien d'association d'une autre machine.",
 				"howToPair": "Dans T3 Code, ouvrez « Settings → Sharing & access », créez un lien d'association et collez-le ci-dessous.",
 				"picked": "Cette action affiche les fils de la machine choisie et agit dessus.",
