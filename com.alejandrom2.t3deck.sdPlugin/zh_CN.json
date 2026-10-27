@@ -76,7 +76,7 @@
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "拉取请求",
-		"Tooltip": "所选对话的拉取请求及其状态。轻触打开。"
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "分支",
@@ -103,20 +103,20 @@
 		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "修复问题",
-		"Tooltip": "为所选对话的拉取请求发送 T3 Code 的“Fix findings”任务：未解决的评审和失败的检查。长按发送。"
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
 	},
 	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "解释 PR",
-		"Tooltip": "让所选对话逐步讲解其拉取请求，与 T3 Code 的“Explain”相同。"
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
 	},
 	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "询问 PR",
-		"Tooltip": "在 T3 Code 中打开包含该拉取请求的对话，以便在那里提问。"
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
 	},
 	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "评审指南",
-		"Tooltip": "为所选对话的拉取请求编写 T3 Code 的评审指南，然后打开对话。"
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
 	},
 	"com.alejandrom2.t3deck.editor": {
 		"Name": "打开",
@@ -707,7 +707,12 @@
 				"hold": "长按",
 				"tap": "轻触",
 				"fixHint": "将 T3 Code 针对所选对话拉取请求的“Fix findings”任务发送到该对话，忙碌时排队。评审评论和检查输出来自托管平台，作为不可信数据附加。",
-				"dialHint": "列出该机器上打开的拉取请求。按下在关联的对话（或新的工作树对话）中运行“Fix findings”；轻触在浏览器中打开；触摸并按住查看问题。"
+				"dialHint": "列出该机器上打开的拉取请求。按下在关联的对话（或新的工作树对话）中运行“Fix findings”；轻触在浏览器中打开；触摸并按住查看问题。",
+				"show": "显示",
+				"fix": "修复问题",
+				"explain": "解释",
+				"ask": "询问",
+				"guide": "评审指南"
 			},
 			"git": {
 				"action": "操作",

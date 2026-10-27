@@ -99,8 +99,6 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 			const queue = thread && queueOf(thread);
 			return [...needsFor(machine, thread), { kind: "queued", ok: queue === undefined ? (thread === undefined ? false : undefined) : queue.items.length > 0 }];
 		}
-		case "pr":
-			return [...needsFor(machine, thread, false), { kind: "pr", ok: (thread?.pullRequests.length ?? 0) > 0 }];
 		case "branch":
 			return [...needsFor(machine, thread, false), { kind: "branch", ok: thread?.branch !== undefined }];
 		default:

@@ -846,6 +846,29 @@ const openPage = (fallback: string) =>
 		inModes("mode", "open-editor", fallback, ["editor"]) + inModes("mode", "open-preview", fallback, ["preview"]) + targetScript,
 	);
 
+/** Pull Request's panel, starting in `fallback`: Fix findings' hold and hint only for it. */
+const prPage = (fallback: string) =>
+	page(
+		"Pull Request",
+		`${modeField("mode", "inspector.field.does", fallback, [
+			["show", "inspector.pr.show"],
+			["fix", "inspector.pr.fix"],
+			["explain", "inspector.pr.explain"],
+			["ask", "inspector.pr.ask"],
+			["guide", "inspector.pr.guide"],
+		])}
+			<div id="pr-fix" hidden>
+				<sdpi-item ${attr("label", "inspector.pr.confirm")}>
+					<sdpi-select setting="confirm" default="hold">
+						<option value="hold"${text("inspector.pr.hold")}</option>
+						<option value="tap"${text("inspector.pr.tap")}</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.pr.fixHint")}</p>
+			</div>`,
+		inModes("mode", "pr-fix", fallback, ["fix"]),
+	);
+
 /** Git's panel, starting in `fallback`: the message only for commits, and Pull's own hint. */
 const gitPage = (fallback: string) =>
 	page(
@@ -1189,17 +1212,11 @@ const pages: Record<string, string> = {
 	"git-push.html": gitPage("push"),
 	"git-pr.html": gitPage("create_pr"),
 	"git-pull.html": gitPage("pull"),
-	"pr-fix.html": page(
-		"Fix Findings",
-		`
-			<sdpi-item ${attr("label", "inspector.pr.confirm")}>
-				<sdpi-select setting="confirm" default="hold">
-					<option value="hold"${text("inspector.pr.hold")}</option>
-					<option value="tap"${text("inspector.pr.tap")}</option>
-				</sdpi-select>
-			</sdpi-item>
-			<p class="hint"${text("inspector.pr.fixHint")}</p>`,
-	),
+	"pr.html": prPage("show"),
+	"pr-fix.html": prPage("fix"),
+	"pr-explain.html": prPage("explain"),
+	"pr-ask.html": prPage("ask"),
+	"pr-guide.html": prPage("guide"),
 	"pr-dial.html": page(
 		"PR Dial",
 		`

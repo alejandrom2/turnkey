@@ -79,6 +79,8 @@ const branch = key("branch", "Branch");
 /** Git starts on Commit; other keys pick their action. */
 const git = (gitAction?: string): Placed => key("git", "Git", gitAction ? { gitAction } : undefined);
 const createPr = git("create_pr");
+/** Pull Request starts on Show; other keys hand the pull request to an agent. */
+const prKey = (mode: string): Placed => key("pr", "Pull Request", { mode });
 const threadsDial = (filter: string): Placed => ({ action: "dial.threads", name: "Threads Dial", settings: { filter } });
 const queueDial: Placed = { action: "dial.queue", name: "Queue Dial" };
 const usageDial: Placed = { action: "dial.usage", name: "Usage Dial", settings: { period: "7" } };
@@ -117,7 +119,7 @@ const PAGES_8: Page[] = [
 	},
 	{
 		name: "PULL REQUESTS",
-		keys: [key("pr", "Pull Request"), key("pr.fix", "Fix Findings"), key("pr.explain", "Explain PR"), key("pr.ask", "Ask about PR"), key("pr.guide", "Review Guide"), createPr, editor, stop],
+		keys: [key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), createPr, editor, stop],
 		dials: [prDial, DIALS[0]!, DIALS[2]!, DIALS[3]!],
 	},
 	{
@@ -156,7 +158,7 @@ const PAGES_15: Page[] = [
 	{ name: "SKILLS", keys: [skill(), skill(), skill(), skill(), task(), task(), task(), task(), editor, preview, key("update", "Update T3"), key("share", "Share Thread"), stop] },
 	{
 		name: "GIT",
-		keys: [git(), git("push"), createPr, git("pull"), branch, key("pr", "Pull Request"), key("pr.fix", "Fix Findings"), key("pr.explain", "Explain PR"), key("pr.ask", "Ask about PR"), key("pr.guide", "Review Guide"), editor, stop, health],
+		keys: [git(), git("push"), createPr, git("pull"), branch, key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), editor, stop, health],
 	},
 	{ name: "USAGE", keys: [limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly"), usage("1"), usage("7"), usage("30"), script(), script(), script(), health, stop, approve, deny] },
 ];
@@ -213,10 +215,10 @@ const XL_MORE: Placed[] = [
 	key("fork", "Fork"),
 	key("fork", "Fork", { mode: "merge" }),
 	stopWorkflow,
-	key("pr.fix", "Fix Findings"),
-	key("pr.explain", "Explain PR"),
-	key("pr.ask", "Ask about PR"),
-	key("pr.guide", "Review Guide"),
+	prKey("fix"),
+	prKey("explain"),
+	prKey("ask"),
+	prKey("guide"),
 	key("update", "Update T3"),
 	script(),
 	key("share", "Share Thread"),

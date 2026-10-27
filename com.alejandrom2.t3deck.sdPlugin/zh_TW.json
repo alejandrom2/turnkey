@@ -76,7 +76,7 @@
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "PR",
-		"Tooltip": "所選對話的 PR 及其狀態。點按可開啟。"
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "分支",
@@ -103,20 +103,20 @@
 		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "修正問題",
-		"Tooltip": "為所選對話的 PR 傳送 T3 Code 的「Fix findings」任務：未解決的審查與失敗的檢查。長按以傳送。"
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
 	},
 	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "說明 PR",
-		"Tooltip": "請所選對話逐步說明其 PR，如同 T3 Code 的「Explain」功能。"
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
 	},
 	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "詢問 PR",
-		"Tooltip": "在 T3 Code 中開啟包含此 PR 的對話，以便在那裡提問。"
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
 	},
 	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "審查指南",
-		"Tooltip": "為所選對話的 PR 撰寫 T3 Code 的審查指南，然後開啟對話。"
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
 	},
 	"com.alejandrom2.t3deck.editor": {
 		"Name": "開啟",
@@ -707,7 +707,12 @@
 				"hold": "長按",
 				"tap": "點按",
 				"fixHint": "將 T3 Code 針對所選對話 PR 的「Fix findings」任務傳送給該對話，若對話忙碌則排入佇列。審查意見與檢查輸出來自主機，會以不受信任的資料附上。",
-				"dialHint": "列出機器上開啟中的 PR。按下可在連結的對話（或新的工作樹對話）中執行「修正問題」；點按可在瀏覽器中開啟；長按觸控條可閱讀問題。"
+				"dialHint": "列出機器上開啟中的 PR。按下可在連結的對話（或新的工作樹對話）中執行「修正問題」；點按可在瀏覽器中開啟；長按觸控條可閱讀問題。",
+				"show": "顯示",
+				"fix": "修正問題",
+				"explain": "說明",
+				"ask": "詢問",
+				"guide": "審查指南"
 			},
 			"git": {
 				"action": "動作",
