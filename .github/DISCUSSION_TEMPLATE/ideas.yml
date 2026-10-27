@@ -1,0 +1,32 @@
+title: "[Idea]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! A little context goes a long way: what you're trying to do, and how it might look on your Stream Deck.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: The task or moment where Turnkey falls short today.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could it work?
+      description: A key, a dial, a setting? Sketches, photos or mockups are very welcome.
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Which Stream Deck do you use?
+      multiple: true
+      options:
+        - Stream Deck +
+        - Stream Deck Neo
+        - Stream Deck MK.2 / 15-key
+        - Stream Deck XL
+        - Stream Deck Mini

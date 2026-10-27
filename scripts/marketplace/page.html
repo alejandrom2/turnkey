@@ -10,7 +10,7 @@
 	#stage { position: relative; width: 1920px; height: 960px; overflow: hidden; background: #fff; }
 	.wash { position: absolute; inset: 0; }
 	.scene { position: absolute; inset: 0; }
-	.headline { position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-size: 92px; font-weight: 600; letter-spacing: -2.2px; color: #0b0b0c; }
+	.headline { position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-size: 92px; font-weight: 600; letter-spacing: -1.4px; color: #0b0b0c; }
 	.el { position: absolute; will-change: transform, opacity; }
 	/* The video frame is 120px taller than a gallery image: its pieces sit 60px lower. */
 	.video .el, .video .headline { margin-top: 60px; }
@@ -34,15 +34,17 @@
 	.strip .t span { overflow: hidden; text-overflow: ellipsis; display: block; width: 100%; }
 	.sep { width: 2px; background: #000; flex: none; }
 
-	/* A dial: knurled metal, seen from above. */
+	/* A dial: graphite, a fine knurled rim around a spun-metal top. */
 	.knob { width: 330px; height: 330px; border-radius: 50%;
 		background:
-			radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 58%, rgba(0,0,0,.25) 59% 60%, rgba(0,0,0,0) 61%),
-			radial-gradient(circle at 50% 50%, #8d8f95 0 57%, rgba(0,0,0,0) 58%),
-			repeating-conic-gradient(from 0deg, #3c3d42 0deg 2.2deg, #a3a5ab 2.2deg 4.5deg);
-		box-shadow: 0 30px 50px -16px rgba(40,20,60,.5), inset 0 0 0 3px rgba(0,0,0,.35); }
+			radial-gradient(circle at 50% 50%, #5d5f65 0 55%, #1e1f22 56% 57.5%, rgba(0,0,0,0) 58%),
+			repeating-conic-gradient(from 0deg, #2a2b2f 0deg 1.6deg, #6a6c72 1.6deg 3.2deg);
+		box-shadow: 0 30px 50px -16px rgba(40,20,60,.45), inset 0 0 0 2px rgba(0,0,0,.5); }
 	.knob::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
-		background: radial-gradient(circle at 38% 30%, rgba(255,255,255,.55), rgba(255,255,255,0) 45%), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 6px, rgba(255,255,255,.06) 6px 7px); }
+		background:
+			radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 55%, rgba(0,0,0,.35) 100%),
+			radial-gradient(circle at 36% 26%, rgba(255,255,255,.42), rgba(255,255,255,0) 42%),
+			repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 3px, rgba(255,255,255,.045) 3px 4px); }
 
 	/* Thumbnail and video title card. */
 	.brand { position: absolute; display: flex; flex-direction: column; }
@@ -52,17 +54,16 @@
 	.brand p { font-size: 40px; font-weight: 500; letter-spacing: -.5px; color: #2b2b30; margin-top: 34px; line-height: 1.25; }
 
 	/* A Stream Deck +, front on. */
-	.deck { width: 1010px; height: 900px; border-radius: 60px; padding: 52px 56px;
+	.deck { width: 1010px; height: 820px; border-radius: 60px; padding: 52px 56px;
 		background: linear-gradient(170deg, #2b2b2e, #0c0c0d 45%, #050505);
 		box-shadow: inset 0 2px 1px rgba(255,255,255,.18), inset 0 -4px 8px rgba(0,0,0,.8), 0 60px 90px -30px rgba(40,20,60,.55), 0 14px 30px -10px rgba(0,0,0,.4); }
 	.deck .keys { display: grid; grid-template-columns: repeat(4, 206px); gap: 26px; }
 	.deck .key { width: 206px; height: 206px; border-radius: 44px; padding: 12px; }
 	.deck .key img { width: 182px; height: 182px; border-radius: 34px; }
 	.deck .key .gloss { inset: 12px; border-radius: 34px; }
-	.deck .bar { margin-top: 34px; height: 194px; background: #000; border-radius: 16px; padding: 5px 7px; display: flex; gap: 4px; position: relative; box-shadow: inset 0 0 0 2px #1a1a1b; }
-	.deck .bar .strip { transform: scale(2.12); }
-	.deck .bar .cell { width: 223px; height: 184px; overflow: hidden; border-radius: 6px; flex: none; }
-	.deck .knobs { display: flex; justify-content: space-around; margin-top: 30px; }
+	.deck .bar { margin-top: 30px; height: 126px; background: #000; border-radius: 16px; padding: 5px 7px; display: flex; gap: 4px; position: relative; box-shadow: inset 0 0 0 2px #1a1a1b; }
+		.deck .bar .cell { width: 224px; height: 112px; overflow: hidden; border-radius: 6px; flex: none; }
+	.deck .knobs { display: flex; justify-content: space-around; margin-top: 34px; }
 	.deck .knobs .knob { position: relative; width: 150px; height: 150px; }
 </style>
 </head>
@@ -131,9 +132,11 @@ function key(src, x, y, rotate = 0) {
 	el.firstChild.src = src;
 	return place(el, x, y, rotate);
 }
-function lcd(faces, x, y, scale = 2.4) {
+function lcd(faces, x, y, scale = 2.4, bleed = "right") {
 	const el = document.createElement("div");
 	el.className = "lcd";
+	// Runs off the frame on one side.
+	if (bleed === "right") el.style.paddingRight = "400px";
 	faces.forEach((face, i) => {
 		if (i) { const s = document.createElement("div"); s.className = "sep"; s.style.height = 100 * scale + "px"; el.appendChild(s); }
 		const cell = document.createElement("div");
@@ -182,7 +185,7 @@ function deck() {
 	for (const name of ["threads", "power", "usage", "pr"]) {
 		const cell = document.createElement("div");
 		cell.className = "cell";
-		cell.appendChild(stripEl(F.strips[name], 1.84));
+		cell.appendChild(stripEl(F.strips[name], 1.12));
 		bar.appendChild(cell);
 	}
 	el.appendChild(bar);
@@ -214,10 +217,10 @@ const SCENES = {
 	prompts: () => [wash([[30, 112, LILAC], [75, 108, BLUE]]), headline("Start, prompt, steer and stop"),
 		key(F.keys.newThread, 300, 480, -16), key(F.keys.send, 660, 360, -6), key(F.keys.steer, 990, 360, 6), key(F.keys.stop, 1340, 480, 16)],
 	git: () => [wash([[20, 110, MINT], [80, 108, BLUE]]), headline("Commit, push and fix pull requests"),
-		lcd([F.strips.pr], -60, 340), knob(250, 790),
+		lcd([F.strips.pr], -60, 340, 2.4, "left"), knob(67, 790),
 		key(F.keys.branch, 830, 330), key(F.keys.git, 1150, 330), key(F.keys.prFix, 1470, 330)],
 	usage: () => [wash([[25, 110, PEACH], [78, 110, MINT]]), headline("Keep an eye on usage and limits"),
-		lcd([F.strips.usage, F.strips.limits], -260, 340), knob(80, 790), knob(620, 790),
+		lcd([F.strips.usage, F.strips.limits], -120, 340, 2.4, "left"), knob(7, 790), knob(489, 790),
 		key(F.keys.usage, 1150, 330), key(F.keys.limits, 1470, 330)],
 	thumbnail: () => [wash([[12, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]]),
 		brand(130, 150, "Your agents, on Stream Deck."), (() => { const d = place(deck(), 900, 150); d.style.transform = "scale(.86)"; d.style.transformOrigin = "0 0"; return d; })()],
