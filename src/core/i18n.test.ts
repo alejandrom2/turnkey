@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { elapsed, formatMessage, messageTable, setTranslator, t } from "./i18n.js";
+import { elapsed, formatMessage, htmlLang, messageTable, setTranslator, t } from "./i18n.js";
 
 type Json = { [key: string]: Json } | string;
 
@@ -106,6 +106,10 @@ describe("t", () => {
 		const table = messageTable("inspector");
 		expect(Object.keys(table).every((key) => key.startsWith("inspector."))).toBe(true);
 		expect(Object.keys(table)).toHaveLength([...keys.keys()].filter((key) => key.startsWith("inspector.")).length);
+	});
+
+	it("tags inspectors with the HTML form of Stream Deck's language", () => {
+		expect(["en", "de", "zh_CN", "zh_TW"].map(htmlLang)).toEqual(["en", "de", "zh-CN", "zh-TW"]);
 	});
 
 	it("formats elapsed time", () => {
