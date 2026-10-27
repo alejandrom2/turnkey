@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	sparkles,
 	accessTone,
 	COLORS,
 	dotsCue,
@@ -263,5 +264,24 @@ describe("accessTone", () => {
 		expect(accessTone(0.5).text).toBe("#AD7BF9");
 		expect(accessTone(1).text).toBe("#FCD34D");
 		expect(accessTone(0).fill).toEqual({ gradient: expect.any(Array) });
+	});
+});
+
+describe("sparkles", () => {
+	it("glitters only on the ladder's upper half, more toward the top, in the same spots every time", () => {
+		const count = (t: number) => (sparkles(t, 0, 0, 100, 18).match(/<path/g) ?? []).length;
+		expect(count(0.4)).toBe(0);
+		expect(count(0.5)).toBe(2);
+		expect(count(0.75)).toBeGreaterThan(count(0.5));
+		expect(count(1)).toBe(10);
+		expect(sparkles(1, 0, 0, 100, 18)).toBe(sparkles(1, 0, 0, 100, 18));
+		expect(sparkles(1, 0, 0, 0, 18)).toBe("");
+	});
+
+	it("twinkles by step, each star at its own point of the cycle", () => {
+		const opacities = (step?: number) => [...sparkles(1, 0, 0, 100, 18, step).matchAll(/fill-opacity="([\d.]+)"/g)].map((match) => match[1]);
+		expect(opacities(0)).not.toEqual(opacities(1));
+		expect(opacities(0)).toEqual(opacities(6));
+		expect(new Set(opacities(0)).size).toBeGreaterThan(2);
 	});
 });

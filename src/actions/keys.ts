@@ -26,8 +26,8 @@ import {
 	withOptionValue,
 } from "../core/models.js";
 import { activityBar, renderActivityBar, renderNoticeBar } from "../core/infobar.js";
-import { currentEffort, effortChange, effortChoices, effortToneOf } from "../core/power.js";
-import { threadMotion } from "../core/motion.js";
+import { currentEffort, effortChange, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
+import { threadMotion, twinkleStep } from "../core/motion.js";
 import { migratePromptSettings, QUICK_PROMPTS, quickPrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
 import {
@@ -567,8 +567,8 @@ const markOf =
 
 /** A setting key: the current value or the one it applies, highlighted when the thread already has it. */
 abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
-	/** The face, the availability and what a press applies (undefined: already current). */
-	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown> };
+	/** The face, the availability, what a press applies (undefined: already current), and whether the face moves. */
+	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown>; moving?: boolean };
 
 	/** The thread the key acts on, with its machine's model config. */
 	protected selection(action: Action<T>) {
@@ -578,7 +578,10 @@ abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
-		await this.setImage(action, connectionFace(this.machineOf(action)) ?? this.state(action).face);
+		const offline = connectionFace(this.machineOf(action));
+		const state = offline === undefined ? this.state(action) : undefined;
+		this.animate(action, state?.moving === true);
+		await this.setImage(action, offline ?? state!.face);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
@@ -644,7 +647,10 @@ export class EffortKey extends SettingKey<EffortSettings> {
 		const shown = fixed ?? current;
 		const step = choices.findIndex((choice) => choice.value === shown);
 		const max = effortToneOf(choices, choices[step]?.key, maxEffortStyle(deck.appearance.maxEffort), model && modelColor(model));
-		const cue = choices.length > 1 && step >= 0 ? ladderCue(choices.length, step, choices[step]?.ultrathink === true, max?.fill) : undefined;
+		// The upper half of the ladder glitters, twinkling as Motion allows.
+		const place = effortPlace(choices, choices[step]?.key);
+		const twinkle = place !== undefined && place >= 0.5 ? twinkleStep(deck.animator.mode, Date.now()) : undefined;
+		const cue = choices.length > 1 && step >= 0 ? ladderCue(choices.length, step, choices[step]?.ultrathink === true, max?.fill, place, twinkle) : undefined;
 		const face = renderControlKey({
 			glyph: "effort",
 			glyphColor: max?.text,
@@ -658,8 +664,9 @@ export class EffortKey extends SettingKey<EffortSettings> {
 		});
 		const next = fixed ?? cycleValue(values, current);
 		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
-		if (thread === undefined || change === undefined) return { face, check };
-		return { face, check, apply: applyEffort(thread, change, armed) };
+		const moving = twinkle !== undefined;
+		if (thread === undefined || change === undefined) return { face, check, moving };
+		return { face, check, moving, apply: applyEffort(thread, change, armed) };
 	}
 }
 

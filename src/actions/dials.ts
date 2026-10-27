@@ -6,10 +6,10 @@ import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, switchSelection, withOptionValue, runtimeModes } from "../core/models.js";
-import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, effortToneOf, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
+import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, effortPlace, effortToneOf, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
-import { spinAngle } from "../core/motion.js";
+import { spinAngle, twinkleStep } from "../core/motion.js";
 import {
 	COLORS,
 	glyph,
@@ -265,6 +265,8 @@ export class ModelDial extends StripDial<PowerSettings> {
 			detailColor: pending ? pendingColor(pending, thread) : undefined,
 			tone: toneOf(thread.deck, thread.unseen),
 			ultrathink: context.control === "effort" && (armed || (pending?.kind === "effort" && pending.ultrathink)),
+			// The slider's sparkles twinkle on the upper half of the ladder, as Motion allows.
+			moving: this.#sparkle(action).twinkle !== undefined,
 		};
 	}
 
@@ -348,6 +350,8 @@ export class ModelDial extends StripDial<PowerSettings> {
 						: state.current?.kind === "model"
 							? modelFill(colorStyle(), modelColor(state.current.model))
 							: undefined,
+			// The upper half of an effort ladder glitters, more toward the top, on the thread's current level.
+			...this.#sparkle(action),
 			// Models are places in a list, not levels: pills like the Model key's, not a filling track.
 			pages: control === "model",
 			lower: control === "model" && footer === undefined && check.available && !pending,
@@ -358,6 +362,15 @@ export class ModelDial extends StripDial<PowerSettings> {
 			lead: shown?.kind === "effort" && tone ? glyphArt(CONTROL.effort.glyph, tone.text) : shown?.kind === "mode" && tone ? glyphArt(MODE_GLYPH[shown.mode], tone.text) : shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph),
 			dim: !check.available,
 		};
+	}
+
+	/** Where the thread's effort sits on its ladder, for the sparkles, and their twinkle step while Motion allows. */
+	#sparkle(action: Action<PowerSettings>): { sparkle?: number; twinkle?: number } {
+		const { control, thread, state } = this.#context(action);
+		if (control !== "effort" || thread === undefined || state.current?.kind !== "effort") return {};
+		const sparkle = effortPlace(effortChoices(findModel(thread.machine.modelConfig, thread.model)), state.current.key);
+		if (sparkle === undefined) return {};
+		return { sparkle, twinkle: sparkle >= 0.5 ? twinkleStep(deck.animator.mode, Date.now()) : undefined };
 	}
 
 	protected override rotated(dial: DialAction<PowerSettings>, ticks: number): void {
