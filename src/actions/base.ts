@@ -12,6 +12,7 @@ import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
+import { effortValues, favoriteModels, pickableModels } from "../core/models.js";
 import { COLORS, renderNoticeKey, renderResultKey, stripCanvas, stripIcon } from "../core/render.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
@@ -40,6 +41,17 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	}
 
 	protected abstract paint(action: Action<T>): Promise<void> | void;
+
+	/** Settings rewritten from an older shape, saved once; undefined when they are current. */
+	protected migrateSettings(_settings: T): T | undefined {
+		return undefined;
+	}
+
+	#store(action: Action<T>, settings: T): void {
+		const migrated = this.migrateSettings(settings);
+		this.#settings.set(action.id, migrated ?? settings);
+		if (migrated !== undefined) void action.setSettings(migrated);
+	}
 
 	protected settingsOf(action: Action<T>): T {
 		return this.#settings.get(action.id) ?? ({} as T);
@@ -84,7 +96,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	}
 
 	override onWillAppear(ev: WillAppearEvent<T>): void {
-		this.#settings.set(ev.action.id, ev.payload.settings);
+		this.#store(ev.action, ev.payload.settings);
 		this.#placed.set(ev.action.id, { device: ev.action.device.id, position: ev.action.isKey() ? ev.action.coordinates : undefined });
 		this.#sent.delete(ev.action.id);
 		deck.setVisible(ev.action.id, true);
@@ -102,7 +114,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	}
 
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<T>): void {
-		this.#settings.set(ev.action.id, ev.payload.settings);
+		this.#store(ev.action, ev.payload.settings);
 		this.#repaintAll();
 	}
 
@@ -137,19 +149,57 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				return deck.pushStatus(true);
 			case "getProjects":
 				return this.#sendProjects(ev.action);
+			case "getLaunchProjects":
+				return this.#sendProjects(ev.action, "getLaunchProjects");
+			case "getModels":
+				return this.#sendModels(ev.action);
+			case "getEfforts":
+				return this.#sendEfforts(ev.action);
 		}
 	}
 
-	/** sdpi-components' `getProjects` datasource: the projects of the action's machine, or of every machine. */
-	async #sendProjects(action: Action<T>): Promise<void> {
+	#readyMachines(action: Action<T>) {
 		const url = this.machineOf(action);
-		const machines = deck.machines.filter((machine) => machine.state.kind === "ready" && (url === undefined || machine.url === url));
-		const items = [{ label: "Any project", value: "" }];
+		return deck.machines.filter((machine) => machine.state.kind === "ready" && (url === undefined || machine.url === url));
+	}
+
+	/** The Model key's choices: T3 Code's favorites (or every visible model), read fresh as the inspector opens. */
+	async #sendModels(action: Action<T>): Promise<void> {
+		await deck.refreshConfigs(this.machineOf(action));
+		const machines = this.#readyMachines(action);
+		const favorites = machines.some((machine) => favoriteModels(machine.modelConfig) !== undefined);
+		const items = [{ label: favorites ? "Cycle favorites" : "Cycle models", value: "" }];
+		for (const machine of machines) {
+			for (const model of pickableModels(machine.modelConfig)) if (!items.some((item) => item.value === model.key)) items.push({ label: model.label, value: model.key });
+		}
+		await streamDeck.ui.sendToPropertyInspector({ event: "getModels", items });
+	}
+
+	async #sendEfforts(action: Action<T>): Promise<void> {
+		await deck.refreshConfigs(this.machineOf(action));
+		const items = [{ label: "Cycle efforts", value: "" }];
+		for (const machine of this.#readyMachines(action)) {
+			for (const effort of effortValues(machine.modelConfig)) if (!items.some((item) => item.value === effort.value)) items.push(effort);
+		}
+		await streamDeck.ui.sendToPropertyInspector({ event: "getEfforts", items });
+	}
+
+	/**
+	 * sdpi-components' project datasources: the projects of the action's machine, or of every machine. Activity's
+	 * starts with "Any project"; New Thread's lists real projects only, since "No project" is its own choice.
+	 */
+	async #sendProjects(action: Action<T>, event: "getProjects" | "getLaunchProjects" = "getProjects"): Promise<void> {
+		const machines = this.#readyMachines(action);
+		const items = event === "getProjects" ? [{ label: "Any project", value: "" }] : [];
 		for (const machine of machines) {
 			const where = machines.length > 1 && machine.state.kind === "ready" ? ` · ${machine.state.label}` : "";
-			for (const project of machine.projects) items.push({ label: `${machine.isScratch(project.id) ? "No project" : project.title}${where}`, value: project.id });
+			for (const project of machine.projects) {
+				const scratch = machine.isScratch(project.id);
+				if (scratch && event === "getLaunchProjects") continue;
+				items.push({ label: `${scratch ? "No project" : project.title}${where}`, value: project.id });
+			}
 		}
-		await streamDeck.ui.sendToPropertyInspector({ event: "getProjects", items });
+		await streamDeck.ui.sendToPropertyInspector({ event, items });
 	}
 
 	protected pressStarted(id: string): void {

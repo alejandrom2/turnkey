@@ -2,6 +2,7 @@ import streamDeck from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
+import { AcpIcons } from "./core/models.js";
 import { type CredentialStore, Machine } from "./core/t3/machine.js";
 import { type Credential, findLocalEnvironment, normalizeEnvironmentUrl, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
 import type { SocketLike } from "./core/t3/rpc.js";
@@ -83,6 +84,7 @@ function environmentStatus(machine: Machine): EnvironmentStatus {
 
 class Deck implements CredentialStore {
 	readonly board = new ThreadBoard(() => this.machines);
+	readonly acpIcons = new AcpIcons(fetch, () => this.repaint());
 	readonly #machines = new Map<string, Machine>();
 	readonly #visible = new Set<string>();
 	readonly #painters = new Set<() => void>();
@@ -96,7 +98,10 @@ class Deck implements CredentialStore {
 
 	async init(): Promise<void> {
 		streamDeck.settings.onDidReceiveGlobalSettings<GlobalSettings>((ev) => void this.#apply(ev.settings));
-		streamDeck.ui.onDidAppear(() => void this.pushStatus(true));
+		streamDeck.ui.onDidAppear(() => {
+			void this.pushStatus(true);
+			void this.refreshConfigs();
+		});
 		streamDeck.system.onSystemDidWakeUp(() => void this.retry());
 		this.board.subscribe(() => this.repaint());
 		await this.#apply(await streamDeck.settings.getGlobalSettings<GlobalSettings>());
@@ -164,6 +169,11 @@ class Deck implements CredentialStore {
 		for (const machine of this.machines) if (url === undefined || machine.url === url) machine.wake();
 	}
 
+	/** Re-reads favorites and providers from every ready machine (or one), as an opening inspector needs them current. */
+	async refreshConfigs(url?: string): Promise<void> {
+		await Promise.all(this.machines.filter((machine) => url === undefined || machine.url === url).map((machine) => machine.refreshConfig()));
+	}
+
 	#setPairing(pairing: PairingStatus): void {
 		this.#pairing = pairing;
 		void this.pushStatus();
@@ -212,10 +222,10 @@ class Deck implements CredentialStore {
 		}
 	}
 
-	/** Machine updates arrive per streamed row; repaint only when a connection state or a shown field changed. */
+	/** Machine updates arrive per streamed row; repaint only when a connection state, the config or a shown field changed. */
 	#changed(): void {
 		this.board.update();
-		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state]));
+		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion]));
 		if (states === this.#machineStates) return;
 		this.#machineStates = states;
 		this.repaint();

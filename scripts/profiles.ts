@@ -66,8 +66,8 @@ const PROFILES: Profile[] = [
 					[
 						{ action: "activity", name: "Activity" },
 						{ action: "stop", name: "Stop" },
-						{ action: "send", name: "Send Prompt", settings: { prompt: "Continue", label: "Continue" } },
-						{ action: "organize", name: "Organize", settings: { organize: "settle" } },
+						{ action: "send", name: "Send Prompt", settings: { prompt: "Continue", title: "Continue" } },
+						{ action: "approve", name: "Approve" },
 					],
 				],
 			},
@@ -76,6 +76,23 @@ const PROFILES: Profile[] = [
 				keys: [
 					[slot(5), slot(6), slot(7), slot(8)],
 					[slot(9), slot(10), slot(11), slot(12)],
+				],
+			},
+			{
+				name: "CONTROLS",
+				keys: [
+					[
+						{ action: "model", name: "Model" },
+						{ action: "effort", name: "Effort" },
+						{ action: "speed", name: "Speed" },
+						{ action: "permissions", name: "Permissions" },
+					],
+					[
+						{ action: "plan", name: "Plan" },
+						{ action: "steer", name: "Steer", settings: { title: "Keep it small", prompt: "Keep the change small and focused." } },
+						{ action: "deny", name: "Deny" },
+						{ action: "health", name: "Health" },
+					],
 				],
 			},
 		],

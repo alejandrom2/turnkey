@@ -1,3 +1,4 @@
+import { type ConfigProvider, type ModelConfig, type ModelOptionInfo, type ModelPreferences, optionInfo } from "../models.js";
 import { type Credential, OPERATE_SCOPE, PairingError, redeemPairingCode, socketUrl } from "./pairing.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
@@ -5,7 +6,6 @@ import {
 	type InteractionMode,
 	type ModelSelection,
 	nextSnoozeWake,
-	type OptionValue,
 	type ProjectShell,
 	type RuntimeMode,
 	type ShellItem,
@@ -44,37 +44,19 @@ type Capabilities = ThreadCapabilities & {
 
 type ProjectDefaults = { defaultModelSelection?: ModelSelection | null; defaultRuntimeMode?: RuntimeMode };
 
-type ProviderOptionDescriptor =
-	| { id: string; label: string; type: "select"; options: { id: string; label: string; isDefault?: boolean }[]; currentValue?: string; promptInjectedValues?: string[] }
-	| { id: string; label: string; type: "boolean"; currentValue?: boolean };
-
 /** The `ServerConfig` slice the deck reads (packages/contracts/src/server.ts). */
 type ServerConfig = {
 	environment?: { label?: string; capabilities?: Capabilities };
-	providers?: {
-		instanceId: string;
-		driver?: string;
-		displayName?: string;
-		enabled?: boolean;
-		supportedRuntimeModes?: RuntimeMode[];
-		showInteractionModeToggle?: boolean;
-		requiresNewThreadForModelChange?: boolean;
-		models: { slug: string; name: string; shortName?: string; isLegacy?: boolean; isDefault?: boolean; capabilities?: { optionDescriptors?: ProviderOptionDescriptor[] } | null }[];
-	}[];
-	settings?: ProjectDefaults & { projectSettingsOverrides?: Record<string, ProjectDefaults> };
+	providers?: ConfigProvider[];
+	settings?: ProjectDefaults & ModelPreferences & { projectSettingsOverrides?: Record<string, ProjectDefaults> };
 	shellResumeCompletionMarker?: boolean;
 	shellThreadFamilies?: boolean;
 	shellOlderSettled?: boolean;
 	scratchWorkspaceRoot?: string;
 };
 
-export type ModelOptionInfo = {
-	id: string;
-	label: string;
-	type: "select" | "boolean";
-	values: { value: OptionValue; label: string }[];
-	default?: OptionValue;
-};
+export type { ModelOptionInfo } from "../models.js";
+export { currentOptionValue, withOptionValue } from "../models.js";
 export type ProviderInfo = {
 	instanceId: string;
 	displayName: string;
@@ -140,6 +122,9 @@ export class Machine {
 	#rpc: RpcSocket | undefined;
 	#shell: ShellState | undefined;
 	#config: ServerConfig | undefined;
+	#configLoad: { rpc: RpcSocket; done: Promise<void> } | undefined;
+	/** Bumped on every config read, so the deck repaints faces drawn from it. */
+	configVersion = 0;
 	#rows: ShellRow[] = [];
 	#subscribed = false;
 	#snoozeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -242,6 +227,7 @@ export class Machine {
 	#reset(): void {
 		this.#shell = undefined;
 		this.#config = undefined;
+		this.#configLoad = undefined;
 		this.#rows = [];
 	}
 
@@ -269,11 +255,16 @@ export class Machine {
 	}
 
 	async #opened(rpc: RpcSocket, credential: Credential): Promise<void> {
-		try {
-			this.#config ??= await rpc.request<ServerConfig>("server.getConfig", {});
-		} catch (error) {
-			return rpc.drop(error as Error);
+		// A reconnect resumes the shell on the cached config and re-reads it alongside: favorites may have changed.
+		if (this.#config !== undefined) void this.#loadConfig(rpc).catch(() => undefined);
+		else {
+			try {
+				await this.#loadConfig(rpc);
+			} catch (error) {
+				return rpc.drop(error as Error);
+			}
 		}
+		if (this.#rpc !== rpc || this.#config === undefined) return;
 		if (!this.#subscribed) {
 			this.#subscribed = true;
 			rpc.subscribe("orchestration.subscribeShell", () => this.#shellPayload(), (item) => this.#apply(item as ShellItem), {
@@ -288,6 +279,38 @@ export class Machine {
 			canOperate: credential.scopes.includes(OPERATE_SCOPE),
 		});
 		this.#derive();
+	}
+
+	/** One `server.getConfig` at a time; callers that arrive while it runs share it. */
+	#loadConfig(rpc: RpcSocket): Promise<void> {
+		if (this.#configLoad?.rpc === rpc) return this.#configLoad.done;
+		const load = {
+			rpc,
+			done: rpc
+				.request<ServerConfig>("server.getConfig", {})
+				.then((config) => {
+					if (this.#rpc !== rpc) return;
+					this.#config = config;
+					this.configVersion++;
+					this.onChange();
+				})
+				.finally(() => {
+					if (this.#configLoad === load) this.#configLoad = undefined;
+				}),
+		};
+		this.#configLoad = load;
+		return load.done;
+	}
+
+	/** Re-reads the server config (favorites, providers) now, as when a property inspector opens; a no-op offline. */
+	async refreshConfig(): Promise<void> {
+		if (this.state.kind !== "ready" || this.#rpc === undefined) return;
+		await this.#loadConfig(this.#rpc).catch(() => undefined);
+	}
+
+	/** The providers and model preferences `models.ts` builds the catalog from. */
+	get modelConfig(): ModelConfig | undefined {
+		return this.#config;
 	}
 
 	/** Resumes from the last applied sequence; the omit flags only go to servers that advertise them. */
@@ -374,6 +397,7 @@ export class Machine {
 	/**
 	 * Starts a thread in a project, or in the scratch "no project" project. Model and access follow the
 	 * project's override, then the app defaults; `fallbackModel` covers a server with no default model.
+	 * An empty `message` starts an empty thread, as T3 Code's new-thread button does.
 	 */
 	async launch(
 		target: { projectId: string } | { scratch: true },
@@ -397,18 +421,19 @@ export class Machine {
 		if (modelSelection === undefined) throw new Error("Pick a default model in T3 Code first.");
 		const threadId = this.#uuid();
 		const title = options.title?.trim();
+		const text = message.trim();
 		await rpc.request("orchestration.launchThread", {
 			commandId: this.#uuid(),
 			creationSource: DECK_CREATION_SOURCE,
 			threadId,
 			projectId,
-			title: title || titleSeed(message),
-			generateTitle: !title,
+			title: title || titleSeed(text),
+			generateTitle: !title && text !== "",
 			modelSelection,
 			runtimeMode: override?.defaultRuntimeMode ?? settings?.defaultRuntimeMode ?? "full-access",
 			interactionMode: "default",
 			workspaceStrategy: { type: "root" },
-			initialMessage: { messageId: this.#uuid(), text: message, attachments: [] },
+			...(text === "" ? {} : { initialMessage: { messageId: this.#uuid(), text: message, attachments: [] } }),
 		});
 		return { threadId };
 	}
@@ -578,38 +603,4 @@ export class Machine {
 		const open = thread.pullRequests.find((link) => link.state === "open" && (link.additions ?? 0) + (link.deletions ?? 0) > 0);
 		return open === undefined ? undefined : { additions: open.additions ?? 0, deletions: open.deletions ?? 0 };
 	}
-}
-
-function optionInfo(descriptor: ProviderOptionDescriptor): ModelOptionInfo {
-	if (descriptor.type === "boolean") {
-		return {
-			id: descriptor.id,
-			label: descriptor.label,
-			type: "boolean",
-			values: [
-				{ value: false, label: "Off" },
-				{ value: true, label: "On" },
-			],
-			default: descriptor.currentValue ?? false,
-		};
-	}
-	const injected = new Set(descriptor.promptInjectedValues ?? []);
-	return {
-		id: descriptor.id,
-		label: descriptor.label,
-		type: "select",
-		values: descriptor.options.filter((choice) => !injected.has(choice.id)).map((choice) => ({ value: choice.id, label: choice.label })),
-		default: descriptor.currentValue ?? descriptor.options.find((choice) => choice.isDefault)?.id,
-	};
-}
-
-/** A thread's value for an option: its own selection, else the provider's current or default value. */
-export function currentOptionValue(selection: ModelSelection, option: ModelOptionInfo): OptionValue | undefined {
-	return selection.options?.find((selected) => selected.id === option.id)?.value ?? option.default;
-}
-
-/** `selection` with option `id` set to `value`, keeping the others. */
-export function withOptionValue(selection: ModelSelection, id: string, value: OptionValue): ModelSelection {
-	const others = (selection.options ?? []).filter((selected) => selected.id !== id);
-	return { ...selection, options: [...others, { id, value }] };
 }

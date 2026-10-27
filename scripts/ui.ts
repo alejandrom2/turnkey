@@ -126,7 +126,17 @@ const card = `
 				<p class="hint">Use t3code-dev to open threads in a development build.</p>
 			</details>`;
 
-const script = `
+/** Shows the element `id` only while `setting` passes `test`, as the inspector edits it and as settings arrive. */
+const showWhen = (setting: string, id: string, test: string) => `
+			{
+				const field = document.querySelector('[setting="${setting}"]');
+				const apply = (value) => { $("${id}").hidden = !((value) => ${test})(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["${setting}"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["${setting}"]));
+			}`;
+
+const script = (extra = "") => `
 		<script>
 			const client = SDPIComponents.streamDeckClient;
 			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
@@ -270,10 +280,10 @@ const script = `
 			$("t3-link").addEventListener("keydown", (key) => {
 				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
 			});
-			send("status");
+			send("status");${extra}
 		</script>`;
 
-const page = (title: string, fields = "") => `<!doctype html>
+const page = (title: string, fields = "", extra = "") => `<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
@@ -282,7 +292,7 @@ const page = (title: string, fields = "") => `<!doctype html>
 	</head>
 	<body>
 		<main>${fields}${card}
-		</main>${script}
+		</main>${script(extra)}
 	</body>
 </html>
 `;
@@ -339,24 +349,117 @@ const pages: Record<string, string> = {
 	"send.html": page(
 		"Send Prompt",
 		`
+			<sdpi-item label="Key title">
+				<sdpi-textfield setting="title" placeholder="Fix tests"></sdpi-textfield>
+			</sdpi-item>
 			<sdpi-item label="Prompt">
 				<sdpi-textarea setting="prompt" rows="4" placeholder="Run the tests and fix what fails"></sdpi-textarea>
 			</sdpi-item>
-			<sdpi-item label="Key label">
-				<sdpi-textfield setting="label" placeholder="Fix tests"></sdpi-textfield>
+			<p class="hint">Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it.</p>`,
+	),
+	"steer.html": page(
+		"Steer",
+		`
+			<sdpi-item label="Key title">
+				<sdpi-textfield setting="title" placeholder="Keep it small"></sdpi-textfield>
+			</sdpi-item>
+			<sdpi-item label="Prompt">
+				<sdpi-textarea setting="prompt" rows="4" placeholder="Keep the change small and skip the refactor"></sdpi-textarea>
+			</sdpi-item>
+			<p class="hint">Adds to the selected thread's running turn. It's dimmed while the thread is idle.</p>`,
+	),
+	"quick.html": page(
+		"Quick Prompt",
+		`
+			<sdpi-item label="Key title">
+				<sdpi-textfield setting="title" placeholder="Optional label for this key"></sdpi-textfield>
+			</sdpi-item>
+			<sdpi-item label="Prompt type">
+				<sdpi-select setting="template" default="continue">
+					<option value="continue">Continue</option>
+					<option value="test">Run tests and fix failures</option>
+					<option value="fix">Diagnose and fix</option>
+					<option value="explain">Explain the current state</option>
+					<option value="commit">Commit your changes</option>
+					<option value="custom">Custom prompt</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Custom prompt" id="custom" hidden>
+				<sdpi-textarea setting="prompt" rows="4" placeholder="Type the prompt this key sends"></sdpi-textarea>
 			</sdpi-item>
 			<p class="hint">Goes to the thread selected in T3 Code. Hold the key to interrupt and restart with it.</p>`,
+		showWhen("template", "custom", `value === "custom"`),
 	),
 	"new.html": page(
 		"New Thread",
 		`
+			<sdpi-item label="Create in">
+				<sdpi-select setting="destination" default="selected">
+					<option value="selected">Selected thread's project</option>
+					<option value="scratch">No project</option>
+					<option value="project">Chosen project</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Project" id="project" hidden>
+				<sdpi-select setting="project" datasource="getLaunchProjects" hot-reload loading="Loading projects…"></sdpi-select>
+			</sdpi-item>
 			<sdpi-item label="Prompt">
-				<sdpi-textarea setting="prompt" rows="4" placeholder="Review the open pull request"></sdpi-textarea>
+				<sdpi-textarea setting="prompt" rows="4" placeholder="Optional: Review the open pull request"></sdpi-textarea>
 			</sdpi-item>
 			<sdpi-item label="Thread title">
 				<sdpi-textfield setting="title" placeholder="Review PR"></sdpi-textfield>
 			</sdpi-item>
-			<p class="hint">Starts in the selected thread's project.</p>`,
+			<p class="hint">With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access.</p>`,
+		showWhen("destination", "project", `value === "project"`),
+	),
+	"model.html": page(
+		"Model",
+		`
+			<sdpi-item label="Model">
+				<sdpi-select setting="model" datasource="getModels" hot-reload loading="Loading models…" default=""></sdpi-select>
+			</sdpi-item>
+			<p class="hint">Cycling steps through T3 Code's favorite models, across providers, or the thread's provider's models when you have none. Picking another provider's model hands the thread over, as T3 Code's model picker does.</p>`,
+	),
+	"effort.html": page(
+		"Effort",
+		`
+			<sdpi-item label="Effort">
+				<sdpi-select setting="effort" datasource="getEfforts" hot-reload loading="Loading efforts…" default=""></sdpi-select>
+			</sdpi-item>
+			<p class="hint">Cycling steps through the efforts the selected thread's model offers. A set effort its model doesn't offer dims the key.</p>`,
+	),
+	"permissions.html": page(
+		"Permissions",
+		`
+			<sdpi-item label="Access">
+				<sdpi-select setting="mode" default="">
+					<option value="">Cycle access modes</option>
+					<option value="approval-required">Supervised</option>
+					<option value="auto-accept-edits">Auto-accept edits</option>
+					<option value="auto">Auto</option>
+					<option value="full-access">Full access</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint">Applies to the selected thread from its next step. Only the modes its provider supports are offered.</p>`,
+	),
+	"approve.html": page(
+		"Approve",
+		`
+			<sdpi-item label="Approvals">
+				<sdpi-select setting="approvalAuthority" default="open">
+					<option value="open">Open in T3 Code</option>
+					<option value="once">Allow once</option>
+					<option value="session">Allow for the session</option>
+					<option value="always">Always allow</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="To answer">
+				<sdpi-select setting="approvalConfirm" default="hold">
+					<option value="hold">Hold the key</option>
+					<option value="tap">Tap the key</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint">Answers the selected thread's approval. A request that doesn't offer this choice, or that the deck can't answer, opens in T3 Code. Deny is its own key.</p>`,
 	),
 	"organize.html": page(
 		"Organize",

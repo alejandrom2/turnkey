@@ -177,7 +177,7 @@ describe("Machine connection", () => {
 		expect(row(h.machine)).toMatchObject({ threadId: "thr_123", projectTitle: "app", deck: "approval" });
 	});
 
-	it("resumes the shell after a drop without a new snapshot or config", async () => {
+	it("resumes the shell after a drop without a new snapshot, and re-reads the config alongside", async () => {
 		const h = setup();
 		const first = await connect(h);
 		first.receive({ _tag: "Chunk", requestId: first.request("orchestration.subscribeShell").id, values: [{ kind: "thread.updated", sequence: 4815, location: "active", thread: THREAD }] });
@@ -190,9 +190,13 @@ describe("Machine connection", () => {
 		second.open();
 		await flush();
 		expect(second.request("orchestration.subscribeShell").payload).toMatchObject({ afterSequence: 4815 });
-		expect(second.sent.some((frame) => frame.tag === "server.getConfig")).toBe(false);
 		expect(h.machine.state.kind).toBe("ready");
 		expect(h.machine.rows).toHaveLength(1);
+		const favorites = [{ provider: "claudeAgent", model: "claude-opus-5-5" }];
+		second.reply("server.getConfig", { ...CONFIG, settings: { ...CONFIG.settings, favorites } });
+		await flush();
+		expect(h.machine.modelConfig?.settings?.favorites).toEqual(favorites);
+		expect(h.machine.configVersion).toBe(2);
 	});
 
 	it("signs out and forgets the token when T3 Code ends the session", async () => {
@@ -271,6 +275,7 @@ describe("Machine commands", () => {
 			deliveryIntent: "auto",
 		});
 		expect(await dispatched(socket, () => h.machine.send(row(h.machine), "Also update the docs", "restart"))).toMatchObject({ dispatchMode: { type: "start_immediately" }, deliveryIntent: "restart" });
+		expect(await dispatched(socket, () => h.machine.send(row(h.machine), "Keep it small", "steer"))).toMatchObject({ text: "Keep it small", dispatchMode: { type: "start_immediately" }, deliveryIntent: "steer" });
 		const queued = await dispatched(socket, () => h.machine.send(row(h.machine), "Also update the docs", "queue"));
 		expect(queued).toMatchObject({ dispatchMode: { type: "queue_after_active" } });
 		expect(queued).not.toHaveProperty("deliveryIntent");
@@ -319,6 +324,105 @@ describe("Machine commands", () => {
 		expect(socket.request("orchestration.launchThread").payload).toMatchObject({ projectId: "scratch-1", modelSelection: { instanceId: "claudeAgent", model: "claude-opus-5-5" } });
 		socket.reply("orchestration.launchThread", { threadId: "uuid-1" });
 		await launched;
+	});
+});
+
+describe("Machine thread settings", () => {
+	it("sets the model, within a provider and across to another, with the options it was given", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const sonnet = { instanceId: "claudeAgent", model: "claude-sonnet-5", options: [{ id: "effort", value: "high" }] };
+		expect(await dispatched(socket, () => h.machine.setModelSelection(row(h.machine), sonnet))).toEqual({
+			type: "thread.model-selection.set",
+			threadId: "thr_123",
+			modelSelection: sonnet,
+			commandId: "uuid-1",
+		});
+		expect(await dispatched(socket, () => h.machine.setModelSelection(row(h.machine), { instanceId: "codex", model: "gpt-5.5" }))).toEqual({
+			type: "thread.model-selection.set",
+			threadId: "thr_123",
+			modelSelection: { instanceId: "codex", model: "gpt-5.5" },
+			commandId: "uuid-2",
+		});
+	});
+
+	it("sets access and Build/Plan mode", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		expect(await dispatched(socket, () => h.machine.setRuntimeMode(row(h.machine), "auto-accept-edits"))).toEqual({
+			type: "thread.runtime-mode.set",
+			threadId: "thr_123",
+			runtimeMode: "auto-accept-edits",
+			commandId: "uuid-1",
+		});
+		expect(await dispatched(socket, () => h.machine.setInteractionMode(row(h.machine), "plan"))).toEqual({
+			type: "thread.interaction-mode.set",
+			threadId: "thr_123",
+			interactionMode: "plan",
+			commandId: "uuid-2",
+		});
+	});
+
+	it("sends the Approve key's authority and Deny's decline as decisions", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		for (const decision of ["accept", "acceptForSession", "acceptAlways", "decline"] as const) {
+			expect(await dispatched(socket, () => h.machine.respond("thr_123", "rr_1", decision))).toMatchObject({ type: "runtime-request.respond", threadId: "thr_123", requestId: "rr_1", decision });
+		}
+	});
+
+	it("surfaces T3 Code's reason when it refuses a provider switch", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const switching = h.machine.setModelSelection(row(h.machine), { instanceId: "cursor", model: "auto" });
+		await flush();
+		const reason = "The target provider instance is unavailable.";
+		socket.receive({
+			_tag: "Exit",
+			requestId: socket.request("orchestration.dispatchCommand").id,
+			exit: {
+				_tag: "Failure",
+				cause: [
+					{
+						_tag: "Fail",
+						error: {
+							_tag: "OrchestrationDispatchCommandError",
+							message: "Failed to dispatch orchestration command thread.model-selection.set (uuid-1).",
+							cause: { name: "OrchestratorDispatchError", message: "Failed to dispatch orchestration command thread.model-selection.set (uuid-1).", cause: { name: "ProviderSwitchPlanError", message: "", cause: reason } },
+						},
+					},
+				],
+			},
+		});
+		await expect(switching).rejects.toMatchObject({ tag: "OrchestrationDispatchCommandError", reason });
+	});
+
+	it("re-reads the config on demand, once for overlapping callers, and nothing offline", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const before = socket.sent.filter((frame) => frame.tag === "server.getConfig").length;
+		const both = Promise.all([h.machine.refreshConfig(), h.machine.refreshConfig()]);
+		await flush();
+		expect(socket.sent.filter((frame) => frame.tag === "server.getConfig")).toHaveLength(before + 1);
+		socket.reply("server.getConfig", { ...CONFIG, settings: { ...CONFIG.settings, favorites: [] } });
+		await both;
+		expect(h.machine.modelConfig?.settings?.favorites).toEqual([]);
+
+		const offline = setup();
+		await offline.machine.refreshConfig();
+		expect(offline.sockets.sockets).toHaveLength(0);
+	});
+
+	it("starts an empty thread without an initial message or a generated title", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const launched = h.machine.launch({ projectId: "p-1" }, "  ", { fallbackModel: THREAD.modelSelection });
+		await flush();
+		const request = socket.request("orchestration.launchThread");
+		socket.reply("orchestration.launchThread", { threadId: "uuid-1" });
+		await launched;
+		expect(request.payload).toMatchObject({ projectId: "p-1", title: "New thread", generateTitle: false });
+		expect(request.payload).not.toHaveProperty("initialMessage");
 	});
 });
 
