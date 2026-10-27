@@ -2,9 +2,9 @@ import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
-import typescript from "@rollup/plugin-typescript";
 import path from "node:path";
 import url from "node:url";
+import esbuild from "rollup-plugin-esbuild";
 
 const isWatching = !!process.env.ROLLUP_WATCH;
 const sdPlugin = "com.alejandrom2.turnkey.sdPlugin";
@@ -28,10 +28,8 @@ const config = {
 				this.addWatchFile(`${sdPlugin}/manifest.json`);
 			},
 		},
-		typescript({
-			mapRoot: isWatching ? "./" : undefined,
-			exclude: ["**/*.test.ts"],
-		}),
+		// Transpiles only; `tsc --noEmit` type-checks. The plugin defaults to es2020, so match tsconfig's target.
+		esbuild({ target: "es2022" }),
 		nodeResolve({
 			browser: false,
 			exportConditions: ["node"],
