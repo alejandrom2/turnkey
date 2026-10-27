@@ -99,6 +99,11 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		return undefined;
 	}
 
+	/** A still picture that replaces the classic layout, as on the Threads dial; undefined keeps the classic face. */
+	protected picture(_action: Action<T>): string | undefined {
+		return undefined;
+	}
+
 	/** What the list and carousel turn through; undefined shows the face as one item. */
 	protected list(_action: Action<T>): StripList | undefined {
 		return undefined;
@@ -138,7 +143,8 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		painters.set(action.id, () => void this.paint(action));
 		const { style, scroll } = this.#style(action);
 		const slider = style === "classic" ? this.slider(action) : undefined;
-		const presentation: Presentation = slider === undefined ? style : "slider";
+		const picture = style === "classic" && slider === undefined ? this.picture(action) : undefined;
+		const presentation: Presentation = slider === undefined && picture === undefined ? style : "slider";
 		if ((this.#layouts.get(action.id) ?? "classic") !== presentation) {
 			this.#layouts.set(action.id, presentation);
 			this.#close(action.id, false);
@@ -150,10 +156,11 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		const appearance = this.#appearance(action);
 		const content = this.face(action);
 		const reading = this.#reading.get(action.id);
-		this.animate(action, content.moving === true && reading === undefined);
+		this.animate(action, content.moving === true && reading === undefined && picture === undefined);
 		if (presentation === "slider") {
 			const canvas = stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
 			if (reading?.lines) return this.setFeedback(action, carouselFeedback(content, listFromContent(content), { appearance, scroll: "off", reading: { lines: reading.lines, top: reading.top } }));
+			if (picture !== undefined) return this.setFeedback(action, { canvas, art: picture, title: { value: "", color: "#FFFFFF" }, titleArt: BLANK_ART });
 			const line = scroll === "off" ? undefined : scrollLine(sliderLabelText(slider!), sliderLabelSlot(slider!), "horizontal", "slider");
 			const labelOffset = marquee.offset(action.id, reading === undefined ? line : undefined);
 			return this.setFeedback(action, { canvas, art: sliderArt({ ...slider!, labelOffset }), title: { value: "", color: "#FFFFFF" }, titleArt: BLANK_ART });

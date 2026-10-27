@@ -10,10 +10,10 @@ import { currentEffort, dialControl, type DialControl, effortChange, effortChoic
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
 import { spinAngle } from "../core/motion.js";
-import { COLORS, glyph, glyphArt, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgText, toneOf } from "../core/render.js";
+import { COLORS, glyph, glyphArt, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgText, THREAD_GLYPH, threadTint, toneOf } from "../core/render.js";
 import { matchesDial, type ThreadFilter, threadFilter } from "../core/slots.js";
 import type { StripContent } from "../core/strip.js";
-import type { StripItem, StripList, StripStyle } from "../core/styles.js";
+import { type StripItem, type StripList, threadRowsArt } from "../core/styles.js";
 import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
 import { canOperate, LONG_PRESS_MS, openThread, pressWhileDisconnected, selectedThread, sendToThread, ultrathinkArmed } from "./base.js";
@@ -61,10 +61,6 @@ type ThreadDialSettings = DialSettings & { filter?: string; project?: string; re
  */
 @action({ UUID: `${ID}.dial.threads` })
 export class ThreadDial extends StripDial<ThreadDialSettings> {
-	protected override get defaultStyle(): StripStyle {
-		return "list";
-	}
-
 	#match(action: Action<ThreadDialSettings>): (thread: DeckThread) => boolean {
 		const settings = this.settingsOf(action);
 		const now = Date.now();
@@ -115,6 +111,23 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 			return { key: row.key, label: row.title, art, tint, detail };
 		};
 		return { heading: t(FILTER_LABEL[filter]), items: threads.map(item), index: threads.indexOf(thread) };
+	}
+
+	/** Classic draws Elgato's thread rows: the selected title, then the next two with their status. */
+	protected override picture(action: Action<ThreadDialSettings>): string | undefined {
+		const machine = this.machineOf(action);
+		if (disconnectedStrip("", machine)) return undefined;
+		const match = this.#match(action);
+		const thread = deck.board.shownOn(machine, match);
+		const threads = deck.board.threadsOn(machine).filter(match);
+		const at = thread === undefined ? -1 : threads.indexOf(thread);
+		if (at < 0) return undefined;
+		return threadRowsArt(
+			threads.slice(at, at + 3).map((row) => {
+				const color = threadTint(row.deck, row.unseen) ?? COLORS.text;
+				return { title: row.title, art: glyphArt(THREAD_GLYPH[row.deck], color) };
+			}),
+		);
 	}
 
 	/** A running thread's spinner angle; the carousel stays still, since a frame there redraws the whole strip. */
