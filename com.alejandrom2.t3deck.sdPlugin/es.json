@@ -32,11 +32,11 @@
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Bifurcar",
-		"Tooltip": "Bifurca el hilo desde su última respuesta terminada y abre la bifurcación."
+		"Tooltip": "Bifurca el hilo desde su última respuesta terminada y abre la bifurcación, o reintegra una bifurcación en el hilo del que salió (mantén)."
 	},
 	"com.alejandrom2.t3deck.merge": {
-		"Name": "Reintegrar",
-		"Tooltip": "Reintegra un hilo bifurcado en el hilo del que salió. Mantén para reintegrar."
+		"Name": "Bifurcar",
+		"Tooltip": "Bifurca el hilo desde su última respuesta terminada y abre la bifurcación, o reintegra una bifurcación en el hilo del que salió (mantén)."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Modelo",
@@ -826,7 +826,8 @@
 				"model": "Modelo",
 				"effort": "Esfuerzo",
 				"access": "Acceso",
-				"confirm": "Confirmar"
+				"confirm": "Confirmar",
+				"does": "Acción"
 			},
 			"background": {
 				"global": "Usar global",
@@ -1054,7 +1055,9 @@
 			},
 			"lineage": {
 				"forkHint": "Bifurca el hilo desde su última respuesta terminada en un hilo nuevo, como hace el botón de bifurcar de T3 Code en esa respuesta, y abre la bifurcación.",
-				"mergeHint": "Reintegra un hilo bifurcado en el hilo del que salió, como hace Merge en T3 Code, y abre ese hilo. Mantén la tecla para reintegrar."
+				"mergeHint": "Reintegra un hilo bifurcado en el hilo del que salió, como hace Merge en T3 Code, y abre ese hilo. Mantén la tecla para reintegrar.",
+				"fork": "Bifurcar",
+				"merge": "Reintegrar"
 			},
 			"update": {
 				"hint": "Muestra la versión de T3 Code en la máquina elegida abajo (la de este equipo si no hay ninguna). Mantén para actualizarla a la última versión de su canal; una app de escritorio instala su propia actualización y se reinicia. T3 Code no avisa de actualizaciones al deck, así que la tecla no puede mostrar que hay una pendiente.",

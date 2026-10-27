@@ -32,11 +32,11 @@
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Fork",
-		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork."
+		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
 	},
 	"com.alejandrom2.t3deck.merge": {
-		"Name": "Zurückmergen",
-		"Tooltip": "Mergt einen geforkten Thread zurück in den Thread, aus dem er stammt. Zum Mergen halten."
+		"Name": "Fork",
+		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Modell",
@@ -826,7 +826,8 @@
 				"model": "Modell",
 				"effort": "Aufwand",
 				"access": "Zugriff",
-				"confirm": "Bestätigen"
+				"confirm": "Bestätigen",
+				"does": "Funktion"
 			},
 			"background": {
 				"global": "Global verwenden",
@@ -1054,7 +1055,9 @@
 			},
 			"lineage": {
 				"forkHint": "Forkt den Thread ab seiner neuesten fertigen Antwort in einen neuen Thread, wie die Fork-Schaltfläche von T3 Code an dieser Antwort, und öffnet dann den Fork.",
-				"mergeHint": "Mergt einen geforkten Thread zurück in den Thread, aus dem er stammt, wie „Merge“ in T3 Code, und öffnet dann diesen Thread. Halte die Taste zum Mergen."
+				"mergeHint": "Mergt einen geforkten Thread zurück in den Thread, aus dem er stammt, wie „Merge“ in T3 Code, und öffnet dann diesen Thread. Halte die Taste zum Mergen.",
+				"fork": "Forken",
+				"merge": "Zurückmergen"
 			},
 			"update": {
 				"hint": "Zeigt die T3 Code-Version auf dem unten gewählten Rechner (dieser Computer, wenn keiner gewählt ist). Halten aktualisiert auf die neueste Version seines Kanals; eine Desktop-App installiert ihr eigenes Update und startet neu. T3 Code meldet dem Deck keine Updates, daher kann die Taste nicht anzeigen, dass eines wartet.",

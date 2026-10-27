@@ -171,48 +171,23 @@ async function openNew(machine: Machine, threadId: string): Promise<void> {
 	await openExternal(threadDeepLink({ environmentId, threadId }, deck.scheme));
 }
 
-/** Forks the target thread from its newest finished turn, as T3 Code's fork button does, then opens the fork. */
-@action({ UUID: `${ID}.fork` })
-export class ForkKey extends LineageKey {
-	#state(action: Action<TargetedSettings>) {
+/**
+ * Forks the target thread from its newest finished turn, as T3 Code's fork button does, then opens the fork; or merges
+ * a fork back into the thread it came from, as T3 Code's Merge in the Lineage panel does, then opens that thread (its
+ * Does setting). Hold to merge: the parent's conversation takes the fork's in.
+ */
+abstract class ForkAction extends LineageKey {
+	#merges(action: Action<TargetedSettings>): boolean {
+		return modeOf("fork", this.manifestId, this.settingsOf(action)) === "merge";
+	}
+
+	#forkState(action: Action<TargetedSettings>) {
 		const { thread, gone, pinned } = this.target(action);
 		const missing = thread !== undefined && thread.latestRunId === null ? t("lineage.nothingToFork") : undefined;
 		return { thread, pinned, check: availability("lineage", { thread, gone, canOperate: canOperate(thread), missing }) };
 	}
 
-	override needs(action: Action<TargetedSettings>): Need[] {
-		const { thread } = this.#state(action);
-		return [...this.pinnedNeed(action, thread), { kind: "value", value: t("lineage.aFinishedTurn"), ok: thread !== undefined && thread.latestRunId !== null }];
-	}
-
-	protected override async paint(action: Action<TargetedSettings>): Promise<void> {
-		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		if (offline) return void (await this.setImage(action, offline));
-		const { pinned, check } = this.#state(action);
-		await this.setImage(action, renderControlKey({ glyph: "fork", label: check.available ? t("lineage.fork") : check.reason, available: check.available, pinned, shrink: !check.available }));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<TargetedSettings>): Promise<void> {
-		this.heldFor(ev.action.id);
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { thread, check } = this.#state(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		const source = thread!;
-		await this.run(ev.action, async () => {
-			const { threadId } = await source.machine.fork(source);
-			await openNew(source.machine, threadId);
-		});
-	}
-}
-
-/**
- * Merges the target fork back into the thread it came from, as T3 Code's Merge in the Lineage panel does, then opens
- * that thread. Hold to merge: the parent's conversation takes the fork's in.
- */
-@action({ UUID: `${ID}.merge` })
-export class MergeBackKey extends LineageKey {
-	#state(action: Action<TargetedSettings>) {
+	#mergeState(action: Action<TargetedSettings>) {
 		const { thread, gone, pinned } = this.target(action);
 		// An archived parent leaves the shell but still takes the merge, so it is only named when listed.
 		const parent = thread?.mergeInto === undefined ? undefined : (thread.machine.threadRow(thread.mergeInto) ?? undefined);
@@ -230,30 +205,54 @@ export class MergeBackKey extends LineageKey {
 	}
 
 	override needs(action: Action<TargetedSettings>): Need[] {
-		const { thread } = this.#state(action);
-		return [...this.pinnedNeed(action, thread), { kind: "value", value: t("lineage.aFork"), ok: thread?.mergeInto !== undefined }];
+		if (this.#merges(action)) {
+			const { thread } = this.#mergeState(action);
+			return [...this.pinnedNeed(action, thread), { kind: "value", value: t("lineage.aFork"), ok: thread?.mergeInto !== undefined }];
+		}
+		const { thread } = this.#forkState(action);
+		return [...this.pinnedNeed(action, thread), { kind: "value", value: t("lineage.aFinishedTurn"), ok: thread !== undefined && thread.latestRunId !== null }];
 	}
 
 	protected override async paint(action: Action<TargetedSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const offline = connectionFace(this.machineOf(action));
 		if (offline) return void (await this.setImage(action, offline));
-		const { pinned, parent, check } = this.#state(action);
-		const detail = check.available ? (parent ? t("lineage.into", { thread: parent.title }) : undefined) : check.reason;
-		await this.setImage(action, renderInfoKey({ glyph: "mergeBack", title: t("lineage.mergeBack"), detail, available: check.available, pinned }));
+		if (this.#merges(action)) {
+			const { pinned, parent, check } = this.#mergeState(action);
+			const detail = check.available ? (parent ? t("lineage.into", { thread: parent.title }) : undefined) : check.reason;
+			return void (await this.setImage(action, renderInfoKey({ glyph: "mergeBack", title: t("lineage.mergeBack"), detail, available: check.available, pinned })));
+		}
+		const { pinned, check } = this.#forkState(action);
+		await this.setImage(action, renderControlKey({ glyph: "fork", label: check.available ? t("lineage.fork") : check.reason, available: check.available, pinned, shrink: !check.available }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<TargetedSettings>): Promise<void> {
 		const held = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { thread, check } = this.#state(ev.action);
+		if (this.#merges(ev.action)) {
+			const { thread, check } = this.#mergeState(ev.action);
+			if (!(await this.allowed(ev.action, check))) return;
+			if (held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("lineage.holdToMerge")));
+			const fork = thread!;
+			const into = fork.mergeInto!;
+			return void (await this.run(ev.action, async () => {
+				await fork.machine.mergeBack(fork, into);
+				await openNew(fork.machine, into);
+			}));
+		}
+		const { thread, check } = this.#forkState(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
-		if (held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("lineage.holdToMerge")));
-		const fork = thread!;
-		const into = fork.mergeInto!;
+		const source = thread!;
 		await this.run(ev.action, async () => {
-			await fork.machine.mergeBack(fork, into);
-			await openNew(fork.machine, into);
+			const { threadId } = await source.machine.fork(source);
+			await openNew(source.machine, threadId);
 		});
 	}
 }
+
+@action({ UUID: `${ID}.fork` })
+export class ForkKey extends ForkAction {}
+
+/** Merge Back, which Fork's Does setting replaced: hidden from the actions list, still on decks and in older profiles. */
+@action({ UUID: `${ID}.merge` })
+export class MergeBackKey extends ForkAction {}

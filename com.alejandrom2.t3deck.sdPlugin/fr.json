@@ -32,11 +32,11 @@
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Fork",
-		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork."
+		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork, ou fusionne un fork dans le fil dont il est issu (maintenir)."
 	},
 	"com.alejandrom2.t3deck.merge": {
-		"Name": "Fusionner",
-		"Tooltip": "Fusionne un fil forké dans le fil dont il est issu. Maintenir pour fusionner."
+		"Name": "Fork",
+		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork, ou fusionne un fork dans le fil dont il est issu (maintenir)."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Modèle",
@@ -826,7 +826,8 @@
 				"model": "Modèle",
 				"effort": "Effort",
 				"access": "Accès",
-				"confirm": "Confirmer"
+				"confirm": "Confirmer",
+				"does": "Action"
 			},
 			"background": {
 				"global": "Réglage global",
@@ -1054,7 +1055,9 @@
 			},
 			"lineage": {
 				"forkHint": "Crée un fork du fil depuis sa dernière réponse terminée dans un nouveau fil, comme le bouton fork de T3 Code sur cette réponse, puis ouvre le fork.",
-				"mergeHint": "Fusionne un fil forké dans le fil dont il est issu, comme Merge dans T3 Code, puis ouvre ce fil. Maintenez la touche pour fusionner."
+				"mergeHint": "Fusionne un fil forké dans le fil dont il est issu, comme Merge dans T3 Code, puis ouvre ce fil. Maintenez la touche pour fusionner.",
+				"fork": "Créer un fork",
+				"merge": "Fusionner"
 			},
 			"update": {
 				"hint": "Affiche la version de T3 Code sur la machine choisie ci-dessous (celle de cet ordinateur sinon). Maintenir la met à jour vers la dernière version de son canal ; une app de bureau installe sa propre mise à jour et redémarre. T3 Code n'annonce pas les mises à jour au deck, donc la touche ne peut pas indiquer qu'une mise à jour attend.",
