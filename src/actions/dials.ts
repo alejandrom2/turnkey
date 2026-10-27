@@ -144,6 +144,9 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 
 type PowerSettings = DialSettings & { dialControls?: string };
 
+/** "Press to apply" in the previewed model's color (white for white marks), else amber. */
+const pendingColor = (pending: PowerChoice): string => (pending.kind === "model" ? (modelColor(pending.model) ?? COLORS.text) : COLORS.attention);
+
 const CONTROL: Record<DialControl, { label: MessageKey; kind: ActionKind; glyph: GlyphName }> = {
 	model: { label: "face.model", kind: "model", glyph: "model" },
 	effort: { label: "face.effort", kind: "effort", glyph: "effort" },
@@ -197,7 +200,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			accent: color,
 			value: shown?.label ?? (context.control === "model" ? thread.model.model : t("strip.default")),
 			detail: !check.available ? check.reason : pending ? t("strip.pressToApply") : this.#idleDetail(context.control, thread),
-			detailColor: pending ? COLORS.attention : undefined,
+			detailColor: pending ? pendingColor(pending) : undefined,
 			tone: toneOf(thread.deck, thread.unseen),
 			ultrathink: context.control === "effort" && (armed || (pending?.kind === "effort" && pending.ultrathink)),
 		};
@@ -223,7 +226,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 				color: choice.kind === "model" ? modelColor(choice.model) : choice.key === pending?.key ? COLORS.attention : undefined,
 				detail: choice.key === shown.key ? detail : undefined,
 			})),
-			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: COLORS.attention } : undefined,
+			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending) } : undefined,
 		};
 	}
 
@@ -262,7 +265,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			preview: pending ? index : undefined,
 			spectrum: shown?.kind === "effort" && shown.ultrathink,
 			ends,
-			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: COLORS.attention } : undefined,
+			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending) } : undefined,
 			badges,
 			dim: !check.available,
 		};
