@@ -175,7 +175,7 @@
 			"Name": "Organize",
 			"UUID": "com.alejandrom2.t3deck.organize",
 			"Icon": "imgs/actions/organize/icon",
-			"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread.",
+			"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread, or wakes the thread snoozed last.",
 			"PropertyInspectorPath": "ui/organize.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/organize/key", "ShowTitle": false }]

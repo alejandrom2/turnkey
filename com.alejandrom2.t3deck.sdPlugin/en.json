@@ -72,7 +72,7 @@
 	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "Organize",
-		"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread."
+		"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread, or wakes the thread snoozed last."
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull Request",
@@ -257,7 +257,9 @@
 			"snooze": "Snooze",
 			"snoozeFor": "Snooze {duration}",
 			"archive": "Archive",
-			"markUnread": "Unread"
+			"markUnread": "Unread",
+			"wake": "Wake thread",
+			"nothingSnoozed": "Nothing snoozed"
 		},
 		"notice": {
 			"openT3Code": "Open T3 Code",
@@ -567,6 +569,7 @@
 			"repo": "Something to act on",
 			"editor": "An editor on the machine",
 			"limits": "A provider that reports limits",
+			"snoozed": "A snoozed thread",
 			"notAvailable": "Not available: {value}",
 			"fix": {
 				"openT3": "Open T3 Code on this computer, then press the key.",
@@ -592,7 +595,8 @@
 				"noFindings": "Nothing is failing or unresolved on it.",
 				"providersInT3": "Fix them in T3 Code under Settings → Providers.",
 				"queueMessage": "Send a message while the thread works; it waits in its queue.",
-				"addTask": "Add one in T3 Code under Settings → Scheduled tasks."
+				"addTask": "Add one in T3 Code under Settings → Scheduled tasks.",
+				"snoozeOne": "Snooze one with an Organize key or in T3 Code."
 			},
 			"findings": "Findings to fix",
 			"providers": "Providers ready",
@@ -830,6 +834,7 @@
 				"snooze": "Snooze",
 				"archive": "Archive",
 				"markUnread": "Mark unread",
+				"wake": "Wake latest snoozed",
 				"snoozeFor": "Snooze for",
 				"minutes15": "15 minutes",
 				"minutes30": "30 minutes",

@@ -111,6 +111,7 @@
 	</head>
 	<body>
 		<main>
+			<div id="organize-target">
 			<sdpi-item label="Target" data-i18n-label="inspector.target.label">
 				<sdpi-select setting="target" default="selected">
 					<option value="selected" data-i18n="inspector.target.selected">Selected thread</option>
@@ -121,6 +122,7 @@
 				<sdpi-select setting="thread" datasource="getThreads" hot-reload loading="Loading threads…" data-i18n-loading="inspector.loading.threads"></sdpi-select>
 			</sdpi-item>
 			<p class="hint" id="target-hint" hidden data-i18n="inspector.target.hint">The key acts on this thread even when another is selected, and shows a small pin. Archived or deleted, it shows as not available until you pick another.</p>
+			</div>
 			<sdpi-item label="Action" data-i18n-label="inspector.organize.action">
 				<sdpi-select setting="organize" default="settle">
 					<option value="settle" data-i18n="inspector.organize.settle">Settle</option>
@@ -128,6 +130,7 @@
 					<option value="snooze" data-i18n="inspector.organize.snooze">Snooze</option>
 					<option value="archive" data-i18n="inspector.organize.archive">Archive</option>
 					<option value="mark_unread" data-i18n="inspector.organize.markUnread">Mark unread</option>
+					<option value="wake" data-i18n="inspector.organize.wake">Wake latest snoozed</option>
 				</sdpi-select>
 			</sdpi-item>
 			<sdpi-item label="Snooze for" data-i18n-label="inspector.organize.snoozeFor" id="snooze-for">
@@ -434,6 +437,13 @@
 			{
 				const field = document.querySelector('[setting="organize"]');
 				const apply = (value) => { $("confirm-first").hidden = !((value) => value === "" || value === "settle" || value === "snooze")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["organize"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["organize"]));
+			}
+			{
+				const field = document.querySelector('[setting="organize"]');
+				const apply = (value) => { $("organize-target").hidden = !((value) => value !== "wake")(value ?? ""); };
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["organize"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["organize"]));
