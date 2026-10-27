@@ -24,6 +24,8 @@ export type SliderInput = {
 	badges?: MarkPainter[];
 	/** Dims the track: the dial can't act. */
 	dim?: boolean;
+	/** How far an overflowing label has scrolled left, in px. */
+	labelOffset?: number;
 };
 
 export const SLIDER = { x: 12, width: 176, y: 41, height: 18, inset: 12 } as const;
@@ -42,6 +44,15 @@ function fit(text: string, width: number, size: number): string {
 	return `${chars.join("").trimEnd()}…`;
 }
 
+/** The room the label has beside the badges, as a text slot the marquee can scroll. */
+export const sliderLabelSlot = (input: Pick<SliderInput, "badges">) => ({
+	width: SLIDER.width - Math.min(2, input.badges?.length ?? 0) * (BADGE + 6) - 4,
+	height: 22,
+	size: 16,
+	weight: 650,
+	color: COLORS.text,
+});
+
 export function sliderArt(input: SliderInput): string {
 	const stops = Math.max(2, input.stops);
 	const cy = SLIDER.y + SLIDER.height / 2;
@@ -49,15 +60,18 @@ export function sliderArt(input: SliderInput): string {
 	const parts: string[] = [];
 	badges.forEach((badge, index) => parts.push(badge(SLIDER.x + SLIDER.width - BADGE - index * (BADGE + 6), 9, BADGE)));
 
-	const labelRoom = SLIDER.width - badges.length * (BADGE + 6) - 4;
+	const labelRoom = sliderLabelSlot(input).width;
 	const labelColor = input.labelColor ?? COLORS.text;
-	if (textWidth(input.label, 16) > labelRoom) {
+	const overflow = textWidth(input.label, 16) - labelRoom;
+	if (overflow > 0) {
 		const end = SLIDER.x + labelRoom;
-		parts.push(
-			`<defs><linearGradient id="slider-label-fade" gradientUnits="userSpaceOnUse" x1="${end - 22}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>` +
-				`<mask id="slider-label" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="34"><rect width="200" height="34" fill="url(#slider-label-fade)"/></mask></defs>`,
-			svgText(input.label, SLIDER.x, 26, 16, 650, labelColor, ` mask="url(#slider-label)"`),
-		);
+		const offset = Math.min(Math.max(0, input.labelOffset ?? 0), overflow + 4);
+		// At rest the tail fades out; while it scrolls the label is clipped to its room instead.
+		const shape =
+			offset === 0
+				? `<linearGradient id="slider-label-fade" gradientUnits="userSpaceOnUse" x1="${end - 22}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="slider-label" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="34"><rect width="200" height="34" fill="url(#slider-label-fade)"/></mask>`
+				: `<clipPath id="slider-label"><rect x="${SLIDER.x}" y="0" width="${labelRoom}" height="34"/></clipPath>`;
+		parts.push(`<defs>${shape}</defs>`, svgText(input.label, +(SLIDER.x - offset).toFixed(1), 26, 16, 650, labelColor, offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
 	} else parts.push(svgText(input.label, SLIDER.x, 26, 16, 650, labelColor));
 
 	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
