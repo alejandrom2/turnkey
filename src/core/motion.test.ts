@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { Animator, flashWash, MOTION, motionMode, nextMinute, pulseWash, spinAngle, threadMotion, Transitions } from "./motion.js";
+import { Animator, flashWash, MOTION, motionMode, nextMinute, pulseWash, spinAngle, threadMotion, Transitions, twinkleStep } from "./motion.js";
 
 describe("motion frames", () => {
 	it("defaults to Full", () => {
@@ -125,5 +125,13 @@ describe("nextMinute", () => {
 		expect(nextMinute([], 0)).toBeUndefined();
 		expect(nextMinute([0, 30_000], 50_000)).toBe(10_000);
 		expect(nextMinute([1_000], 61_000)).toBe(60_000);
+	});
+});
+
+describe("twinkleStep", () => {
+	it("steps every other frame, slower when Reduced, and not at all when Off", () => {
+		expect(twinkleStep("off", 10_000)).toBeUndefined();
+		expect([twinkleStep("full", 0), twinkleStep("full", 199), twinkleStep("full", 200)]).toEqual([0, 0, 1]);
+		expect([twinkleStep("reduced", 499), twinkleStep("reduced", 500)]).toEqual([0, 1]);
 	});
 });

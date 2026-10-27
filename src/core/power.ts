@@ -53,6 +53,15 @@ export function effortToneOf(choices: readonly Extract<PowerChoice, { kind: "eff
 	return effortTone(style, levels.length > 1 ? at / (levels.length - 1) : 1, isTopEffort(choices, key), modelColor);
 }
 
+/** How far up its model's ladder effort level `key` sits, 0 to 1; Ultrathink, above the ladder, is 1. */
+export function effortPlace(choices: readonly Extract<PowerChoice, { kind: "effort" }>[], key: string | undefined): number | undefined {
+	const choice = choices.find((candidate) => candidate.key === key);
+	if (choice === undefined) return undefined;
+	if (choice.ultrathink) return 1;
+	const levels = choices.filter((candidate) => !candidate.ultrathink);
+	return levels.length > 1 ? levels.indexOf(choice) / (levels.length - 1) : 1;
+}
+
 /** The effort a thread shows: Ultrathink while armed, else its option's value. */
 export function currentEffort(model: Pick<CatalogModel, "options"> | undefined, selection: ModelSelection, armed: boolean): OptionValue | undefined {
 	const option = effortOption(model);

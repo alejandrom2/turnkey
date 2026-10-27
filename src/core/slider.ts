@@ -3,7 +3,7 @@
  * a stepped track with the current value filled and a previewed one as a hollow thumb, and what the ends mean (or
  * what pressing does) along the bottom.
  */
-import { COLORS, type MarkPainter, type Paint, paintFill, svgDataUrl, svgText, textWidth } from "./render.js";
+import { COLORS, type MarkPainter, type Paint, paintFill, sparkles, svgDataUrl, svgText, textWidth } from "./render.js";
 
 /** A mark and a word on the bottom row; the word dims unless painted. */
 export type FooterItem = { mark: MarkPainter; text: string; paint?: Paint };
@@ -31,6 +31,10 @@ export type SliderInput = {
 	lead?: MarkPainter;
 	/** Dims the track: the dial can't act. */
 	dim?: boolean;
+	/** Sparkles over the fill for an effort level this far up its ladder (0 to 1); none below the middle. */
+	sparkle?: number;
+	/** The sparkles' twinkle step; undefined keeps them still. */
+	twinkle?: number;
 	/** One pill per choice instead of a filled track: for choices that are places, not levels (models). */
 	pages?: boolean;
 	/** Nothing goes on the bottom row at rest, so the pills sit lower, in its place. */
@@ -126,7 +130,9 @@ export function sliderArt(input: SliderInput): string {
 	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	if (current !== undefined) {
 		const fill = paintFill(input.fill ?? COLORS.accent, "slider-fill", SLIDER.x, SLIDER.x + SLIDER.width, track);
-		track.push(`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${+(stopX(current, stops) - SLIDER.x + SLIDER.height / 2).toFixed(2)}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="${fill}"/>`);
+		const filled = +(stopX(current, stops) - SLIDER.x + SLIDER.height / 2).toFixed(2);
+		track.push(`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${filled}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="${fill}"/>`);
+		if (input.sparkle !== undefined) track.push(sparkles(input.sparkle, SLIDER.x + 2, SLIDER.y, filled - 24, SLIDER.height, input.twinkle));
 	}
 	for (let index = 0; index < stops; index++) track.push(`<circle cx="${stopX(index, stops)}" cy="${cy}" r="2" fill="#FFFFFF" fill-opacity="${current !== undefined && index <= current ? ".5" : ".28"}"/>`);
 	if (current !== undefined) track.push(`<circle cx="${stopX(current, stops)}" cy="${cy}" r="11" fill="#FFFFFF"/>`);

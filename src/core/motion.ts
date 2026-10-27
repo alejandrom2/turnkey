@@ -31,6 +31,12 @@ export function spinAngle(mode: MotionMode, now: number): number {
 	return (Math.floor(now / MOTION.frameMs[mode]) % MOTION.spinSteps) * (360 / MOTION.spinSteps);
 }
 
+/** The effort sparkles' twinkle step at `now`: every other frame (5 a second in Full, 2 in Reduced); undefined when Off. */
+export function twinkleStep(mode: MotionMode, now: number): number | undefined {
+	if (mode === "off") return undefined;
+	return Math.floor(now / (MOTION.frameMs[mode] * 2));
+}
+
 const easeInOut = (t: number) => 0.5 - Math.cos(Math.PI * t) / 2;
 
 /** The waiting pulse's wash at `now`: a quick rise and a slow fall; undefined unless motion is Full. */

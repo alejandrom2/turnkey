@@ -523,8 +523,44 @@ export function renderControlKey(input: ControlKeyInput): string {
 	return keySvg(background(input.active ? COLORS.keyActive : COLORS.key) + wash + body + (input.ultrathink ? ultrathinkFrame(144, 144, 16, 3) : ""));
 }
 
+/** Fixed spots (x, y as fractions of the area, star radius in px) so sparkles never jump between repaints. */
+const SPARKLE_SPOTS = [
+	[0.62, 0.3, 3.4],
+	[0.18, 0.68, 2.4],
+	[0.86, 0.62, 2.9],
+	[0.38, 0.26, 2.1],
+	[0.74, 0.22, 2],
+	[0.5, 0.72, 3.1],
+	[0.28, 0.4, 1.9],
+	[0.94, 0.34, 2.2],
+	[0.08, 0.3, 2],
+	[0.44, 0.52, 1.8],
+] as const;
+
+/** A twinkle's brightness through its cycle; each star starts at its own point so they never flash together. */
+const TWINKLE = [1, 0.75, 0.4, 0.15, 0.4, 0.75] as const;
+
+/**
+ * Still, four-pointed sparkles over a filled track for the upper half of an effort ladder: none below the middle, a
+ * few just past it, the most at the top. `t` is the level's place on the ladder, 0 to 1.
+ */
+export function sparkles(t: number, x: number, y: number, width: number, height: number, step?: number): string {
+	if (t < 0.5 || width <= 0) return "";
+	const count = Math.min(SPARKLE_SPOTS.length, 2 + Math.round((t - 0.5) * 2 * (SPARKLE_SPOTS.length - 2)));
+	return SPARKLE_SPOTS.slice(0, count)
+		.map(([fx, fy, r], index) => {
+			const cx = +(x + fx * width).toFixed(1);
+			const cy = +(y + fy * height).toFixed(1);
+			const path = `M${cx} ${cy - r}Q${cx} ${cy} ${cx + r} ${cy}Q${cx} ${cy} ${cx} ${cy + r}Q${cx} ${cy} ${cx - r} ${cy}Q${cx} ${cy} ${cx} ${cy - r}Z`;
+			const base = index % 2 === 0 ? 0.95 : 0.7;
+			const opacity = step === undefined ? base : base * TWINKLE[(step + index * 2) % TWINKLE.length]!;
+			return `<path d="${path}" fill="#FFFFFF" fill-opacity="${opacity.toFixed(2)}"/>`;
+		})
+		.join("");
+}
+
 /** Stops along a track (y 110 to 128): `index` filled up to, in the accent, T3 Code's Ultrathink spectrum or a given paint. */
-export function ladderCue(count: number, index: number, spectrum = false, paint?: Paint): string {
+export function ladderCue(count: number, index: number, spectrum = false, paint?: Paint, sparkle?: number, twinkle?: number): string {
 	const stops = Math.max(2, count);
 	const at = Math.max(0, Math.min(stops - 1, index));
 	const step = 92 / (stops - 1);
@@ -532,7 +568,10 @@ export function ladderCue(count: number, index: number, spectrum = false, paint?
 	const defs: string[] = [];
 	const fill = paintFill(spectrum ? { gradient: SPECTRUM } : (paint ?? COLORS.accent), "cue-fill", x(0), x(stops - 1), defs);
 	const dots = Array.from({ length: stops }, (_, i) => `<circle cx="${x(i)}" cy="119" r="2" fill="#FFFFFF" fill-opacity="${i <= at ? ".55" : ".25"}"/>`).join("");
-	return `${defs.join("")}<rect x="16" y="110" width="112" height="18" rx="9" fill="#FFFFFF" fill-opacity=".1"/><rect x="16" y="110" width="${+(x(at) - 16 + 9).toFixed(2)}" height="18" rx="9" fill="${fill}"/>${dots}<circle cx="${x(at)}" cy="119" r="10" fill="#FFFFFF"/>`;
+	const filled = +(x(at) - 16 + 9).toFixed(2);
+	// Sparkles stop short of the thumb, which covers the filled end.
+	const glitter = sparkle === undefined ? "" : sparkles(sparkle, 18, 110, filled - 22, 18, twinkle);
+	return `${defs.join("")}<rect x="16" y="110" width="112" height="18" rx="9" fill="#FFFFFF" fill-opacity=".1"/><rect x="16" y="110" width="${filled}" height="18" rx="9" fill="${fill}"/>${glitter}${dots}<circle cx="${x(at)}" cy="119" r="10" fill="#FFFFFF"/>`;
 }
 
 /** One pill per item, the current one bright: where a value sits among a few (favorite models). */
