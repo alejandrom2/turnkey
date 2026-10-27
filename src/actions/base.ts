@@ -16,7 +16,7 @@ import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { messageTable, t } from "../core/i18n.js";
 import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels } from "../core/models.js";
-import { COLORS, type GlyphName, maxEffortStyle, type Paint, providerGradient, renderNoticeKey, renderResultKey, renderReviewKey, stripCanvas, stripIcon } from "../core/render.js";
+import { COLORS, type GlyphName, maxEffortStyle, type Paint, providerGradient, renderNoticeKey, renderResultKey, renderReviewKey, renderSkeletonKey, stripCanvas, stripIcon } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
@@ -546,24 +546,31 @@ export function selectThread(thread: Pick<DeckThread, "key" | "machine">): void 
 	void deck.board.select(thread.key, thread.machine.url).catch((error: unknown) => logger.warn(`Selecting a thread failed: ${message(error)}`));
 }
 
-export type ConnectionProblem = "none" | "missing" | "pair" | "offline";
+export type ConnectionProblem = "loading" | "none" | "missing" | "pair" | "offline";
 
 /** Why an action pinned to `machine` (or following all) cannot show threads yet, if it cannot. */
 export function connectionProblem(machine?: string): ConnectionProblem | undefined {
+	// Until settings are read and a first connection ends, faces show skeletons rather than an error.
+	if (!deck.loaded) return "loading";
 	const machines = deck.machines;
 	if (machines.length === 0) return "none";
 	if (machine === undefined) {
 		if (machines.some((candidate) => candidate.state.kind === "ready")) return undefined;
+		if (machines.some((candidate) => !candidate.settled)) return "loading";
 		return machines.every((candidate) => candidate.state.kind === "signed-out") ? "pair" : "offline";
 	}
 	const target = machines.find((candidate) => candidate.url === machine);
 	if (target === undefined) return "missing";
-	return target.state.kind === "ready" ? undefined : target.state.kind === "signed-out" ? "pair" : "offline";
+	if (target.state.kind === "ready") return undefined;
+	if (!target.settled) return "loading";
+	return target.state.kind === "signed-out" ? "pair" : "offline";
 }
 
 /** The face shown instead of normal content while the action's machine is not usable. */
 export function connectionFace(machine?: string): string | undefined {
 	switch (connectionProblem(machine)) {
+		case "loading":
+			return renderSkeletonKey();
 		case "none":
 			return renderNoticeKey({ glyph: "plug", title: t("notice.openT3Code"), detail: t("notice.thenPress"), tone: "muted" });
 		case "missing":

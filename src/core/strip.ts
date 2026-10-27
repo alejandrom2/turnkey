@@ -123,7 +123,11 @@ export function stripFeedback(content: StripContent, options: StripOptions): Rec
 	const scrolling = scrollingLine(content, options.scroll);
 	const line = (which: StripLine, text: string, color: string) =>
 		slotItems(text, STRIP_LINES[which], color, scrolling?.line === which ? scrolling : undefined, options.offset);
-	const value = line("value", content.value, STRIP_LINES.value.color);
+	// Loading with nothing to say yet: both lines are placeholder bars, as the first connection draws them.
+	const value =
+		content.loading && content.value === ""
+			? { text: { value: "", color: STRIP_LINES.value.color }, art: skeletonBar(STRIP_LINES.value, 112) }
+			: line("value", content.value, STRIP_LINES.value.color);
 	const detail = content.loading
 		? { text: { value: "", color: STRIP_LINES.detail.color }, art: skeletonBar(STRIP_LINES.detail, 84) }
 		: line("detail", content.detail ?? "", content.detailColor ?? STRIP_LINES.detail.color);

@@ -864,8 +864,12 @@ export class Machine {
 		this.onChange();
 	}
 
+	/** False until the first connection attempt ends either way: until then faces show skeletons, not "Connecting". */
+	settled = false;
+
 	#set(state: MachineState): void {
 		this.state = state;
+		if (state.kind !== "connecting") this.settled = true;
 		this.#syncLive();
 		this.onChange();
 	}

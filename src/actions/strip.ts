@@ -62,9 +62,14 @@ const slides = new Slides(repaint);
 export const markArt = (model: CatalogModel): MarkPainter => powerArt({ kind: "mark", model }, { acpIcons: deck.acpIcons });
 
 /** The strip shown instead of a dial's content while its machine is not usable. */
+/** A dim disc where a strip's icon will be, while the first connection loads. */
+const SKELETON_MARK: MarkPainter = (x, y, size) => `<circle cx="${x + size / 2}" cy="${y + size / 2}" r="${size / 2}" fill="#FFFFFF" fill-opacity=".1"/>`;
+
 export function disconnectedStrip(header: string, machine: string | undefined): StripContent | undefined {
 	const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("plug", COLORS.muted), accent: COLORS.muted, value, detail });
 	switch (connectionProblem(machine)) {
+		case "loading":
+			return { header, icon: SKELETON_MARK, accent: COLORS.muted, value: "", loading: true };
 		case "missing":
 			return muted(t("notice.machineRemoved"), t("notice.pickAnotherInSettings"));
 		case "none":
