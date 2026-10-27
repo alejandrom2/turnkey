@@ -971,6 +971,9 @@
 			},
 			"power": {
 				"controls": "This dial controls",
+				"bottomRow": "Model view shows",
+				"showSpeed": "Speed",
+				"showEffort": "Effort",
 				"hint": "Rotate to preview, press to apply to the selected thread. Model turns through T3 Code's favorite models across providers. Press with nothing to apply, or tap, to switch Speed when the model offers it. Ultrathink, where Claude offers it, prefixes the deck's next prompts to the thread."
 			},
 			"limits": {
