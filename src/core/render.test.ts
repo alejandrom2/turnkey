@@ -3,8 +3,10 @@ import {
 	dotsCue,
 	fitSize,
 	ladderCue,
-	maxEffortPaint,
+	effortTone,
 	maxEffortStyle,
+	providerGradient,
+	sampleStops,
 	renderControlKey,
 	renderDecisionKey,
 	renderInfoKey,
@@ -211,13 +213,20 @@ describe("ultrathink frame", () => {
 	});
 });
 
-describe("maxEffortPaint", () => {
-	it("paints the top effort level by the chosen style", () => {
-		expect(maxEffortPaint("gradient", "#d97757")).toEqual({ text: "#AD7BF9", fill: { stops: expect.stringContaining("#648FFD") } });
-		expect(maxEffortPaint("solid", undefined)).toEqual({ text: "#AD7BF9", fill: "#AD7BF9" });
-		expect(maxEffortPaint("model", "#d97757")).toEqual({ text: "#d97757", fill: "#d97757" });
-		expect(maxEffortPaint("model", undefined)).toBeUndefined();
-		expect(maxEffortPaint("off", "#d97757")).toBeUndefined();
+describe("effortTone", () => {
+	it("colors every level along the gradient, and only the top one otherwise", () => {
+		expect(effortTone("gradient", 0, false, undefined)?.text).toBe("#648FFD");
+		expect(effortTone("gradient", 0.55, false, undefined)?.text).toBe("#AD7BF9");
+		expect(effortTone("gradient", 0, false, undefined)?.fill).toEqual({ gradient: expect.any(Array) });
+		expect(effortTone("solid", 0.5, false, undefined)).toBeUndefined();
+		expect(effortTone("solid", 1, true, undefined)).toEqual({ text: "#AD7BF9", fill: "#AD7BF9" });
+		expect(effortTone("model", 1, true, "#D97757")).toEqual({ text: "#D97757", fill: "#D97757" });
+		expect(effortTone("off", 1, true, "#D97757")).toBeUndefined();
 		expect(maxEffortStyle("nonsense")).toBe("gradient");
+	});
+
+	it("builds any provider's gradient from its color, gray for white marks", () => {
+		expect(providerGradient("#D97757")).toEqual([[0, sampleStops([[0, "#D97757"], [1, "#FFFFFF"]], 0.45)], [1, "#D97757"]]);
+		expect(providerGradient(undefined)[1]).toEqual([1, "#8E9199"]);
 	});
 });
