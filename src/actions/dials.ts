@@ -271,8 +271,9 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const at = (choice: PowerChoice | undefined) => (choice === undefined ? -1 : state.choices.findIndex((candidate) => candidate.key === choice.key));
 		const index = at(shown);
 		const toggle = speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
-		const badges: MarkPainter[] = [shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph)];
-		if (toggle) badges.unshift(glyphArt(toggle.fast ? "speedFilled" : "speed", toggle.fast ? COLORS.accent : COLORS.muted));
+		const model = findModel(thread.machine.modelConfig, thread.model);
+		const fastColor = (model && modelColor(model)) ?? COLORS.accent;
+		const badges: MarkPainter[] = toggle ? [glyphArt(toggle.fast ? "speedFilled" : "speed", toggle.fast ? fastColor : COLORS.muted)] : [];
 		const ends: [string, string] =
 			control === "effort"
 				? [t("power.quicker"), t("power.deeper")]
@@ -294,6 +295,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			ends,
 			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending) } : undefined,
 			badges,
+			lead: shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph),
 			dim: !check.available,
 		};
 	}
