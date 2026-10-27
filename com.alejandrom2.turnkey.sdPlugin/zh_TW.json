@@ -1,0 +1,1248 @@
+{
+	"Name": "Turnkey for T3 Code",
+	"Description": "從 Stream Deck 監看並操控 T3 Code 對話：對話狀態、停止、提示詞、模型選項與回答，支援所有供應商。",
+	"Category": "Turnkey for T3 Code",
+	"com.alejandrom2.turnkey.slot": {
+		"Name": "對話",
+		"Tooltip": "依按鍵位置填入看板上的一個對話：狀態、標題與計時。點按可在 T3 Code 中開啟；長按可選取。"
+	},
+	"com.alejandrom2.turnkey.activity": {
+		"Name": "動態",
+		"Tooltip": "符合篩選條件中最緊急的對話。點按可在 T3 Code 中開啟。"
+	},
+	"com.alejandrom2.turnkey.new": {
+		"Name": "新對話",
+		"Tooltip": "在所選對話的專案、無專案或指定專案中開始新對話；可附上已儲存的提示詞或留空。"
+	},
+	"com.alejandrom2.turnkey.send": {
+		"Name": "傳送提示詞",
+		"Tooltip": "將你自己的提示詞，或常用提示詞（繼續、修正測試、說明、提交等）傳送到所選對話。長按可中斷並以此重新開始。"
+	},
+	"com.alejandrom2.turnkey.steer": {
+		"Name": "引導",
+		"Tooltip": "將已儲存的指示加入所選對話正在執行的回合。"
+	},
+	"com.alejandrom2.turnkey.skill": {
+		"Name": "執行技能",
+		"Tooltip": "執行對話供應商的一項技能，就像在 T3 Code 的輸入框中選取並傳送一樣。"
+	},
+	"com.alejandrom2.turnkey.stop": {
+		"Name": "停止",
+		"Tooltip": "停止所選對話正在執行的回合，或依設定停止其執行中的工作流程（Claude）。停止工作流程需長按。"
+	},
+	"com.alejandrom2.turnkey.model": {
+		"Name": "模型",
+		"Tooltip": "將所選對話切換為常用模型，或切換到 T3 Code 常用模型中的下一個。"
+	},
+	"com.alejandrom2.turnkey.effort": {
+		"Name": "強度",
+		"Tooltip": "設定所選對話的推理強度，或依序切換其模型提供的選項。"
+	},
+	"com.alejandrom2.turnkey.speed": {
+		"Name": "速度",
+		"Tooltip": "在模型支援時，切換所選對話的快速模式。"
+	},
+	"com.alejandrom2.turnkey.permissions": {
+		"Name": "權限",
+		"Tooltip": "設定所選對話的權限，從「監督」到「完整存取」，或依序切換。"
+	},
+	"com.alejandrom2.turnkey.plan": {
+		"Name": "規劃",
+		"Tooltip": "在「建置」與「規劃」之間切換所選對話。"
+	},
+	"com.alejandrom2.turnkey.approve": {
+		"Name": "核准",
+		"Tooltip": "在設定允許範圍內回應所選對話的核准請求，否則在 T3 Code 中開啟。"
+	},
+	"com.alejandrom2.turnkey.deny": {
+		"Name": "拒絕",
+		"Tooltip": "拒絕所選對話的核准請求。"
+	},
+	"com.alejandrom2.turnkey.organize": {
+		"Name": "整理",
+		"Tooltip": "將所選對話標為完結、釘選、延後、封存或標為未讀，或喚醒最近延後的對話。"
+	},
+	"com.alejandrom2.turnkey.fork": {
+		"Name": "分叉",
+		"Tooltip": "從最新一則完成的回覆分叉出對話並開啟，或將分叉合併回原本的對話（長按）。"
+	},
+	"com.alejandrom2.turnkey.branch": {
+		"Name": "分支",
+		"Tooltip": "所選對話的分支。點按可在 T3 Code 中開啟對話。"
+	},
+	"com.alejandrom2.turnkey.git": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.turnkey.pr": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.turnkey.task": {
+		"Name": "執行任務",
+		"Tooltip": "T3 Code 的一項排程任務：名稱與下次執行時間。按下可立即執行。"
+	},
+	"com.alejandrom2.turnkey.usage": {
+		"Name": "用量",
+		"Tooltip": "某段期間的 API 估算費用、token 與工作階段，與 T3 Code 的 Usage 顯示相同，可看單台或所有機器。點按可重新整理；長按還會重新載入模型價格。"
+	},
+	"com.alejandrom2.turnkey.limits": {
+		"Name": "額度",
+		"Tooltip": "供應商的訂閱額度，與 T3 Code 的「Limits」一樣合併計算：剩餘 %、下次重置與累積的重置次數。點按可重新整理；長按可開啟 T3 Code 的 Usage 或使用重置。"
+	},
+	"com.alejandrom2.turnkey.open": {
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
+	},
+	"com.alejandrom2.turnkey.health": {
+		"Name": "健康狀態",
+		"Tooltip": "與 T3 Code 及其供應商的連線：優先顯示最嚴重的問題（離線、需要配對、未驗證、不支援的版本、無法使用）。點按可重新連線。"
+	},
+	"com.alejandrom2.turnkey.update": {
+		"Name": "更新 T3",
+		"Tooltip": "某台機器上的 T3 Code 版本。長按可更新至最新版本；需要更新權限，會在該機器下次配對時要求。"
+	},
+	"com.alejandrom2.turnkey.script": {
+		"Name": "執行指令碼",
+		"Tooltip": "在對話的終端機中執行專案已儲存的指令碼；長按可停止。需要終端機權限（shell），會在該機器下次配對時要求。"
+	},
+	"com.alejandrom2.turnkey.share": {
+		"Name": "分享對話",
+		"Tooltip": "為對話建立訪客連結並複製；顯示「已分享」及其訪客。長按可停止分享。需要訪客連結權限，會在該機器下次配對時要求。"
+	},
+	"com.alejandrom2.turnkey.dial.threads": {
+		"Name": "對話旋鈕",
+		"Tooltip": "旋轉以瀏覽符合篩選條件的對話，並在 T3 Code 中選取；按下或點按可開啟。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選取對話", "Push": "在 T3 Code 開啟", "Touch": "在 T3 Code 開啟" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.model": {
+		"Name": "效能旋鈕",
+		"Tooltip": "變更所選對話的模型、強度或權限；按下或點按可在支援時切換速度。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "預覽", "Push": "套用（或切換速度）", "Touch": "切換速度" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.prompts": {
+		"Name": "提示詞旋鈕",
+		"Tooltip": "旋轉以瀏覽你的提示詞與範本。按下會傳送到所選對話；長按則開始新對話。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇提示詞", "Push": "傳送（長按：新對話）", "Touch": "傳送" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.answer": {
+		"Name": "回答旋鈕",
+		"Tooltip": "逐一選擇回答代理的問題，並在設定允許範圍內回應核准請求。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇回答", "Push": "回答（預設長按）", "Touch": "開啟對話" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.queue": {
+		"Name": "佇列旋鈕",
+		"Tooltip": "旋轉以瀏覽所選對話的佇列訊息。按下可立即傳送（引導進執行中的回合，或在沒有執行時開始）；長按可移除。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇訊息", "Push": "立即傳送（長按：移除）", "Touch": "開啟對話" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.tasks": {
+		"Name": "任務旋鈕",
+		"Tooltip": "旋轉以瀏覽 T3 Code 的排程任務及各自的下次執行時間。按下可立即執行顯示的任務；點按可停用或重新啟用。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇任務", "Push": "立即執行", "Touch": "啟用或停用" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.skills": {
+		"Name": "技能旋鈕",
+		"Tooltip": "旋轉以瀏覽對話供應商的技能。按下或點按可執行顯示的技能；長按觸控條可閱讀說明。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇技能", "Push": "執行技能", "Touch": "執行技能", "LongTouch": "閱讀說明" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.pr": {
+		"Name": "PR 旋鈕",
+		"Tooltip": "旋轉以瀏覽開啟中的 PR。按下可執行「修正問題」，點按可在瀏覽器中開啟，長按觸控條可閱讀問題。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇 PR", "Push": "修正問題（長按）", "Touch": "在瀏覽器開啟", "LongTouch": "閱讀問題" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.limits": {
+		"Name": "額度旋鈕",
+		"Tooltip": "旋轉以瀏覽各供應商的額度時段。按下或點按可重新整理；長按可開啟 T3 Code 的 Usage 或使用重置。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇供應商與時段", "Push": "重新整理（長按：重置）", "Touch": "重新整理", "LongTouch": "閱讀詳情" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.usage": {
+		"Name": "用量旋鈕",
+		"Tooltip": "旋轉以瀏覽期間總計，以及各模型的費用、token、快取命中率與每百萬 token 費用。按下或點按可重新整理；長按可重新載入模型價格。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇模型", "Push": "重新整理（長按：含價格）", "Touch": "重新整理", "LongTouch": "閱讀詳情" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.devices": {
+		"Name": "裝置旋鈕",
+		"Tooltip": "旋轉以瀏覽 T3 Code 的模擬器。按下可在對話的 Device panel 中啟動或開啟顯示的裝置；長按可關機。觸碰可重新搜尋裝置。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇裝置", "Push": "啟動或開啟（長按：關機）", "Touch": "重新搜尋" }
+		}
+	},
+	"com.alejandrom2.turnkey.git.commit": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.turnkey.git.push": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.turnkey.git.pr": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.turnkey.git.pull": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.turnkey.pr.fix": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.turnkey.pr.explain": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.turnkey.pr.ask": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.turnkey.pr.guide": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.turnkey.quick": {
+		"Name": "傳送提示詞",
+		"Tooltip": "將你自己的提示詞，或常用提示詞（繼續、修正測試、說明、提交等）傳送到所選對話。長按可中斷並以此重新開始。"
+	},
+	"com.alejandrom2.turnkey.workflow.stop": {
+		"Name": "停止",
+		"Tooltip": "停止所選對話正在執行的回合，或依設定停止其執行中的工作流程（Claude）。停止工作流程需長按。"
+	},
+	"com.alejandrom2.turnkey.merge": {
+		"Name": "分叉",
+		"Tooltip": "從最新一則完成的回覆分叉出對話並開啟，或將分叉合併回原本的對話（長按）。"
+	},
+	"com.alejandrom2.turnkey.editor": {
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
+	},
+	"com.alejandrom2.turnkey.preview": {
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
+	},
+	"Localization": {
+		"result": {
+			"done": "完成",
+			"opened": "已開啟",
+			"sent": "已傳送",
+			"started": "已開始",
+			"loading": "載入中…",
+			"holdToAllow": "長按以允許",
+			"holdToAnswer": "長按以回答",
+			"holdToSend": "長按以傳送",
+			"holdToSettle": "長按以完結",
+			"holdToSnooze": "長按以延後",
+			"notWebLink": "非網頁連結",
+			"holdToRemove": "長按以移除",
+			"cantSteerYet": "尚無法引導"
+		},
+		"face": {
+			"noThread": "無對話",
+			"allQuiet": "一切安靜",
+			"model": "模型",
+			"effort": "強度",
+			"access": "權限",
+			"plan": "規劃",
+			"build": "建置",
+			"deny": "拒絕",
+			"pullRequest": "PR",
+			"branch": "分支",
+			"needsYou": "等你處理",
+			"prompt": "提示詞"
+		},
+		"review": {
+			"send": "傳送？",
+			"restart": "以此重新開始？",
+			"steer": "引導？",
+			"newThread": "新對話？",
+			"settle": "完結？",
+			"snooze": "延後 {duration}？",
+			"pressAgain": "再按一次",
+			"pressToSend": "再按一次以傳送",
+			"to": "至 {thread}",
+			"runSkill": "執行技能？"
+		},
+		"organize": {
+			"settle": "完結",
+			"pin": "釘選",
+			"unpin": "取消釘選",
+			"snooze": "延後",
+			"snoozeFor": "延後 {duration}",
+			"archive": "封存",
+			"markUnread": "未讀",
+			"wake": "喚醒對話",
+			"nothingSnoozed": "沒有延後項目"
+		},
+		"notice": {
+			"openT3Code": "開啟 T3 Code",
+			"thenPress": "然後按下",
+			"notFound": "找不到 T3 Code",
+			"openThenPress": "開啟後再按下",
+			"machineRemoved": "機器已移除",
+			"pickAnother": "請另選",
+			"pickAnotherMachine": "請另選機器",
+			"pickAnotherInSettings": "請在設定中另選",
+			"pairDeck": "配對 Turnkey",
+			"pastePairLink": "請在設定中貼上配對連結",
+			"connecting": "連線中…",
+			"pressToRetry": "按下以重試"
+		},
+		"health": {
+			"allConnected": "全部已連線",
+			"offline": "離線",
+			"someOffline": "部分離線",
+			"readyCount": "{ready}/{total} 就緒",
+			"connected": "已連線",
+			"readOnly": "唯讀",
+			"connecting": "連線中…",
+			"needsPairing": "需要配對",
+			"notFound": "找不到",
+			"unavailable": "無法使用",
+			"unauthenticated": "未驗證",
+			"unsupported": "不支援的版本",
+			"broken": "已知有問題的版本",
+			"needsAttention": "需要注意",
+			"updateAvailable": "有可用更新",
+			"disabled": "已停用",
+			"providerUpdate": "{provider} 有可用更新",
+			"providerOff": "{provider} 已關閉",
+			"more": "還有 {count} 個"
+		},
+		"reason": {
+			"noPrompt": "無提示詞",
+			"readOnly": "唯讀",
+			"nothingPending": "沒有待處理",
+			"noThread": "無對話",
+			"noPr": "無 PR",
+			"noBranch": "無分支",
+			"notRunning": "未執行",
+			"pinned": "已釘選",
+			"notPinned": "未釘選",
+			"pickProject": "請選擇專案",
+			"noProject": "無專案",
+			"unavailable": "無法使用",
+			"noModels": "無模型",
+			"noEffort": "無強度選項",
+			"noModes": "無模式",
+			"notOffered": "不支援",
+			"noFastMode": "無快速模式",
+			"noPlanMode": "無規劃模式",
+			"pickThread": "請選擇對話",
+			"targetGone": "無法使用：{thread}"
+		},
+		"failure": {
+			"readOnly": "唯讀",
+			"offline": "離線",
+			"updateT3": "請更新 T3 Code",
+			"noModel": "無模型",
+			"noMachine": "無機器",
+			"timedOut": "逾時",
+			"failed": "失敗"
+		},
+		"status": {
+			"needsApproval": "需要核准",
+			"hasQuestion": "有問題",
+			"running": "執行中 {time}",
+			"queued": "已排入佇列",
+			"done": "完成",
+			"failed": "失敗",
+			"stopped": "已停止",
+			"idle": "閒置",
+			"queuedCount": "+{count} 則排隊",
+			"subagent": "{count} 個子代理",
+			"subagents": "{count} 個子代理"
+		},
+		"filter": {
+			"all": "對話",
+			"attention": "等你處理",
+			"active": "工作中",
+			"unread": "未讀"
+		},
+		"strip": {
+			"done": "完成",
+			"notNow": "稍後",
+			"noThread": "無對話",
+			"noThreads": "無對話",
+			"allQuiet": "一切安靜",
+			"default": "預設",
+			"pressToApply": "按下以套用",
+			"speed": "速度：{speed}",
+			"prompts": "提示詞",
+			"noPrompts": "無提示詞",
+			"addPrompts": "請在設定中新增",
+			"answer": "回答",
+			"nothingPending": "沒有待處理",
+			"approvals": "核准：{authority}",
+			"approval": "核准",
+			"question": "問題",
+			"pressToOpen": "按下以在 T3 Code 開啟",
+			"openInT3Code": "在 T3 Code 開啟",
+			"withHold": "{label} · 長按",
+			"queue": "佇列",
+			"nothingQueued": "佇列是空的",
+			"queuedMessage": "佇列訊息",
+			"queueHeld": "已暫停 · 按下立即傳送",
+			"queueSendNow": "按下立即傳送 · 長按移除",
+			"queueSteer": "按下引導進回合 · 長按移除",
+			"queueRemoveOnly": "長按以移除"
+		},
+		"power": {
+			"quicker": "較快",
+			"deeper": "較深入",
+			"asksFirst": "先詢問",
+			"handsOff": "放手"
+		},
+		"approval": {
+			"open": "在 T3 開啟",
+			"once": "允許一次",
+			"session": "本次工作階段允許",
+			"always": "一律允許",
+			"deny": "拒絕",
+			"needsYou": "請在 T3 Code 處理",
+			"command": "指令核准",
+			"fileRead": "檔案讀取核准",
+			"fileChange": "檔案變更核准",
+			"permission": "應用程式權限核准",
+			"mcpElicitation": "應用程式存取核准"
+		},
+		"mode": {
+			"approvalRequired": "監督",
+			"autoAcceptEdits": "自動接受編輯",
+			"auto": "自動",
+			"fullAccess": "完整存取"
+		},
+		"option": {
+			"off": "關",
+			"on": "開",
+			"fast": "快速",
+			"normal": "一般"
+		},
+		"quick": {
+			"continue": "繼續",
+			"test": "修正測試",
+			"fix": "診斷",
+			"explain": "說明",
+			"commit": "提交"
+		},
+		"time": {
+			"minutes": "{minutes}分",
+			"hours": "{hours}小時",
+			"days": "{days}天"
+		},
+		"datasource": {
+			"cycleFavorites": "循環切換常用",
+			"cycleModels": "循環切換模型",
+			"cycleEfforts": "循環切換強度",
+			"anyProject": "任何專案",
+			"noProject": "無專案",
+			"defaultEditor": "T3 Code 預設",
+			"firstProvider": "第一個有額度的",
+			"firstWindow": "最短時段",
+			"chooseThread": "選擇對話…",
+			"chooseScript": "選擇指令碼…"
+		},
+		"machine": {
+			"thisMachine": "這台機器",
+			"pairingExpired": "此配對已過期。請貼上新的配對連結。",
+			"cannotRead": "此配對無法讀取對話。請貼上新的配對連結。"
+		},
+		"pairing": {
+			"notALink": "這看起來不像 T3 Code 配對連結。請從 Settings → Sharing & access 複製。",
+			"unreachable": "無法連上 {host} 的 T3 Code。請確認它正在執行，且這台電腦可以連線。",
+			"notT3": "{host} 看起來不像 T3 Code 伺服器。",
+			"tooOld": "那台機器上的 T3 Code 版本太舊，無法搭配 Turnkey。請更新 T3 Code。",
+			"tooNew": "這個 T3 Code 比 Turnkey 能支援的版本更新。請更新 Turnkey。",
+			"linkUsed": "該配對連結已使用過或已過期。請在 Settings → Sharing & access 建立新的連結。",
+			"noAccess": "該配對連結未授予對話存取權。請建立具有存取權的連結。",
+			"refused": "T3 Code 拒絕了配對連結（{status}）。",
+			"noRead": "該配對連結不允許讀取對話。請建立允許讀取的連結。",
+			"different": "{host} 現在由另一個 T3 Code 回應。",
+			"ended": "T3 Code 已結束此配對。請貼上新的配對連結以重新連線。",
+			"cannotOpen": "T3 Code 無法建立連線（{status}）。"
+		},
+		"connection": {
+			"noAnswer": "T3 Code 未及時回應。",
+			"closed": "與 T3 Code 的連線已關閉。",
+			"failed": "與 T3 Code 的連線失敗。",
+			"silent": "T3 Code 已停止回應。",
+			"feedEnded": "T3 Code 已結束對話資料流。",
+			"disconnected": "已與 T3 Code 中斷連線。"
+		},
+		"access": {
+			"sourceControl": "需要版本控制權限 — 請重新配對",
+			"diagnostics": "需要用量權限 — 請重新配對",
+			"providers": "需要供應商權限 — 重新配對以啟用",
+			"maintain": "需要更新權限 — 重新配對以啟用",
+			"terminal": "需要終端機權限 — 重新配對以啟用",
+			"share": "需要分享權限 — 重新配對以啟用",
+			"other": "需要更多權限 — 請重新配對",
+			"rePair": "重新配對以啟用"
+		},
+		"pr": {
+			"open": "開啟中",
+			"merged": "已合併",
+			"closed": "已關閉",
+			"draft": "草稿",
+			"face": {
+				"failing": "{count} 項檢查失敗",
+				"failingOne": "1 項檢查失敗",
+				"findings": "{count} 個問題",
+				"findingsOne": "1 個問題",
+				"running": "檢查執行中",
+				"changesRequested": "要求變更",
+				"approved": "已核准",
+				"passing": "檢查通過"
+			},
+			"fix": {
+				"title": "修正問題",
+				"none": "沒有問題",
+				"threads": "{count} 則討論",
+				"threadOne": "1 則討論",
+				"remarks": "{count} 則意見",
+				"remarkOne": "1 則意見",
+				"checks": "{count} 項檢查",
+				"checkOne": "1 項檢查",
+				"named": "{findings}：{names}"
+			},
+			"explain": {
+				"title": "說明 {term}"
+			},
+			"ask": {
+				"title": "詢問 {term}"
+			},
+			"guide": {
+				"title": "審查指南",
+				"write": "按下以撰寫",
+				"writing": "撰寫指南中…",
+				"ready": "就緒：按下開啟",
+				"failed": "失敗：按下重試"
+			},
+			"dial": {
+				"title": "PR",
+				"none": "沒有開啟中的 PR"
+			},
+			"result": {
+				"queued": "已排入佇列",
+				"offHead": "已開始，不在 PR 最新提交上"
+			}
+		},
+		"repo": {
+			"action": {
+				"commit": "提交",
+				"commitPush": "提交並推送",
+				"commitPushPr": "提交、推送並建 PR",
+				"push": "推送",
+				"createPr": "建立 PR",
+				"pull": "拉取"
+			},
+			"reason": {
+				"notRepo": "不是 Git 儲存庫",
+				"detached": "分離的 HEAD：請簽出分支",
+				"noUpstream": "沒有上游分支",
+				"diverged": "已分歧：請先 rebase 或合併",
+				"upToDate": "已是最新",
+				"clean": "沒有可提交的內容",
+				"uncommitted": "請先提交或暫存變更",
+				"behind": "落後上游：請先拉取",
+				"noRemote": "請先新增 origin 遠端",
+				"nothingToPush": "沒有可推送的提交",
+				"prOpen": "PR #{number} 開啟中",
+				"prFromDefault": "位於 {branch}：請先建立分支",
+				"nothingForPr": "沒有可建 PR 的提交"
+			},
+			"behind": "落後 {count}",
+			"ahead": "領先 {count}",
+			"changes": "{files} 個檔案 · +{insertions} −{deletions}",
+			"changesOne": "1 個檔案 · +{insertions} −{deletions}",
+			"hook": "執行 {hook} 中",
+			"unknownOutcome": "結果不明，請查看 T3 Code",
+			"running": "已在執行",
+			"holdTo": "長按以確認",
+			"holdOnDefault": "長按以推送至 {branch}",
+			"starting": "啟動中…",
+			"pulled": "已拉取",
+			"upToDate": "已是最新",
+			"files": "{count} 個檔案",
+			"fileOne": "1 個檔案"
+		},
+		"needs": {
+			"paired": "已與 T3 Code 配對",
+			"operate": "可操作對話",
+			"thread": "已選取的對話",
+			"running": "執行中的回合",
+			"pending": "待處理的請求",
+			"prompt": "已儲存的提示詞",
+			"scope": {
+				"sourceControl": "版本控制權限",
+				"diagnostics": "用量權限",
+				"providers": "供應商權限",
+				"maintain": "更新權限（在該機器上更新 T3 Code）",
+				"terminal": "終端機權限（在該機器上執行指令）",
+				"terminalRead": "終端機狀態權限",
+				"share": "訪客連結權限（與外部人士分享對話）",
+				"other": "{scope} 權限"
+			},
+			"option": "對話模型支援{option}",
+			"optionEffort": "推理強度",
+			"optionFast": "快速模式",
+			"optionPlan": "規劃模式",
+			"pr": "一個 PR",
+			"branch": "一個分支",
+			"repo": "可操作的對象",
+			"editor": "機器上的編輯器",
+			"limits": "會回報額度的供應商",
+			"snoozed": "已延後的對話",
+			"preview": "預覽或 HTML 轉譯",
+			"devices": "模擬器",
+			"notAvailable": "無法使用：{value}",
+			"problem": "{subject}：{text}",
+			"problemOn": "{subject}（{machine}）：{text}",
+			"fix": {
+				"openT3": "在這台電腦上開啟 T3 Code，然後按下按鍵。",
+				"addMachine": "或在「新增機器」中貼上配對連結。",
+				"pickMachine": "請在下方另選機器。",
+				"pairLink": "在「新增機器」中貼上 T3 Code 的配對連結。",
+				"reachable": "請確認該機器已開機且可連線。",
+				"pressRetry": "按下按鍵立即重試。",
+				"canAct": "請用可操作（非唯讀）的連結重新配對。",
+				"openThread": "在 T3 Code 中開啟對話。",
+				"selectThread": "或用「對話」按鍵或「對話旋鈕」選取。",
+				"startTurn": "傳送提示詞以開始回合。",
+				"waitForAgent": "等待代理提出請求。",
+				"typePrompt": "在上方輸入提示詞。",
+				"newPairLink": "在 T3 Code 的 Settings → Sharing & access 建立配對連結。",
+				"standardAccess": "保留預設權限，然後在下方用新連結連線。",
+				"switchModel": "將對話切換為支援此功能的模型。",
+				"createPr": "使用「建立 PR」或在 T3 Code 中建立。",
+				"checkoutBranch": "在對話中簽出分支。",
+				"installEditor": "安裝 T3 Code 支援的編輯器，例如 VS Code 或 Cursor。",
+				"signInProvider": "在 T3 Code 中登入 Codex 或 Claude；它們會回報訂閱額度。",
+				"pickAnother": "請在上方另選一個值。",
+				"noFindings": "其中沒有失敗或未解決的項目。",
+				"providersInT3": "在 T3 Code 的 Settings → Providers 修正。",
+				"queueMessage": "在對話工作時傳送訊息，訊息會在佇列中等候。",
+				"addTask": "在 T3 Code 的 Settings → Scheduled tasks 新增。",
+				"snoozeOne": "用「整理」按鍵或在 T3 Code 中延後一個對話。",
+				"openPreview": "在 T3 Code 對話的預覽面板中開啟頁面，或請代理轉譯 HTML。",
+				"turnOnDevices": "在 T3 Code 的「Device panel」中開啟「Devices」，且該機器上需有 Xcode 或 Android Studio。",
+				"optInNext": "當此處的動作需要時，這台機器下次配對會要求此權限。",
+				"addScript": "在 T3 Code 中使用專案的「Add action」按鈕新增。",
+				"guestLinks": "在 T3 Code 的 Settings → Labs 開啟「Guest links」，並執行 T3 Connect。",
+				"selfUpdate": "請在該機器上手動更新 T3 Code。"
+			},
+			"findings": "待修正的問題",
+			"providers": "供應商就緒",
+			"queued": "佇列中的訊息",
+			"tasks": "排程任務",
+			"script": "對話專案中已儲存的指令碼",
+			"guestLinks": "已開啟訪客連結",
+			"selfUpdate": "T3 Code 可自行更新"
+		},
+		"editor": {
+			"title": "在編輯器開啟",
+			"none": "此機器無編輯器",
+			"noFolder": "無資料夾",
+			"opensOn": "在 {machine} 開啟"
+		},
+		"devices": {
+			"title": "裝置",
+			"ios": "iOS",
+			"android": "Android",
+			"open": "在此開啟",
+			"running": "執行中",
+			"starting": "啟動中…",
+			"stopped": "已停止",
+			"loading": "正在搜尋裝置…",
+			"unreadable": "無法讀取裝置",
+			"off": "裝置已關閉",
+			"turnOn": "在 T3 Code 開啟",
+			"hubStarting": "裝置中樞啟動中…",
+			"hubFailed": "裝置中樞啟動失敗。",
+			"none": "沒有模擬器",
+			"touchToCheck": "觸碰以重新搜尋",
+			"pressToStart": "按下啟動 · 觸碰重新搜尋",
+			"pressToOpen": "按下開啟 · 長按關機",
+			"holdToStartCloud": "長按啟動：EAS 計費",
+			"physical": "無法關閉實體裝置"
+		},
+		"openPreview": {
+			"title": "開啟預覽",
+			"none": "無預覽",
+			"onlyOn": "僅限 {machine}",
+			"htmlRender": "HTML 轉譯"
+		},
+		"inspector": {
+			"editor": {
+				"label": "編輯器",
+				"loading": "正在載入編輯器…",
+				"hint": "開啟所選對話的工作樹或其專案資料夾。T3 Code 會在它自己的機器上啟動編輯器，不一定是這台。"
+			},
+			"devices": {
+				"hint": "列出對話所在機器及其裝置主機上的模擬器。按下可在對話的 Device panel 中啟動顯示的裝置，若已在執行則在那裡開啟；長按可關機。雲端（EAS）裝置需長按才會啟動，因為 Expo 會在執行期間計費。開啟 Devices 與新增主機需在 T3 Code 中進行。"
+			},
+			"preview": {
+				"hint": "在這台電腦的瀏覽器中開啟對話預覽面板顯示的頁面，否則開啟對話最新的 HTML 轉譯。其他機器 localhost 上的頁面只能在該機器上開啟，按鍵會顯示此情況；請在那台機器的 T3 Code 中開啟。"
+			},
+			"pr": {
+				"confirm": "傳送方式",
+				"hold": "長按",
+				"tap": "點按",
+				"fixHint": "將 T3 Code 針對所選對話 PR 的「Fix findings」任務傳送給該對話，若對話忙碌則排入佇列。審查意見與檢查輸出來自主機，會以不受信任的資料附上。",
+				"dialHint": "列出機器上開啟中的 PR。按下可在連結的對話（或新的工作樹對話）中執行「修正問題」；點按可在瀏覽器中開啟；長按觸控條可閱讀問題。",
+				"show": "顯示",
+				"fix": "修正問題",
+				"explain": "說明",
+				"ask": "詢問",
+				"guide": "審查指南"
+			},
+			"git": {
+				"action": "動作",
+				"commit": "提交",
+				"commitPush": "提交並推送",
+				"commitPushPr": "提交、推送並建立 PR",
+				"message": "提交訊息",
+				"messagePlaceholder": "留空時由 T3 Code 撰寫",
+				"confirm": "執行方式",
+				"confirmDefault": "推送時長按，其他點按",
+				"tap": "點按",
+				"hold": "長按",
+				"hint": "作用於所選對話的工作樹或其專案資料夾。推送到預設分支一律需要長按；從預設分支建立 PR 會被拒絕，因為 T3 Code 會先建議建立新分支。",
+				"pullHint": "在所選對話的分支落後上游時，從上游拉取。",
+				"push": "推送",
+				"createPr": "建立 PR",
+				"pull": "拉取"
+			},
+			"card": {
+				"machine": "裝置",
+				"machines": "裝置列表",
+				"getLink": "取得配對連結",
+				"getLinkRow": "取得連結",
+				"pasteLink": "貼上連結",
+				"looking": "正在這台機器上尋找 T3 Code…",
+				"machineGroup": "此動作使用的機器",
+				"addMachine": "新增機器",
+				"linkPlaceholder": "貼上來自 Settings → Sharing & access 的配對連結",
+				"connect": "連線",
+				"connecting": "連線中…",
+				"accessHelp": "Turnkey 會在連結允許的範圍內要求讀取與操作對話。可在 Settings → Sharing & access 撤銷。",
+				"notRunning": "這台機器上沒有執行 T3 Code。請開啟它，或在下方貼上其他機器的配對連結。",
+				"howToPair": "在 T3 Code 中開啟 Settings → Sharing & access，建立配對連結，然後貼到下方。",
+				"allMachines": "所有機器",
+				"noneYet": "尚無",
+				"connectedCount": "{ready}/{total} 已連線",
+				"connected": "已連線",
+				"readOnly": "唯讀",
+				"signOut": "登出",
+				"tryAgain": "再試一次",
+				"needsPairing": "需要配對",
+				"remove": "移除",
+				"pasteFromMachine": "請在下方貼上這台機器的配對連結。",
+				"pairing": "正在使用配對連結連線…",
+				"needsTitle": "此動作需要的條件",
+				"needsNotMet": " · {count} 項未符合",
+				"noMachines": "尚無機器",
+				"needsAllMet": " · 全部符合",
+				"needsMet": "已符合",
+				"needsUnmet": "未符合",
+				"needsChecking": "檢查中",
+				"optInTitle": "額外權限",
+				"optInHeld": "已授予",
+				"optInPending": "下次配對",
+				"optInDrop": "不要詢問",
+				"scopeProviders": "供應商帳號（使用重置）",
+				"scopeMaintain": "更新（更新 T3）",
+				"scopeTerminal": "終端機：執行指令（執行指令碼）",
+				"scopeTerminalRead": "終端機狀態（執行指令碼）",
+				"scopeShare": "訪客連結（分享對話）",
+				"verboseUntil": "開啟至 {time}，之後恢復一般記錄。",
+				"verboseOff": "在 24 小時內記錄更多細節，之後自動關閉。絕不記錄 token。",
+				"diagnosticsFailed": "操作失敗。請開啟記錄檔資料夾自行查看。"
+			},
+			"diagnostics": {
+				"title": "診斷",
+				"verbose": "詳細記錄",
+				"verboseLabel": "開啟 24 小時",
+				"logs": "記錄檔",
+				"openLogs": "開啟記錄檔資料夾",
+				"report": "報告",
+				"export": "匯出診斷資料",
+				"exportHint": "將版本、機器（僅主機、狀態與權限）、動作數量與最近的錯誤儲存到記錄檔資料夾中的檔案並顯示。不含 token、配對連結與完整位址，因此可安全附加到錯誤回報中。"
+			},
+			"settings": {
+				"open": "Turnkey 設定…",
+				"blocked": "Stream Deck 沒有開啟視窗。",
+				"title": "Turnkey 設定",
+				"detached": "請從 Turnkey 動作開啟 Turnkey 設定。",
+				"appearance": "外觀",
+				"behavior": "行為",
+				"about": "關於",
+				"machinesLede": "Turnkey 會連線到你新增的每台機器上的 T3 Code。每個按鍵和旋鈕可以跟隨一台機器，或全部機器。",
+				"version": "版本",
+				"languages": "語言",
+				"languagesHint": "Turnkey 會跟隨 Stream Deck 的語言。",
+				"readme": "指南",
+				"openReadme": "開啟 README"
+			},
+			"advanced": {
+				"appLink": "應用程式連結",
+				"appLinkHint": "使用 t3code-dev 在開發版本中開啟對話。",
+				"dialStrips": "旋鈕觸控條",
+				"stateLine": "狀態線",
+				"stateLineLabel": "在每個觸控條下方顯示彩色線條",
+				"stateHint": "深色是近乎黑色的純色，與 Stream Deck 內建的觸控條一致。「流動」會在相鄰旋鈕間繪製一幅連續畫面。「對話狀態」會在未讀回合完成時將觸控條染成綠色、失敗時染成紅色、等你處理時染成琥珀色。每個旋鈕都可在自己的設定中覆寫此項。",
+				"stripStyle": "觸控條樣式",
+				"styleHint": "「清單」像滾輪般轉動旋鈕的項目，「輪播」將每個項目顯示為鄰近項目之間的圖塊。「依旋鈕預設」在對話旋鈕使用「清單」，其他使用「經典」；「經典」會將效能旋鈕顯示為滑桿。長文字會在旋鈕停止後捲動兩次再停下；長按觸控條可閱讀全文，轉動可捲動。",
+				"motion": "動態效果",
+				"maxEffort": "色彩",
+				"maxEffortHint": "「漸層」以模型自己的顏色沿著階梯為每個強度等級上色，最高等級轉為紫羅蘭色，並為每個模型與「快速」套用其供應商的漸層。「純色」與「模型色」只標示最高強度等級，分別使用紫羅蘭色或模型色；「關」則保持原樣。Ultrathink 保留 T3 Code 的光譜色。",
+				"motionHint": "「完整」會旋轉執行中的對話、脈動等你處理的對話，並閃爍完成與失敗。「減少」會緩慢旋轉且不脈動。「關」會讓所有按鍵畫面保持靜止。",
+				"idlePet": "閒置寵物",
+				"previewPet": "預覽寵物",
+				"idlePetHint": "兩分鐘內沒有按下、轉動或觸碰時，一個小機器人會走過你最長一排相鄰的旋鈕觸控條，最多三次，每次間隔四分鐘。在任何 Turnkey 動作上按下、轉動或觸碰都會讓它離開。它會遵循「動態效果」：「減少」時慢慢走，「關」時不會出現。",
+				"confirm": "傳送前確認",
+				"confirmHint": "適用於傳送提示詞、引導、執行技能、提示詞旋鈕與技能旋鈕；模型、強度、速度、權限與效能旋鈕一律立即套用。「檢視」會在第一次按下時顯示要傳送什麼到哪裡；在 10 秒內再按一次即可傳送。「長按」會在長按時傳送，因此長按無法同時用於重新開始或開始對話。每個動作都可覆寫此設定。"
+			},
+			"field": {
+				"strip": "觸控條",
+				"stripColor": "觸控條顏色",
+				"style": "樣式",
+				"longText": "長文字",
+				"show": "顯示",
+				"project": "專案",
+				"prompt": "提示詞",
+				"keyTitle": "按鍵標題",
+				"approvals": "核准",
+				"toAnswer": "回答方式",
+				"model": "模型",
+				"effort": "強度",
+				"access": "權限",
+				"confirm": "確認",
+				"does": "功能"
+			},
+			"background": {
+				"global": "使用全域設定",
+				"t3": "深色",
+				"flow": "流動",
+				"state": "對話狀態",
+				"custom": "自訂顏色"
+			},
+			"style": {
+				"perDial": "依旋鈕預設",
+				"classic": "經典",
+				"list": "清單",
+				"carousel": "輪播"
+			},
+			"motion": {
+				"full": "完整",
+				"reduced": "減少",
+				"off": "關"
+			},
+			"idlePet": {
+				"off": "關",
+				"on": "開"
+			},
+			"maxEffort": {
+				"gradient": "漸層",
+				"solid": "純色",
+				"model": "模型色",
+				"off": "關"
+			},
+			"confirm": {
+				"review": "檢視後再按一次",
+				"hold": "長按以傳送",
+				"off": "立即傳送"
+			},
+			"scroll": {
+				"horizontal": "橫向捲動",
+				"vertical": "逐行向上捲動",
+				"off": "不捲動"
+			},
+			"loading": {
+				"projects": "正在載入專案…",
+				"models": "正在載入模型…",
+				"efforts": "正在載入強度…",
+				"providers": "正在載入供應商…",
+				"windows": "正在載入時段…",
+				"threads": "正在載入對話…",
+				"tasks": "正在載入任務…",
+				"skills": "正在載入技能…",
+				"scripts": "正在載入指令碼…"
+			},
+			"filter": {
+				"all": "所有對話",
+				"attention": "等你處理：核准、問題、失敗或未讀結果",
+				"active": "工作中或排隊中",
+				"unread": "未讀"
+			},
+			"authority": {
+				"open": "在 T3 Code 開啟",
+				"once": "允許一次",
+				"session": "本次工作階段允許",
+				"always": "一律允許"
+			},
+			"slot": {
+				"label": "位置",
+				"byPosition": "依按鍵位置",
+				"selected": "所選對話",
+				"first": "1（最緊急）",
+				"hint": "「依按鍵位置」會由左至右、由上至下填入「對話」按鍵。對話排序為：需要核准、有問題、執行中，然後是其餘對話。點按可開啟，長按可選取。"
+			},
+			"activity": {
+				"hint": "顯示最緊急的符合對話。設定相同的其他「動態」按鍵會依按鍵位置顯示接下來的對話。"
+			},
+			"answer": {
+				"hold": "長按旋鈕",
+				"press": "按下旋鈕",
+				"hint": "在此選項與「拒絕」之間轉動。不提供此選項的請求會改在 T3 Code 中開啟。長按觸控條可閱讀完整的長請求。"
+			},
+			"send": {
+				"titlePlaceholder": "修正測試",
+				"promptPlaceholder": "執行測試並修正失敗的部分",
+				"hint": "傳送到 T3 Code 中所選的對話：開始一個回合，或引導、排在執行中的回合之後。長按按鍵可中斷並以此重新開始。",
+				"myText": "自訂文字",
+				"text": "文字"
+			},
+			"steer": {
+				"titlePlaceholder": "保持精簡",
+				"promptPlaceholder": "讓變更保持精簡，不要重構",
+				"hint": "加入所選對話正在執行的回合。對話閒置時會變暗。"
+			},
+			"quick": {
+				"continue": "繼續",
+				"test": "執行測試並修正失敗",
+				"fix": "診斷並修正",
+				"explain": "說明目前狀態",
+				"commit": "提交你的變更"
+			},
+			"new": {
+				"createIn": "建立於",
+				"selected": "所選對話的專案",
+				"scratch": "無專案",
+				"project": "指定專案",
+				"promptPlaceholder": "選填：審查開啟中的 PR",
+				"title": "對話標題",
+				"titlePlaceholder": "審查 PR",
+				"hint": "有提示詞時，對話會開始工作，且 Turnkey 會選取它。沒有提示詞時，會在 T3 Code 中開啟空白對話。沒有選取對話時，會以無專案開始。使用 T3 Code 的預設模型與權限。",
+				"startIn": "開始位置",
+				"folder": "專案資料夾",
+				"worktree": "新工作樹",
+				"worktreeHint": "新工作樹會從儲存庫的預設分支開始（與 T3 Code 輸入框相同），並依提示詞命名分支；需要提示詞與專案。"
+			},
+			"model": {
+				"nameColor": "名稱顏色",
+				"nameModel": "模型顏色",
+				"nameWhite": "白色",
+				"hint": "循環切換會跨供應商依序切換 T3 Code 的常用模型；若沒有常用模型，則切換對話供應商的模型。選擇其他供應商的模型會移交對話，與 T3 Code 的模型選擇器相同。"
+			},
+			"effort": {
+				"hint": "循環切換會依序切換所選對話模型提供的強度。若設定的強度不受模型支援，按鍵會變暗。Ultrathink 不會變更強度：如同 T3 Code，它會加在 Turnkey 傳送到該對話的提示詞前面，直到你選擇其他強度。"
+			},
+			"permissions": {
+				"cycle": "循環切換權限模式",
+				"approvalRequired": "監督",
+				"autoAcceptEdits": "自動接受編輯",
+				"auto": "自動",
+				"fullAccess": "完整存取",
+				"hint": "從下一個步驟起套用到所選對話。只會提供其供應商支援的模式。"
+			},
+			"approve": {
+				"hold": "長按按鍵",
+				"tap": "點按按鍵",
+				"hint": "回應所選對話的核准請求。不提供此選項或 Turnkey 無法回應的請求會在 T3 Code 中開啟。「拒絕」是獨立的按鍵。"
+			},
+			"organize": {
+				"action": "動作",
+				"settle": "完結",
+				"pin": "釘選 / 取消釘選",
+				"snooze": "延後",
+				"archive": "封存",
+				"markUnread": "標為未讀",
+				"wake": "喚醒最近延後的",
+				"snoozeFor": "延後時間",
+				"minutes15": "15 分鐘",
+				"minutes30": "30 分鐘",
+				"hour1": "1 小時",
+				"hours2": "2 小時",
+				"hours4": "4 小時",
+				"hours8": "8 小時",
+				"day1": "1 天",
+				"confirm": "確認",
+				"confirmReview": "檢視後再按一次",
+				"confirmHold": "長按以確認",
+				"confirmOff": "立即執行"
+			},
+			"prompts": {
+				"label": "提示詞",
+				"placeholder": "每行一個提示詞",
+				"templates": "範本",
+				"templatesLabel": "加入繼續、修正測試、診斷、說明與提交",
+				"hint": "旋轉以選擇，按下傳送到所選對話，長按開始新對話。"
+			},
+			"threads": {
+				"recency": "時間範圍",
+				"noLimit": "不限",
+				"day": "24 小時",
+				"twoDays": "48 小時",
+				"threeDays": "3 天",
+				"week": "7 天",
+				"hint": "旋轉以瀏覽符合的對話，最緊急的排在最前面；旋鈕停留的對話會成為 T3 Code 中的選取項目。按下或點按可開啟。"
+			},
+			"power": {
+				"controls": "此旋鈕控制",
+				"bottomRow": "模型檢視顯示",
+				"showSpeed": "速度",
+				"showEffort": "思考強度",
+				"hint": "旋轉以預覽，按下以套用到所選對話。「模型」會跨供應商切換 T3 Code 的常用模型。沒有可套用的變更時按下，或點按，可在模型支援時切換速度。Ultrathink（Claude 支援時）會加在 Turnkey 傳送到該對話的後續提示詞前面。"
+			},
+			"limits": {
+				"provider": "供應商",
+				"window": "時段",
+				"show": "顯示",
+				"left": "剩餘 %",
+				"used": "已用 %",
+				"resetAction": "長按以",
+				"open": "在 T3 Code 中開啟 Usage",
+				"spend": "使用累積的重置",
+				"hint": "合併計算所選機器上該供應商的所有帳號，與 T3 Code 的「Limits」顯示相同。點按可重新整理。進度條上的刻度代表平均使用速度應在的位置。",
+				"spendHint": "長按會在 T3 Code 優先補充的帳號上花費一次重置額度。需要供應商權限：若配對缺少此權限，該機器下次的配對連結會要求它。"
+			},
+			"usage": {
+				"period": "期間",
+				"provider": "供應商",
+				"allProviders": "所有供應商",
+				"day": "過去 24 小時",
+				"week": "7 天",
+				"month": "30 天",
+				"quarter": "90 天",
+				"hint": "T3 Code 對此期間的 API 估算，涵蓋所選機器；兩台機器共用的資料夾只計算一次。點按會重新讀取，長按還會重新載入模型價格。需要用量權限。",
+				"dialHint": "從期間總計開始，依費用旋轉瀏覽各模型。按下或點按會重新讀取；長按還會重新載入模型價格。需要用量權限。"
+			},
+			"target": {
+				"label": "目標",
+				"selected": "所選對話",
+				"thread": "此對話",
+				"pick": "對話",
+				"hint": "即使選取了其他對話，按鍵仍會作用於此對話，並顯示小圖釘。若對話已封存或刪除，會顯示為無法使用，直到你另選一個。"
+			},
+			"queue": {
+				"hint": "跟隨所選對話的佇列。按下會立即傳送顯示的訊息：若供應商支援引導，則加入執行中的回合；若沒有執行中的回合，則作為下一個回合，這也會釋放因「停止」而暫停的佇列。長按可移除。"
+			},
+			"task": {
+				"label": "任務",
+				"hint": "按下會立即執行任務，與 T3 Code 的「Run now」相同；排程維持不變。任務來自 T3 Code 的 Settings → Scheduled tasks。",
+				"dialHint": "旋轉以瀏覽機器的排程任務。按下會立即執行顯示的任務；點按可停用，再點按一次可重新啟用。"
+			},
+			"skill": {
+				"label": "技能",
+				"extra": "附加",
+				"extraPlaceholder": "選填：在技能之後要告訴它的內容",
+				"titlePlaceholder": "技能名稱",
+				"hint": "以 T3 Code 輸入框的方式將技能傳送到對話（$name，接著是你的文字）。技能來自對話供應商針對其簽出內容提供的清單：Codex、Claude 與 Antigravity 會列出技能。",
+				"dialHint": "旋轉以瀏覽對話供應商針對其簽出內容提供的技能。按下或點按可執行顯示的技能，長按觸控條可閱讀說明。"
+			},
+			"workflow": {
+				"hint": "停止對話執行中的工作流程，與 T3 Code 的「Lineage」面板相同。只有 Claude 的工作流程可以停止。長按按鍵以停止；已停止的工作流程無法恢復。"
+			},
+			"lineage": {
+				"forkHint": "從最新一則完成的回覆將對話分叉為新對話，與 T3 Code 在該回覆上的分叉按鈕相同，然後開啟分叉。",
+				"mergeHint": "將分叉的對話合併回原本的對話，與 T3 Code 的「Merge」相同，然後開啟該對話。長按按鍵以合併。",
+				"fork": "分叉",
+				"merge": "合併回去"
+			},
+			"update": {
+				"hint": "顯示下方所選機器上的 T3 Code 版本（未選取時為這台電腦）。長按可更新至其更新頻道的最新版本；桌面應用程式會自行安裝更新並重新啟動。T3 Code 不會向 Turnkey 通知更新，因此按鍵無法顯示有更新待安裝。",
+				"access": "需要更新權限，讓 Turnkey 能在該機器上更新並重新啟動 T3 Code。按鍵第一次按下時，會在該機器下次配對時要求此權限。"
+			},
+			"script": {
+				"label": "指令碼",
+				"hint": "按下會在對話中以專屬終端機執行指令碼，位於其工作樹或專案資料夾，與 T3 Code 的指令碼按鈕相同。長按可停止。按鍵會顯示是否正在執行；T3 Code 不會回報指令碼的結束代碼，只會回報其終端機的結束代碼。",
+				"access": "Shell 存取：這需要終端機權限，讓 Turnkey 能在該機器上的 T3 Code 終端機中執行任何指令。按鍵第一次按下時，會在該機器下次配對時要求此權限。"
+			},
+			"share": {
+				"hint": "按下會為對話建立訪客連結並複製；任何擁有連結的人都能在 24 小時內觀看對話，並提議訊息由你傳送或忽略。長按可停止分享。需要 Guest links（Settings → Labs）與 T3 Connect。",
+				"access": "需要訪客連結權限，讓 Turnkey 能與外部人士分享對話。按鍵第一次按下時，會在該機器下次配對時要求此權限。",
+				"link": "訪客連結",
+				"linkHint": "僅在 Turnkey 執行時顯示：T3 Code 只會在建立連結時顯示一次。"
+			},
+			"stop": {
+				"stops": "停止對象",
+				"turn": "回合",
+				"workflow": "工作流程"
+			},
+			"open": {
+				"in": "開啟方式",
+				"editor": "編輯器",
+				"preview": "預覽"
+			}
+		},
+		"usage": {
+			"title": "用量",
+			"period": {
+				"day": "過去 24 小時",
+				"week": "7 天",
+				"month": "30 天",
+				"quarter": "90 天"
+			},
+			"allModels": "所有模型",
+			"tokens": "{tokens} token",
+			"sessions": "{count} 個工作階段",
+			"unpriced": "未定價",
+			"cacheHit": "快取 {percent}",
+			"perMillion": "{cost}/百萬",
+			"updateT3": "請更新 T3 Code 以讀取用量",
+			"updateDeck": "請更新 Turnkey 以讀取用量"
+		},
+		"limits": {
+			"title": "額度",
+			"none": "無額度",
+			"noneDetail": "沒有供應商回報額度",
+			"window": {
+				"hours": "{hours} 小時",
+				"session": "工作階段",
+				"weekly": "每週",
+				"monthly": "每月"
+			},
+			"resetsNow": "立即重置",
+			"resetsIn": "{time}後重置",
+			"resetOne": "1 次重置",
+			"resets": "{count} 次重置",
+			"pooled": "{count} 個帳號",
+			"refreshing": "重新整理中…",
+			"pressToRefresh": "按下以重新整理",
+			"holdToReset": "長按以使用重置",
+			"noResets": "沒有累積的重置",
+			"needsProviders": "需要供應商權限",
+			"outcome": {
+				"reset": "已套用重置",
+				"nothingToReset": "無需重置",
+				"noCredit": "沒有剩餘重置",
+				"alreadyRedeemed": "已兌換"
+			}
+		},
+		"tasks": {
+			"title": "任務",
+			"now": "現在",
+			"in": "{time}後",
+			"running": "執行中",
+			"off": "已停用",
+			"onWebhook": "Webhook 觸發",
+			"notScheduled": "未排程",
+			"lastFailed": "上次執行失敗 · {when}",
+			"noTasks": "沒有排程任務",
+			"addInT3": "請在 T3 Code 新增",
+			"updateT3": "請更新 T3 Code 以使用任務",
+			"loading": "正在載入任務…",
+			"pressToRun": "按下立即執行 · 點按停用",
+			"pressToRunOff": "按下立即執行 · 點按啟用",
+			"pickTask": "請選擇任務",
+			"gone": "無法使用：{task}",
+			"chooseTask": "選擇任務…"
+		},
+		"skills": {
+			"title": "技能",
+			"pickSkill": "請選擇技能",
+			"none": "無技能",
+			"gone": "無法使用：{skill}",
+			"chooseSkill": "選擇技能…",
+			"aSkill": "對話供應商提供的技能"
+		},
+		"workflow": {
+			"stop": "停止工作流程",
+			"none": "沒有執行中的工作流程",
+			"notClaude": "此供應商不支援",
+			"option": "停止工作流程（Claude）",
+			"holdToStop": "長按以停止",
+			"notRunning": "已不在執行",
+			"unsupported": "供應商無法停止",
+			"unavailable": "沒有進行中的任務",
+			"stopFailed": "無法停止"
+		},
+		"lineage": {
+			"fork": "分叉",
+			"mergeBack": "合併回去",
+			"into": "併入 {thread}",
+			"notFork": "不是分叉",
+			"finishRunFirst": "請先完成一個回合",
+			"finishTurn": "請等候回合結束",
+			"nothingToFork": "尚無可分叉內容",
+			"holdToMerge": "長按以合併",
+			"aFork": "分叉的對話",
+			"aFinishedTurn": "已完成的回覆"
+		},
+		"worktree": {
+			"newThread": "新工作樹",
+			"noProject": "需要專案",
+			"needsPrompt": "需要提示詞",
+			"notRepo": "不是 Git 儲存庫",
+			"noBranch": "沒有可起始的分支"
+		},
+		"update": {
+			"title": "更新 T3",
+			"version": "v{version}",
+			"noVersion": "版本不明",
+			"holdToUpdate": "長按以更新",
+			"checking": "檢查中…",
+			"downloading": "下載中…",
+			"installing": "安裝中…",
+			"restarting": "重新啟動中…",
+			"toVersion": "更新至 v{version}",
+			"upToDate": "已是最新",
+			"inProgress": "正在更新",
+			"manual": "請手動更新",
+			"desktopTooOld": "請更新桌面應用程式",
+			"failed": "更新失敗",
+			"noReturn": "未恢復連線",
+			"pickMachine": "請選擇機器",
+			"needsAccess": "需要更新權限"
+		},
+		"script": {
+			"title": "執行指令碼",
+			"pick": "請選擇指令碼",
+			"idle": "按下以執行",
+			"starting": "啟動中…",
+			"running": "執行中",
+			"finished": "已完成",
+			"stopped": "已停止",
+			"exited": "已結束 {code}",
+			"ended": "已結束",
+			"error": "終端機失敗",
+			"holdToStop": "長按以停止",
+			"needsAccess": "需要終端機權限"
+		},
+		"share": {
+			"title": "分享對話",
+			"shared": "已分享",
+			"guest": "{name} 已加入",
+			"unused": "連結尚未使用",
+			"pending": "{count} 則訊息待處理",
+			"pendingOne": "1 則訊息待處理",
+			"expired": "連結已過期",
+			"holdToClear": "長按以清除",
+			"holdToStop": "長按以停止分享",
+			"disabled": "請開啟訪客連結",
+			"noConnect": "需要 T3 Connect",
+			"unavailable": "無法分享此對話",
+			"copyFailed": "無法複製",
+			"needsAccess": "需要分享權限"
+		}
+	}
+}

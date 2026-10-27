@@ -1,0 +1,1248 @@
+{
+	"Name": "Turnkey for T3 Code",
+	"Description": "Stream Deck から T3 Code のスレッドを確認・操作。スレッドの状態、停止、プロンプト、モデルオプション、回答を、すべてのプロバイダーで。",
+	"Category": "Turnkey for T3 Code",
+	"com.alejandrom2.turnkey.slot": {
+		"Name": "スレッド",
+		"Tooltip": "キーの位置に応じたボードのスレッド 1 件：状態、タイトル、タイマー。タップで T3 Code で開き、長押しで選択します。"
+	},
+	"com.alejandrom2.turnkey.activity": {
+		"Name": "アクティビティ",
+		"Tooltip": "フィルターに一致する最も緊急なスレッド。タップで T3 Code で開きます。"
+	},
+	"com.alejandrom2.turnkey.new": {
+		"Name": "新規スレッド",
+		"Tooltip": "選択中スレッドのプロジェクト、プロジェクトなし、または指定したプロジェクトで新しいスレッドを開始します。保存したプロンプト付きか空で開始します。"
+	},
+	"com.alejandrom2.turnkey.send": {
+		"Name": "プロンプト送信",
+		"Tooltip": "自分のプロンプト、またはよく使うプロンプト（続行、テスト修正、説明、コミットなど）を選択中のスレッドに送信します。長押しで中断し、そのプロンプトで再開します。"
+	},
+	"com.alejandrom2.turnkey.steer": {
+		"Name": "追加指示",
+		"Tooltip": "選択中スレッドの実行中のターンに、保存した指示を追加します。"
+	},
+	"com.alejandrom2.turnkey.skill": {
+		"Name": "スキル実行",
+		"Tooltip": "T3 Code のコンポーザーで選んで送信するのと同様に、スレッドのプロバイダーのスキルを実行します。"
+	},
+	"com.alejandrom2.turnkey.stop": {
+		"Name": "停止",
+		"Tooltip": "選択中スレッドの実行中のターン、または設定に応じてスレッドが実行するワークフロー（Claude）を停止します。ワークフローは長押しで停止。"
+	},
+	"com.alejandrom2.turnkey.model": {
+		"Name": "モデル",
+		"Tooltip": "選択中のスレッドをお気に入りのモデル、または T3 Code のお気に入りの次のモデルに切り替えます。"
+	},
+	"com.alejandrom2.turnkey.effort": {
+		"Name": "エフォート",
+		"Tooltip": "選択中スレッドの推論エフォートを設定するか、モデルが提供する段階を順に切り替えます。"
+	},
+	"com.alejandrom2.turnkey.speed": {
+		"Name": "速度",
+		"Tooltip": "モデルが対応している場合、選択中のスレッドの高速モードを切り替えます。"
+	},
+	"com.alejandrom2.turnkey.permissions": {
+		"Name": "権限",
+		"Tooltip": "選択中スレッドのアクセスを「確認あり」から「フルアクセス」まで設定するか、順に切り替えます。"
+	},
+	"com.alejandrom2.turnkey.plan": {
+		"Name": "プラン",
+		"Tooltip": "選択中のスレッドをビルドとプランで切り替えます。"
+	},
+	"com.alejandrom2.turnkey.approve": {
+		"Name": "承認",
+		"Tooltip": "選択中スレッドの承認に設定の範囲内で応答するか、T3 Code で開きます。"
+	},
+	"com.alejandrom2.turnkey.deny": {
+		"Name": "拒否",
+		"Tooltip": "選択中スレッドの承認を拒否します。"
+	},
+	"com.alejandrom2.turnkey.organize": {
+		"Name": "整理",
+		"Tooltip": "選択中のスレッドを完了扱い、ピン留め、スヌーズ、アーカイブ、未読にするか、最後にスヌーズしたスレッドを再開します。"
+	},
+	"com.alejandrom2.turnkey.fork": {
+		"Name": "フォーク",
+		"Tooltip": "最新の完了した返信からスレッドをフォークして開くか、フォークを元のスレッドにマージします（長押し）。"
+	},
+	"com.alejandrom2.turnkey.branch": {
+		"Name": "ブランチ",
+		"Tooltip": "選択中スレッドのブランチ。タップで T3 Code でスレッドを開きます。"
+	},
+	"com.alejandrom2.turnkey.git": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.turnkey.pr": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.turnkey.task": {
+		"Name": "タスク実行",
+		"Tooltip": "T3 Code のスケジュールタスクの 1 つ：名前と次回の実行時刻。押すと今すぐ実行します。"
+	},
+	"com.alejandrom2.turnkey.usage": {
+		"Name": "使用量",
+		"Tooltip": "期間ごとの API 推定コスト、トークン、セッションを T3 Code の Usage と同様に、1 台または全マシンで表示します。タップで更新、長押しでモデル価格も再読み込みします。"
+	},
+	"com.alejandrom2.turnkey.limits": {
+		"Name": "制限",
+		"Tooltip": "プロバイダーのサブスクリプション制限を T3 Code の Limits と同様に合算：残り %、次回リセット、保有リセット。タップで更新、長押しで T3 Code の「Usage」を開くかリセットを使用します。"
+	},
+	"com.alejandrom2.turnkey.open": {
+		"Name": "開く",
+		"Tooltip": "選択中スレッドのワークツリーをエディターで、または設定に応じてプレビューページをこのコンピューターのブラウザーで開きます。"
+	},
+	"com.alejandrom2.turnkey.health": {
+		"Name": "ヘルス",
+		"Tooltip": "T3 Code とそのプロバイダーへの接続。最も深刻な問題を先に表示します（オフライン、ペアリングが必要、未認証、非対応バージョン、利用不可）。タップで再接続。"
+	},
+	"com.alejandrom2.turnkey.update": {
+		"Name": "T3 を更新",
+		"Tooltip": "マシン上の T3 Code のバージョン。長押しで最新リリースに更新します。更新アクセスが必要で、そのマシンの次回ペアリング時に要求されます。"
+	},
+	"com.alejandrom2.turnkey.script": {
+		"Name": "スクリプト実行",
+		"Tooltip": "プロジェクトの保存済みスクリプトをスレッドのターミナルで実行します。長押しで停止。ターミナルアクセス（シェル）が必要で、そのマシンの次回ペアリング時に要求されます。"
+	},
+	"com.alejandrom2.turnkey.share": {
+		"Name": "スレッド共有",
+		"Tooltip": "スレッドのゲストリンクを作成してコピーし、共有中とゲストを表示します。長押しで共有を停止。ゲストリンクアクセスが必要で、そのマシンの次回ペアリング時に要求されます。"
+	},
+	"com.alejandrom2.turnkey.dial.threads": {
+		"Name": "スレッドダイヤル",
+		"Tooltip": "回すとフィルターに一致するスレッドを切り替え、T3 Code で選択します。押すかタップで開きます。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "スレッド選択", "Push": "T3 Code で開く", "Touch": "T3 Code で開く" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.model": {
+		"Name": "パワーダイヤル",
+		"Tooltip": "選択中スレッドのモデル、エフォート、アクセスを変更します。対応時は押すかタップで速度を切り替えます。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "プレビュー", "Push": "適用（または速度切替）", "Touch": "速度切替" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.prompts": {
+		"Name": "プロンプトダイヤル",
+		"Tooltip": "回すとプロンプトとテンプレートを切り替えます。押すと選択中のスレッドに送信、長押しで新しいスレッドを開始します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "プロンプト選択", "Push": "送信（長押し：新規スレッド）", "Touch": "送信" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.answer": {
+		"Name": "回答ダイヤル",
+		"Tooltip": "エージェントの質問に選択肢ごとに回答し、承認には設定の範囲内で応答します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "回答選択", "Push": "回答（既定は長押し）", "Touch": "スレッドを開く" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.queue": {
+		"Name": "キューダイヤル",
+		"Tooltip": "回すと選択中スレッドのキュー内メッセージを切り替えます。押すと今すぐ送信（実行中のターンに追加、何も実行中でなければ開始）、長押しで削除します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "メッセージ選択", "Push": "今すぐ送信（長押し：削除）", "Touch": "スレッドを開く" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.tasks": {
+		"Name": "タスクダイヤル",
+		"Tooltip": "回すと T3 Code のスケジュールタスクを次回実行時刻とともに切り替えます。押すと表示中のタスクを今すぐ実行、タップでオフ／オンを切り替えます。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "タスク選択", "Push": "今すぐ実行", "Touch": "オン／オフ" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.skills": {
+		"Name": "スキルダイヤル",
+		"Tooltip": "回すとスレッドのプロバイダーのスキルを切り替えます。押すかタップで表示中のスキルを実行、タッチ長押しで説明を表示します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "スキル選択", "Push": "スキル実行", "Touch": "スキル実行", "LongTouch": "説明を表示" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.pr": {
+		"Name": "PR ダイヤル",
+		"Tooltip": "回すとオープン中のプルリクエストを切り替えます。押すと「指摘を修正」を実行、タップでブラウザーで開き、タッチ長押しで指摘を表示します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "PR 選択", "Push": "指摘を修正（長押し）", "Touch": "ブラウザーで開く", "LongTouch": "指摘を表示" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.limits": {
+		"Name": "制限ダイヤル",
+		"Tooltip": "回すと各プロバイダーの制限ウィンドウを切り替えます。押すかタップで更新、押したまま長押しで T3 Code の「Usage」を開くかリセットを使用します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "プロバイダーとウィンドウ選択", "Push": "更新（長押し：リセット）", "Touch": "更新", "LongTouch": "詳細を表示" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.usage": {
+		"Name": "使用量ダイヤル",
+		"Tooltip": "回すと期間の合計と各モデルのコスト、トークン、キャッシュヒット率、100 万トークンあたりのコストを切り替えます。押すかタップで更新、長押しでモデル価格を再読み込みします。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "モデル選択", "Push": "更新（長押し：価格も）", "Touch": "更新", "LongTouch": "詳細を表示" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.devices": {
+		"Name": "デバイスダイヤル",
+		"Tooltip": "回すと T3 Code のシミュレーターとエミュレーターを切り替えます。押すと表示中のデバイスをスレッドの「Device panel」で起動するか開き、長押しで電源を切ります。タッチでデバイスを再検索します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "デバイス選択", "Push": "起動／開く（長押し：電源オフ）", "Touch": "再検索" }
+		}
+	},
+	"com.alejandrom2.turnkey.git.commit": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.turnkey.git.push": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.turnkey.git.pr": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.turnkey.git.pull": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.turnkey.pr.fix": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.turnkey.pr.explain": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.turnkey.pr.ask": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.turnkey.pr.guide": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.turnkey.quick": {
+		"Name": "プロンプト送信",
+		"Tooltip": "自分のプロンプト、またはよく使うプロンプト（続行、テスト修正、説明、コミットなど）を選択中のスレッドに送信します。長押しで中断し、そのプロンプトで再開します。"
+	},
+	"com.alejandrom2.turnkey.workflow.stop": {
+		"Name": "停止",
+		"Tooltip": "選択中スレッドの実行中のターン、または設定に応じてスレッドが実行するワークフロー（Claude）を停止します。ワークフローは長押しで停止。"
+	},
+	"com.alejandrom2.turnkey.merge": {
+		"Name": "フォーク",
+		"Tooltip": "最新の完了した返信からスレッドをフォークして開くか、フォークを元のスレッドにマージします（長押し）。"
+	},
+	"com.alejandrom2.turnkey.editor": {
+		"Name": "開く",
+		"Tooltip": "選択中スレッドのワークツリーをエディターで、または設定に応じてプレビューページをこのコンピューターのブラウザーで開きます。"
+	},
+	"com.alejandrom2.turnkey.preview": {
+		"Name": "開く",
+		"Tooltip": "選択中スレッドのワークツリーをエディターで、または設定に応じてプレビューページをこのコンピューターのブラウザーで開きます。"
+	},
+	"Localization": {
+		"result": {
+			"done": "完了",
+			"opened": "開きました",
+			"sent": "送信済み",
+			"started": "開始済み",
+			"loading": "読み込み中…",
+			"holdToAllow": "長押しで許可",
+			"holdToAnswer": "長押しで回答",
+			"holdToSend": "長押しで送信",
+			"holdToSettle": "長押しで完了扱い",
+			"holdToSnooze": "長押しでスヌーズ",
+			"notWebLink": "Web リンクではない",
+			"holdToRemove": "長押しで削除",
+			"cantSteerYet": "まだ追加できません"
+		},
+		"face": {
+			"noThread": "スレッドなし",
+			"allQuiet": "異常なし",
+			"model": "モデル",
+			"effort": "エフォート",
+			"access": "アクセス",
+			"plan": "プラン",
+			"build": "ビルド",
+			"deny": "拒否",
+			"pullRequest": "プルリクエスト",
+			"branch": "ブランチ",
+			"needsYou": "要対応",
+			"prompt": "プロンプト"
+		},
+		"review": {
+			"send": "送信？",
+			"restart": "これで再開？",
+			"steer": "追加指示？",
+			"newThread": "新規スレッド？",
+			"settle": "完了扱い？",
+			"snooze": "{duration}スヌーズ？",
+			"pressAgain": "もう一度押す",
+			"pressToSend": "もう一度押して送信",
+			"to": "宛先：{thread}",
+			"runSkill": "スキル実行？"
+		},
+		"organize": {
+			"settle": "完了扱い",
+			"pin": "ピン",
+			"unpin": "ピン解除",
+			"snooze": "スヌーズ",
+			"snoozeFor": "{duration}スヌーズ",
+			"archive": "アーカイブ",
+			"markUnread": "未読",
+			"wake": "スヌーズ解除",
+			"nothingSnoozed": "スヌーズなし"
+		},
+		"notice": {
+			"openT3Code": "T3 Code を開く",
+			"thenPress": "その後押す",
+			"notFound": "T3 Code なし",
+			"openThenPress": "開いてから押す",
+			"machineRemoved": "マシン削除済み",
+			"pickAnother": "別を選択",
+			"pickAnotherMachine": "別のマシンを選択",
+			"pickAnotherInSettings": "設定で別を選択",
+			"pairDeck": "Turnkey をペアリング",
+			"pastePairLink": "設定にペアリングリンクを貼付",
+			"connecting": "接続中…",
+			"pressToRetry": "押して再試行"
+		},
+		"health": {
+			"allConnected": "すべて接続",
+			"offline": "オフライン",
+			"someOffline": "一部オフライン",
+			"readyCount": "{ready}/{total} 準備完了",
+			"connected": "接続済み",
+			"readOnly": "読み取り専用",
+			"connecting": "接続中…",
+			"needsPairing": "要ペアリング",
+			"notFound": "見つかりません",
+			"unavailable": "利用不可",
+			"unauthenticated": "未認証",
+			"unsupported": "非対応バージョン",
+			"broken": "既知の不具合版",
+			"needsAttention": "要確認",
+			"updateAvailable": "更新あり",
+			"disabled": "無効",
+			"providerUpdate": "{provider} 更新あり",
+			"providerOff": "{provider} オフ",
+			"more": "他 +{count}"
+		},
+		"reason": {
+			"noPrompt": "プロンプトなし",
+			"readOnly": "読み取り専用",
+			"nothingPending": "保留なし",
+			"noThread": "スレッドなし",
+			"noPr": "PR なし",
+			"noBranch": "ブランチなし",
+			"notRunning": "実行中でない",
+			"pinned": "ピン済み",
+			"notPinned": "ピンなし",
+			"pickProject": "プロジェクトを選択",
+			"noProject": "プロジェクトなし",
+			"unavailable": "利用不可",
+			"noModels": "モデルなし",
+			"noEffort": "エフォートなし",
+			"noModes": "モードなし",
+			"notOffered": "非対応",
+			"noFastMode": "高速モードなし",
+			"noPlanMode": "プランモードなし",
+			"pickThread": "スレッドを選択",
+			"targetGone": "利用不可：{thread}"
+		},
+		"failure": {
+			"readOnly": "読み取り専用",
+			"offline": "オフライン",
+			"updateT3": "T3 Code を更新",
+			"noModel": "モデルなし",
+			"noMachine": "マシンなし",
+			"timedOut": "タイムアウト",
+			"failed": "失敗"
+		},
+		"status": {
+			"needsApproval": "承認待ち",
+			"hasQuestion": "質問あり",
+			"running": "実行中 {time}",
+			"queued": "キュー待ち",
+			"done": "完了",
+			"failed": "失敗",
+			"stopped": "停止",
+			"idle": "待機中",
+			"queuedCount": "+{count} 件待ち",
+			"subagent": "サブエージェント {count}",
+			"subagents": "サブエージェント {count}"
+		},
+		"filter": {
+			"all": "スレッド",
+			"attention": "要対応",
+			"active": "作業中",
+			"unread": "未読"
+		},
+		"strip": {
+			"done": "完了",
+			"notNow": "後で",
+			"noThread": "スレッドなし",
+			"noThreads": "スレッドなし",
+			"allQuiet": "異常なし",
+			"default": "既定",
+			"pressToApply": "押して適用",
+			"speed": "速度：{speed}",
+			"prompts": "プロンプト",
+			"noPrompts": "プロンプトなし",
+			"addPrompts": "設定で追加",
+			"answer": "回答",
+			"nothingPending": "保留なし",
+			"approvals": "承認：{authority}",
+			"approval": "承認",
+			"question": "質問",
+			"pressToOpen": "押して T3 Code で開く",
+			"openInT3Code": "T3 Code で開く",
+			"withHold": "{label} · 長押し",
+			"queue": "キュー",
+			"nothingQueued": "キューなし",
+			"queuedMessage": "キュー内メッセージ",
+			"queueHeld": "保留中 · 押すと今すぐ送信",
+			"queueSendNow": "押す：今すぐ送信 · 長押し：削除",
+			"queueSteer": "押す：追加 · 長押し：削除",
+			"queueRemoveOnly": "長押しで削除"
+		},
+		"power": {
+			"quicker": "速く",
+			"deeper": "深く",
+			"asksFirst": "先に確認",
+			"handsOff": "おまかせ"
+		},
+		"approval": {
+			"open": "T3 で開く",
+			"once": "今回のみ許可",
+			"session": "セッション中許可",
+			"always": "常に許可",
+			"deny": "拒否",
+			"needsYou": "T3 Code で要対応",
+			"command": "コマンドの承認",
+			"fileRead": "ファイル読取の承認",
+			"fileChange": "ファイル変更の承認",
+			"permission": "アプリ権限の承認",
+			"mcpElicitation": "アプリアクセスの承認"
+		},
+		"mode": {
+			"approvalRequired": "確認あり",
+			"autoAcceptEdits": "編集を自動承認",
+			"auto": "自動",
+			"fullAccess": "フルアクセス"
+		},
+		"option": {
+			"off": "オフ",
+			"on": "オン",
+			"fast": "高速",
+			"normal": "通常"
+		},
+		"quick": {
+			"continue": "続行",
+			"test": "テスト修正",
+			"fix": "診断",
+			"explain": "説明",
+			"commit": "コミット"
+		},
+		"time": {
+			"minutes": "{minutes}分",
+			"hours": "{hours}時間",
+			"days": "{days}日"
+		},
+		"datasource": {
+			"cycleFavorites": "お気に入りを順に",
+			"cycleModels": "モデルを順に",
+			"cycleEfforts": "エフォートを順に",
+			"anyProject": "任意のプロジェクト",
+			"noProject": "プロジェクトなし",
+			"defaultEditor": "T3 Code の既定",
+			"firstProvider": "制限のある最初のもの",
+			"firstWindow": "最短のウィンドウ",
+			"chooseThread": "スレッドを選択…",
+			"chooseScript": "スクリプトを選択…"
+		},
+		"machine": {
+			"thisMachine": "このマシン",
+			"pairingExpired": "このペアリングは期限切れです。新しいペアリングリンクを貼り付けてください。",
+			"cannotRead": "このペアリングではスレッドを読み取れません。新しいペアリングリンクを貼り付けてください。"
+		},
+		"pairing": {
+			"notALink": "T3 Code のペアリングリンクではないようです。「Settings → Sharing & access」からコピーしてください。",
+			"unreachable": "{host} の T3 Code に接続できません。起動していて、このコンピューターから到達できるか確認してください。",
+			"notT3": "{host} は T3 Code サーバーではないようです。",
+			"tooOld": "そのマシンの T3 Code は Turnkey には古すぎます。T3 Code を更新してください。",
+			"tooNew": "この T3 Code は Turnkey が対応するより新しいバージョンです。Turnkey を更新してください。",
+			"linkUsed": "そのペアリングリンクは使用済みか期限切れです。「Settings → Sharing & access」で新しいリンクを作成してください。",
+			"noAccess": "そのペアリングリンクではスレッドにアクセスできません。アクセスできるリンクを作成してください。",
+			"refused": "T3 Code がペアリングリンクを拒否しました（{status}）。",
+			"noRead": "そのペアリングリンクではスレッドを読み取れません。読み取れるリンクを作成してください。",
+			"different": "{host} では別の T3 Code が応答しています。",
+			"ended": "T3 Code がこのペアリングを終了しました。再接続するには新しいペアリングリンクを貼り付けてください。",
+			"cannotOpen": "T3 Code が接続を開けませんでした（{status}）。"
+		},
+		"connection": {
+			"noAnswer": "T3 Code が時間内に応答しませんでした。",
+			"closed": "T3 Code との接続が閉じられました。",
+			"failed": "T3 Code との接続に失敗しました。",
+			"silent": "T3 Code が応答しなくなりました。",
+			"feedEnded": "T3 Code がスレッドフィードを終了しました。",
+			"disconnected": "T3 Code から切断されました。"
+		},
+		"access": {
+			"sourceControl": "ソース管理アクセスが必要 — 再ペアリング",
+			"diagnostics": "使用量アクセスが必要 — 再ペアリング",
+			"providers": "プロバイダーアクセスが必要 — 再ペアリングで有効化",
+			"maintain": "更新アクセスが必要 — 再ペアリングで有効化",
+			"terminal": "ターミナルアクセスが必要 — 再ペアリングで有効化",
+			"share": "共有アクセスが必要 — 再ペアリングで有効化",
+			"other": "追加のアクセスが必要 — 再ペアリング",
+			"rePair": "再ペアリングで有効化"
+		},
+		"pr": {
+			"open": "オープン",
+			"merged": "マージ済み",
+			"closed": "クローズ",
+			"draft": "ドラフト",
+			"face": {
+				"failing": "{count} 件のチェック失敗",
+				"failingOne": "1 件のチェック失敗",
+				"findings": "{count} 件の指摘",
+				"findingsOne": "1 件の指摘",
+				"running": "チェック実行中",
+				"changesRequested": "変更要求",
+				"approved": "承認済み",
+				"passing": "チェック成功"
+			},
+			"fix": {
+				"title": "指摘を修正",
+				"none": "指摘なし",
+				"threads": "{count} スレッド",
+				"threadOne": "1 スレッド",
+				"remarks": "{count} 件のコメント",
+				"remarkOne": "1 件のコメント",
+				"checks": "{count} 件のチェック",
+				"checkOne": "1 件のチェック",
+				"named": "{findings}：{names}"
+			},
+			"explain": {
+				"title": "{term} を説明"
+			},
+			"ask": {
+				"title": "{term} について質問"
+			},
+			"guide": {
+				"title": "レビューガイド",
+				"write": "押して作成",
+				"writing": "ガイド作成中…",
+				"ready": "完了：押して開く",
+				"failed": "失敗：押して再試行"
+			},
+			"dial": {
+				"title": "プルリクエスト",
+				"none": "オープン中の PR なし"
+			},
+			"result": {
+				"queued": "キュー済み",
+				"offHead": "開始済み（PR の HEAD 外）"
+			}
+		},
+		"repo": {
+			"action": {
+				"commit": "コミット",
+				"commitPush": "コミット＆プッシュ",
+				"commitPushPr": "コミット、プッシュ＆PR",
+				"push": "プッシュ",
+				"createPr": "PR 作成",
+				"pull": "プル"
+			},
+			"reason": {
+				"notRepo": "Git リポジトリではありません",
+				"detached": "HEAD が切り離し状態：ブランチをチェックアウト",
+				"noUpstream": "アップストリームブランチなし",
+				"diverged": "分岐：先にリベースかマージ",
+				"upToDate": "最新",
+				"clean": "コミットするものなし",
+				"uncommitted": "先に変更をコミットかスタッシュ",
+				"behind": "アップストリームより遅れ：先にプル",
+				"noRemote": "先に origin リモートを追加",
+				"nothingToPush": "プッシュするコミットなし",
+				"prOpen": "PR #{number} はオープン中",
+				"prFromDefault": "{branch} 上：先にブランチを作成",
+				"nothingForPr": "PR にするコミットなし"
+			},
+			"behind": "{count} 件遅れ",
+			"ahead": "{count} 件先行",
+			"changes": "{files} ファイル · +{insertions} −{deletions}",
+			"changesOne": "1 ファイル · +{insertions} −{deletions}",
+			"hook": "{hook} 実行中",
+			"unknownOutcome": "結果不明、T3 Code を確認",
+			"running": "実行中です",
+			"holdTo": "長押しで確定",
+			"holdOnDefault": "長押しで {branch} にプッシュ",
+			"starting": "開始中…",
+			"pulled": "プル完了",
+			"upToDate": "最新",
+			"files": "{count} ファイル",
+			"fileOne": "1 ファイル"
+		},
+		"needs": {
+			"paired": "T3 Code とペアリング済み",
+			"operate": "スレッドを操作できる",
+			"thread": "選択中のスレッド",
+			"running": "実行中のターン",
+			"pending": "保留中のリクエスト",
+			"prompt": "保存したプロンプト",
+			"scope": {
+				"sourceControl": "ソース管理アクセス",
+				"diagnostics": "使用量アクセス",
+				"providers": "プロバイダーアクセス",
+				"maintain": "更新アクセス（そのマシンの T3 Code を更新）",
+				"terminal": "ターミナルアクセス（そのマシンでコマンドを実行）",
+				"terminalRead": "ターミナル状態アクセス",
+				"share": "ゲストリンクアクセス（外部の人とスレッドを共有）",
+				"other": "{scope} アクセス"
+			},
+			"option": "スレッドのモデルの {option}",
+			"optionEffort": "推論エフォート",
+			"optionFast": "高速モード",
+			"optionPlan": "プランモード",
+			"pr": "プルリクエスト",
+			"branch": "ブランチ",
+			"repo": "操作対象",
+			"editor": "マシン上のエディター",
+			"limits": "制限を報告するプロバイダー",
+			"snoozed": "スヌーズ中のスレッド",
+			"preview": "プレビューまたは HTML レンダリング",
+			"devices": "シミュレーターまたはエミュレーター",
+			"notAvailable": "利用不可：{value}",
+			"problem": "{subject}：{text}",
+			"problemOn": "{subject}（{machine}）：{text}",
+			"fix": {
+				"openT3": "このコンピューターで T3 Code を開き、キーを押してください。",
+				"addMachine": "または「マシンを追加」にペアリングリンクを貼り付けてください。",
+				"pickMachine": "下で別のマシンを選択してください。",
+				"pairLink": "T3 Code のペアリングリンクを「マシンを追加」に貼り付けてください。",
+				"reachable": "マシンが起動していて到達できるか確認してください。",
+				"pressRetry": "キーを押すと今すぐ再試行します。",
+				"canAct": "読み取り専用ではなく、操作できるリンクで再度ペアリングしてください。",
+				"openThread": "T3 Code でスレッドを開いてください。",
+				"selectThread": "または「スレッド」キーか「スレッドダイヤル」で選択してください。",
+				"startTurn": "プロンプトを送信してターンを開始してください。",
+				"waitForAgent": "エージェントからの質問を待ちます。",
+				"typePrompt": "上にプロンプトを入力してください。",
+				"newPairLink": "T3 Code の「Settings → Sharing & access」でペアリングリンクを作成してください。",
+				"standardAccess": "既定のアクセスのまま、下の新しいリンクで接続してください。",
+				"switchModel": "スレッドをそれに対応するモデルに切り替えてください。",
+				"createPr": "「PR 作成」または T3 Code で作成してください。",
+				"checkoutBranch": "スレッドでブランチをチェックアウトしてください。",
+				"installEditor": "VS Code や Cursor など、T3 Code が対応するエディターをインストールしてください。",
+				"signInProvider": "T3 Code で Codex または Claude にサインインしてください。これらはサブスクリプション制限を報告します。",
+				"pickAnother": "上で別の値を選択してください。",
+				"noFindings": "失敗や未解決のものはありません。",
+				"providersInT3": "T3 Code の「Settings → Providers」で修正してください。",
+				"queueMessage": "スレッドの作業中にメッセージを送信すると、キューで待機します。",
+				"addTask": "T3 Code の「Settings → Scheduled tasks」で追加してください。",
+				"snoozeOne": "「整理」キーまたは T3 Code でスヌーズしてください。",
+				"openPreview": "T3 Code でスレッドのプレビューパネルにページを開くか、エージェントに HTML のレンダリングを依頼してください。",
+				"turnOnDevices": "そのマシンに Xcode または Android Studio を用意し、T3 Code の「Device panel」で「Devices」をオンにしてください。",
+				"optInNext": "ここでのアクションが必要とした時点で、このマシンの次回ペアリングで要求されます。",
+				"addScript": "T3 Code でプロジェクトの「Add action」ボタンから追加してください。",
+				"guestLinks": "T3 Connect を実行した状態で、T3 Code の「Settings → Labs」で「Guest links」をオンにしてください。",
+				"selfUpdate": "そのマシンの T3 Code を手動で更新してください。"
+			},
+			"findings": "修正する指摘",
+			"providers": "プロバイダーの準備完了",
+			"queued": "キュー内のメッセージ",
+			"tasks": "スケジュールタスク",
+			"script": "スレッドのプロジェクトの保存済みスクリプト",
+			"guestLinks": "ゲストリンクがオン",
+			"selfUpdate": "T3 Code が自己更新できる"
+		},
+		"editor": {
+			"title": "エディターで開く",
+			"none": "このマシンにエディターなし",
+			"noFolder": "フォルダーなし",
+			"opensOn": "{machine} で開く"
+		},
+		"devices": {
+			"title": "デバイス",
+			"ios": "iOS",
+			"android": "Android",
+			"open": "ここで開く",
+			"running": "実行中",
+			"starting": "起動中…",
+			"stopped": "停止",
+			"loading": "デバイスを検索中…",
+			"unreadable": "デバイスを読み取れません",
+			"off": "デバイスはオフ",
+			"turnOn": "T3 Code でオン",
+			"hubStarting": "デバイスハブ起動中…",
+			"hubFailed": "デバイスハブの起動に失敗しました。",
+			"none": "シミュレーター／エミュレーターなし",
+			"touchToCheck": "タッチで再検索",
+			"pressToStart": "押す：起動 · タッチ：再検索",
+			"pressToOpen": "押す：開く · 長押し：電源オフ",
+			"holdToStartCloud": "長押しで起動：EAS 課金",
+			"physical": "実機は電源オフ不可"
+		},
+		"openPreview": {
+			"title": "プレビューを開く",
+			"none": "プレビューなし",
+			"onlyOn": "{machine} のみ",
+			"htmlRender": "HTML レンダリング"
+		},
+		"inspector": {
+			"editor": {
+				"label": "エディター",
+				"loading": "エディターを読み込み中…",
+				"hint": "選択中スレッドのワークツリー、またはプロジェクトのフォルダーを開きます。T3 Code は自身のマシンでエディターを起動するため、このマシンとは限りません。"
+			},
+			"devices": {
+				"hint": "スレッドのマシンとそのデバイスホストのシミュレーターとエミュレーターを一覧表示します。押すと表示中のデバイスをスレッドの「Device panel」で起動し、実行中ならそこで開きます。長押しで電源を切ります。クラウド（EAS）デバイスは実行中に Expo が課金するため、起動には長押しが必要です。「Devices」のオンとホストの追加は T3 Code で行います。"
+			},
+			"preview": {
+				"hint": "スレッドのプレビューパネルに表示中のページを、このコンピューターのブラウザーで開きます。なければスレッドの最新の HTML レンダリングを開きます。別のマシンの localhost 上のページはそのマシンでしか開けないため、キーにその旨を表示します。そのマシンの T3 Code から開いてください。"
+			},
+			"pr": {
+				"confirm": "送信方法",
+				"hold": "長押し",
+				"tap": "タップ",
+				"fixHint": "選択中スレッドのプルリクエストに対する T3 Code の Fix findings タスクをそのスレッドに送信します。作業中ならキューに入ります。レビューコメントとチェック出力はホストから取得され、信頼されないデータとして添付されます。",
+				"dialHint": "マシン上のオープン中のプルリクエストを一覧表示します。押すと、PR に紐づくスレッド、または新しいワークツリースレッドで「指摘を修正」を実行します。タップでブラウザーで開き、タッチ長押しで指摘を表示します。",
+				"show": "表示",
+				"fix": "指摘を修正",
+				"explain": "説明",
+				"ask": "質問",
+				"guide": "レビューガイド"
+			},
+			"git": {
+				"action": "アクション",
+				"commit": "コミット",
+				"commitPush": "コミット＆プッシュ",
+				"commitPushPr": "コミット、プッシュ＆PR 作成",
+				"message": "コミットメッセージ",
+				"messagePlaceholder": "空の場合は T3 Code が作成",
+				"confirm": "実行方法",
+				"confirmDefault": "プッシュは長押し、他はタップ",
+				"tap": "タップ",
+				"hold": "長押し",
+				"hint": "選択中スレッドのワークツリー、またはプロジェクトのフォルダーで実行します。既定のブランチへのプッシュには常に長押しが必要です。T3 Code は先に新しいブランチを提案するため、既定のブランチからの PR は拒否されます。",
+				"pullHint": "選択中スレッドのブランチがアップストリームより遅れているとき、アップストリームからプルします。",
+				"push": "プッシュ",
+				"createPr": "PR 作成",
+				"pull": "プル"
+			},
+			"card": {
+				"machine": "マシン",
+				"machines": "マシン一覧",
+				"getLink": "ペアリングリンクを取得",
+				"getLinkRow": "リンクを取得",
+				"pasteLink": "リンクを貼り付け",
+				"looking": "このマシンで T3 Code を検索中…",
+				"machineGroup": "このアクションのマシン",
+				"addMachine": "マシンを追加",
+				"linkPlaceholder": "「Settings → Sharing & access」のペアリングリンクを貼り付け",
+				"connect": "接続",
+				"connecting": "接続中…",
+				"accessHelp": "Turnkey は、リンクが許可する範囲でスレッドの読み取りと操作を要求します。取り消しは「Settings → Sharing & access」で行えます。",
+				"notRunning": "このマシンで T3 Code が実行されていません。T3 Code を開くか、下に別のマシンのペアリングリンクを貼り付けてください。",
+				"howToPair": "T3 Code で「Settings → Sharing & access」を開き、ペアリングリンクを作成して下に貼り付けてください。",
+				"allMachines": "すべてのマシン",
+				"noneYet": "まだありません",
+				"connectedCount": "{ready}/{total} 接続済み",
+				"connected": "接続済み",
+				"readOnly": "読み取り専用",
+				"signOut": "サインアウト",
+				"tryAgain": "再試行",
+				"needsPairing": "要ペアリング",
+				"remove": "削除",
+				"pasteFromMachine": "下にこのマシンのペアリングリンクを貼り付けてください。",
+				"pairing": "ペアリングリンクで接続中…",
+				"needsTitle": "このアクションに必要なもの",
+				"needsNotMet": " · {count} 件未達",
+				"noMachines": "マシンはまだありません",
+				"needsAllMet": " · すべて達成",
+				"needsMet": "OK",
+				"needsUnmet": "未達",
+				"needsChecking": "確認中",
+				"optInTitle": "追加アクセス",
+				"optInHeld": "許可済み",
+				"optInPending": "次回ペアリング",
+				"optInDrop": "要求しない",
+				"scopeProviders": "プロバイダーアカウント（リセット使用）",
+				"scopeMaintain": "更新（T3 を更新）",
+				"scopeTerminal": "ターミナル：コマンド実行（スクリプト実行）",
+				"scopeTerminalRead": "ターミナル状態（スクリプト実行）",
+				"scopeShare": "ゲストリンク（スレッド共有）",
+				"verboseUntil": "{time} までオン。その後は通常のログに戻ります。",
+				"verboseOff": "24 時間詳細なログを記録し、その後自動でオフになります。トークンは記録しません。",
+				"diagnosticsFailed": "うまくいきませんでした。ログフォルダーを開いて確認してください。"
+			},
+			"diagnostics": {
+				"title": "診断",
+				"verbose": "詳細ログ",
+				"verboseLabel": "24 時間オン",
+				"logs": "ログ",
+				"openLogs": "ログフォルダーを開く",
+				"report": "レポート",
+				"export": "診断をエクスポート",
+				"exportHint": "バージョン、マシン（ホスト、状態、アクセスのみ）、アクション数、最近のエラーをログフォルダー内のファイルに保存して表示します。トークン、ペアリングリンク、完全なアドレスは含まれないため、バグ報告に安全に添付できます。"
+			},
+			"settings": {
+				"open": "Turnkey 設定…",
+				"blocked": "Stream Deck がウィンドウを開きませんでした。",
+				"title": "Turnkey 設定",
+				"detached": "Turnkey アクションから Turnkey 設定を開いてください。",
+				"appearance": "外観",
+				"behavior": "動作",
+				"about": "情報",
+				"machinesLede": "Turnkey は追加した各マシンの T3 Code に接続します。キーやダイヤルごとに、1 台のマシンかすべてのマシンに従えます。",
+				"version": "バージョン",
+				"languages": "言語",
+				"languagesHint": "Turnkey は Stream Deck の言語に従います。",
+				"readme": "ガイド",
+				"openReadme": "README を開く"
+			},
+			"advanced": {
+				"appLink": "アプリリンク",
+				"appLinkHint": "開発ビルドでスレッドを開くには t3code-dev を使用します。",
+				"dialStrips": "ダイヤルストリップ",
+				"stateLine": "状態ライン",
+				"stateLineLabel": "各ストリップの下に色付きのラインを表示",
+				"stateHint": "ダークは Stream Deck 標準のストリップと同じ、ほぼ黒の無地です。フローは隣接するダイヤルにまたがって 1 枚の絵を描きます。スレッド状態は、未確認のターンが完了すると緑、失敗すると赤、対応が必要なときは琥珀色にストリップを色付けします。各ダイヤルは個別の設定でこれを上書きできます。",
+				"stripStyle": "ストリップのスタイル",
+				"styleHint": "リストはダイヤルの項目をホイールのように回し、カルーセルは各項目を隣の項目に挟まれたタイルで表示します。ダイヤル別の既定では、スレッドダイヤルはリスト、その他はクラシックを使います。クラシックではパワーダイヤルをスライダーで表示します。長いテキストはダイヤルが止まると 2 回動いて止まります。ストリップをタッチ長押しすると全文を読め、回すとスクロールします。",
+				"motion": "モーション",
+				"maxEffort": "色",
+				"maxEffortHint": "グラデーションは各エフォート段階をモデル固有の色の段階で色付けし、最上位に向けて紫に近づけます。各モデルと高速にはプロバイダーのグラデーションを付けます。単色とモデル色は最上位のエフォート段階だけを紫またはモデルの色で示し、オフでは色を付けません。Ultrathink は T3 Code のスペクトルを維持します。",
+				"motionHint": "フルでは実行中のスレッドを回転させ、対応待ちのスレッドを点滅させ、完了と失敗をフラッシュします。控えめではゆっくり回転し、点滅しません。オフではすべての表示を静止させます。",
+				"idlePet": "待機中のペット",
+				"previewPet": "ペットをプレビュー",
+				"idlePetHint": "押す、回す、タッチのいずれもない状態が 2 分続くと、小さなロボットが隣接するダイヤルストリップの最も長い列を歩きます。4 分間隔で最大 3 回です。Turnkey アクションを押す、回す、タッチするといなくなります。モーションに従い、控えめではゆっくり歩き、オフでは現れません。",
+				"confirm": "送信前に確認",
+				"confirmHint": "プロンプト送信、追加指示、スキル実行、プロンプトダイヤル、スキルダイヤルに適用されます。モデル、エフォート、速度、アクセス、パワーダイヤルは常にすぐ適用されます。確認では最初に押したときに送信内容と宛先を表示し、10 秒以内にもう一度押すと送信します。長押しでは長押しで送信するため、長押しで再開やスレッド開始はできません。各アクションで上書きできます。"
+			},
+			"field": {
+				"strip": "ストリップ",
+				"stripColor": "ストリップの色",
+				"style": "スタイル",
+				"longText": "長いテキスト",
+				"show": "表示",
+				"project": "プロジェクト",
+				"prompt": "プロンプト",
+				"keyTitle": "キーのタイトル",
+				"approvals": "承認",
+				"toAnswer": "回答方法",
+				"model": "モデル",
+				"effort": "エフォート",
+				"access": "アクセス",
+				"confirm": "確認",
+				"does": "動作"
+			},
+			"background": {
+				"global": "全体設定を使用",
+				"t3": "ダーク",
+				"flow": "フロー",
+				"state": "スレッド状態",
+				"custom": "カスタム色"
+			},
+			"style": {
+				"perDial": "ダイヤル別の既定",
+				"classic": "クラシック",
+				"list": "リスト",
+				"carousel": "カルーセル"
+			},
+			"motion": {
+				"full": "フル",
+				"reduced": "控えめ",
+				"off": "オフ"
+			},
+			"idlePet": {
+				"off": "オフ",
+				"on": "オン"
+			},
+			"maxEffort": {
+				"gradient": "グラデーション",
+				"solid": "単色",
+				"model": "モデル色",
+				"off": "オフ"
+			},
+			"confirm": {
+				"review": "確認してもう一度押す",
+				"hold": "長押しで送信",
+				"off": "すぐに送信"
+			},
+			"scroll": {
+				"horizontal": "横にスクロール",
+				"vertical": "1 行ずつ上へ送る",
+				"off": "スクロールしない"
+			},
+			"loading": {
+				"projects": "プロジェクトを読み込み中…",
+				"models": "モデルを読み込み中…",
+				"efforts": "エフォートを読み込み中…",
+				"providers": "プロバイダーを読み込み中…",
+				"windows": "ウィンドウを読み込み中…",
+				"threads": "スレッドを読み込み中…",
+				"tasks": "タスクを読み込み中…",
+				"skills": "スキルを読み込み中…",
+				"scripts": "スクリプトを読み込み中…"
+			},
+			"filter": {
+				"all": "すべてのスレッド",
+				"attention": "要対応：承認、質問、失敗、未読の結果",
+				"active": "作業中またはキュー待ち",
+				"unread": "未読"
+			},
+			"authority": {
+				"open": "T3 Code で開く",
+				"once": "今回のみ許可",
+				"session": "セッション中は許可",
+				"always": "常に許可"
+			},
+			"slot": {
+				"label": "スロット",
+				"byPosition": "キーの位置順",
+				"selected": "選択中のスレッド",
+				"first": "1（最も緊急）",
+				"hint": "キーの位置順では、スレッドキーを左から右、上から下へ埋めます。スレッドの順序は、承認待ち、質問あり、実行中、その他です。タップで開き、長押しで選択します。"
+			},
+			"activity": {
+				"hint": "一致する最も緊急なスレッドを表示します。同じ設定のアクティビティキーを追加すると、キーの位置順に次のスレッドを表示します。"
+			},
+			"answer": {
+				"hold": "ダイヤルを長押し",
+				"press": "ダイヤルを押す",
+				"hint": "この選択肢と拒否の間で回します。この選択肢がないリクエストは代わりに T3 Code で開きます。ストリップをタッチ長押しすると、長いリクエストを全文表示します。"
+			},
+			"send": {
+				"titlePlaceholder": "テスト修正",
+				"promptPlaceholder": "テストを実行して失敗を修正して",
+				"hint": "T3 Code で選択中のスレッドに送信します。ターンを開始するか、実行中のターンに追加またはその後ろにキューします。キーを長押しすると中断し、このプロンプトで再開します。",
+				"myText": "自分のテキスト",
+				"text": "テキスト"
+			},
+			"steer": {
+				"titlePlaceholder": "小さく保つ",
+				"promptPlaceholder": "変更は小さくして、リファクタリングは省いて",
+				"hint": "選択中スレッドの実行中のターンに追加します。スレッドが待機中の間は暗く表示されます。"
+			},
+			"quick": {
+				"continue": "続行",
+				"test": "テストを実行して失敗を修正",
+				"fix": "診断して修正",
+				"explain": "現在の状態を説明",
+				"commit": "変更をコミット"
+			},
+			"new": {
+				"createIn": "作成先",
+				"selected": "選択中スレッドのプロジェクト",
+				"scratch": "プロジェクトなし",
+				"project": "指定したプロジェクト",
+				"promptPlaceholder": "任意：オープン中のプルリクエストをレビューして",
+				"title": "スレッドのタイトル",
+				"titlePlaceholder": "PR をレビュー",
+				"hint": "プロンプトがあると、スレッドが作業を開始し、デッキがそのスレッドを選択します。なければ T3 Code で空のまま開きます。スレッドが選択されていない場合はプロジェクトなしで開始します。T3 Code の既定のモデルとアクセスを使います。",
+				"startIn": "開始場所",
+				"folder": "プロジェクトフォルダー",
+				"worktree": "新しいワークツリー",
+				"worktreeHint": "新しいワークツリーは T3 Code のコンポーザーと同様にリポジトリの既定のブランチから開始し、ブランチ名はプロンプトから決まります。プロンプトとプロジェクトが必要です。"
+			},
+			"model": {
+				"nameColor": "名前の色",
+				"nameModel": "モデルの色",
+				"nameWhite": "白",
+				"hint": "順に切り替えると、プロバイダーをまたいで T3 Code のお気に入りモデルを巡回します。お気に入りがなければスレッドのプロバイダーのモデルを巡回します。別のプロバイダーのモデルを選ぶと、T3 Code のモデルピッカーと同様にスレッドが引き継がれます。"
+			},
+			"effort": {
+				"hint": "順に切り替えると、選択中スレッドのモデルが提供するエフォートを巡回します。設定したエフォートにモデルが対応していない場合、キーは暗く表示されます。Ultrathink はエフォートを変更しません。T3 Code と同様に、別のエフォートを選ぶまでデッキがそのスレッドに送るプロンプトの先頭に付加されます。"
+			},
+			"permissions": {
+				"cycle": "アクセスモードを順に",
+				"approvalRequired": "確認あり",
+				"autoAcceptEdits": "編集を自動承認",
+				"auto": "自動",
+				"fullAccess": "フルアクセス",
+				"hint": "選択中のスレッドに次のステップから適用されます。プロバイダーが対応するモードのみ表示されます。"
+			},
+			"approve": {
+				"hold": "キーを長押し",
+				"tap": "キーをタップ",
+				"hint": "選択中スレッドの承認に応答します。この選択肢がないリクエストや、デッキが応答できないリクエストは T3 Code で開きます。拒否は専用のキーです。"
+			},
+			"organize": {
+				"action": "アクション",
+				"settle": "完了扱い",
+				"pin": "ピン留め／解除",
+				"snooze": "スヌーズ",
+				"archive": "アーカイブ",
+				"markUnread": "未読にする",
+				"wake": "最新のスヌーズを解除",
+				"snoozeFor": "スヌーズ期間",
+				"minutes15": "15 分",
+				"minutes30": "30 分",
+				"hour1": "1 時間",
+				"hours2": "2 時間",
+				"hours4": "4 時間",
+				"hours8": "8 時間",
+				"day1": "1 日",
+				"confirm": "確認",
+				"confirmReview": "確認してもう一度押す",
+				"confirmHold": "長押しで確定",
+				"confirmOff": "すぐに実行"
+			},
+			"prompts": {
+				"label": "プロンプト",
+				"placeholder": "1 行に 1 つのプロンプト",
+				"templates": "テンプレート",
+				"templatesLabel": "続行、テスト修正、診断、説明、コミットを追加",
+				"hint": "回して選択、押すと選択中のスレッドに送信、長押しで新しいスレッドを開始します。"
+			},
+			"threads": {
+				"recency": "対象期間",
+				"noLimit": "制限なし",
+				"day": "24 時間",
+				"twoDays": "48 時間",
+				"threeDays": "3 日",
+				"week": "7 日",
+				"hint": "回すと一致するスレッドを緊急度順に切り替え、ダイヤルが止まったスレッドが T3 Code で選択されます。押すかタップで開きます。"
+			},
+			"power": {
+				"controls": "このダイヤルで操作",
+				"bottomRow": "モデル表示に出す項目",
+				"showSpeed": "速度",
+				"showEffort": "思考レベル",
+				"hint": "回してプレビュー、押すと選択中のスレッドに適用します。モデルはプロバイダーをまたいで T3 Code のお気に入りモデルを巡回します。適用するものがないときに押すか、タップすると、モデルが対応していれば速度を切り替えます。Ultrathink は Claude が対応している場合、デッキがそのスレッドに送る次のプロンプトの先頭に付加されます。"
+			},
+			"limits": {
+				"provider": "プロバイダー",
+				"window": "ウィンドウ",
+				"show": "表示",
+				"left": "残り %",
+				"used": "使用 %",
+				"resetAction": "長押しで",
+				"open": "T3 Code で「Usage」を開く",
+				"spend": "保有リセットを使用",
+				"hint": "T3 Code の Limits と同様に、選択したマシン上のプロバイダーのアカウントを合算します。タップで更新。バーの目盛りは均等なペースの位置です。",
+				"spendHint": "長押しで、T3 Code が最初に補充するアカウントのリセットクレジットを 1 つ使用します。プロバイダーアクセスが必要です。ペアリングにない場合は、マシンの次のペアリングリンクで要求されます。"
+			},
+			"usage": {
+				"period": "期間",
+				"provider": "プロバイダー",
+				"allProviders": "すべてのプロバイダー",
+				"day": "過去 24 時間",
+				"week": "7 日",
+				"month": "30 日",
+				"quarter": "90 日",
+				"hint": "選択したマシン全体での、期間中の T3 Code による API 推定値です。2 台のマシンが共有するフォルダーは 1 回だけ数えます。タップで再読み込み、長押しでモデル価格も再読み込みします。使用量アクセスが必要です。",
+				"dialHint": "回すと期間の合計から各モデルをコスト順に切り替えます。押すかタップで再読み込み、長押しでモデル価格も再読み込みします。使用量アクセスが必要です。"
+			},
+			"target": {
+				"label": "対象",
+				"selected": "選択中のスレッド",
+				"thread": "このスレッド",
+				"pick": "スレッド",
+				"hint": "別のスレッドが選択されていても、キーはこのスレッドを操作し、小さなピンを表示します。アーカイブまたは削除されると、別のスレッドを選ぶまで利用不可と表示されます。"
+			},
+			"queue": {
+				"hint": "選択中スレッドのキューに追従します。押すと表示中のメッセージを今すぐ送信します。プロバイダーが追加指示に対応していれば実行中のターンに、何も実行中でなければ次のターンとして送信し、停止で保留されたキューも解放します。長押しで削除します。"
+			},
+			"task": {
+				"label": "タスク",
+				"hint": "押すと T3 Code の「Run now」と同様にタスクを今すぐ実行します。スケジュールは維持されます。タスクは T3 Code の「Settings → Scheduled tasks」から取得されます。",
+				"dialHint": "回すとマシンのスケジュールタスクを切り替えます。押すと表示中のタスクを今すぐ実行し、タップでオフ、もう一度タップでオンに戻します。"
+			},
+			"skill": {
+				"label": "スキル",
+				"extra": "追加テキスト",
+				"extraPlaceholder": "任意：スキルの後に伝える内容",
+				"titlePlaceholder": "スキル名",
+				"hint": "T3 Code のコンポーザーと同様にスキルをスレッドに送信します（$name の後にテキスト）。スキルはスレッドのチェックアウトに対するプロバイダーから取得されます。Codex、Claude、Antigravity が一覧を提供します。",
+				"dialHint": "回すとスレッドのチェックアウトに対するプロバイダーのスキルを切り替えます。押すかタップで表示中のスキルを実行、タッチ長押しで説明を表示します。"
+			},
+			"workflow": {
+				"hint": "T3 Code の Lineage パネルと同様に、スレッドが実行するワークフローを停止します。停止できるのは Claude のワークフローのみです。キーを長押しすると停止します。停止したワークフローは再開できません。"
+			},
+			"lineage": {
+				"forkHint": "その返信にある T3 Code のフォークボタンと同様に、最新の完了した返信からスレッドを新しいスレッドにフォークし、フォークを開きます。",
+				"mergeHint": "T3 Code の Merge と同様に、フォークしたスレッドを元のスレッドにマージし、そのスレッドを開きます。キーを長押しするとマージします。",
+				"fork": "フォーク",
+				"merge": "元へマージ"
+			},
+			"update": {
+				"hint": "下で選択したマシン（未選択ならこのコンピューター）の T3 Code のバージョンを表示します。長押しでそのチャンネルの最新リリースに更新します。デスクトップアプリは自身で更新をインストールして再起動します。T3 Code はデッキに更新を通知しないため、キーで更新待ちを表示することはできません。",
+				"access": "更新アクセスが必要です。これにより、このデッキがそのマシンの T3 Code を更新・再起動できます。キーを初めて押すと、マシンの次回ペアリングで要求されます。"
+			},
+			"script": {
+				"label": "スクリプト",
+				"hint": "押すと T3 Code のスクリプトボタンと同様に、スレッド上の専用ターミナルで、ワークツリーまたはプロジェクトのフォルダーでスクリプトを実行します。長押しで停止。キーは実行中かどうかを表示します。T3 Code はスクリプトの終了コードを報告せず、ターミナルの終了コードのみを報告します。",
+				"access": "シェルアクセス：ターミナルアクセスが必要です。これにより、このデッキがそのマシンの T3 Code のターミナルで任意のコマンドを実行できます。キーを初めて押すと、マシンの次回ペアリングで要求されます。"
+			},
+			"share": {
+				"hint": "押すとスレッドのゲストリンクを作成してコピーします。リンクを持つ人は誰でも 24 時間スレッドを閲覧し、あなたが送信または却下するメッセージを提案できます。長押しで共有を停止。「Guest links」（Settings → Labs）と T3 Connect が必要です。",
+				"access": "ゲストリンクアクセスが必要です。これにより、このデッキが外部の人とスレッドを共有できます。キーを初めて押すと、マシンの次回ペアリングで要求されます。",
+				"link": "ゲストリンク",
+				"linkHint": "Turnkey の実行中のみ表示されます。T3 Code はリンクを作成時に一度だけ表示します。"
+			},
+			"stop": {
+				"stops": "停止する対象",
+				"turn": "ターン",
+				"workflow": "ワークフロー"
+			},
+			"open": {
+				"in": "開く先",
+				"editor": "エディター",
+				"preview": "プレビュー"
+			}
+		},
+		"usage": {
+			"title": "使用量",
+			"period": {
+				"day": "過去24時間",
+				"week": "7日",
+				"month": "30日",
+				"quarter": "90日"
+			},
+			"allModels": "全モデル",
+			"tokens": "{tokens} トークン",
+			"sessions": "{count} セッション",
+			"unpriced": "価格未設定",
+			"cacheHit": "キャッシュ {percent}",
+			"perMillion": "{cost}/M",
+			"updateT3": "使用量には T3 Code の更新が必要",
+			"updateDeck": "使用量には Turnkey の更新が必要"
+		},
+		"limits": {
+			"title": "制限",
+			"none": "制限なし",
+			"noneDetail": "制限を報告するプロバイダーなし",
+			"window": {
+				"hours": "{hours}時間",
+				"session": "セッション",
+				"weekly": "週間",
+				"monthly": "月間"
+			},
+			"resetsNow": "今リセット",
+			"resetsIn": "リセット {time}",
+			"resetOne": "リセット1回",
+			"resets": "リセット{count}回",
+			"pooled": "{count} アカウント",
+			"refreshing": "更新中…",
+			"pressToRefresh": "押して更新",
+			"holdToReset": "長押しでリセット使用",
+			"noResets": "保有リセットなし",
+			"needsProviders": "プロバイダーアクセスが必要",
+			"outcome": {
+				"reset": "リセット適用",
+				"nothingToReset": "リセット不要",
+				"noCredit": "リセット残なし",
+				"alreadyRedeemed": "使用済み"
+			}
+		},
+		"tasks": {
+			"title": "タスク",
+			"now": "今",
+			"in": "{time}後",
+			"running": "実行中",
+			"off": "オフ",
+			"onWebhook": "Webhook 時",
+			"notScheduled": "予定なし",
+			"lastFailed": "前回失敗 · {when}",
+			"noTasks": "スケジュールタスクなし",
+			"addInT3": "T3 Code で追加",
+			"updateT3": "タスクには T3 Code の更新が必要",
+			"loading": "タスクを読み込み中…",
+			"pressToRun": "押す：今すぐ実行 · タップ：オフ",
+			"pressToRunOff": "押す：今すぐ実行 · タップ：オン",
+			"pickTask": "タスクを選択",
+			"gone": "利用不可：{task}",
+			"chooseTask": "タスクを選択…"
+		},
+		"skills": {
+			"title": "スキル",
+			"pickSkill": "スキルを選択",
+			"none": "スキルなし",
+			"gone": "利用不可：{skill}",
+			"chooseSkill": "スキルを選択…",
+			"aSkill": "スレッドのプロバイダーが提供するスキル"
+		},
+		"workflow": {
+			"stop": "ワークフロー停止",
+			"none": "実行中のワークフローなし",
+			"notClaude": "このプロバイダーは非対応",
+			"option": "ワークフローの停止（Claude）",
+			"holdToStop": "長押しで停止",
+			"notRunning": "実行終了",
+			"unsupported": "プロバイダーが停止不可",
+			"unavailable": "実行中のタスクなし",
+			"stopFailed": "停止できません"
+		},
+		"lineage": {
+			"fork": "フォーク",
+			"mergeBack": "元へマージ",
+			"into": "{thread} へ",
+			"notFork": "フォークではない",
+			"finishRunFirst": "先にターンを完了",
+			"finishTurn": "ターン完了待ち",
+			"nothingToFork": "フォーク対象なし",
+			"holdToMerge": "長押しでマージ",
+			"aFork": "フォークしたスレッド",
+			"aFinishedTurn": "完了した返信"
+		},
+		"worktree": {
+			"newThread": "新規ワークツリー",
+			"noProject": "プロジェクトが必要",
+			"needsPrompt": "プロンプトが必要",
+			"notRepo": "Git リポジトリではない",
+			"noBranch": "開始ブランチなし"
+		},
+		"update": {
+			"title": "T3 を更新",
+			"version": "v{version}",
+			"noVersion": "バージョン不明",
+			"holdToUpdate": "長押しで更新",
+			"checking": "確認中…",
+			"downloading": "ダウンロード中…",
+			"installing": "インストール中…",
+			"restarting": "再起動中…",
+			"toVersion": "v{version} へ",
+			"upToDate": "最新",
+			"inProgress": "更新中です",
+			"manual": "手動で更新",
+			"desktopTooOld": "デスクトップアプリを更新",
+			"failed": "更新失敗",
+			"noReturn": "復帰しません",
+			"pickMachine": "マシンを選択",
+			"needsAccess": "更新アクセスが必要"
+		},
+		"script": {
+			"title": "スクリプト実行",
+			"pick": "スクリプトを選択",
+			"idle": "押して実行",
+			"starting": "開始中…",
+			"running": "実行中",
+			"finished": "完了",
+			"stopped": "停止",
+			"exited": "終了 {code}",
+			"ended": "終了",
+			"error": "ターミナル失敗",
+			"holdToStop": "長押しで停止",
+			"needsAccess": "ターミナルアクセスが必要"
+		},
+		"share": {
+			"title": "スレッド共有",
+			"shared": "共有中",
+			"guest": "{name} が参加",
+			"unused": "リンク未使用",
+			"pending": "{count} 件のメッセージ待ち",
+			"pendingOne": "1 件のメッセージ待ち",
+			"expired": "リンク期限切れ",
+			"holdToClear": "長押しでクリア",
+			"holdToStop": "長押しで共有停止",
+			"disabled": "ゲストリンクをオンに",
+			"noConnect": "T3 Connect が必要",
+			"unavailable": "このスレッドは共有不可",
+			"copyFailed": "コピーできません",
+			"needsAccess": "共有アクセスが必要"
+		}
+	}
+}

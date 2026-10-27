@@ -12,7 +12,7 @@ import { deck } from "../deck.js";
 import { pinnedName } from "../core/target.js";
 import { canOperate, connectionProblem, deckActions, queueOf, targetOf } from "./base.js";
 
-const ID = "com.alejandrom2.t3deck.";
+const ID = "com.alejandrom2.turnkey.";
 
 export const connectionOf = (machine: string | undefined): Connection => connectionProblem(machine) ?? "ready";
 

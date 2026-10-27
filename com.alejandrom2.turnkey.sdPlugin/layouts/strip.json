@@ -1,0 +1,40 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+	"id": "com.alejandrom2.turnkey.strip",
+	"items": [
+		{ "key": "canvas", "type": "pixmap", "rect": [0, 0, 200, 100], "zOrder": 0 },
+		{
+			"key": "header",
+			"type": "text",
+			"rect": [8, 2, 184, 26],
+			"font": { "size": 16, "weight": 700 },
+			"alignment": "left",
+			"color": "#F5F7FB",
+			"text-overflow": "ellipsis",
+			"zOrder": 1
+		},
+		{ "key": "glyph", "type": "pixmap", "rect": [10, 34, 38, 38], "zOrder": 1 },
+		{
+			"key": "value",
+			"type": "text",
+			"rect": [56, 30, 136, 22],
+			"font": { "size": 16, "weight": 650 },
+			"alignment": "left",
+			"color": "#FFFFFF",
+			"text-overflow": "ellipsis",
+			"zOrder": 1
+		},
+		{
+			"key": "detail",
+			"type": "text",
+			"rect": [56, 52, 136, 23],
+			"font": { "size": 14, "weight": 600 },
+			"alignment": "left",
+			"color": "#B8BCC6",
+			"text-overflow": "fade",
+			"zOrder": 1
+		},
+		{ "key": "valueArt", "type": "pixmap", "rect": [56, 30, 136, 22], "zOrder": 2 },
+		{ "key": "detailArt", "type": "pixmap", "rect": [56, 52, 136, 23], "zOrder": 2 }
+	]
+}

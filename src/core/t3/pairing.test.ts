@@ -69,7 +69,7 @@ describe("redeemPairingCode", () => {
 			subject_token_type: "urn:t3:params:oauth:token-type:environment-bootstrap",
 			requested_token_type: "urn:ietf:params:oauth:token-type:access_token",
 			scope: "orchestration:read orchestration:operate diagnostics:read source-control:write",
-			client_label: "T3 Deck",
+			client_label: "Turnkey",
 			client_device_type: "desktop",
 			client_os: expect.any(String),
 		});

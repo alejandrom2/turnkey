@@ -16,7 +16,7 @@ import { pressWhileDisconnected } from "./base.js";
 import { threadNeeds } from "./needs.js";
 import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 
 type DevicesDialSettings = DialSettings & { target?: string; thread?: string; threadTitle?: string };
 

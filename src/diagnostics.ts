@@ -64,7 +64,7 @@ export async function exportDiagnostics(actions: Record<string, number>): Promis
 		actions,
 		log: await logTail(),
 	});
-	const file = join(logsDir(), `t3-deck-diagnostics-${new Date(now).toISOString().replace(/[:.]/g, "-")}.json`);
+	const file = join(logsDir(), `turnkey-diagnostics-${new Date(now).toISOString().replace(/[:.]/g, "-")}.json`);
 	await mkdir(logsDir(), { recursive: true });
 	await writeFile(file, `${JSON.stringify(report, null, "\t")}\n`);
 	await reveal(file, true);

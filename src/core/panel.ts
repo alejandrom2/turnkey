@@ -1,5 +1,5 @@
 /**
- * Pure helpers shared by the action panels and the T3 Deck Settings window. `scripts/ui.ts` inlines their source into
+ * Pure helpers shared by the action panels and the Turnkey Settings window. `scripts/ui.ts` inlines their source into
  * the pages, so each stays self-contained: no imports, no outside constants.
  */
 

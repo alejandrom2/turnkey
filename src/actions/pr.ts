@@ -36,7 +36,7 @@ import { canOperate, connectionFace, DeckAction, openThread, pressWhileDisconnec
 import { connectionOf, threadNeeds } from "./needs.js";
 import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("pr");
 
 /** How long a pull request's checks, review and findings stay fresh while a key shows them. */

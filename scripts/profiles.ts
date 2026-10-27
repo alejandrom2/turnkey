@@ -7,12 +7,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const root = join(import.meta.dirname, "..");
-const pluginDir = join(root, "com.alejandrom2.t3deck.sdPlugin");
+const pluginDir = join(root, "com.alejandrom2.turnkey.sdPlugin");
 const manifest = JSON.parse(readFileSync(join(pluginDir, "manifest.json"), "utf8")) as { UUID: string; Name: string; Version: string };
 
 /** Stable ids keep regenerated profiles diff-free. */
 const uuid = (seed: string) => {
-	const hex = createHash("sha256").update(`t3-deck:${seed}`).digest("hex");
+	const hex = createHash("sha256").update(`turnkey:${seed}`).digest("hex");
 	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
 };
 
@@ -95,7 +95,7 @@ type Page = { name: string; keys: Placed[]; dials?: Placed[]; infobar?: Placed }
 
 /** The 8-key pages shared by Stream Deck + and Neo. */
 const PAGES_8: Page[] = [
-	{ name: "T3 DECK", keys: [slot(), slot(), slot(), slot(), activity, newThread, sendContinue, stop] },
+	{ name: "TURNKEY", keys: [slot(), slot(), slot(), slot(), activity, newThread, sendContinue, stop] },
 	{
 		name: "THREADS",
 		keys: [slot(5), slot(6), slot(7), slot(8), slot(9), slot(10), slot(11), slot(12)],
@@ -139,7 +139,7 @@ const PAGES_8: Page[] = [
 
 /** The everyday set for Stream Deck +. */
 const CURATED_8: Page = {
-	name: "T3 DECK",
+	name: "TURNKEY",
 	keys: [activity, steer, speed, model, sendContinue, newThread, stop, effort],
 	dials: [threadsDial("attention"), usageDial, power("model"), skillsDial],
 };
@@ -149,7 +149,7 @@ const HOME_15: Placed[] = [slot(), slot(), slot(), slot(), activity, newThread, 
 
 /** Pages for keypads without page buttons; `nav` keys take the bottom corners. */
 const PAGES_15: Page[] = [
-	{ name: "T3 DECK", keys: HOME_15.slice(0, 14) },
+	{ name: "TURNKEY", keys: HOME_15.slice(0, 14) },
 	{ name: "THREADS", keys: [slot(5), slot(6), slot(7), slot(8), slot(9), slot(10), slot(11), slot(12), slot(13), slot(14), organize("settle"), organize("pin"), organize("snooze")] },
 	{
 		name: "CONTROLS",
@@ -248,20 +248,20 @@ const MINI: Device = { model: "20GAI9901", type: 1, columns: 3, rows: 2 };
 /** `seed` keeps action and page ids stable when a file is renamed. */
 type Profile = { file: string; seed: string; name: string; device: Device; pages: Page[] };
 
-const CURATED = "T3 Deck";
-const ALL = "T3 Deck (All actions)";
+const CURATED = "Turnkey";
+const ALL = "Turnkey (All actions)";
 
 /** Every action appears at least once in an All actions profile, so it doubles as a tour of what the deck can do. */
 const PROFILES: Profile[] = [
-	{ file: "t3-deck-plus", seed: "t3-deck-plus-curated", name: CURATED, device: PLUS, pages: [CURATED_8] },
-	{ file: "t3-deck-plus-all", seed: "t3-deck-plus", name: ALL, device: PLUS, pages: PAGES_8 },
-	{ file: "t3-deck-neo", seed: "t3-deck-neo", name: CURATED, device: NEO, pages: [{ ...CURATED_8, infobar: activity }] },
-	{ file: "t3-deck-neo-all", seed: "t3-deck-neo-all", name: ALL, device: NEO, pages: PAGES_8.map((page) => ({ ...page, infobar: page.infobar ?? activity })) },
-	{ file: "t3-deck-15", seed: "t3-deck-15", name: CURATED, device: { ...MK2, nav: false }, pages: [{ name: "T3 DECK", keys: HOME_15 }] },
-	{ file: "t3-deck-15-all", seed: "t3-deck-15-all", name: ALL, device: MK2, pages: PAGES_15 },
-	{ file: "t3-deck-xl", seed: "t3-deck-xl", name: CURATED, device: { ...XL, nav: false }, pages: [{ name: "T3 DECK", keys: XL_HOME }] },
-	{ file: "t3-deck-xl-all", seed: "t3-deck-xl-all", name: ALL, device: XL, pages: [{ name: "T3 DECK", keys: XL_HOME.slice(0, 31) }, { name: "MORE", keys: XL_MORE }] },
-	{ file: "t3-deck-mini", seed: "t3-deck-mini", name: CURATED, device: MINI, pages: [{ name: "T3 DECK", keys: [slot(), slot(), activity, sendContinue, stop, approve] }] },
+	{ file: "turnkey-plus", seed: "turnkey-plus-curated", name: CURATED, device: PLUS, pages: [CURATED_8] },
+	{ file: "turnkey-plus-all", seed: "turnkey-plus", name: ALL, device: PLUS, pages: PAGES_8 },
+	{ file: "turnkey-neo", seed: "turnkey-neo", name: CURATED, device: NEO, pages: [{ ...CURATED_8, infobar: activity }] },
+	{ file: "turnkey-neo-all", seed: "turnkey-neo-all", name: ALL, device: NEO, pages: PAGES_8.map((page) => ({ ...page, infobar: page.infobar ?? activity })) },
+	{ file: "turnkey-15", seed: "turnkey-15", name: CURATED, device: { ...MK2, nav: false }, pages: [{ name: "TURNKEY", keys: HOME_15 }] },
+	{ file: "turnkey-15-all", seed: "turnkey-15-all", name: ALL, device: MK2, pages: PAGES_15 },
+	{ file: "turnkey-xl", seed: "turnkey-xl", name: CURATED, device: { ...XL, nav: false }, pages: [{ name: "TURNKEY", keys: XL_HOME }] },
+	{ file: "turnkey-xl-all", seed: "turnkey-xl-all", name: ALL, device: XL, pages: [{ name: "TURNKEY", keys: XL_HOME.slice(0, 31) }, { name: "MORE", keys: XL_MORE }] },
+	{ file: "turnkey-mini", seed: "turnkey-mini", name: CURATED, device: MINI, pages: [{ name: "TURNKEY", keys: [slot(), slot(), activity, sendContinue, stop, approve] }] },
 ];
 
 const NAV = { previous: { uuid: "com.elgato.streamdeck.page.previous", name: "Previous Page" }, next: { uuid: "com.elgato.streamdeck.page.next", name: "Next Page" } } as const;
@@ -315,7 +315,7 @@ function pageManifest(profile: Profile, index: number | undefined) {
 }
 
 for (const profile of PROFILES) {
-	const staging = mkdtempSync(join(tmpdir(), "t3-deck-profile-"));
+	const staging = mkdtempSync(join(tmpdir(), "turnkey-profile-"));
 	try {
 		const profileId = uuid(`${profile.seed}:profile`).toUpperCase();
 		const profileDir = join(staging, "Profiles", `${profileId}.sdProfile`);

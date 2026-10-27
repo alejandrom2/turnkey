@@ -73,7 +73,7 @@ import {
 	ultrathinkArmed,
 } from "./base.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 
 const infobar = new InfobarWriter();
 

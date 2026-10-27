@@ -1,11 +1,11 @@
-// Writes the property inspectors and the T3 Deck Settings window they open: `node scripts/ui.ts`.
+// Writes the property inspectors and the Turnkey Settings window they open: `node scripts/ui.ts`.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { FEATURES } from "../src/core/features.ts";
 import { machineSummary, mergeGlobalSettings, needsFirstPairing } from "../src/core/panel.ts";
 
-const plugin = join(import.meta.dirname, "..", "com.alejandrom2.t3deck.sdPlugin");
+const plugin = join(import.meta.dirname, "..", "com.alejandrom2.turnkey.sdPlugin");
 const dir = join(plugin, "ui");
 
 /**
@@ -77,7 +77,7 @@ const confirmOptions = `
 						<option value="hold"${text("inspector.confirm.hold")}</option>
 						<option value="off"${text("inspector.confirm.off")}</option>`;
 
-/** An action's own Confirm before sending, over the global one in T3 Deck Settings. */
+/** An action's own Confirm before sending, over the global one in Turnkey Settings. */
 const confirmField = `
 			<sdpi-item ${attr("label", "inspector.field.confirm")}>
 				<sdpi-select setting="confirmSend" default="">
@@ -104,7 +104,7 @@ const needs = `
 				<ul id="needs-list"></ul>
 			</details>`;
 
-/** The machine this action follows, the way into T3 Deck Settings, and a pair link field until something is paired. */
+/** The machine this action follows, the way into Turnkey Settings, and a pair link field until something is paired. */
 const card = `
 			<sdpi-item ${attr("label", "inspector.card.machine")}>
 				<select class="native" id="t3-machine" ${attr("aria-label", "inspector.card.machineGroup")}></select>
@@ -152,7 +152,7 @@ const modeField = (setting: string, label: string, fallback: string, options: [s
 const inModes = (setting: string, id: string, fallback: string, modes: string[]) =>
 	showWhen(setting, id, `${JSON.stringify(modes)}.includes(value === "" ? "${fallback}" : value)`);
 
-/** A dial's own strip background, style and text scroll, over the global ones in T3 Deck Settings. */
+/** A dial's own strip background, style and text scroll, over the global ones in Turnkey Settings. */
 const dialAppearance = `
 			<sdpi-item ${attr("label", "inspector.field.strip")}>
 				<sdpi-select setting="background" default="">
@@ -366,7 +366,7 @@ const script = (extra = "") => `
 			});
 
 			$("t3-open-settings").addEventListener("click", () => {
-				const win = window.open("settings.html", "t3deck-settings", "width=760,height=640");
+				const win = window.open("settings.html", "turnkey-settings", "width=760,height=640");
 				$("t3-blocked").hidden = win !== null;
 				win?.focus();
 			});
@@ -452,7 +452,7 @@ const settingsPage = `<!doctype html>
 		<p class="detached" id="detached"${text("inspector.settings.detached")}</p>
 		<div class="win" id="win" hidden>
 			<nav>
-				<div class="title">T3 Deck</div>
+				<div class="title">Turnkey</div>
 				<button type="button" data-section="machines"${text("inspector.card.machines")}</button>
 				<button type="button" data-section="appearance"${text("inspector.settings.appearance")}</button>
 				<button type="button" data-section="behavior"${text("inspector.settings.behavior")}</button>
@@ -565,7 +565,7 @@ const settingsPage = `<!doctype html>
 		</div>
 		<script>${common("if (lastStatus) renderStatus(lastStatus);\n\t\t\t\telse syncPairButton();")}
 
-			const README = "https://github.com/alejandrom2/t3-deck#readme";
+			const README = "https://github.com/alejandrom2/turnkey#readme";
 
 			/** Every bridge call goes through here: a closed or replaced opener detaches the window instead of failing. */
 			let bridge;
@@ -942,7 +942,7 @@ const targetField = `
 const targetScript = showWhen("target", "target-thread", `value === "thread"`) + showWhen("target", "target-hint", `value === "thread"`);
 
 const pages: Record<string, string> = {
-	"environments.html": page("T3 Deck"),
+	"environments.html": page("Turnkey"),
 	"slot.html": page(
 		"Thread",
 		`
