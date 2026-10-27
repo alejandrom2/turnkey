@@ -74,11 +74,14 @@ export class UsageStore {
 		return entry.stamp !== reader.usageSettingsStamp || this.now() - entry.fetchedAt >= every;
 	}
 
-	/** Reads now, joining a read already running. The window is computed now, so it rolls past midnight. */
-	refresh(reader: UsageReader, period: UsagePeriod): Promise<void> {
+	/**
+	 * Reads now, joining a read already running, or with `after` reading again once it ends (new prices must not land
+	 * in a scan that started before them). The window is computed now, so it rolls past midnight.
+	 */
+	refresh(reader: UsageReader, period: UsagePeriod, after = false): Promise<void> {
 		const key = `${reader.url}|${period}`;
 		const running = this.#reads.get(key);
-		if (running !== undefined) return running;
+		if (running !== undefined) return after ? running.then(() => this.refresh(reader, period)) : running;
 		const read = this.#read(key, reader, period).finally(() => this.#reads.delete(key));
 		this.#reads.set(key, read);
 		return read;
@@ -124,13 +127,17 @@ export class UsageStore {
 	 * The period across `readers`, merged as T3 Code merges environments. `loading` while any is still on its way (the
 	 * figures dim, as T3 Code's do); `error` is the first failure when nothing answered.
 	 */
-	view(readers: readonly UsageReader[], period: UsagePeriod): { merged?: MergedUsage; loading: boolean; error?: unknown } {
+	view(readers: readonly UsageReader[], period: UsagePeriod): { merged?: MergedUsage; loading: boolean; error?: unknown; mismatch?: "serverBehind" | "clientBehind" } {
 		const entries = readers.map((reader) => ({ reader, entry: this.entry(reader, period) }));
 		const answered: EnvironmentUsage[] = entries.flatMap(({ reader, entry }) =>
 			entry?.summary === undefined ? [] : [{ environmentId: reader.environmentId, label: reader.label, summary: entry.summary }],
 		);
 		const loading = entries.some(({ entry }) => entry === undefined || entry.loading || entry.refreshing);
 		if (answered.length === 0) return { loading, error: entries.find(({ entry }) => entry?.error !== undefined)?.entry?.error };
-		return { merged: mergeUsage(answered, USAGE_CONTRACT_VERSION), loading };
+		const merged = mergeUsage(answered, USAGE_CONTRACT_VERSION);
+		// Every answer was a contract version this port can't merge: say who needs updating rather than show $0.00.
+		const [mismatch] = merged.contractMismatches;
+		if (merged.contributingEnvironments.length === 0 && mismatch !== undefined) return { loading, mismatch: mismatch.direction };
+		return { merged, loading };
 	}
 }

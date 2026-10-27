@@ -162,9 +162,14 @@ function resetPlan(pool: LimitPool) {
  */
 async function useReset(pool: LimitPool | undefined, settings: LimitsSettings): Promise<{ ok: boolean; label: string }> {
 	if (resetAction(settings.resetAction) === "open") {
-		// T3 Code has no Usage link yet; this brings the app forward, and lands on Usage once it routes one.
-		await openExternal(`${deck.scheme}://usage`);
-		return { ok: true, label: t("result.opened") };
+		try {
+			// T3 Code has no Usage link yet; this brings the app forward, and lands on Usage once it routes one.
+			await openExternal(`${deck.scheme}://usage`);
+			return { ok: true, label: t("result.opened") };
+		} catch (error) {
+			logger.warn(`Opening T3 Code failed: ${message(error)}`);
+			return { ok: false, label: failureLabel(error) };
+		}
 	}
 	const plan = pool && resetPlan(pool);
 	if (plan === undefined) return { ok: false, label: t("limits.noResets") };
@@ -183,19 +188,26 @@ async function useReset(pool: LimitPool | undefined, settings: LimitsSettings): 
 	}
 }
 
-/** Flags provider access on the machine a "spend" instance would spend on, so its next pairing asks for it. */
-function optInFor(url: string | undefined, settings: LimitsSettings): void {
-	if (resetAction(settings.resetAction) !== "spend") return;
-	const machines = readyMachines(url).filter((machine) => !grants(machine.scopes, PROVIDERS_SCOPE));
+/**
+ * The machines a "spend" instance may spend on: its own machine, or with All machines those that hold a credit to
+ * spend now. Only these are ever asked for provider access.
+ */
+function spendMachines(url: string | undefined, settings: LimitsSettings): Machine[] {
+	if (resetAction(settings.resetAction) !== "spend") return [];
+	if (url !== undefined) return readyMachines(url);
 	const targets = new Set(pools(url).flatMap((pool) => resetPlan(pool)?.machine.url ?? []));
-	for (const machine of machines) if (targets.size === 0 ? url !== undefined : targets.has(machine.url)) void deck.optInScope(machine.url, PROVIDERS_SCOPE);
+	return readyMachines(undefined).filter((machine) => targets.has(machine.url));
 }
 
-/** The checklist's provider access line for a "spend" instance: met when every machine it could spend on has it. */
+/** Flags provider access where a "spend" instance would spend, so those machines' next pairing asks for it. */
+function optInFor(url: string | undefined, settings: LimitsSettings): void {
+	for (const machine of spendMachines(url, settings)) if (!grants(machine.scopes, PROVIDERS_SCOPE)) void deck.optInScope(machine.url, PROVIDERS_SCOPE);
+}
+
+/** The checklist's provider access line for a "spend" instance: met when every machine it may spend on has it. */
 function spendNeeds(url: string | undefined, settings: LimitsSettings): Need[] {
-	if (resetAction(settings.resetAction) !== "spend") return [];
-	const machines = readyMachines(url);
-	return [{ kind: "scope", scope: PROVIDERS_SCOPE, ok: machines.length > 0 && machines.every((machine) => grants(machine.scopes, PROVIDERS_SCOPE)) }];
+	const machines = spendMachines(url, settings);
+	return machines.length === 0 ? [] : [{ kind: "scope", scope: PROVIDERS_SCOPE, ok: machines.every((machine) => grants(machine.scopes, PROVIDERS_SCOPE)) }];
 }
 
 /**
