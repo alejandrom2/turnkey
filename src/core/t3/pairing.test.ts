@@ -91,6 +91,17 @@ describe("redeemPairingCode", () => {
 		expect(requestedScopes()).toEqual(["orchestration:read", "orchestration:operate", "diagnostics:read", "source-control:write"]);
 	});
 
+	it("refuses a reply without a token, and keeps a token whose lifetime is missing for 30 days", async () => {
+		const answering = (body: unknown) => fakeFetch({ "/.well-known/t3/environment": environmentRoute(), "/oauth/token": () => Response.json(body) }).fetch;
+		const scope = "orchestration:read";
+		await expect(redeemPairingCode(URL_, "C", answering({ expires_in: 60, scope }))).rejects.toBeInstanceOf(PairingError);
+		await expect(redeemPairingCode(URL_, "C", fakeFetch({ "/.well-known/t3/environment": environmentRoute(), "/oauth/token": () => new Response("<html>") }).fetch)).rejects.toBeInstanceOf(PairingError);
+		for (const expires_in of [undefined, "soon", -5]) {
+			const credential = await redeemPairingCode(URL_, "C", answering({ access_token: "tok", expires_in, scope }), 1_000);
+			expect(credential.expiresAt).toBe(1_000 + 30 * 86_400_000);
+		}
+	});
+
 	it("does not spend the code on a server with another protocol version", async () => {
 		for (const version of [null, 1, 3]) {
 			const { fetch, calls } = fakeFetch({ "/.well-known/t3/environment": environmentRoute("env-1", "Old", version), "/oauth/token": tokenRoute });

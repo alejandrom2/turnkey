@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { applyPreviewEvent, currentPreview, htmlRenderFileName, isHtmlRenderTool, isLoopbackHost, latestHtmlRender, type PreviewSession, reachableHere } from "./preview.js";
+import { applyPreviewEvent, currentPreview, htmlRenderFileName, isHtmlRenderTool, latestHtmlRender, type PreviewSession, reachableHere } from "./preview.js";
+import { isLoopbackHost } from "./t3/pairing.js";
 
 const session = (tabId: string, navStatus: PreviewSession["navStatus"], updatedAt: string): PreviewSession => ({ threadId: "t-1", tabId, navStatus, updatedAt });
 

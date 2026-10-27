@@ -52,9 +52,11 @@ export interface CredentialStore {
 }
 
 /** Everything that touches the outside world, injected so tests never reach a real server. */
-export type MachineDeps = {
+type MachineDeps = {
 	fetch: typeof fetch;
 	socket: SocketFactory;
+	/** Where the connection reports frames it couldn't handle. */
+	warn?: (message: string) => void;
 	now?: () => number;
 	random?: () => number;
 	uuid?: () => string;
@@ -98,7 +100,7 @@ type ServerConfig = {
 export type MessageContext = { version: 1; records: Record<string, unknown>[] };
 
 /** Where a launched thread works (`OrchestrationV2ThreadLaunchWorkspaceStrategy`). */
-export type WorkspaceStrategy =
+type WorkspaceStrategy =
 	| { type: "root"; branch?: string }
 	| { type: "existing_worktree"; worktreePath: string; branch?: string }
 	| { type: "worktree"; baseRef: string; branch?: string; startFromOrigin?: boolean };
@@ -133,12 +135,31 @@ const WORKSPACE_MAX_FAILURES = 3;
 /** One checkout's skills read: the snapshot T3 Code sent, when it was asked for, and its failures in a row. */
 type WorkspaceRead = { snapshot?: WorkspaceSnapshot; requestedAt?: number; retryAt?: number; failures: number; pending?: Promise<void> };
 
-/** How long the config subscription outlives its last watcher, so flipping pages doesn't resubscribe. */
-export const CONFIG_WATCH_LINGER_MS = 60_000;
+/** How long a shared subscription (config, tasks, terminals) outlives its last watcher, so flipping pages doesn't resubscribe. */
+const WATCH_LINGER_MS = 60_000;
+/** A connection whose server never answers its first config read is dropped and retried. */
+const CONFIG_TIMEOUT_MS = 15_000;
+/** Provider refreshes may probe CLIs, so they get longer before they count as failed. */
+const PROVIDERS_TIMEOUT_MS = 60_000;
+/** Skills reads kept per provider and checkout; the oldest go first. */
+const MAX_WORKSPACES = 50;
 type ThreadRef = Pick<ShellRow, "threadId">;
 
-/** A stream something on the deck holds open; `rpc` is the connection it runs on, `ended` one that ended it. */
-type LiveWatch = { tag: string; payload: unknown; onValue: (value: unknown) => void; onOpen?: () => void; rpc?: RpcSocket; ended?: RpcSocket; stop?: () => void };
+/**
+ * A stream something on the deck holds open; `rpc` is the connection it runs on, `ended` one that ended it.
+ * `scope` keeps it closed on a pairing without that scope.
+ */
+type LiveWatch = {
+	tag: string;
+	payload: unknown;
+	onValue: (value: unknown) => void;
+	onOpen?: () => void;
+	onEnd?: (error?: Error) => void;
+	scope?: string;
+	rpc?: RpcSocket;
+	ended?: RpcSocket;
+	stop?: () => void;
+};
 
 const APPROVAL_HEADING: Record<string, MessageKey> = {
 	command: "approval.command",
@@ -164,7 +185,7 @@ type TurnItem = {
 };
 
 /** T3 Code has no accessory source yet; an "accessory" literal will be proposed upstream before this ships. */
-export const DECK_CREATION_SOURCE = "mobile";
+const DECK_CREATION_SOURCE = "mobile";
 
 /** First line of the message, as T3 Code seeds titles (`deriveThreadTitleSeed`). */
 export function titleSeed(text: string): string {
@@ -182,30 +203,23 @@ export class Machine {
 	/** Bumped on every config read, so the deck repaints faces drawn from it. */
 	configVersion = 0;
 	#rows: ShellRow[] = [];
+	/** The shell changed since `#rows` was built: rebuilt once per streamed batch, or on the next read. */
+	#stale = false;
 	/** Every top-level thread by id, settled and snoozed too; built on first use after each change. */
 	#everyRow: Map<string, ShellRow> | undefined;
 	#subscribed = false;
 	#snoozeTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Hub accounts' limits, from the config subscription; undefined until it reports them. */
 	#limitSources: UsageLimitSourceSnapshot[] | undefined;
-	#configWatchers = 0;
-	#configWatch: { rpc: RpcSocket; stop: () => void } | undefined;
-	#unwatchTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Scheduled tasks while something watches them; undefined until the first list. */
 	#tasks: ScheduledTask[] | undefined;
 	/** Why tasks can't be listed (an older T3 Code), if they can't. */
 	#tasksError: string | undefined;
-	#taskWatchers = 0;
-	#taskWatch: { rpc: RpcSocket; stop: () => void } | undefined;
-	#untaskTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Bumped when the task list changes, so the deck repaints faces drawn from it. */
 	tasksVersion = 0;
 	readonly #live = new Set<LiveWatch>();
 	/** This machine's terminals while something watches them; undefined until the first snapshot. */
 	#terminals: ReadonlyMap<string, TerminalSummary> | undefined;
-	#terminalWatchers = 0;
-	#terminalWatch: { rpc: RpcSocket; stop: () => void } | undefined;
-	#unterminalTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Bumped when a terminal changes, so the deck repaints faces drawn from them. */
 	terminalsVersion = 0;
 	/** Per provider instance and checkout, its skills snapshot: config replies leave these out, so they are read on demand. */
@@ -237,6 +251,7 @@ export class Machine {
 
 	/** Listed threads, newest derivation; empty until the first snapshot. */
 	get rows(): readonly ShellRow[] {
+		if (this.#stale) this.#rebuild();
 		return this.#rows;
 	}
 
@@ -332,6 +347,7 @@ export class Machine {
 			socket: this.deps.socket,
 			random: this.deps.random,
 			now: this.#now,
+			warn: this.deps.warn,
 			onState: (state) => {
 				if (this.#rpc === rpc) this.#onSocket(state);
 			},
@@ -348,9 +364,6 @@ export class Machine {
 		const rpc = this.#rpc;
 		this.#rpc = undefined;
 		this.#subscribed = false;
-		this.#configWatch = undefined;
-		this.#taskWatch = undefined;
-		this.#terminalWatch = undefined;
 		clearTimeout(this.#snoozeTimer);
 		rpc?.stop();
 		this.#syncLive();
@@ -390,6 +403,7 @@ export class Machine {
 		this.#configLoad = undefined;
 		this.#workspaces.clear();
 		this.#rows = [];
+		this.#stale = false;
 		this.#everyRow = undefined;
 	}
 
@@ -406,9 +420,6 @@ export class Machine {
 				if (error === undefined) return;
 				this.#rpc = undefined;
 				this.#subscribed = false;
-				this.#configWatch = undefined;
-				this.#taskWatch = undefined;
-				this.#terminalWatch = undefined;
 				if (error instanceof PairingError && error.kind === "repair") {
 					void this.store.save(this.url, undefined);
 					this.#reset();
@@ -443,9 +454,6 @@ export class Machine {
 			label: this.#config.environment?.label ?? credential.label,
 			canOperate: credential.scopes.includes(OPERATE_SCOPE),
 		});
-		this.#syncConfigWatch();
-		this.#syncTaskWatch();
-		this.#syncTerminalWatch();
 		this.#derive();
 	}
 
@@ -455,7 +463,7 @@ export class Machine {
 		const load = {
 			rpc,
 			done: rpc
-				.request<ServerConfig>("server.getConfig", {})
+				.request<ServerConfig>("server.getConfig", {}, CONFIG_TIMEOUT_MS)
 				.then((config) => {
 					if (this.#rpc !== rpc) return;
 					this.#config = config;
@@ -496,44 +504,38 @@ export class Machine {
 	 * Keeps the server config live while something shows limits or usage: providers (and their limits), settings and
 	 * hub accounts arrive as they change. Returns the release; the subscription lingers a minute after the last one.
 	 */
-	watchConfig(): () => void {
-		this.#configWatchers++;
-		clearTimeout(this.#unwatchTimer);
-		this.#syncConfigWatch();
-		let released = false;
+	readonly watchConfig = this.#shared({
+		tag: "subscribeServerConfig",
+		payload: { workspaceSnapshotsOnDemand: true, usageLimitSources: true },
+		onValue: (event) => this.#onConfigEvent(event as ConfigEvent),
+	});
+
+	/**
+	 * One subscription however many hold it, kept by `live()` (so an ended one waits for the next connection), and
+	 * closed a minute after the last release.
+	 */
+	#shared(watch: Pick<LiveWatch, "tag" | "payload" | "onValue" | "onEnd" | "scope">): () => () => void {
+		let holders = 0;
+		let close: (() => void) | undefined;
+		let linger: ReturnType<typeof setTimeout> | undefined;
 		return () => {
-			if (released) return;
-			released = true;
-			this.#configWatchers--;
-			if (this.#configWatchers === 0) this.#unwatchTimer = setTimeout(() => this.#syncConfigWatch(), CONFIG_WATCH_LINGER_MS);
+			holders++;
+			clearTimeout(linger);
+			close ??= this.#hold({ ...watch });
+			let released = false;
+			return () => {
+				if (released) return;
+				released = true;
+				if (--holders > 0) return;
+				linger = setTimeout(() => {
+					close?.();
+					close = undefined;
+				}, WATCH_LINGER_MS);
+			};
 		};
 	}
 
-	#syncConfigWatch(): void {
-		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
-		const wanted = this.#configWatchers > 0 ? rpc : undefined;
-		if (this.#configWatch !== undefined && this.#configWatch.rpc !== wanted) {
-			this.#configWatch.stop();
-			this.#configWatch = undefined;
-		}
-		if (wanted === undefined || this.#configWatch !== undefined) return;
-		const watch = {
-			rpc: wanted,
-			stop: wanted.subscribe("subscribeServerConfig", () => ({ workspaceSnapshotsOnDemand: true, usageLimitSources: true }), (event) => this.#onConfigEvent(wanted, event as ConfigEvent), {
-				persistent: true,
-				// Not retried until the next connection: limits then update on refreshes only.
-				onEnd: () => {
-					if (this.#configWatch !== watch) return;
-					watch.stop();
-					this.#configWatch = undefined;
-				},
-			}),
-		};
-		this.#configWatch = watch;
-	}
-
-	#onConfigEvent(rpc: RpcSocket, event: ConfigEvent): void {
-		if (this.#rpc !== rpc) return;
+	#onConfigEvent(event: ConfigEvent): void {
 		const { config, payload } = event;
 		switch (event.type) {
 			case "snapshot":
@@ -565,7 +567,7 @@ export class Machine {
 	 */
 	async refreshProviders(): Promise<void> {
 		const rpc = this.#rpcFor(false);
-		const { providers } = await rpc.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { workspaceSnapshotsOnDemand: true });
+		const { providers } = await rpc.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { workspaceSnapshotsOnDemand: true }, PROVIDERS_TIMEOUT_MS);
 		if (this.#rpc !== rpc || this.#config === undefined || !Array.isArray(providers)) return;
 		this.#config = { ...this.#config, providers };
 		this.configVersion++;
@@ -582,45 +584,17 @@ export class Machine {
 	}
 
 	/** Keeps the task list live (T3 Code resends it whole on every change) while something shows it; returns the release. */
-	watchTasks(): () => void {
-		this.#taskWatchers++;
-		clearTimeout(this.#untaskTimer);
-		this.#syncTaskWatch();
-		let released = false;
-		return () => {
-			if (released) return;
-			released = true;
-			this.#taskWatchers--;
-			if (this.#taskWatchers === 0) this.#untaskTimer = setTimeout(() => this.#syncTaskWatch(), CONFIG_WATCH_LINGER_MS);
-		};
-	}
+	readonly watchTasks = this.#shared({
+		tag: "scheduledTasks.subscribe",
+		payload: {},
+		onValue: (value) => this.#setTasks(readTasks(value), undefined),
+		// An older T3 Code has no tasks.
+		onEnd: (error) => {
+			if (error !== undefined) this.#setTasks(this.#tasks, error.message);
+		},
+	});
 
-	#syncTaskWatch(): void {
-		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
-		const wanted = this.#taskWatchers > 0 ? rpc : undefined;
-		if (this.#taskWatch !== undefined && this.#taskWatch.rpc !== wanted) {
-			this.#taskWatch.stop();
-			this.#taskWatch = undefined;
-		}
-		if (wanted === undefined || this.#taskWatch !== undefined) return;
-		const watch = {
-			rpc: wanted,
-			stop: wanted.subscribe("scheduledTasks.subscribe", () => ({}), (value) => this.#setTasks(wanted, readTasks(value), undefined), {
-				persistent: true,
-				// An older T3 Code has no tasks; not retried until the next connection.
-				onEnd: (error) => {
-					if (this.#taskWatch !== watch) return;
-					watch.stop();
-					this.#taskWatch = undefined;
-					if (error !== undefined) this.#setTasks(wanted, this.#tasks, error.message);
-				},
-			}),
-		};
-		this.#taskWatch = watch;
-	}
-
-	#setTasks(rpc: RpcSocket, tasks: ScheduledTask[] | undefined, error: string | undefined): void {
-		if (this.#rpc !== rpc) return;
+	#setTasks(tasks: ScheduledTask[] | undefined, error: string | undefined): void {
 		this.#tasks = tasks;
 		this.#tasksError = error;
 		this.tasksVersion++;
@@ -648,53 +622,18 @@ export class Machine {
 	}
 
 	/** Keeps terminal states live while something shows a script; returns the release. Needs `terminal:read`. */
-	watchTerminals(): () => void {
-		this.#terminalWatchers++;
-		clearTimeout(this.#unterminalTimer);
-		this.#syncTerminalWatch();
-		let released = false;
-		return () => {
-			if (released) return;
-			released = true;
-			this.#terminalWatchers--;
-			if (this.#terminalWatchers === 0) this.#unterminalTimer = setTimeout(() => this.#syncTerminalWatch(), CONFIG_WATCH_LINGER_MS);
-		};
-	}
-
-	#syncTerminalWatch(): void {
-		const rpc = this.state.kind === "ready" && this.scopes.includes(TERMINAL_READ_SCOPE) ? this.#rpc : undefined;
-		const wanted = this.#terminalWatchers > 0 ? rpc : undefined;
-		if (this.#terminalWatch !== undefined && this.#terminalWatch.rpc !== wanted) {
-			this.#terminalWatch.stop();
-			this.#terminalWatch = undefined;
-		}
-		if (wanted === undefined || this.#terminalWatch !== undefined) return;
-		const watch = {
-			rpc: wanted,
-			stop: wanted.subscribe(
-				"subscribeTerminalMetadata",
-				() => ({}),
-				(event) => {
-					if (this.#rpc !== wanted) return;
-					const next = applyTerminalEvent(this.#terminals ?? new Map(), event);
-					if (next === this.#terminals) return;
-					this.#terminals = next;
-					this.terminalsVersion++;
-					this.onChange();
-				},
-				{
-					persistent: true,
-					// Not retried until the next connection.
-					onEnd: () => {
-						if (this.#terminalWatch !== watch) return;
-						watch.stop();
-						this.#terminalWatch = undefined;
-					},
-				},
-			),
-		};
-		this.#terminalWatch = watch;
-	}
+	readonly watchTerminals = this.#shared({
+		tag: "subscribeTerminalMetadata",
+		payload: {},
+		scope: TERMINAL_READ_SCOPE,
+		onValue: (event) => {
+			const next = applyTerminalEvent(this.#terminals ?? new Map(), event);
+			if (next === this.#terminals) return;
+			this.#terminals = next;
+			this.terminalsVersion++;
+			this.onChange();
+		},
+	});
 
 	/** Opens the thread's terminal `terminalId` where T3 Code's script runner would, and types the command into it. */
 	async runScript(threadId: string, terminalId: string, launch: { cwd: string; worktreePath: string | null; env: Record<string, string> }, command: string): Promise<void> {
@@ -797,13 +736,17 @@ export class Machine {
 	#workspaceRead(instanceId: string, cwd: string): WorkspaceRead {
 		const key = `${instanceId}\n${cwd}`;
 		const read = this.#workspaces.get(key) ?? { failures: 0 };
+		// Re-inserted so the map stays oldest-used first, and the least recently shown checkout is the one dropped.
+		this.#workspaces.delete(key);
 		this.#workspaces.set(key, read);
+		if (this.#workspaces.size > MAX_WORKSPACES) this.#workspaces.delete(this.#workspaces.keys().next().value!);
 		const now = this.#now();
 		const due = read.requestedAt === undefined || now - read.requestedAt >= WORKSPACE_SNAPSHOT_TTL_MS;
-		if (read.pending !== undefined || !due || (read.retryAt ?? 0) > now || read.failures >= WORKSPACE_MAX_FAILURES || this.state.kind !== "ready") return read;
+		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
+		if (read.pending !== undefined || !due || (read.retryAt ?? 0) > now || read.failures >= WORKSPACE_MAX_FAILURES || rpc === undefined) return read;
 		read.requestedAt = now;
-		read.pending = this.#rpcFor(false)
-			.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { instanceId, cwd, workspaceSnapshotsOnDemand: true })
+		read.pending = rpc
+			.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { instanceId, cwd, workspaceSnapshotsOnDemand: true }, PROVIDERS_TIMEOUT_MS)
 			.then(({ providers }) => providers?.find((provider) => provider.instanceId === instanceId)?.workspaceSnapshots?.find((snapshot) => snapshot.cwd === cwd))
 			.catch(() => undefined)
 			.then((snapshot) => {
@@ -845,14 +788,27 @@ export class Machine {
 		rpc.drop(error ?? new Error(t("connection.feedEnded")));
 	}
 
+	/** A snapshot or a burst of updates arrives as many items in one frame: the rows are rebuilt once after it. */
 	#apply(item: ShellItem): void {
 		const next = applyShellItem(this.#shell, item);
 		if (next === this.#shell) return;
 		this.#shell = next;
-		this.#derive();
+		this.#everyRow = undefined;
+		if (this.#stale) return;
+		this.#stale = true;
+		queueMicrotask(() => {
+			if (this.#stale) this.#rebuild();
+			this.onChange();
+		});
 	}
 
 	#derive(): void {
+		this.#rebuild();
+		this.onChange();
+	}
+
+	#rebuild(): void {
+		this.#stale = false;
 		clearTimeout(this.#snoozeTimer);
 		const shell = this.#shell;
 		const now = this.#now();
@@ -861,7 +817,6 @@ export class Machine {
 		const wake = shell === undefined ? undefined : nextSnoozeWake(shell, now);
 		// Timers overflow past 2^31 ms; a far-off wake just re-arms.
 		if (wake !== undefined) this.#snoozeTimer = setTimeout(() => this.#derive(), Math.min(wake - now + 10, 2 ** 31 - 1));
-		this.onChange();
 	}
 
 	/** False until the first connection attempt ends either way: until then faces show skeletons, not "Connecting". */
@@ -879,7 +834,10 @@ export class Machine {
 	 * holder can drop what it cached), never while offline. A stream T3 Code ends waits for the next connection.
 	 */
 	live(tag: string, payload: unknown, onValue: (value: unknown) => void, onOpen?: () => void): () => void {
-		const watch: LiveWatch = { tag, payload, onValue, onOpen };
+		return this.#hold({ tag, payload, onValue, onOpen });
+	}
+
+	#hold(watch: LiveWatch): () => void {
 		this.#live.add(watch);
 		this.#syncLive();
 		return () => {
@@ -889,21 +847,25 @@ export class Machine {
 	}
 
 	#syncLive(): void {
-		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
+		const ready = this.state.kind === "ready" ? this.#rpc : undefined;
 		for (const watch of this.#live) {
+			const rpc = watch.scope === undefined || this.scopes.includes(watch.scope) ? ready : undefined;
 			if (watch.rpc === rpc && (watch.stop !== undefined || watch.ended === rpc)) continue;
 			watch.stop?.();
 			watch.stop = undefined;
 			watch.rpc = rpc;
+			// The socket object outlives a reconnect, so an ended stream is retried once the connection drops.
+			if (rpc === undefined) watch.ended = undefined;
 			if (rpc === undefined || watch.ended === rpc) continue;
 			watch.onOpen?.();
 			watch.stop = rpc.subscribe(watch.tag, () => watch.payload, watch.onValue, {
 				persistent: true,
-				onEnd: () => {
+				onEnd: (error) => {
 					if (watch.rpc !== rpc) return;
 					watch.stop?.();
 					watch.stop = undefined;
 					watch.ended = rpc;
+					watch.onEnd?.(error);
 				},
 			});
 		}
@@ -1068,7 +1030,9 @@ export class Machine {
 
 	async snooze(thread: ThreadRef, minutes: number): Promise<unknown> {
 		this.#require("threadSnooze", "snooze threads");
-		const snoozedUntil = new Date(this.#now() + Math.max(1, minutes) * 60_000).toISOString();
+		// A bad setting would make `toISOString` throw; a year is the longest snooze worth sending.
+		const span = Number.isFinite(minutes) ? Math.min(Math.max(1, minutes), 525_600) : 60;
+		const snoozedUntil = new Date(this.#now() + span * 60_000).toISOString();
 		return this.#dispatch({ type: "thread.snooze", threadId: thread.threadId, snoozedUntil });
 	}
 
@@ -1206,7 +1170,10 @@ export class Machine {
 	/** A signed link to one of the machine's files (`assets.createUrl`), resolved against its address as T3 Code's clients do. */
 	async assetUrl(resource: Record<string, unknown>): Promise<string> {
 		const { relativeUrl } = await this.call<{ relativeUrl: string }>("assets.createUrl", { resource });
-		return new URL(relativeUrl, this.url).href;
+		const url = new URL(relativeUrl, this.url);
+		// Opened in the browser as the machine's own file, so it may not point anywhere else.
+		if (url.origin !== new URL(this.url).origin) throw new RpcError("ForeignAsset", "T3 Code sent a link to another site.", t("connection.foreignLink"));
+		return url.href;
 	}
 
 	/** The thread's running workflows, from one bounded snapshot: the shell doesn't carry them. */

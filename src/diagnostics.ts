@@ -8,7 +8,7 @@ import { diagnosticsReport } from "./core/diagnostics.js";
 import { deck } from "./deck.js";
 
 /** Where the SDK writes the plugin's logs: `logs/<plugin UUID>.<n>.log` beside the plugin, `.0` the current one. */
-export const logsDir = (): string => join(process.cwd(), "logs");
+const logsDir = (): string => join(process.cwd(), "logs");
 
 /** The log's last 256 KB: files run to 50 MB, and the export only wants the latest problems. */
 const TAIL_BYTES = 256 * 1024;

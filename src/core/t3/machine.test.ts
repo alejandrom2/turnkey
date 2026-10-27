@@ -212,6 +212,43 @@ describe("Machine connection", () => {
 		expect(h.sockets.sockets).toHaveLength(1);
 	});
 
+	it("drops a connection whose first config read goes unanswered, and retries", async () => {
+		const h = setup();
+		h.machine.start();
+		await flush();
+		const first = h.sockets.last;
+		first.open();
+		first.receive({ _tag: "Pong" });
+		await vi.advanceTimersByTimeAsync(4_000);
+		for (let second = 0; second < 15; second++) {
+			first.receive({ _tag: "Pong" });
+			await vi.advanceTimersByTimeAsync(1_000);
+		}
+		expect(first.closed).toBe(true);
+	});
+
+	it("rebuilds rows once per streamed frame, however many items it carries", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const shell = socket.request("orchestration.subscribeShell").id;
+		const before = h.onChange.mock.calls.length;
+		socket.receive({
+			_tag: "Chunk",
+			requestId: shell,
+			values: [4815, 4816, 4817].map((sequence) => ({ kind: "thread.updated", sequence, location: "active", thread: { ...THREAD, title: `t${sequence}` } })),
+		});
+		expect(row(h.machine).title).toBe("t4817");
+		await flush();
+		expect(h.onChange.mock.calls.length - before).toBe(1);
+	});
+
+	it("reads no skills after it stopped, without throwing", async () => {
+		const h = setup();
+		await connect(h);
+		h.machine.stop();
+		expect(() => h.machine.skills("claudeAgent", "/repo")).not.toThrow();
+	});
+
 	it("does not connect with an expired pairing", () => {
 		const h = setup({ credential: { ...CREDENTIAL, expiresAt: NOW - 1 } });
 		h.machine.start();
@@ -335,6 +372,7 @@ describe("Machine commands", () => {
 		expect(opened).toMatchObject({ type: "thread.visit", visitedAt: "2026-10-27T09:59:30.500Z", opened: true });
 		expect(await dispatched(socket, () => h.machine.snooze(row(h.machine), 30))).toMatchObject({ type: "thread.snooze", snoozedUntil: "2026-10-27T10:30:00.000Z" });
 		await expect(h.machine.pin(row(h.machine))).rejects.toThrow("can't pin threads");
+		expect(await dispatched(socket, () => h.machine.snooze(row(h.machine), Number.NaN))).toMatchObject({ type: "thread.snooze", snoozedUntil: "2026-10-27T11:00:00.000Z" });
 	});
 
 	it("launches into a project with the app defaults and a seeded title", async () => {
@@ -745,6 +783,15 @@ describe("Machine usage and limits", () => {
 		expect(interrupted()).toBe(true);
 	});
 
+	it("waits for the next connection after T3 Code ends the config stream, however often it's watched", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		h.machine.watchConfig();
+		socket.reply("subscribeServerConfig", null);
+		h.machine.watchConfig();
+		expect(socket.sent.filter((frame) => frame.tag === "subscribeServerConfig")).toHaveLength(1);
+	});
+
 	it("refreshes providers without models and applies the reply", async () => {
 		const h = setup();
 		const socket = await connect(h);
@@ -821,6 +868,27 @@ describe("Machine live streams", () => {
 		await flush();
 		socket.reply("assets.createUrl", { relativeUrl: "/api/assets/abc.def/Chart.html", expiresAt: 0 });
 		expect(await url).toBe("http://studio:3773/api/assets/abc.def/Chart.html");
+
+		const elsewhere = h.machine.assetUrl({ _tag: "attachment", attachmentId: "att-1" });
+		await flush();
+		socket.reply("assets.createUrl", { relativeUrl: "https://elsewhere.example/Chart.html", expiresAt: 0 });
+		await expect(elsewhere).rejects.toThrow();
+	});
+
+	it("opens a stream T3 Code ended again after the same connection drops and reconnects", async () => {
+		const h = setup();
+		const values: unknown[] = [];
+		h.machine.live("subscribeDeviceState", {}, (value) => values.push(value));
+		const first = await connect(h);
+		first.reply("subscribeDeviceState", null);
+		first.drop();
+		await vi.advanceTimersByTimeAsync(1_000);
+		const second = h.sockets.last;
+		expect(second).not.toBe(first);
+		second.open();
+		second.reply("server.getConfig", CONFIG);
+		await flush();
+		expect(second.sent.some((frame) => frame.tag === "subscribeDeviceState")).toBe(true);
 	});
 });
 
