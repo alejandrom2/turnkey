@@ -8,6 +8,7 @@ import {
 	parsePairingLink,
 	preferLoopback,
 	redeemPairingCode,
+	requestedScopes,
 	socketUrl,
 } from "./pairing.js";
 import { environmentRoute, fakeFetch } from "./testing.js";
@@ -67,7 +68,7 @@ describe("redeemPairingCode", () => {
 			subject_token: "CODE",
 			subject_token_type: "urn:t3:params:oauth:token-type:environment-bootstrap",
 			requested_token_type: "urn:ietf:params:oauth:token-type:access_token",
-			scope: "orchestration:read orchestration:operate",
+			scope: "orchestration:read orchestration:operate diagnostics:read source-control:write",
 			client_label: "T3 Deck",
 			client_device_type: "desktop",
 			client_os: expect.any(String),
@@ -79,6 +80,15 @@ describe("redeemPairingCode", () => {
 			label: "Studio",
 			environmentId: "env-1",
 		});
+	});
+
+	it("asks for opted-in scopes too, ignoring names it doesn't know, and keeps what the token was granted", async () => {
+		const granted = () => Response.json({ access_token: "tok", token_type: "Bearer", expires_in: 60, scope: "orchestration:read orchestration:operate providers:manage" });
+		const { fetch, calls } = fakeFetch({ "/.well-known/t3/environment": environmentRoute(), "/oauth/token": granted });
+		const credential = await redeemPairingCode(URL_, "CODE", fetch, 0, ["providers:manage", "providers:manage", "everything"]);
+		expect(new URLSearchParams(calls[1].body).get("scope")).toBe("orchestration:read orchestration:operate diagnostics:read source-control:write providers:manage");
+		expect(credential.scopes).toEqual(["orchestration:read", "orchestration:operate", "providers:manage"]);
+		expect(requestedScopes()).toEqual(["orchestration:read", "orchestration:operate", "diagnostics:read", "source-control:write"]);
 	});
 
 	it("does not spend the code on a server with another protocol version", async () => {

@@ -227,6 +227,52 @@ describe("Machine connection", () => {
 	});
 });
 
+describe("Machine scopes", () => {
+	const denial = (permission: string) => ({
+		_tag: "Failure",
+		cause: [{ _tag: "Fail", error: { _tag: "EnvironmentAuthorizationError", message: `The authenticated token is missing required scope: ${permission}.`, requiredScope: "orchestration:operate", requiredPermission: permission } }],
+	});
+
+	it("refuses a scope the pairing lacks before asking, the way T3 Code would", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		await expect(h.machine.call("vcs.pull", { cwd: "/repo" }, "source-control:write")).rejects.toMatchObject({ tag: "EnvironmentAuthorizationError", requiredPermission: "source-control:write" });
+		expect(socket.sent.some((frame) => frame.tag === "vcs.pull")).toBe(false);
+	});
+
+	it("keeps T3 Code's requiredPermission, not its legacy requiredScope, from a denial", async () => {
+		const h = setup({ credential: { ...CREDENTIAL, scopes: [...CREDENTIAL.scopes, "source-control:write"] } });
+		const socket = await connect(h);
+		const pulling = h.machine.call("vcs.pull", { cwd: "/repo" }, "source-control:write");
+		await flush();
+		socket.receive({ _tag: "Exit", requestId: socket.request("vcs.pull").id, exit: denial("source-control:write") });
+		await expect(pulling).rejects.toMatchObject({ requiredPermission: "source-control:write" });
+	});
+
+	it("streams a request until it ends, acking chunks, and never re-sends it after a drop", async () => {
+		const h = setup({ credential: { ...CREDENTIAL, scopes: [...CREDENTIAL.scopes, "source-control:write"] } });
+		const socket = await connect(h);
+		const seen: unknown[] = [];
+		const run = h.machine.stream("git.runStackedAction", { actionId: "a", cwd: "/repo", action: "commit" }, (value) => seen.push(value), "source-control:write");
+		await flush();
+		const request = socket.request("git.runStackedAction");
+		socket.receive({ _tag: "Chunk", requestId: request.id, values: [{ kind: "action_started" }] });
+		expect(socket.sent.at(-1)).toEqual({ _tag: "Ack", requestId: request.id });
+		socket.receive({ _tag: "Exit", requestId: request.id, exit: { _tag: "Success" } });
+		await run;
+		expect(seen).toEqual([{ kind: "action_started" }]);
+
+		const again = h.machine.stream("git.runStackedAction", { actionId: "b", cwd: "/repo", action: "push" }, () => undefined, "source-control:write");
+		await flush();
+		socket.drop();
+		await expect(again).rejects.toMatchObject({ tag: "Disconnected" });
+		await vi.advanceTimersByTimeAsync(5_000);
+		h.sockets.last.open();
+		await flush();
+		expect(h.sockets.last.sent.filter((frame) => frame.tag === "git.runStackedAction")).toEqual([]);
+	});
+});
+
 describe("Machine commands", () => {
 	it("answers approvals and questions as the thread that asked", async () => {
 		const h = setup();

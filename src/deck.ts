@@ -2,11 +2,12 @@ import streamDeck from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
+import { readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
 import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
 import { UltrathinkArming } from "./core/ultrathink.js";
 import { type CredentialStore, Machine } from "./core/t3/machine.js";
-import { type Credential, findLocalEnvironment, normalizeEnvironmentUrl, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
+import { type Credential, findLocalEnvironment, normalizeEnvironmentUrl, type OptInScope, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
 import type { SocketLike } from "./core/t3/rpc.js";
 
 /**
@@ -23,6 +24,8 @@ type GlobalSettings = {
 	stripStyle?: string;
 	textScroll?: string;
 	auth?: Record<string, JsonValue>;
+	/** Per machine, broader scopes its next pairing asks for (`ScopeRequests`); written only by the plugin. */
+	scopeRequests?: Record<string, JsonValue>;
 };
 
 const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll }: GlobalSettings) => ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll });
@@ -101,6 +104,7 @@ class Deck implements CredentialStore {
 	readonly #painters = new Set<() => void>();
 	#settings: GlobalSettings = {};
 	#auth: Record<string, Credential> = {};
+	#scopeRequests: ScopeRequests = {};
 	#authLoaded = false;
 	#clock: ReturnType<typeof setInterval> | undefined;
 	#statusSent: string | undefined;
@@ -150,7 +154,8 @@ class Deck implements CredentialStore {
 		const existing = this.#machines.get(url);
 		const machine = existing ?? this.#create(url);
 		try {
-			await machine.pair(parsed.code);
+			const credential = await machine.pair(parsed.code, this.#scopeRequests[url] ?? []);
+			this.#scopeRequests = settleScopeRequests(this.#scopeRequests, url, credential.scopes);
 			if (!isLoopbackUrl(url) && !parseList(this.#settings.environments).includes(url)) {
 				this.#settings = { ...this.#settings, environments: [...parseList(this.#settings.environments), url].join("\n") };
 				await this.#persist();
@@ -173,6 +178,19 @@ class Deck implements CredentialStore {
 		this.#settings = { ...this.#settings, environments: parseList(this.#settings.environments).filter((listed) => listed !== url).join("\n") };
 		await this.#persist();
 		await this.#apply(this.#settings);
+	}
+
+	/** Flags a broader scope for the machine's next pairing, when the user turns on an action that needs it there. */
+	async optInScope(url: string, scope: OptInScope): Promise<void> {
+		const next = requestScope(this.#scopeRequests, url, scope);
+		if (next === this.#scopeRequests) return;
+		this.#scopeRequests = next;
+		await this.#persist();
+	}
+
+	/** Whether the machine's next pairing will ask for `scope`. */
+	scopeRequested(url: string, scope: OptInScope): boolean {
+		return this.#scopeRequests[url]?.includes(scope) ?? false;
 	}
 
 	async signOut(url: string): Promise<void> {
@@ -263,8 +281,9 @@ class Deck implements CredentialStore {
 		if (!this.#authLoaded) {
 			this.#authLoaded = true;
 			this.#auth = readCredentials(settings.auth);
-			if (JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth)) await this.#persist();
-		} else if (JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth)) await this.#persist();
+			this.#scopeRequests = readScopeRequests(settings.scopeRequests);
+			if (this.#stale(settings)) await this.#persist();
+		} else if (this.#stale(settings)) await this.#persist();
 
 		// This machine joins the list whenever T3 Code runs here, and stays once paired; a retry or a wake looks again.
 		const localReady = this.machines.some((machine) => isLoopbackUrl(machine.url) && machine.state.kind === "ready");
@@ -297,8 +316,13 @@ class Deck implements CredentialStore {
 		await this.save(url, credential);
 	}
 
+	/** The inspector's copy of global settings lags behind the plugin's tokens and scope requests. */
+	#stale(settings: GlobalSettings): boolean {
+		return JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth) || JSON.stringify(settings.scopeRequests ?? {}) !== JSON.stringify(this.#scopeRequests);
+	}
+
 	#persist(): Promise<void> {
-		return streamDeck.settings.setGlobalSettings<GlobalSettings>({ ...this.#settings, auth: this.#auth });
+		return streamDeck.settings.setGlobalSettings<GlobalSettings>({ ...this.#settings, auth: this.#auth, scopeRequests: this.#scopeRequests });
 	}
 }
 

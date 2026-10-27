@@ -317,6 +317,11 @@
 			"feedEnded": "T3 Code ended the thread feed.",
 			"disconnected": "Disconnected from T3 Code."
 		},
+		"access": {
+			"sourceControl": "Needs source control access — re-pair",
+			"diagnostics": "Needs usage access — re-pair",
+			"other": "Needs more access — re-pair"
+		},
 		"inspector": {
 			"card": {
 				"choose": "Choose a machine",

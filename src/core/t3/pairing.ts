@@ -8,9 +8,23 @@ import { t } from "../i18n.js";
  */
 
 export const PROTOCOL_VERSION = 2;
-export const REQUESTED_SCOPES = ["orchestration:read", "orchestration:operate"] as const;
 export const READ_SCOPE = "orchestration:read";
 export const OPERATE_SCOPE = "orchestration:operate";
+export const DIAGNOSTICS_SCOPE = "diagnostics:read";
+export const SOURCE_CONTROL_SCOPE = "source-control:write";
+/**
+ * What every pairing asks for. The server grants the overlap with what the pair link allows and drops names it
+ * doesn't know, so asking for more never fails a pairing; T3 Code's standard links grant all four.
+ */
+export const REQUESTED_SCOPES = [READ_SCOPE, OPERATE_SCOPE, DIAGNOSTICS_SCOPE, SOURCE_CONTROL_SCOPE] as const;
+/** Broader scopes a machine asks for only after the user turns on an action that needs one there. */
+export const OPT_IN_SCOPES = ["providers:manage", "terminal:operate", "access:write", "environment:maintain"] as const;
+export type OptInScope = (typeof OPT_IN_SCOPES)[number];
+
+export const isOptInScope = (scope: string): scope is OptInScope => (OPT_IN_SCOPES as readonly string[]).includes(scope);
+
+/** The scopes a token exchange asks for: the standard ones plus the opted-in extras. */
+export const requestedScopes = (extra: readonly string[] = []): string[] => [...new Set([...REQUESTED_SCOPES, ...extra.filter(isOptInScope)])];
 
 /** What the plugin keeps per machine in global settings. `expiresAt` is epoch ms. */
 export type Credential = {
@@ -125,13 +139,13 @@ export async function readEnvironment(url: string, fetchFn: typeof fetch, timeou
 const CLIENT_OS: Partial<Record<NodeJS.Platform, string>> = { darwin: "macOS", win32: "Windows", linux: "Linux" };
 
 /** The token exchange body. No DPoP header, so T3 Code issues a 30-day Bearer session. */
-export function tokenExchangeBody(code: string, platform: NodeJS.Platform = process.platform): URLSearchParams {
+export function tokenExchangeBody(code: string, platform: NodeJS.Platform = process.platform, scopes: readonly string[] = REQUESTED_SCOPES): URLSearchParams {
 	return new URLSearchParams({
 		grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
 		subject_token: code,
 		subject_token_type: "urn:t3:params:oauth:token-type:environment-bootstrap",
 		requested_token_type: "urn:ietf:params:oauth:token-type:access_token",
-		scope: REQUESTED_SCOPES.join(" "),
+		scope: scopes.join(" "),
 		client_label: "T3 Deck",
 		client_device_type: "desktop",
 		client_os: CLIENT_OS[platform] ?? platform,
@@ -142,11 +156,11 @@ export function tokenExchangeBody(code: string, platform: NodeJS.Platform = proc
  * Checks the environment, then spends the one-time code. The preflight comes first so a link to an
  * incompatible server is not used up.
  */
-export async function redeemPairingCode(url: string, code: string, fetchFn: typeof fetch, now = Date.now()): Promise<Credential> {
+export async function redeemPairingCode(url: string, code: string, fetchFn: typeof fetch, now = Date.now(), extraScopes: readonly string[] = []): Promise<Credential> {
 	const environment = await readEnvironment(url, fetchFn);
 	let response: Response;
 	try {
-		response = await fetchFn(`${url}/oauth/token`, { method: "POST", body: tokenExchangeBody(code), signal: AbortSignal.timeout(15_000) });
+		response = await fetchFn(`${url}/oauth/token`, { method: "POST", body: tokenExchangeBody(code, process.platform, requestedScopes(extraScopes)), signal: AbortSignal.timeout(15_000) });
 	} catch {
 		throw unreachable(url);
 	}
