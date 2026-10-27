@@ -4,6 +4,7 @@
  * tile between its dimmed neighbors, its title below). Text stays native where it fits; pictures carry the glyphs,
  * the tiles and any text that scrolls.
  */
+import { t } from "./i18n.js";
 import { BLANK_ART, COLORS, glyphArt, type MarkPainter, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, wrapText } from "./render.js";
 import { overflowIn, type ScrollLine, scrollLine, type StripContent, slotItems, type TextScroll, type TextSlot } from "./strip.js";
 
@@ -221,7 +222,7 @@ export function carouselFeedback(content: StripContent, list: StripList, options
 /** A press result in a browse style: a check or a mark with what happened, wrapped when it is long. */
 export function styleFlash(style: Exclude<StripStyle, "classic">, ok: boolean, label: string, appearance: StripAppearance): Feedback {
 	const color = ok ? COLORS.done : COLORS.error;
-	const content: StripContent = { header: ok ? "Done" : "Not now", icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
+	const content: StripContent = { header: ok ? t("strip.done") : t("strip.notNow"), icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
 	if (style === "list") {
 		const [first = "", second = "", third = ""] = wrapText(label, LIST_SELECTED.width, LIST_SELECTED.size, 3).lines;
 		return {

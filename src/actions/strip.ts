@@ -1,6 +1,7 @@
 import type { Action, DialAction, DialDownEvent, DialRotateEvent, DialUpEvent, FeedbackPayload, TouchTapEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
+import { t } from "../core/i18n.js";
 import { Marquee } from "../core/marquee.js";
 import type { CatalogModel } from "../core/models.js";
 import { powerArt } from "../core/power.js";
@@ -43,13 +44,13 @@ export function disconnectedStrip(header: string, machine: string | undefined): 
 	const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("plug", COLORS.muted), accent: COLORS.muted, value, detail });
 	switch (connectionProblem(machine)) {
 		case "missing":
-			return muted("Machine removed", "Pick another in settings");
+			return muted(t("notice.machineRemoved"), t("notice.pickAnotherInSettings"));
 		case "none":
-			return muted("T3 Code not found", "Open it, then press");
+			return muted(t("notice.notFound"), t("notice.openThenPress"));
 		case "pair":
-			return { header, icon: glyphArt("key", COLORS.attention), accent: COLORS.attention, value: "Pair T3 Deck", detail: "Paste a pair link in settings", tone: "attention" };
+			return { header, icon: glyphArt("key", COLORS.attention), accent: COLORS.attention, value: t("notice.pairDeck"), detail: t("notice.pastePairLink"), tone: "attention" };
 		case "offline":
-			return muted("Connecting…", "Press to retry");
+			return muted(t("notice.connecting"), t("notice.pressToRetry"));
 		default:
 			return undefined;
 	}
@@ -125,7 +126,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		const style = this.#layouts.get(action.id) ?? "classic";
 		if (style !== "classic") return styleFlash(style, ok, label, this.#appearance(action));
 		const color = ok ? COLORS.done : COLORS.error;
-		const content: StripContent = { header: ok ? "Done" : "Not now", icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
+		const content: StripContent = { header: ok ? t("strip.done") : t("strip.notNow"), icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
 		return stripFeedback(content, { appearance: this.#appearance(action), full: label });
 	}
 

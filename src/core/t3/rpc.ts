@@ -4,6 +4,8 @@
  * Reconnects with T3 Code's supervisor backoff and re-sends live subscriptions on every new socket.
  */
 
+import { t } from "../i18n.js";
+
 /** The slice of the WHATWG WebSocket the client uses; Node 24's global `WebSocket` fits. */
 export interface SocketLike {
 	send(data: string): void;
@@ -140,7 +142,7 @@ export class RpcSocket {
 		this.#attempt += 1;
 		clearTimeout(this.#retryTimer);
 		this.#retryTimer = undefined;
-		this.#teardown(new RpcError("Disconnected", "Disconnected from T3 Code."));
+		this.#teardown(new RpcError("Disconnected", t("connection.disconnected")));
 		this.options.onState({ kind: "stopped" });
 	}
 
@@ -210,7 +212,7 @@ export class RpcSocket {
 
 		const socket = this.options.socket(url);
 		this.#socket = socket;
-		this.#openTimer = setTimeout(() => this.#lost(new Error("T3 Code did not answer in time.")), OPEN_TIMEOUT_MS);
+		this.#openTimer = setTimeout(() => this.#lost(new Error(t("connection.noAnswer"))), OPEN_TIMEOUT_MS);
 		socket.onopen = () => {
 			if (this.#socket !== socket) return;
 			clearTimeout(this.#openTimer);
@@ -226,15 +228,15 @@ export class RpcSocket {
 			if (this.#socket === socket) this.#receive(event.data);
 		};
 		socket.onclose = () => {
-			if (this.#socket === socket) this.#lost(new Error("The connection to T3 Code closed."));
+			if (this.#socket === socket) this.#lost(new Error(t("connection.closed")));
 		};
 		socket.onerror = () => {
-			if (this.#socket === socket) this.#lost(new Error("The connection to T3 Code failed."));
+			if (this.#socket === socket) this.#lost(new Error(t("connection.failed")));
 		};
 	}
 
 	#keepAlive(): void {
-		if (this.#now() - this.#lastFrameAt > SILENCE_TIMEOUT_MS) return this.#lost(new Error("T3 Code stopped answering."));
+		if (this.#now() - this.#lastFrameAt > SILENCE_TIMEOUT_MS) return this.#lost(new Error(t("connection.silent")));
 		this.#send({ _tag: "Ping" });
 	}
 

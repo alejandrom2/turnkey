@@ -5,11 +5,13 @@ import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confi
 import { type Availability, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, organize, type OrganizeAction, threadDeepLink } from "../core/commands.js";
+import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import {
 	type CatalogModel,
 	cycleValue,
 	effortValues,
 	findModel,
+	modeLabel,
 	modelCatalog,
 	nextModel,
 	parseModelKey,
@@ -22,7 +24,7 @@ import {
 } from "../core/models.js";
 import { currentEffort, effortChange, effortChoices } from "../core/power.js";
 import { migratePromptSettings, quickPrompt } from "../core/prompts.js";
-import { COLORS, elapsed, type GlyphName, type MarkPainter, MODE_GLYPH, renderControlKey, renderInfoKey, renderNoticeKey, renderThreadKey } from "../core/render.js";
+import { COLORS, type GlyphName, type MarkPainter, MODE_GLYPH, renderControlKey, renderInfoKey, renderNoticeKey, renderThreadKey } from "../core/render.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
@@ -73,7 +75,7 @@ export class ThreadSlot extends DeckAction<SlotSettings> {
 	protected override async paint(action: Action<SlotSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
-		await this.setImage(action, connectionFace(machine) ?? threadFace(this.#threadFor(action), "No thread", selectedThread(machine)));
+		await this.setImage(action, connectionFace(machine) ?? threadFace(this.#threadFor(action), t("face.noThread"), selectedThread(machine)));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<SlotSettings>): void {
@@ -85,9 +87,9 @@ export class ThreadSlot extends DeckAction<SlotSettings> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const thread = this.#threadFor(ev.action);
 		if (!(await this.allowed(ev.action, availability("open", { thread, canOperate: true })))) return;
-		if (!long) return void (await this.run(ev.action, () => openThread(thread!), "Opened"));
+		if (!long) return void (await this.run(ev.action, () => openThread(thread!), t("result.opened")));
 		selectThread(thread!);
-		await this.flash(ev.action, true, "Selected");
+		await this.flash(ev.action, true, t("result.selected"));
 	}
 }
 
@@ -110,13 +112,13 @@ export class Activity extends DeckAction<ActivitySettings> {
 	protected override async paint(action: Action<ActivitySettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
-		await this.setImage(action, connectionFace(machine) ?? threadFace(this.#threadFor(action), "All quiet", selectedThread(machine)));
+		await this.setImage(action, connectionFace(machine) ?? threadFace(this.#threadFor(action), t("face.allQuiet"), selectedThread(machine)));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<ActivitySettings>): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const target = this.#threadFor(ev.action);
-		if (await this.allowed(ev.action, availability("open", { thread: target, canOperate: true }))) await this.run(ev.action, () => openThread(target!), "Opened");
+		if (await this.allowed(ev.action, availability("open", { thread: target, canOperate: true }))) await this.run(ev.action, () => openThread(target!), t("result.opened"));
 	}
 }
 
@@ -137,7 +139,7 @@ export class Stop extends DeckAction {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
-		await this.run(ev.action, () => thread!.machine.stopRun(thread!), "Stopped");
+		await this.run(ev.action, () => thread!.machine.stopRun(thread!), t("result.stopped"));
 	}
 }
 
@@ -180,7 +182,7 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 		const { text, thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		const mode: SendMode = this.steers ? "steer" : restart ? "restart" : "auto";
-		await this.run(ev.action, () => sendToThread(thread!, text, mode), this.steers ? "Steered" : restart ? "Restarted" : "Sent");
+		await this.run(ev.action, () => sendToThread(thread!, text, mode), t(this.steers ? "result.steered" : restart ? "result.restarted" : "result.sent"));
 	}
 }
 
@@ -263,7 +265,7 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 		if (destination === "scratch") return { near, target: near?.machine ?? launchMachine(machine), where: { scratch: true } };
 		if (destination === "project") {
 			const owner = deck.machines.find((candidate) => (machine === undefined || candidate.url === machine) && candidate.projects.some((known) => known.id === project));
-			return { near, target: owner, where: { projectId: project ?? "" }, missing: !project ? "Pick a project" : owner === undefined ? "No project" : undefined };
+			return { near, target: owner, where: { projectId: project ?? "" }, missing: !project ? t("reason.pickProject") : owner === undefined ? t("reason.noProject") : undefined };
 		}
 		return { near, target: near?.machine ?? launchMachine(machine), where: near ? { projectId: near.projectId } : { scratch: true } };
 	}
@@ -294,20 +296,20 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 					await openExternal(threadDeepLink({ environmentId: target.environmentId, threadId: created.threadId }, deck.scheme));
 				}
 			},
-			prompt ? "Started" : "Opened",
+			t(prompt ? "result.started" : "result.opened"),
 		);
 	}
 }
 
 type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; machine?: string };
 
-const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, string, string]> = {
-	settle: ["settle", "Settle", "Settled"],
-	pin: ["pin", "Pin", "Pinned"],
-	unpin: ["pin", "Unpin", "Unpinned"],
-	snooze: ["moon", "Snooze", "Snoozed"],
-	archive: ["archive", "Archive", "Archived"],
-	mark_unread: ["chat", "Unread", "Marked unread"],
+const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey, MessageKey]> = {
+	settle: ["settle", "organize.settle", "organize.settled"],
+	pin: ["pin", "organize.pin", "organize.pinned"],
+	unpin: ["pin", "organize.unpin", "organize.unpinned"],
+	snooze: ["moon", "organize.snooze", "organize.snoozed"],
+	archive: ["archive", "organize.archive", "organize.archived"],
+	mark_unread: ["chat", "organize.markUnread", "organize.markedUnread"],
 };
 
 /** Settle, pin, snooze, archive or mark the selected thread unread; the reverse lives in T3 Code or another key. */
@@ -324,7 +326,7 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		if (!action.isKey()) return;
 		const { which, check } = this.#check(action);
 		const [glyph, label] = ORGANIZE_FACE[which];
-		await this.setImage(action, renderControlKey({ glyph, label, available: check.available }));
+		await this.setImage(action, renderControlKey({ glyph, label: t(label), available: check.available }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<OrganizeSettings>): Promise<void> {
@@ -332,7 +334,7 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		const { which, thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		const minutes = Number(ev.payload.settings.snoozeMinutes ?? 60) || 60;
-		await this.run(ev.action, () => organize(thread!, which, minutes), ORGANIZE_FACE[which][2]);
+		await this.run(ev.action, () => organize(thread!, which, minutes), t(ORGANIZE_FACE[which][2]));
 	}
 }
 
@@ -380,10 +382,10 @@ export class ModelKey extends SettingKey<ModelSettings> {
 		const current = thread && findModel(config, thread.model);
 		const catalog = thread ? modelCatalog(config, thread.model) : [];
 		const target = thread === undefined ? undefined : fixed ? findModel(config, fixed) : nextModel(catalog, thread.model);
-		const missing = fixed ? (target === undefined ? "Unavailable" : undefined) : catalog.length === 0 ? "No models" : undefined;
+		const missing = fixed ? (target === undefined ? t("reason.unavailable") : undefined) : catalog.length === 0 ? t("reason.noModels") : undefined;
 		const check = availability("model", { thread, canOperate: canOperate(thread), missing });
 		const shown = fixed ? target : current;
-		const label = shown?.name ?? (fixed ? fixed.model : (thread?.model.model ?? "Model"));
+		const label = shown?.name ?? (fixed ? fixed.model : (thread?.model.model ?? t("face.model")));
 		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, available: check.available, active: fixed !== undefined && target?.key === current?.key });
 		if (thread === undefined || target === undefined) return { face, check, done: label };
 		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;
@@ -407,12 +409,12 @@ export class EffortKey extends SettingKey<EffortSettings> {
 		const choices = effortChoices(model);
 		const values = choices.map((choice) => choice.value);
 		const current = thread && currentEffort(model, thread.model, armed);
-		const missing = choices.length === 0 ? "No effort" : fixed !== undefined && !values.includes(fixed) ? "Not offered" : undefined;
+		const missing = choices.length === 0 ? t("reason.noEffort") : fixed !== undefined && !values.includes(fixed) ? t("reason.notOffered") : undefined;
 		const check = availability("effort", { thread, canOperate: canOperate(thread), missing });
 		const labelOf = (value: unknown) =>
 			choices.find((choice) => choice.value === value)?.label ??
 			effortValues(config).find((choice) => choice.value === value)?.label ??
-			(typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : "Effort");
+			(typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : t("face.effort"));
 		const face = renderControlKey({ glyph: "effort", label: labelOf(fixed ?? current), available: check.available, active: fixed !== undefined && fixed === current, ultrathink: armed });
 		const next = fixed ?? cycleValue(values, current);
 		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
@@ -437,8 +439,8 @@ export class SpeedKey extends SettingKey<JsonObject> {
 	protected state(action: Action<JsonObject>) {
 		const { thread, config } = selection(this.machineOf(action));
 		const toggle = thread && speedToggle(findModel(config, thread.model), thread.model);
-		const check = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? "No fast mode" : undefined });
-		const face = renderControlKey({ glyph: "speed", label: toggle?.label ?? "Speed", available: check.available, active: toggle?.fast === true });
+		const check = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
+		const face = renderControlKey({ glyph: "speed", label: toggle?.label ?? t("face.speed"), available: check.available, active: toggle?.fast === true });
 		if (thread === undefined || toggle === undefined) return { face, check, done: "" };
 		return { face, check, done: toggle.nextLabel, apply: () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)) };
 	}
@@ -451,14 +453,14 @@ type PermissionSettings = { mode?: string; machine?: string };
 export class Permissions extends SettingKey<PermissionSettings> {
 	protected state(action: Action<PermissionSettings>) {
 		const { thread, config } = selection(this.machineOf(action));
-		const fixed = RUNTIME_MODES.find((mode) => mode.value === this.settingsOf(action).mode)?.value;
+		const fixed = RUNTIME_MODES.find((mode) => mode === this.settingsOf(action).mode);
 		const values = thread ? runtimeModes(config, thread.model.instanceId).map((mode) => mode.value) : [];
 		const current = thread?.runtimeMode;
 		const shown = fixed ?? current ?? "approval-required";
-		const missing = fixed !== undefined && !values.includes(fixed) ? "Not offered" : undefined;
+		const missing = fixed !== undefined && !values.includes(fixed) ? t("reason.notOffered") : undefined;
 		const check = availability("permissions", { thread, canOperate: canOperate(thread), missing });
-		const labelOf = (value: RuntimeMode | undefined) => RUNTIME_MODES.find((mode) => mode.value === value)?.label ?? "Access";
-		const face = renderControlKey({ glyph: MODE_GLYPH[shown], label: thread || fixed ? labelOf(shown) : "Access", available: check.available, active: fixed !== undefined && fixed === current });
+		const labelOf = (value: RuntimeMode | undefined) => (value === undefined ? t("face.access") : modeLabel(value));
+		const face = renderControlKey({ glyph: MODE_GLYPH[shown], label: thread || fixed ? labelOf(shown) : t("face.access"), available: check.available, active: fixed !== undefined && fixed === current });
 		const next = fixed ?? cycleValue(values, current);
 		if (thread === undefined || next === undefined) return { face, check, done: labelOf(next) };
 		return { face, check, done: labelOf(next), apply: next === current ? undefined : () => thread.machine.setRuntimeMode(thread, next) };
@@ -471,11 +473,11 @@ export class PlanKey extends SettingKey<JsonObject> {
 	protected state(action: Action<JsonObject>) {
 		const { thread, config } = selection(this.machineOf(action));
 		const toggle = thread === undefined ? undefined : config?.providers?.find((provider) => provider.instanceId === thread.model.instanceId)?.showInteractionModeToggle;
-		const check = availability("plan", { thread, canOperate: canOperate(thread), missing: toggle === false ? "No plan mode" : undefined });
+		const check = availability("plan", { thread, canOperate: canOperate(thread), missing: toggle === false ? t("reason.noPlanMode") : undefined });
 		const planning = thread?.interactionMode === "plan";
-		const face = renderControlKey({ glyph: planning ? "modePlan" : "modeBuild", label: planning ? "Plan" : "Build", available: check.available, active: planning });
+		const face = renderControlKey({ glyph: planning ? "modePlan" : "modeBuild", label: t(planning ? "face.plan" : "face.build"), available: check.available, active: planning });
 		if (thread === undefined) return { face, check, done: "" };
-		return { face, check, done: planning ? "Build" : "Plan", apply: () => thread.machine.setInteractionMode(thread, planning ? "default" : "plan") };
+		return { face, check, done: t(planning ? "face.build" : "face.plan"), apply: () => thread.machine.setInteractionMode(thread, planning ? "default" : "plan") };
 	}
 }
 
@@ -492,7 +494,7 @@ export function requestFor(thread: DeckThread): PendingRequest | undefined {
 	requests.set(id, "loading");
 	thread.machine
 		.pendingRequest(thread)
-		.catch((): PendingRequest => ({ type: "unsupported", threadId: pending.threadId, requestId: pending.id, heading: "Needs you in T3 Code" }))
+		.catch((): PendingRequest => ({ type: "unsupported", threadId: pending.threadId, requestId: pending.id, heading: t("approval.needsYou") }))
 		.then((request) => {
 			if (request === undefined) requests.delete(id);
 			else requests.set(id, request);
@@ -525,8 +527,8 @@ export class Approve extends DeckAction<ApproveSettings> {
 		if (face) return void (await this.setImage(action, face));
 		const { check, request, press, authority } = this.#state(action);
 		if (!check.available) return void (await this.setImage(action, renderInfoKey({ glyph: "shield", title: authorityLabel(authority), detail: check.reason, available: false })));
-		const title = request === undefined ? "Loading…" : request.type === "approval" ? request.summary : request.type === "unsupported" ? request.heading : "Needs you";
-		await this.setImage(action, renderInfoKey({ glyph: "shield", color: COLORS.attention, tint: COLORS.attention, title, detail: press?.label ?? "Open in T3" }));
+		const title = request === undefined ? t("face.loading") : request.type === "approval" ? request.summary : request.type === "unsupported" ? request.heading : t("face.needsYou");
+		await this.setImage(action, renderInfoKey({ glyph: "shield", color: COLORS.attention, tint: COLORS.attention, title, detail: press?.label ?? authorityLabel("open") }));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<ApproveSettings>): void {
@@ -538,9 +540,9 @@ export class Approve extends DeckAction<ApproveSettings> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { thread, check, request, press, confirm } = this.#state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
-		if (request === undefined) return void (await this.flash(ev.action, false, "Loading…"));
-		if (press === undefined || press.kind === "open" || request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!), "Opened"));
-		if (!confirmed(press, confirm, held)) return void (await this.flash(ev.action, false, "Hold to allow"));
+		if (request === undefined) return void (await this.flash(ev.action, false, t("result.loading")));
+		if (press === undefined || press.kind === "open" || request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!), t("result.opened")));
+		if (!confirmed(press, confirm, held)) return void (await this.flash(ev.action, false, t("result.holdToAllow")));
 		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, press.decision), press.label);
 	}
 }
@@ -556,16 +558,16 @@ export class Deny extends DeckAction {
 
 	protected override async paint(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
-		await this.setImage(action, renderControlKey({ glyph: "deny", tone: "deny", label: "Deny", available: this.#state(action).check.available }));
+		await this.setImage(action, renderControlKey({ glyph: "deny", tone: "deny", label: t("face.deny"), available: this.#state(action).check.available }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { thread, check, request } = this.#state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
-		if (request === undefined) return void (await this.flash(ev.action, false, "Loading…"));
-		if (request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!), "Opened"));
-		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, "decline"), "Denied");
+		if (request === undefined) return void (await this.flash(ev.action, false, t("result.loading")));
+		if (request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!), t("result.opened")));
+		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, "decline"), t("result.denied"));
 	}
 }
 
@@ -580,24 +582,24 @@ export class Health extends DeckAction {
 		const url = this.machineOf(action);
 		const machines = deck.machines.filter((machine) => url === undefined || machine.url === url);
 		if (machines.length === 0) {
-			const title = url === undefined ? "T3 Code not found" : "Machine removed";
-			return void (await this.setImage(action, renderInfoKey({ glyph: "plug", title, detail: url === undefined ? "Open it, then press" : "Pick another", available: false })));
+			const title = url === undefined ? t("notice.notFound") : t("notice.machineRemoved");
+			return void (await this.setImage(action, renderInfoKey({ glyph: "plug", title, detail: url === undefined ? t("notice.openThenPress") : t("notice.pickAnother"), available: false })));
 		}
 		if (machines.length > 1) {
 			const ready = machines.filter((machine) => machine.state.kind === "ready").length;
 			const color = ready === machines.length ? COLORS.done : ready === 0 ? COLORS.error : COLORS.attention;
-			const title = ready === machines.length ? "All connected" : ready === 0 ? "Offline" : "Some offline";
-			return void (await this.setImage(action, renderInfoKey({ glyph: "health", color, title, detail: `${ready} of ${machines.length} ready` })));
+			const title = t(ready === machines.length ? "health.allConnected" : ready === 0 ? "health.offline" : "health.someOffline");
+			return void (await this.setImage(action, renderInfoKey({ glyph: "health", color, title, detail: t("health.readyCount", { ready, total: machines.length }) })));
 		}
 		const [machine] = machines;
 		const name = machineName(machine);
 		switch (machine.state.kind) {
 			case "ready":
-				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.done, title: name, detail: machine.state.canOperate ? "Connected" : "Read only" })));
+				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.done, title: name, detail: t(machine.state.canOperate ? "health.connected" : "health.readOnly") })));
 			case "connecting":
-				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.muted, title: name, detail: "Connecting…" })));
+				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.muted, title: name, detail: t("health.connecting") })));
 			case "signed-out":
-				return void (await this.setImage(action, renderInfoKey({ glyph: "key", color: COLORS.attention, tint: COLORS.attention, title: name, detail: "Needs pairing" })));
+				return void (await this.setImage(action, renderInfoKey({ glyph: "key", color: COLORS.attention, tint: COLORS.attention, title: name, detail: t("health.needsPairing") })));
 			case "error":
 				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.error, tint: COLORS.error, title: name, detail: machine.state.message })));
 		}
@@ -605,11 +607,11 @@ export class Health extends DeckAction {
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		await deck.retry(this.machineOf(ev.action));
-		await this.flash(ev.action, true, "Reconnecting");
+		await this.flash(ev.action, true, t("result.reconnecting"));
 	}
 }
 
-const PR_STATE: Record<string, [string, string]> = { open: ["Open", COLORS.done], merged: ["Merged", "#A371F7"], closed: ["Closed", COLORS.error] };
+const PR_STATE: Record<string, [MessageKey, string]> = { open: ["pr.open", COLORS.done], merged: ["pr.merged", "#A371F7"], closed: ["pr.closed", COLORS.error] };
 
 /** The selected thread's pull request: number and state. Tap opens it in the browser. */
 @action({ UUID: `${ID}.pr` })
@@ -625,17 +627,17 @@ export class PullRequest extends DeckAction {
 		const face = connectionFace(this.machineOf(action));
 		if (face) return void (await this.setImage(action, face));
 		const { pr, check } = this.#state(action);
-		if (pr === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "pullRequest", title: "Pull request", detail: check.available ? undefined : check.reason, available: false })));
-		const [state, color] = PR_STATE[pr.state ?? ""] ?? ["", COLORS.text];
-		await this.setImage(action, renderInfoKey({ glyph: "pullRequest", color, title: `#${pr.number}`, detail: state || undefined }));
+		if (pr === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "pullRequest", title: t("face.pullRequest"), detail: check.available ? undefined : check.reason, available: false })));
+		const [state, color] = PR_STATE[pr.state ?? ""] ?? [undefined, COLORS.text];
+		await this.setImage(action, renderInfoKey({ glyph: "pullRequest", color, title: `#${pr.number}`, detail: state && t(state) }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { pr, check } = this.#state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
-		if (!URL.canParse(pr!.url) || new URL(pr!.url).protocol !== "https:") return void (await this.flash(ev.action, false, "Not a web link"));
-		await this.run(ev.action, () => streamDeck.system.openUrl(pr!.url), "Opened");
+		if (!URL.canParse(pr!.url) || new URL(pr!.url).protocol !== "https:") return void (await this.flash(ev.action, false, t("result.notWebLink")));
+		await this.run(ev.action, () => streamDeck.system.openUrl(pr!.url), t("result.opened"));
 	}
 }
 
@@ -649,13 +651,13 @@ export class Branch extends DeckAction {
 		const check = availability("branch", { thread, canOperate: true });
 		const face = check.available
 			? renderInfoKey({ glyph: "branch", title: thread!.branch!, detail: thread!.projectTitle || undefined })
-			: renderInfoKey({ glyph: "branch", title: "Branch", detail: check.reason, available: false });
+			: renderInfoKey({ glyph: "branch", title: t("face.branch"), detail: check.reason, available: false });
 		await this.setImage(action, connectionFace(machine) ?? face);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const thread = selectedThread(this.machineOf(ev.action));
-		if (await this.allowed(ev.action, availability("branch", { thread, canOperate: true }))) await this.run(ev.action, () => openThread(thread!), "Opened");
+		if (await this.allowed(ev.action, availability("branch", { thread, canOperate: true }))) await this.run(ev.action, () => openThread(thread!), t("result.opened"));
 	}
 }

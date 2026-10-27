@@ -13,6 +13,7 @@ import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
+import { messageTable, t } from "../core/i18n.js";
 import { effortValues, favoriteModels, findModel, pickableModels } from "../core/models.js";
 import { COLORS, renderNoticeKey, renderResultKey, stripCanvas, stripIcon } from "../core/render.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
@@ -164,6 +165,8 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 			}
 			case "status":
 				return deck.pushStatus(true);
+			case "strings":
+				return streamDeck.ui.sendToPropertyInspector({ event: "strings", strings: messageTable("inspector") });
 			case "getProjects":
 				return this.#sendProjects(ev.action);
 			case "getLaunchProjects":
@@ -185,7 +188,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		await deck.refreshConfigs(this.machineOf(action));
 		const machines = this.#readyMachines(action);
 		const favorites = machines.some((machine) => favoriteModels(machine.modelConfig) !== undefined);
-		const items = [{ label: favorites ? "Cycle favorites" : "Cycle models", value: "" }];
+		const items = [{ label: t(favorites ? "datasource.cycleFavorites" : "datasource.cycleModels"), value: "" }];
 		for (const machine of machines) {
 			for (const model of pickableModels(machine.modelConfig)) if (!items.some((item) => item.value === model.key)) items.push({ label: model.label, value: model.key });
 		}
@@ -194,7 +197,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 
 	async #sendEfforts(action: Action<T>): Promise<void> {
 		await deck.refreshConfigs(this.machineOf(action));
-		const items = [{ label: "Cycle efforts", value: "" }];
+		const items = [{ label: t("datasource.cycleEfforts"), value: "" }];
 		for (const machine of this.#readyMachines(action)) {
 			for (const effort of effortValues(machine.modelConfig)) if (!items.some((item) => item.value === effort.value)) items.push(effort);
 		}
@@ -207,13 +210,13 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	 */
 	async #sendProjects(action: Action<T>, event: "getProjects" | "getLaunchProjects" = "getProjects"): Promise<void> {
 		const machines = this.#readyMachines(action);
-		const items = event === "getProjects" ? [{ label: "Any project", value: "" }] : [];
+		const items = event === "getProjects" ? [{ label: t("datasource.anyProject"), value: "" }] : [];
 		for (const machine of machines) {
 			const where = machines.length > 1 && machine.state.kind === "ready" ? ` · ${machine.state.label}` : "";
 			for (const project of machine.projects) {
 				const scratch = machine.isScratch(project.id);
 				if (scratch && event === "getLaunchProjects") continue;
-				items.push({ label: `${scratch ? "No project" : project.title}${where}`, value: project.id });
+				items.push({ label: `${scratch ? t("datasource.noProject") : project.title}${where}`, value: project.id });
 			}
 		}
 		await streamDeck.ui.sendToPropertyInspector({ event, items });
@@ -252,7 +255,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	/** A dial's press result; strip dials draw it in their own appearance. */
 	protected flashFeedback(_action: Action<T>, ok: boolean, label: string): FeedbackPayload {
 		const color = ok ? COLORS.done : COLORS.error;
-		return { canvas: stripCanvas(color), header: ok ? "Done" : "Not now", glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" };
+		return { canvas: stripCanvas(color), header: ok ? t("strip.done") : t("strip.notNow"), glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" };
 	}
 
 	/** Flashes why the action can't act when `check` says so; true when it may go ahead. */
@@ -263,7 +266,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	}
 
 	/** Runs a deck command, then flashes `success`, or a short reason (logged in full) when it fails. */
-	protected async run(action: Action<T>, work: () => Promise<unknown>, success = "Done"): Promise<void> {
+	protected async run(action: Action<T>, work: () => Promise<unknown>, success = t("result.done")): Promise<void> {
 		try {
 			await work();
 			await this.flash(action, true, success);
@@ -318,13 +321,13 @@ export function connectionProblem(machine?: string): ConnectionProblem | undefin
 export function connectionFace(machine?: string): string | undefined {
 	switch (connectionProblem(machine)) {
 		case "none":
-			return renderNoticeKey({ glyph: "plug", title: "Open T3 Code", detail: "then press", tone: "muted" });
+			return renderNoticeKey({ glyph: "plug", title: t("notice.openT3Code"), detail: t("notice.thenPress"), tone: "muted" });
 		case "missing":
-			return renderNoticeKey({ glyph: "plug", title: "Machine removed", detail: "Pick another machine", tone: "muted" });
+			return renderNoticeKey({ glyph: "plug", title: t("notice.machineRemoved"), detail: t("notice.pickAnotherMachine"), tone: "muted" });
 		case "pair":
-			return renderNoticeKey({ glyph: "key", title: "Pair T3 Deck", detail: "Paste a pair link in settings", tone: "attention" });
+			return renderNoticeKey({ glyph: "key", title: t("notice.pairDeck"), detail: t("notice.pastePairLink"), tone: "attention" });
 		case "offline":
-			return renderNoticeKey({ glyph: "plug", title: "Connecting…", detail: "Press to retry", tone: "muted" });
+			return renderNoticeKey({ glyph: "plug", title: t("notice.connecting"), detail: t("notice.pressToRetry"), tone: "muted" });
 		default:
 			return undefined;
 	}

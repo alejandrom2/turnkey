@@ -3,6 +3,7 @@
  * Ultrathink, or access modes. Each choice carries the icon the strip shows while it is previewed or current.
  */
 import { type AcpIcons, type CatalogModel, currentOptionValue, effortOption, findModel, type ModelConfig, pickableModels, providerMark, runtimeModes } from "./models.js";
+import { t } from "./i18n.js";
 import { COLORS, type GlyphName, glyphArt, type MarkPainter, MODE_GLYPH, stripMarkIcon } from "./render.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 import { ULTRATHINK } from "./ultrathink.js";
@@ -67,18 +68,18 @@ export function powerState(control: DialControl, config: ModelConfig | undefined
 			const choices = pickableModels(config).map(modelChoice);
 			const key = `${thread.model.instanceId}:${thread.model.model}`;
 			const current = choices.find((choice) => choice.key === key) ?? (model === undefined ? undefined : modelChoice(model));
-			return { choices, current, missing: choices.length === 0 ? "No models" : undefined };
+			return { choices, current, missing: choices.length === 0 ? t("reason.noModels") : undefined };
 		}
 		case "effort": {
 			const choices = effortChoices(model);
 			const value = currentEffort(model, thread.model, ultrathinkArmed);
-			return { choices, current: choices.find((choice) => choice.key === String(value)), missing: choices.length === 0 ? "No effort" : undefined };
+			return { choices, current: choices.find((choice) => choice.key === String(value)), missing: choices.length === 0 ? t("reason.noEffort") : undefined };
 		}
 		case "permissions": {
 			const choices = runtimeModes(config, thread.model.instanceId).map(
 				(mode): PowerChoice => ({ kind: "mode", key: mode.value, label: mode.label, icon: { kind: "glyph", name: MODE_GLYPH[mode.value] }, mode: mode.value }),
 			);
-			return { choices, current: choices.find((choice) => choice.key === thread.runtimeMode), missing: choices.length < 2 ? "No modes" : undefined };
+			return { choices, current: choices.find((choice) => choice.key === thread.runtimeMode), missing: choices.length < 2 ? t("reason.noModes") : undefined };
 		}
 	}
 }
