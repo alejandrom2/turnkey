@@ -776,3 +776,85 @@ describe("Machine usage and limits", () => {
 		await expect(h.machine.consumeResetCredit({ instanceId: "codex" })).rejects.toMatchObject({ requiredPermission: "providers:manage" });
 	});
 });
+
+describe("Machine opt-in actions", () => {
+	const withScopes = (...scopes: string[]) => ({ credential: { ...CREDENTIAL, scopes: [...CREDENTIAL.scopes, ...scopes] } });
+	const configWith = (capabilities: object) => ({ ...CONFIG, environment: { ...CONFIG.environment, serverVersion: "0.1.2", capabilities: { ...CONFIG.environment.capabilities, ...capabilities } } });
+
+	it("takes a service's dropped socket as its restart, and fails a desktop update that drops before it answers", async () => {
+		const h = setup({ ...withScopes("environment:maintain"), config: configWith({ serverSelfUpdate: "boot-service" }) });
+		const socket = await connect(h);
+		const updating = h.machine.updateServer("0.1.3", () => undefined);
+		await flush();
+		expect(socket.request("server.updateServer").payload).toEqual({ targetVersion: "0.1.3" });
+		socket.drop();
+		await expect(updating).resolves.toBe("0.1.3");
+
+		const desktop = setup({ ...withScopes("environment:maintain"), config: configWith({ serverSelfUpdate: "desktop-managed", desktopAppUpdate: true }) });
+		const desktopSocket = await connect(desktop);
+		const failing = desktop.machine.updateServer("0.1.3", () => undefined);
+		await flush();
+		desktopSocket.drop();
+		await expect(failing).rejects.toMatchObject({ tag: "Disconnected" });
+	});
+
+	it("reports progress, then commits a prepared desktop update", async () => {
+		const h = setup({ ...withScopes("environment:maintain"), config: configWith({ serverSelfUpdate: "desktop-managed", desktopAppUpdate: true, serverSelfUpdateProgress: true }) });
+		const socket = await connect(h);
+		const stages: string[] = [];
+		const updating = h.machine.updateServer("0.1.2", (stage) => stages.push(stage));
+		await flush();
+		const request = socket.request("server.updateServerWithProgress");
+		socket.receive({ _tag: "Chunk", requestId: request.id, values: [{ type: "progress", stage: "downloading" }, { type: "complete", result: { targetVersion: "0.1.4", method: "desktop-app", desktopUpdateToken: "req-1" } }] });
+		socket.receive({ _tag: "Exit", requestId: request.id, exit: { _tag: "Success" } });
+		await flush();
+		expect(socket.request("server.commitDesktopUpdate").payload).toEqual({ requestId: "req-1" });
+		socket.drop();
+		await expect(updating).resolves.toBe("0.1.4");
+		expect(stages).toEqual(["downloading", "installing"]);
+	});
+
+	it("refuses to update a server that can't update itself, and without update access", async () => {
+		const manual = setup({ ...withScopes("environment:maintain"), config: configWith({}) });
+		await connect(manual);
+		await expect(manual.machine.updateServer("0.1.3", () => undefined)).rejects.toMatchObject({ reason: "Update by hand" });
+		const unscoped = setup({ config: configWith({ serverSelfUpdate: "boot-service" }) });
+		await connect(unscoped);
+		await expect(unscoped.machine.updateServer("0.1.3", () => undefined)).rejects.toMatchObject({ requiredPermission: "environment:maintain" });
+	});
+
+	it("runs a script in its own terminal the way T3 Code's runner does, and watches terminals only with status access", async () => {
+		const h = setup(withScopes("terminal:operate", "terminal:read"));
+		const socket = await connect(h);
+		const running = h.machine.runScript("thr_123", "deck-dev", { cwd: "/wt", worktreePath: "/wt", env: { T3CODE_PROJECT_ROOT: "/repo", T3CODE_WORKTREE_PATH: "/wt" } }, "npm run dev");
+		await flush();
+		expect(socket.request("terminal.open").payload).toEqual({ threadId: "thr_123", terminalId: "deck-dev", cwd: "/wt", worktreePath: "/wt", env: { T3CODE_PROJECT_ROOT: "/repo", T3CODE_WORKTREE_PATH: "/wt" } });
+		socket.reply("terminal.open", {});
+		await flush();
+		expect(socket.request("terminal.write").payload).toEqual({ threadId: "thr_123", terminalId: "deck-dev", data: " npm run dev\r" });
+		socket.reply("terminal.write", null);
+		await running;
+
+		const release = h.machine.watchTerminals();
+		const watch = socket.request("subscribeTerminalMetadata");
+		socket.receive({ _tag: "Chunk", requestId: watch.id, values: [{ type: "snapshot", terminals: [{ threadId: "thr_123", terminalId: "deck-dev", status: "running", exitCode: null, hasRunningSubprocess: true }] }] });
+		expect(h.machine.terminals?.get("thr_123\ndeck-dev")?.hasRunningSubprocess).toBe(true);
+		release();
+
+		const blind = setup(withScopes("terminal:operate"));
+		const blindSocket = await connect(blind);
+		blind.machine.watchTerminals();
+		expect(blindSocket.sent.some((frame) => frame.tag === "subscribeTerminalMetadata")).toBe(false);
+	});
+
+	it("makes a guest link with sharing access and stops it with a thread command", async () => {
+		const h = setup(withScopes("access:write"));
+		const socket = await connect(h);
+		const creating = h.machine.createGuestLink({ threadId: "thr_123" });
+		await flush();
+		expect(socket.request("guestShare.create").payload).toEqual({ threadId: "thr_123" });
+		socket.reply("guestShare.create", { url: "https://box.t3.codes/guest#secret", share: { id: "s1", host: "box.t3.codes", createdAt: "2026-10-27T10:00:00Z", expiresAt: "2026-10-28T10:00:00Z", guestName: null, messages: [] } });
+		await expect(creating).resolves.toMatchObject({ url: "https://box.t3.codes/guest#secret", share: { id: "s1" } });
+		expect(await dispatched(socket, () => h.machine.closeGuestLink({ threadId: "thr_123" }))).toMatchObject({ type: "thread.guest-share.close", threadId: "thr_123" });
+	});
+});

@@ -1,7 +1,23 @@
 import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
-import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { type GuestShare, readGuestShare } from "../share.js";
+import { applyTerminalEvent, INTERRUPT_INPUT, type ScriptSettings, scriptInput, type TerminalSummary } from "../scripts.js";
+import { progressStage, type UpdateEnvironment, type UpdateStage, updateRoute } from "../update.js";
+import {
+	ACCESS_SCOPE,
+	type Credential,
+	DIAGNOSTICS_SCOPE,
+	MAINTAIN_SCOPE,
+	OPERATE_SCOPE,
+	PairingError,
+	PROVIDERS_SCOPE,
+	READ_SCOPE,
+	redeemPairingCode,
+	socketUrl,
+	TERMINAL_READ_SCOPE,
+	TERMINAL_SCOPE,
+} from "./pairing.js";
 import { type VcsRef, worktreeBase } from "../git.js";
 import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun, type ProjectedTurnItem } from "../lineage.js";
 import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
@@ -43,12 +59,13 @@ export type MachineDeps = {
 	uuid?: () => string;
 };
 
-type Capabilities = ThreadCapabilities & {
-	serverResolvedCommandContext?: boolean;
-	threadStop?: boolean;
-	threadPinning?: boolean;
-	threadVisitedTracking?: boolean;
-};
+type Capabilities = ThreadCapabilities &
+	NonNullable<UpdateEnvironment["capabilities"]> & {
+		serverResolvedCommandContext?: boolean;
+		threadStop?: boolean;
+		threadPinning?: boolean;
+		threadVisitedTracking?: boolean;
+	};
 
 type ProjectDefaults = { defaultModelSelection?: ModelSelection | null; defaultRuntimeMode?: RuntimeMode; newWorktreesStartFromOrigin?: boolean };
 
@@ -57,9 +74,17 @@ type UsageSettings = { usagePriceOverrides?: unknown; usageModelAliases?: unknow
 
 /** The `ServerConfig` slice the deck reads (packages/contracts/src/server.ts). */
 type ServerConfig = {
-	environment?: { label?: string; capabilities?: Capabilities };
+	environment?: { label?: string; serverVersion?: string; capabilities?: Capabilities };
 	providers?: ConfigProvider[];
-	settings?: ProjectDefaults & ModelPreferences & UsageSettings & { projectSettingsOverrides?: Record<string, ProjectDefaults> };
+	settings?: ProjectDefaults &
+		ModelPreferences &
+		UsageSettings &
+		Omit<ScriptSettings, "projectSettingsOverrides"> & {
+			projectSettingsOverrides?: Record<string, ProjectDefaults & NonNullable<ScriptSettings["projectSettingsOverrides"]>[string]>;
+			/** Settings › Labs › Guest links; the server refuses links while it is off. */
+			guestSharingEnabled?: boolean;
+			continueThreadsAfterServerUpdate?: boolean;
+		};
 	shellResumeCompletionMarker?: boolean;
 	shellThreadFamilies?: boolean;
 	shellOlderSettled?: boolean;
@@ -171,6 +196,13 @@ export class Machine {
 	#untaskTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Bumped when the task list changes, so the deck repaints faces drawn from it. */
 	tasksVersion = 0;
+	/** This machine's terminals while something watches them; undefined until the first snapshot. */
+	#terminals: ReadonlyMap<string, TerminalSummary> | undefined;
+	#terminalWatchers = 0;
+	#terminalWatch: { rpc: RpcSocket; stop: () => void } | undefined;
+	#unterminalTimer: ReturnType<typeof setTimeout> | undefined;
+	/** Bumped when a terminal changes, so the deck repaints faces drawn from them. */
+	terminalsVersion = 0;
 	/** Per provider instance and checkout, its skills snapshot: config replies leave these out, so they are read on demand. */
 	readonly #workspaces = new Map<string, WorkspaceRead>();
 	readonly #now: () => number;
@@ -313,6 +345,7 @@ export class Machine {
 		this.#subscribed = false;
 		this.#configWatch = undefined;
 		this.#taskWatch = undefined;
+		this.#terminalWatch = undefined;
 		clearTimeout(this.#snoozeTimer);
 		rpc?.stop();
 	}
@@ -347,6 +380,7 @@ export class Machine {
 		this.#limitSources = undefined;
 		this.#tasks = undefined;
 		this.#tasksError = undefined;
+		this.#terminals = undefined;
 		this.#configLoad = undefined;
 		this.#workspaces.clear();
 		this.#rows = [];
@@ -368,6 +402,7 @@ export class Machine {
 				this.#subscribed = false;
 				this.#configWatch = undefined;
 				this.#taskWatch = undefined;
+				this.#terminalWatch = undefined;
 				if (error instanceof PairingError && error.kind === "repair") {
 					void this.store.save(this.url, undefined);
 					this.#reset();
@@ -404,6 +439,7 @@ export class Machine {
 		});
 		this.#syncConfigWatch();
 		this.#syncTaskWatch();
+		this.#syncTerminalWatch();
 		this.#derive();
 	}
 
@@ -598,6 +634,128 @@ export class Machine {
 	/** Turns a scheduled task on or off. */
 	async setTaskEnabled(id: string, enabled: boolean): Promise<void> {
 		await this.call("scheduledTasks.setEnabled", { id, enabled }, OPERATE_SCOPE);
+	}
+
+	/** The terminals of every thread, live while watched; undefined until listed or without terminal status access. */
+	get terminals(): ReadonlyMap<string, TerminalSummary> | undefined {
+		return this.#terminals;
+	}
+
+	/** Keeps terminal states live while something shows a script; returns the release. Needs `terminal:read`. */
+	watchTerminals(): () => void {
+		this.#terminalWatchers++;
+		clearTimeout(this.#unterminalTimer);
+		this.#syncTerminalWatch();
+		let released = false;
+		return () => {
+			if (released) return;
+			released = true;
+			this.#terminalWatchers--;
+			if (this.#terminalWatchers === 0) this.#unterminalTimer = setTimeout(() => this.#syncTerminalWatch(), CONFIG_WATCH_LINGER_MS);
+		};
+	}
+
+	#syncTerminalWatch(): void {
+		const rpc = this.state.kind === "ready" && this.scopes.includes(TERMINAL_READ_SCOPE) ? this.#rpc : undefined;
+		const wanted = this.#terminalWatchers > 0 ? rpc : undefined;
+		if (this.#terminalWatch !== undefined && this.#terminalWatch.rpc !== wanted) {
+			this.#terminalWatch.stop();
+			this.#terminalWatch = undefined;
+		}
+		if (wanted === undefined || this.#terminalWatch !== undefined) return;
+		const watch = {
+			rpc: wanted,
+			stop: wanted.subscribe(
+				"subscribeTerminalMetadata",
+				() => ({}),
+				(event) => {
+					if (this.#rpc !== wanted) return;
+					const next = applyTerminalEvent(this.#terminals ?? new Map(), event);
+					if (next === this.#terminals) return;
+					this.#terminals = next;
+					this.terminalsVersion++;
+					this.onChange();
+				},
+				{
+					persistent: true,
+					// Not retried until the next connection.
+					onEnd: () => {
+						if (this.#terminalWatch !== watch) return;
+						watch.stop();
+						this.#terminalWatch = undefined;
+					},
+				},
+			),
+		};
+		this.#terminalWatch = watch;
+	}
+
+	/** Opens the thread's terminal `terminalId` where T3 Code's script runner would, and types the command into it. */
+	async runScript(threadId: string, terminalId: string, launch: { cwd: string; worktreePath: string | null; env: Record<string, string> }, command: string): Promise<void> {
+		await this.call("terminal.open", { threadId, terminalId, ...launch }, TERMINAL_SCOPE);
+		await this.call("terminal.write", { threadId, terminalId, data: scriptInput(command) }, TERMINAL_SCOPE);
+	}
+
+	/** Interrupts what runs in the terminal, leaving its shell open. */
+	async interruptScript(threadId: string, terminalId: string): Promise<void> {
+		await this.call("terminal.write", { threadId, terminalId, data: INTERRUPT_INPUT }, TERMINAL_SCOPE);
+	}
+
+	/** The server's version and how it updates itself. */
+	get updateEnvironment(): UpdateEnvironment | undefined {
+		return this.#config?.environment;
+	}
+
+	/** The settings that decide a project's scripts. */
+	get scriptSettings(): ScriptSettings | undefined {
+		return this.#config?.settings;
+	}
+
+	/** Whether Settings › Labs › Guest links is on; absent on servers without guest links. */
+	get guestLinksEnabled(): boolean {
+		return this.#config?.settings?.guestSharingEnabled === true;
+	}
+
+	/**
+	 * Updates T3 Code to `targetVersion` as its Update action does, reporting stages; resolves with the version it
+	 * restarts on. A socket that drops once the server took the update is its restart, not a failure.
+	 */
+	async updateServer(targetVersion: string, onStage: (stage: UpdateStage) => void): Promise<string> {
+		const environment = this.#config?.environment;
+		const route = updateRoute(environment);
+		if (route.kind === "manual") throw new RpcError("ManualUpdate", "This T3 Code can't update itself.", t(route.reason));
+		const continues = environment?.capabilities?.serverUpdateThreadContinuation === true && this.#config?.settings?.continueThreadsAfterServerUpdate === true;
+		const input = { targetVersion, ...(continues ? { continueRunningThreads: true } : {}) };
+		let result: { targetVersion?: string; method?: string; desktopUpdateToken?: string } | undefined;
+		try {
+			if (route.progress) {
+				await this.stream(
+					"server.updateServerWithProgress",
+					input,
+					(value) => {
+						const event = value as { type?: string; stage?: unknown; result?: typeof result };
+						if (event.type === "complete") result = event.result;
+						const stage = progressStage(event.stage);
+						if (stage !== undefined) onStage(stage);
+					},
+					MAINTAIN_SCOPE,
+				);
+			} else result = await this.call("server.updateServer", input, MAINTAIN_SCOPE);
+		} catch (error) {
+			const handoff = error instanceof RpcError && (error.tag === "Disconnected" || error.tag === "Interrupt");
+			// Only a service without progress events hands off by dropping before it answers (`isLegacyUpdateHandoffLoss`).
+			if (!handoff || (result === undefined && (route.progress || route.kind !== "service"))) throw error;
+		}
+		if (result?.method === "desktop-app" && result.desktopUpdateToken !== undefined) {
+			onStage("installing");
+			try {
+				await this.call("server.commitDesktopUpdate", { requestId: result.desktopUpdateToken }, MAINTAIN_SCOPE);
+			} catch (error) {
+				// The commit relaunches the app, so its socket dropping is the install starting.
+				if (!(error instanceof RpcError && (error.tag === "Disconnected" || error.tag === "Interrupt"))) throw error;
+			}
+		}
+		return result?.targetVersion ?? targetVersion;
 	}
 
 	/** Cost and tokens for a window; T3 Code scans its transcript folders for every call, so callers cache. */
@@ -1003,6 +1161,24 @@ export class Machine {
 			if (reason === undefined) throw error;
 			throw new RpcError((error as RpcError).tag, (error as RpcError).message, reason);
 		}
+	}
+
+	/** The thread's guest share, from one bounded snapshot: the shell doesn't carry it. */
+	async guestShare(thread: ThreadRef): Promise<GuestShare | null> {
+		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		return readGuestShare(projection);
+	}
+
+	/** Makes a guest link for the thread, as Share with guest does; a new link ends the current one. Never log the URL. */
+	async createGuestLink(thread: ThreadRef): Promise<{ url: string; share: GuestShare | null }> {
+		const { url, share } = await this.call<{ url: string; share: unknown }>("guestShare.create", { threadId: thread.threadId }, ACCESS_SCOPE);
+		return { url, share: readGuestShare({ thread: { guestShare: share } }) };
+	}
+
+	/** Ends the thread's guest link, as Stop sharing does. */
+	async closeGuestLink(thread: ThreadRef): Promise<void> {
+		await this.#dispatch({ type: "thread.guest-share.close", threadId: thread.threadId });
 	}
 
 	/** Steers the running turn with a queued message (T3 Code's "Steer now"). */

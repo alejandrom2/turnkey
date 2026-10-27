@@ -70,6 +70,14 @@ const NAME = {
   worktree: "folder-git-2", // T3's worktree mark
   workflow: "workflow", // T3's workflow
   subagent: "bot", // T3's subagent rows
+  update: "circle-arrow-up", // T3's server update action
+  terminal: "square-terminal",
+  scriptTest: "flask-conical", // T3's script icons (projectScriptEditor.tsx)
+  scriptLint: "list-checks",
+  scriptConfigure: "wrench",
+  scriptDebug: "bug",
+  share: "user-plus", // T3's Share with guest
+  guest: "user", // T3's guest share indicator
 } as const;
 
 const dir = process.argv[2];
