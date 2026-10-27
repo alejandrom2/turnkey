@@ -1,5 +1,6 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { I18nProvider } from "@elgato/utils/i18n";
 import { describe, expect, it } from "vitest";
 
 import { elapsed, formatMessage, htmlLang, messageTable, setTranslator, t } from "./i18n.js";
@@ -70,17 +71,67 @@ describe("en.json", () => {
 	});
 });
 
+/** Every string leaf of a whole language file (manifest overrides included), by dot path. */
+function strings(node: Json, path = "", into = new Map<string, string>()): Map<string, string> {
+	if (typeof node === "string") into.set(path, node);
+	else for (const [name, child] of Object.entries(node)) strings(child, path ? `${path}.${name}` : name, into);
+	return into;
+}
+
+const english = strings(en);
+
 describe("other languages", () => {
 	const files = readdirSync(plugin).filter((file) => /^[a-z]{2}(_[A-Z]{2})?\.json$/.test(file) && file !== "en.json");
 
-	it.each(files.length > 0 ? files : ["(none yet)"])("%s keeps to English's keys and placeholders", (file) => {
-		if (file === "(none yet)") return;
+	it("covers every language Stream Deck offers", () => {
+		expect(files.map((file) => file.replace(/\.json$/, "")).sort()).toEqual(["de", "es", "fr", "ja", "ko", "zh_CN", "zh_TW"]);
+	});
+
+	it.each(files)("%s has exactly English's keys, placeholders and manifest overrides", (file) => {
 		const locale = readJson(join(plugin, file));
-		const actions = new Set(manifest.Actions.map((action: { UUID: string }) => action.UUID));
-		expect(Object.keys(locale).filter((key) => !["Name", "Description", "Category", "Localization"].includes(key) && !actions.has(key))).toEqual([]);
-		for (const [key, text] of leaves(locale.Localization ?? {})) {
-			expect(keys.has(key), `${file}: unknown key ${key}`).toBe(true);
-			expect(placeholders(text), `${file}: ${key}`).toEqual(placeholders(keys.get(key)!));
+		leaves(locale.Localization);
+		const own = strings(locale);
+		expect([...english.keys()].filter((key) => !own.has(key)), `${file}: missing`).toEqual([]);
+		expect([...own.keys()].filter((key) => !english.has(key)), `${file}: extra`).toEqual([]);
+		for (const [key, text] of own) {
+			expect(text.trim(), `${file}: ${key} is empty`).not.toBe("");
+			expect(placeholders(text), `${file}: ${key}`).toEqual(placeholders(english.get(key)!));
+		}
+		for (const action of manifest.Actions) {
+			expect(locale[action.UUID]?.Name, `${file}: ${action.UUID}`).toBeTruthy();
+			expect(locale[action.UUID]?.Tooltip, `${file}: ${action.UUID}`).toBeTruthy();
+		}
+	});
+});
+
+/** Reads language files the way the SDK's provider does for the plugin process, whose working directory is the plugin. */
+const fromPlugin = (language: string) => {
+	const path = join(plugin, `${language}.json`);
+	return existsSync(path) ? readJson(path).Localization : null;
+};
+
+describe("language selection", () => {
+	it.each(["de", "es", "fr", "ja", "ko", "zh_CN", "zh_TW"])("a %s Stream Deck draws keys and inspectors in that language", (language) => {
+		const locale = readJson(join(plugin, `${language}.json`)).Localization;
+		const provider = new I18nProvider(language as "en", fromPlugin);
+		try {
+			setTranslator((key) => provider.translate(key));
+			expect(t("result.sent")).toBe(locale.result.sent);
+			expect(t("health.readyCount", { ready: 2, total: 3 })).toBe(formatMessage(locale.health.readyCount, { ready: 2, total: 3 }));
+			expect(messageTable("inspector")["inspector.card.connect"]).toBe(locale.inspector.card.connect);
+		} finally {
+			setTranslator((key) => key);
+		}
+	});
+
+	it("falls back to English for a language with no file", () => {
+		const provider = new I18nProvider("pt" as "en", fromPlugin);
+		try {
+			setTranslator((key) => provider.translate(key));
+			expect(t("result.sent")).toBe(en.Localization.result.sent);
+			expect(messageTable("inspector")["inspector.card.connect"]).toBe(en.Localization.inspector.card.connect);
+		} finally {
+			setTranslator((key) => key);
 		}
 	});
 });
