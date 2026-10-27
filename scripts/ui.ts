@@ -651,7 +651,6 @@ const pages: Record<string, string> = {
 				<sdpi-select setting="organize" default="settle">
 					<option value="settle"${text("inspector.organize.settle")}</option>
 					<option value="pin"${text("inspector.organize.pin")}</option>
-					<option value="unpin"${text("inspector.organize.unpin")}</option>
 					<option value="snooze"${text("inspector.organize.snooze")}</option>
 					<option value="archive"${text("inspector.organize.archive")}</option>
 					<option value="mark_unread"${text("inspector.organize.markUnread")}</option>
