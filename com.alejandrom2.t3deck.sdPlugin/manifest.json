@@ -280,6 +280,15 @@
 			"States": [{ "Image": "imgs/actions/editor/key", "ShowTitle": false }]
 		},
 		{
+			"Name": "Open Preview",
+			"UUID": "com.alejandrom2.t3deck.preview",
+			"Icon": "imgs/actions/preview/icon",
+			"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser.",
+			"PropertyInspectorPath": "ui/preview.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/preview/key", "ShowTitle": false }]
+		},
+		{
 			"Name": "Health",
 			"UUID": "com.alejandrom2.t3deck.health",
 			"Icon": "imgs/actions/health/icon",

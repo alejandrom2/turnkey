@@ -5,6 +5,7 @@ import { OpenInEditor } from "./actions/editor.js";
 import { CommitKey, CreatePrKey, PullKey, PushKey } from "./actions/git.js";
 import { LimitsDial, LimitsKey } from "./actions/limits.js";
 import { ForkKey, MergeBackKey, StopWorkflowKey } from "./actions/lineage.js";
+import { OpenPreview } from "./actions/preview.js";
 import { QueueDial } from "./actions/queue.js";
 import { RunSkillKey, SkillsDial } from "./actions/skills.js";
 import { RunTaskKey, TasksDial } from "./actions/tasks.js";
@@ -72,6 +73,7 @@ for (const instance of [
 	new AskPrKey(),
 	new ReviewGuideKey(),
 	new OpenInEditor(),
+	new OpenPreview(),
 	new LimitsKey(),
 	new UsageKey(),
 	new RunTaskKey(),

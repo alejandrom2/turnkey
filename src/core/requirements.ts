@@ -18,6 +18,7 @@ export type Need =
 	| { kind: "queued"; ok: boolean | undefined }
 	| { kind: "tasks"; ok: boolean | undefined }
 	| { kind: "snoozed"; ok: boolean }
+	| { kind: "preview"; ok: boolean | undefined }
 	| { kind: "prompt"; ok: boolean }
 	| { kind: "scope"; scope: string; ok: boolean }
 	| { kind: "option"; option: string; ok: boolean }
@@ -73,6 +74,8 @@ function describe(need: Need): Requirement {
 			return make("pending", t("needs.pending"), need.ok, ["needs.fix.waitForAgent"]);
 		case "tasks":
 			return make("tasks", t("needs.tasks"), need.ok, ["needs.fix.addTask"]);
+		case "preview":
+			return make("preview", t("needs.preview"), need.ok, ["needs.fix.openPreview"]);
 		case "snoozed":
 			return make("snoozed", t("needs.snoozed"), need.ok, ["needs.fix.snoozeOne"]);
 		case "queued":

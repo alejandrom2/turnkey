@@ -964,6 +964,12 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.usage.dialHint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
+	"preview.html": page(
+		"Open Preview",
+		`${targetField}
+			<p class="hint"${text("inspector.preview.hint")}</p>`,
+		targetScript,
+	),
 	"editor.html": page(
 		"Open in Editor",
 		`
