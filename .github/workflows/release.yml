@@ -1,5 +1,6 @@
 name: Release
 
+# release-please keeps the release PR (version and changelog); merging it tags the version, and the tag publishes.
 on:
   push:
     branches: [main]
@@ -7,14 +8,12 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      version: ${{ steps.release.outputs.version }}
       pr: ${{ steps.release.outputs.pr }}
     steps:
       - id: release
@@ -22,6 +21,8 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          # Tagging and the GitHub Release belong to the tag job and publish.yml.
+          skip-github-release: true
 
   # release-please bumps package.json; the manifest's four-part version and the pages showing it follow on the release PR.
   sync-version:
@@ -48,22 +49,41 @@ jobs:
           git commit -am "chore: version for the release"
           git push
 
-  package:
-    needs: release-please
-    if: needs.release-please.outputs.release_created
+  # A merged release PR leaves package.json at a version with no tag yet: tag it, then publish that tag.
+  tag:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
-      - run: npx streamdeck pack com.alejandrom2.turnkey.sdPlugin --output dist --version ${{ needs.release-please.outputs.version }}.0 --no-update-check
-      - name: Attach to the release
-        run: gh release upload ${{ needs.release-please.outputs.tag_name }} dist/*.streamDeckPlugin --clobber
+          fetch-depth: 0
+          fetch-tags: true
+      - id: version
+        run: echo "tag=v$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+      - name: Tag the version
+        id: tag
+        run: |
+          if git rev-parse -q --verify "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null; then
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Turnkey for T3 Code ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          echo "created=true" >> "$GITHUB_OUTPUT"
+      # A tag pushed with the workflow token starts no other workflow, so ask for the publish run directly.
+      - name: Publish the tag
+        if: steps.tag.outputs.created == 'true'
+        run: gh workflow run publish.yml -f tag=${{ steps.version.outputs.tag }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+      # release-please waits on PRs marked pending; mark the merged one released.
+      - name: Mark the release PR tagged
+        if: steps.tag.outputs.created == 'true'
+        run: |
+          gh label create "autorelease: tagged" --color ededed --force >/dev/null
+          for pr in $(gh pr list --state merged --label "autorelease: pending" --json number --jq '.[].number'); do
+            gh pr edit "$pr" --remove-label "autorelease: pending" --add-label "autorelease: tagged"
+          done
         env:
           GH_TOKEN: ${{ github.token }}

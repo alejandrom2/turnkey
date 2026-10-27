@@ -184,7 +184,7 @@ Every string lives in `com.alejandrom2.turnkey.sdPlugin/en.json`, with one file 
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org): `feat:` adds a minor version, `fix:` a patch, and `!` or `BREAKING CHANGE:` a major once past 1.0. CI rejects other subjects; enable the same check locally with `git config core.hooksPath .githooks`.
 
-On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it tags the release, publishes the GitHub Release with the notes, and attaches `com.alejandrom2.turnkey.streamDeckPlugin`, packed with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`). `npm run assets` keeps the manifest's version in step with `package.json`.
+On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it lets the release workflow tag that version (`vX.Y.Z`); every `v*` tag, from the workflow or pushed by hand, runs the publish workflow, which checks the tag matches `package.json`, packs `com.alejandrom2.turnkey.streamDeckPlugin` with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`) and creates the GitHub Release with that version's changelog section. `npm run assets` keeps the manifest's version in step with `package.json`.
 
 ## License
 
