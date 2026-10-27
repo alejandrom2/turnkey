@@ -24,11 +24,11 @@
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "停止",
-		"Tooltip": "停止 T3 Code 中所選對話正在執行的回合。"
+		"Tooltip": "停止所選對話正在執行的回合，或依設定停止其執行中的工作流程（Claude）。停止工作流程需長按。"
 	},
 	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "停止工作流程",
-		"Tooltip": "停止對話執行中的工作流程（Claude）。長按以停止。"
+		"Name": "停止",
+		"Tooltip": "停止所選對話正在執行的回合，或依設定停止其執行中的工作流程（Claude）。停止工作流程需長按。"
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "分叉",
@@ -1070,6 +1070,11 @@
 				"access": "需要訪客連結權限，讓 T3 Deck 能與外部人士分享對話。按鍵第一次按下時，會在該機器下次配對時要求此權限。",
 				"link": "訪客連結",
 				"linkHint": "僅在 T3 Deck 執行時顯示：T3 Code 只會在建立連結時顯示一次。"
+			},
+			"stop": {
+				"stops": "停止對象",
+				"turn": "回合",
+				"workflow": "工作流程"
 			}
 		},
 		"usage": {

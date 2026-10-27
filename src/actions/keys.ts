@@ -29,7 +29,7 @@ import { activityBar, renderActivityBar, renderNoticeBar } from "../core/infobar
 import { currentEffort, effortChange, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
 import { threadMotion, twinkleStep } from "../core/motion.js";
 import { modeOf } from "../core/modes.js";
-import { migratePromptSettings, QUICK_PROMPTS, templatePrompt } from "../core/prompts.js";
+import { migratePromptSettings, templatePrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
 import {
 	COLORS,
@@ -188,79 +188,6 @@ export class Activity extends DeckAction<ActivitySettings> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const target = this.#threadFor(ev.action);
 		if (await this.allowed(ev.action, availability("open", { thread: target, canOperate: true }))) await this.run(ev.action, () => openThread(target!));
-	}
-}
-
-/** How long Stop offers to resume the thread it just stopped. */
-export const RESUME_MS = 30_000;
-
-/** Stops the selected thread's turn. For a while after the deck stops one, it offers to resume it by sending "Continue". */
-@action({ UUID: `${ID}.stop` })
-export class Stop extends DeckAction {
-	/** The thread each key stopped; `idle` once the deck has seen its turn end, since the stop lands a moment after it resolves. */
-	readonly #resume = new Map<string, { key: string; idle: boolean; timer: ReturnType<typeof setTimeout> }>();
-
-	#check(action: Action<JsonObject>) {
-		const { thread, gone, pinned } = this.target(action);
-		return { thread, pinned, check: availability("stop", { thread, gone, canOperate: canOperate(thread) }) };
-	}
-
-	/** The stopped thread this key may resume: still selected and not running again. */
-	#resumable(action: Action<JsonObject>): DeckThread | undefined {
-		const resume = this.#resume.get(action.id);
-		if (resume === undefined) return undefined;
-		const thread = this.target(action).thread;
-		if (thread?.key === resume.key && thread.active && !resume.idle) return undefined;
-		if (thread?.key === resume.key && !thread.active && canOperate(thread)) {
-			resume.idle = true;
-			return thread;
-		}
-		this.#endResume(action.id);
-		return undefined;
-	}
-
-	#endResume(id: string): void {
-		clearTimeout(this.#resume.get(id)?.timer);
-		this.#resume.delete(id);
-	}
-
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
-		if (!action.isKey()) return;
-		const { check, pinned } = this.#check(action);
-		if (this.#resumable(action)) return void (await this.setImage(action, renderControlKey({ glyph: "play", primary: true, pinned })));
-		await this.setImage(action, renderControlKey({ glyph: "stop", primary: true, available: check.available, pinned }));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const resumable = this.#resumable(ev.action);
-		if (resumable !== undefined) {
-			this.#endResume(ev.action.id);
-			return void (await this.run(ev.action, () => sendToThread(resumable, QUICK_PROMPTS.continue.text, "auto")));
-		}
-		const { thread, check } = this.#check(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		await this.run(
-			ev.action,
-			async () => {
-				await thread!.machine.stopRun(thread!);
-				this.#endResume(ev.action.id);
-				const id = ev.action.id;
-				this.#resume.set(id, {
-					key: thread!.key,
-					idle: false,
-					timer: setTimeout(() => {
-						this.#resume.delete(id);
-						void this.paint(ev.action);
-					}, RESUME_MS),
-				});
-			},
-		);
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<JsonObject>): void {
-		this.#endResume(ev.action.id);
-		super.onWillDisappear(ev);
 	}
 }
 

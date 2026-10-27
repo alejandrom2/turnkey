@@ -24,11 +24,11 @@
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Arrêter",
-		"Tooltip": "Arrête le tour en cours du fil sélectionné dans T3 Code."
+		"Tooltip": "Arrête le tour en cours du fil sélectionné ou, selon son réglage, les workflows qu'il exécute (Claude). Maintenir pour arrêter un workflow."
 	},
 	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Arrêter workflow",
-		"Tooltip": "Arrête les workflows exécutés par le fil (Claude). Maintenir pour arrêter."
+		"Name": "Arrêter",
+		"Tooltip": "Arrête le tour en cours du fil sélectionné ou, selon son réglage, les workflows qu'il exécute (Claude). Maintenir pour arrêter un workflow."
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Fork",
@@ -1070,6 +1070,11 @@
 				"access": "Nécessite l'accès lien invité, qui permet à ce deck de partager des fils avec des personnes extérieures. Le premier appui sur la touche le demande à la prochaine association de la machine.",
 				"link": "Lien invité",
 				"linkHint": "Affiché seulement pendant que T3 Deck tourne : T3 Code n'affiche un lien qu'une fois, à sa création."
+			},
+			"stop": {
+				"stops": "Arrête",
+				"turn": "Le tour",
+				"workflow": "Le workflow"
 			}
 		},
 		"usage": {

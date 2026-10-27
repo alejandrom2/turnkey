@@ -6,7 +6,7 @@ import { DevicesDial } from "./actions/devices.js";
 import { OpenInEditor } from "./actions/editor.js";
 import { CommitKey, CreatePrKey, GitKey, PullKey, PushKey } from "./actions/git.js";
 import { LimitsDial, LimitsKey } from "./actions/limits.js";
-import { ForkKey, MergeBackKey, StopWorkflowKey } from "./actions/lineage.js";
+import { ForkKey, MergeBackKey, Stop, StopWorkflowKey } from "./actions/lineage.js";
 import { OpenPreview } from "./actions/preview.js";
 import { QueueDial } from "./actions/queue.js";
 import { RunSkillKey, SkillsDial } from "./actions/skills.js";
@@ -31,7 +31,6 @@ import {
 	SendPrompt,
 	SpeedKey,
 	Steer,
-	Stop,
 	ThreadSlot,
 } from "./actions/keys.js";
 import { setTranslator } from "./core/i18n.js";

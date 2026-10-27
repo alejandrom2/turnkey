@@ -24,11 +24,11 @@
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Stopp",
-		"Tooltip": "Stoppt den laufenden Durchlauf des in T3 Code ausgewählten Threads."
+		"Tooltip": "Stoppt den laufenden Durchlauf des ausgewählten Threads oder, je nach Einstellung, die Workflows, die er ausführt (Claude). Workflows zum Stoppen halten."
 	},
 	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Workflow stoppen",
-		"Tooltip": "Stoppt die Workflows, die der Thread ausführt (Claude). Zum Stoppen halten."
+		"Name": "Stopp",
+		"Tooltip": "Stoppt den laufenden Durchlauf des ausgewählten Threads oder, je nach Einstellung, die Workflows, die er ausführt (Claude). Workflows zum Stoppen halten."
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Fork",
@@ -1070,6 +1070,11 @@
 				"access": "Braucht Gastlink-Zugriff, mit dem dieses Deck Threads mit Externen teilen kann. Der erste Druck auf die Taste fragt bei der nächsten Kopplung des Rechners danach.",
 				"link": "Gastlink",
 				"linkHint": "Nur sichtbar, solange T3 Deck läuft: T3 Code zeigt einen Link nur einmal, beim Erstellen."
+			},
+			"stop": {
+				"stops": "Stoppt",
+				"turn": "Den Durchlauf",
+				"workflow": "Den Workflow"
 			}
 		},
 		"usage": {

@@ -66,6 +66,7 @@ const newThread = key("new", "New Thread");
 const sendContinue = key("send", "Send Prompt", { prompt: "Continue", title: "Continue" });
 const steer = key("steer", "Steer", { title: "Keep it small", prompt: "Keep the change small and focused." });
 const stop = key("stop", "Stop");
+const stopWorkflow = key("stop", "Stop", { mode: "workflow" });
 const approve = key("approve", "Approve");
 const deny = key("deny", "Deny");
 const model = key("model", "Model");
@@ -105,7 +106,7 @@ const PAGES_8: Page[] = [
 	},
 	{
 		name: "SKILLS",
-		keys: [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("merge", "Merge Back"), key("workflow.stop", "Stop Workflow"), branch],
+		keys: [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("merge", "Merge Back"), stopWorkflow, branch],
 		dials: [skillsDial, DIALS[0]!, queueDial, DIALS[3]!],
 	},
 	{
@@ -149,7 +150,7 @@ const PAGES_15: Page[] = [
 	{ name: "THREADS", keys: [slot(5), slot(6), slot(7), slot(8), slot(9), slot(10), slot(11), slot(12), slot(13), slot(14), organize("settle"), organize("pin"), organize("snooze")] },
 	{
 		name: "CONTROLS",
-		keys: [key("permissions", "Permissions"), key("plan", "Plan"), quick("continue"), quick("test"), quick("fix"), quick("explain"), quick("commit"), key("workflow.stop", "Stop Workflow"), key("fork", "Fork"), key("merge", "Merge Back"), organize("wake"), organize("archive"), health],
+		keys: [key("permissions", "Permissions"), key("plan", "Plan"), quick("continue"), quick("test"), quick("fix"), quick("explain"), quick("commit"), stopWorkflow, key("fork", "Fork"), key("merge", "Merge Back"), organize("wake"), organize("archive"), health],
 	},
 	{ name: "SKILLS", keys: [skill(), skill(), skill(), skill(), task(), task(), task(), task(), editor, key("preview", "Open Preview"), key("update", "Update T3"), key("share", "Share Thread"), stop] },
 	{
@@ -210,7 +211,7 @@ const XL_MORE: Placed[] = [
 	task(),
 	key("fork", "Fork"),
 	key("merge", "Merge Back"),
-	key("workflow.stop", "Stop Workflow"),
+	stopWorkflow,
 	key("pr.fix", "Fix Findings"),
 	key("pr.explain", "Explain PR"),
 	key("pr.ask", "Ask about PR"),

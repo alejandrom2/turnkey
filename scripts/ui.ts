@@ -801,6 +801,18 @@ const sendPage = (fallback: string) =>
 		inModes("template", "send-text", fallback, ["custom"]) + targetScript,
 	);
 
+/** Stop's panel, starting in `fallback`. */
+const stopPage = (fallback: string) =>
+	page(
+		"Stop",
+		`${targetField}${modeField("mode", "inspector.stop.stops", fallback, [
+			["turn", "inspector.stop.turn"],
+			["workflow", "inspector.stop.workflow"],
+		])}
+			<p class="hint" id="workflow-hint" hidden${text("inspector.workflow.hint")}</p>`,
+		targetScript + inModes("mode", "workflow-hint", fallback, ["workflow"]),
+	);
+
 /** Git's panel, starting in `fallback`: the message only for commits, and Pull's own hint. */
 const gitPage = (fallback: string) =>
 	page(
@@ -1075,12 +1087,8 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.skill.dialHint")}</p>${confirmField}${dialAppearance}`,
 		targetScript + dialAppearanceScript,
 	),
-	"workflow.html": page(
-		"Stop Workflow",
-		`${targetField}
-			<p class="hint"${text("inspector.workflow.hint")}</p>`,
-		targetScript,
-	),
+	"stop.html": stopPage("turn"),
+	"workflow.html": stopPage("workflow"),
 	"fork.html": page(
 		"Fork",
 		`${targetField}
