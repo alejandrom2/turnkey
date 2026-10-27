@@ -43,6 +43,7 @@ export class Pet {
 	#timer: unknown;
 	#lastInput: number;
 	#walks = 0;
+	#previewing = false;
 
 	constructor(
 		private readonly hooks: Hooks,
@@ -79,6 +80,17 @@ export class Pet {
 		this.#restart();
 	}
 
+	/**
+	 * One walk now, from the inspector's Preview button: shown even with the pet or Motion off (calmly then), and
+	 * afterwards the pet goes back to what its settings say.
+	 */
+	preview(): void {
+		this.#restart();
+		this.#previewing = true;
+		this.#start(this.#mode === "off" ? "reduced" : this.#mode);
+		if (this.#state.kind !== "walking") this.#previewing = false;
+	}
+
 	/** The walk at this moment, until it has left the run. */
 	walk(): Walk | undefined {
 		const state = this.#state;
@@ -93,6 +105,7 @@ export class Pet {
 	#restart(): void {
 		this.#clear();
 		this.#walks = 0;
+		this.#previewing = false;
 		const walking = this.#state.kind === "walking" ? this.#state.ids : undefined;
 		this.#state = { kind: "off" };
 		if (walking) this.hooks.changed(walking);
@@ -107,8 +120,7 @@ export class Pet {
 		this.#start();
 	}
 
-	#start(): void {
-		const mode = this.#mode;
+	#start(mode: MotionMode = this.#mode): void {
 		const ids = this.hooks.runs().reduce<readonly string[]>((longest, run) => (run.length > longest.length ? run : longest), []);
 		if (mode === "off" || ids.length === 0) {
 			this.#state = { kind: "off" };
@@ -125,6 +137,11 @@ export class Pet {
 	#end(): void {
 		if (this.#state.kind !== "walking") return;
 		const { ids } = this.#state;
+		if (this.#previewing) {
+			this.#restart();
+			this.hooks.changed(ids);
+			return;
+		}
 		this.#walks++;
 		if (this.#walks >= PET.walks) this.#state = { kind: "spent" };
 		else {

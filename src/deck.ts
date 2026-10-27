@@ -159,6 +159,9 @@ class Deck implements CredentialStore {
 		await this.#apply(await streamDeck.settings.getGlobalSettings<GlobalSettings>());
 	}
 
+	/** Walks the idle pet once now; set by the dial strips, which own it. */
+	previewPet: () => void = () => {};
+
 	/** Global settings, and so the paired machines, have been read once. */
 	get loaded(): boolean {
 		return this.#authLoaded;

@@ -198,6 +198,9 @@
 						<option value="on" data-i18n="inspector.idlePet.on">On</option>
 					</sdpi-select>
 				</sdpi-item>
+				<sdpi-item>
+					<sdpi-button id="t3-preview-pet"><span data-i18n="inspector.advanced.previewPet">Preview pet</span></sdpi-button>
+				</sdpi-item>
 				<p class="hint" data-i18n="inspector.advanced.idlePetHint">After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a T3 Deck action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.</p>
 				<sdpi-item label="Colors" data-i18n-label="inspector.advanced.maxEffort">
 					<sdpi-select setting="maxEffort" global default="gradient">
@@ -445,6 +448,7 @@
 
 			$("t3-verbose").addEventListener("change", () => send("verbose", { on: $("t3-verbose").checked }));
 			$("t3-open-logs").addEventListener("click", () => send("openLogs"));
+			$("t3-preview-pet").addEventListener("click", () => send("previewPet"));
 			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
 
 			let pairedOnce = false;
