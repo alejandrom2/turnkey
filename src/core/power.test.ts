@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ModelConfig } from "./models.js";
-import { dialControl, powerIconUrl, powerState, stepChoice } from "./power.js";
+import { dialControl, isTopEffort, powerIconUrl, powerState, stepChoice } from "./power.js";
 
 const svg = (dataUrl: string) => Buffer.from(dataUrl.replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
 
@@ -57,5 +57,16 @@ describe("Power dial", () => {
 		expect(state.current?.label).toBe("High");
 		expect(powerState("effort", CONFIG, thread, true).current?.label).toBe("Ultrathink");
 		expect(powerState("effort", CONFIG, { ...thread, model: { instanceId: "codex", model: "gpt-5.5" } }).missing).toBe("No effort");
+	});
+});
+
+describe("isTopEffort", () => {
+	const level = (key: string, ultrathink = false) => ({ kind: "effort" as const, key, label: key, icon: { kind: "glyph" as const, name: "effort" as const }, optionId: "effort", value: key, ultrathink });
+	it("is the last level before Ultrathink, and only on a ladder", () => {
+		const choices = [level("low"), level("high"), level("max"), level("ultrathink", true)];
+		expect(isTopEffort(choices, "max")).toBe(true);
+		expect(isTopEffort(choices, "high")).toBe(false);
+		expect(isTopEffort(choices, "ultrathink")).toBe(false);
+		expect(isTopEffort([level("max")], "max")).toBe(false);
 	});
 });

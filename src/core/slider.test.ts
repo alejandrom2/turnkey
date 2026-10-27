@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { spectrumStops } from "./render.js";
 import { sliderArt, stopX } from "./slider.js";
 
 const svg = (dataUrl: string) => Buffer.from(dataUrl.replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
@@ -17,9 +18,9 @@ describe("sliderArt", () => {
 		expect(out).toContain(">Quicker<");
 	});
 
-	it("puts a note in place of the ends, and the spectrum in the fill for Ultrathink", () => {
-		const out = svg(sliderArt({ label: "Ultrathink", stops: 6, current: 5, spectrum: true, ends: ["Quicker", "Deeper"], note: { text: "Press to apply" } }));
-		expect(out).toContain(`fill="url(#slider-spectrum)"`);
+	it("puts a note in place of the ends, and a gradient paint in the fill", () => {
+		const out = svg(sliderArt({ label: "Ultrathink", stops: 6, current: 5, fill: { stops: spectrumStops() }, ends: ["Quicker", "Deeper"], note: { text: "Press to apply" } }));
+		expect(out).toContain(`fill="url(#slider-fill)"`);
 		expect(out).toContain(">Press to apply<");
 		expect(out).not.toContain(">Quicker<");
 	});

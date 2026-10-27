@@ -219,6 +219,15 @@ const card = `
 					</sdpi-select>
 				</sdpi-item>
 				<p class="hint"${text("inspector.advanced.motionHint")}</p>
+				<sdpi-item ${attr("label", "inspector.advanced.maxEffort")}>
+					<sdpi-select setting="maxEffort" global default="gradient">
+						<option value="gradient"${text("inspector.maxEffort.gradient")}</option>
+						<option value="solid"${text("inspector.maxEffort.solid")}</option>
+						<option value="model"${text("inspector.maxEffort.model")}</option>
+						<option value="off"${text("inspector.maxEffort.off")}</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.advanced.maxEffortHint")}</p>
 				<sdpi-item ${attr("label", "inspector.advanced.confirm")}>
 					<sdpi-select setting="confirmSend" global default="review">${confirmOptions}
 					</sdpi-select>
