@@ -214,12 +214,15 @@ export function glyph(name: GlyphName, x: number, y: number, size: number, color
 
 const NARROW = new Set("ilI1|.,:;'!`");
 const WIDE = new Set("MW@#%&");
+/** Hangul, kana, CJK ideographs and full-width forms: a full em each. */
+const FULL_WIDTH = /[\u1100-\u115F\u2E80-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]/;
 
 /** Approximate advance of `text` in px for the system UI font at weight 600. */
 export function textWidth(text: string, fontSize: number): number {
 	let em = 0;
 	for (const char of text) {
 		if (char === " ") em += 0.33;
+		else if (FULL_WIDTH.test(char)) em += 1;
 		else if (NARROW.has(char)) em += 0.3;
 		else if (WIDE.has(char)) em += 0.85;
 		else if (char >= "0" && char <= "9") em += 0.58;
