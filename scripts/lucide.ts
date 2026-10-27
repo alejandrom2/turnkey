@@ -72,6 +72,14 @@ const NAME = {
   subagent: "bot", // T3's subagent rows
   preview: "globe", // T3's preview panel
   device: "smartphone", // T3's device panel
+  update: "circle-arrow-up", // T3's server update action
+  terminal: "square-terminal",
+  scriptTest: "flask-conical", // T3's script icons (projectScriptEditor.tsx)
+  scriptLint: "list-checks",
+  scriptConfigure: "wrench",
+  scriptDebug: "bug",
+  share: "user-plus", // T3's Share with guest
+  guest: "user", // T3's guest share indicator
 } as const;
 
 const dir = process.argv[2];
