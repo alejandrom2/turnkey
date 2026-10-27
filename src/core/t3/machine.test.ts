@@ -574,3 +574,77 @@ describe("Machine details", () => {
 		expect(socket.sent.at(-1)).toEqual({ _tag: "Interrupt", requestId: subscription.id });
 	});
 });
+
+describe("Machine usage and limits", () => {
+	const limits = { checkedAt: "2026-10-27T09:59:00.000Z", windows: [{ id: "primary", kind: "session", label: "Session", usedPercent: 37 }] };
+	const codex = { instanceId: "codex", driver: "codex", enabled: true, installed: true, models: [], usageLimits: limits };
+	const configStream = (socket: FakeSocket) => socket.request("subscribeServerConfig");
+	const push = (socket: FakeSocket, ...values: unknown[]) => socket.receive({ _tag: "Chunk", requestId: configStream(socket).id, values });
+
+	it("subscribes to the server config only while watched, and keeps providers, settings and hubs current", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		expect(() => configStream(socket)).toThrow();
+
+		const release = h.machine.watchConfig();
+		expect(configStream(socket).payload).toEqual({ workspaceSnapshotsOnDemand: true, usageLimitSources: true });
+		push(socket, { version: 1, type: "snapshot", config: { ...CONFIG, providers: [codex], settings: { ...CONFIG.settings, usageModelAliases: {} } } });
+		expect(h.machine.modelConfig?.providers?.[0]?.usageLimits).toEqual(limits);
+		const stamp = h.machine.usageSettingsStamp;
+
+		const used = { ...limits, windows: [{ ...limits.windows[0], usedPercent: 50 }] };
+		push(socket, { version: 1, type: "providerStatuses", payload: { providers: [{ ...codex, usageLimits: used }] } });
+		expect(h.machine.modelConfig?.providers?.[0]?.usageLimits?.windows[0]?.usedPercent).toBe(50);
+
+		push(socket, { version: 1, type: "usageLimitSourcesUpdated", payload: { sources: [{ id: "hub", kind: "cliproxy", label: "hub", checkedAt: "x", accounts: [] }] } });
+		expect(h.machine.limitSources).toHaveLength(1);
+
+		push(socket, { version: 1, type: "settingsUpdated", payload: { settings: { ...CONFIG.settings, usageModelAliases: { a: "b" } } } });
+		expect(h.machine.usageSettingsStamp).not.toBe(stamp);
+
+		const second = h.machine.watchConfig();
+		release();
+		release();
+		second();
+		const id = configStream(socket).id;
+		const interrupted = () => socket.sent.some((frame) => frame._tag === "Interrupt" && frame.requestId === id);
+		for (let second = 0; second < 59; second++) {
+			socket.receive({ _tag: "Pong" });
+			await vi.advanceTimersByTimeAsync(1_000);
+		}
+		expect(interrupted()).toBe(false);
+		await vi.advanceTimersByTimeAsync(1_000);
+		expect(interrupted()).toBe(true);
+	});
+
+	it("refreshes providers without models and applies the reply", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const done = h.machine.refreshProviders();
+		await flush();
+		expect(socket.request("server.refreshProviders").payload).toEqual({ workspaceSnapshotsOnDemand: true });
+		socket.reply("server.refreshProviders", { providers: [codex] });
+		await done;
+		expect(h.machine.modelConfig?.providers).toEqual([codex]);
+	});
+
+	it("reads usage only with diagnostics access, dropping what it doesn't know", async () => {
+		const h = setup();
+		await connect(h);
+		await expect(h.machine.usageSummary({ sinceDay: "2026-10-21", untilDay: "2026-10-27", timeZone: "UTC" })).rejects.toMatchObject({ requiredPermission: "diagnostics:read" });
+
+		const granted = setup({ credential: { ...CREDENTIAL, scopes: [...CREDENTIAL.scopes, "diagnostics:read"] } });
+		const socket = await connect(granted);
+		const reading = granted.machine.usageSummary({ sinceDay: "2026-10-21", untilDay: "2026-10-27", timeZone: "UTC" });
+		await flush();
+		const bucket = { day: "2026-10-26", provider: "codex", model: "gpt", totals: { uncachedInputTokens: 1, cachedInputTokens: 0, cacheCreationTokens: 0, outputTokens: 1, reasoningTokens: 0 }, costUsd: 1, cacheSavingsUsd: 0, costSource: "modelPriced", records: 1, unpricedRecords: 0, sessions: 1 };
+		socket.reply("server.getUsageSummary", { contractVersion: 6, readAt: "x", timeZone: "UTC", sinceDay: "a", untilDay: "b", buckets: [bucket, { ...bucket, provider: "future" }], sources: [] });
+		expect((await reading).buckets).toEqual([bucket]);
+	});
+
+	it("spends a reset credit only with provider access", async () => {
+		const h = setup();
+		await connect(h);
+		await expect(h.machine.consumeResetCredit({ instanceId: "codex" })).rejects.toMatchObject({ requiredPermission: "providers:manage" });
+	});
+});

@@ -1,6 +1,7 @@
 import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
-import { type Credential, OPERATE_SCOPE, PairingError, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
+import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
 	applyShellItem,
@@ -45,11 +46,14 @@ type Capabilities = ThreadCapabilities & {
 
 type ProjectDefaults = { defaultModelSelection?: ModelSelection | null; defaultRuntimeMode?: RuntimeMode };
 
+/** The settings a usage scan depends on: a change makes T3 Code's own clients read usage again. */
+type UsageSettings = { usagePriceOverrides?: unknown; usageModelAliases?: unknown; cursorKeychainUsageEnabled?: unknown };
+
 /** The `ServerConfig` slice the deck reads (packages/contracts/src/server.ts). */
 type ServerConfig = {
 	environment?: { label?: string; capabilities?: Capabilities };
 	providers?: ConfigProvider[];
-	settings?: ProjectDefaults & ModelPreferences & { projectSettingsOverrides?: Record<string, ProjectDefaults> };
+	settings?: ProjectDefaults & ModelPreferences & UsageSettings & { projectSettingsOverrides?: Record<string, ProjectDefaults> };
 	shellResumeCompletionMarker?: boolean;
 	shellThreadFamilies?: boolean;
 	shellOlderSettled?: boolean;
@@ -79,6 +83,16 @@ export type PendingRequest =
 	| { type: "unsupported"; threadId: string; requestId: string; heading: string };
 
 export type SendMode = "auto" | "queue" | "steer" | "restart";
+
+/** A `subscribeServerConfig` event, the parts the deck reads (packages/contracts/src/server.ts). */
+type ConfigEvent = {
+	type?: string;
+	config?: ServerConfig;
+	payload?: { providers?: ConfigProvider[]; settings?: ServerConfig["settings"]; sources?: UsageLimitSourceSnapshot[] };
+};
+
+/** How long the config subscription outlives its last watcher, so flipping pages doesn't resubscribe. */
+export const CONFIG_WATCH_LINGER_MS = 60_000;
 type ThreadRef = Pick<ShellRow, "threadId">;
 
 const APPROVAL_HEADING: Record<string, MessageKey> = {
@@ -125,6 +139,11 @@ export class Machine {
 	#rows: ShellRow[] = [];
 	#subscribed = false;
 	#snoozeTimer: ReturnType<typeof setTimeout> | undefined;
+	/** Hub accounts' limits, from the config subscription; undefined until it reports them. */
+	#limitSources: UsageLimitSourceSnapshot[] | undefined;
+	#configWatchers = 0;
+	#configWatch: { rpc: RpcSocket; stop: () => void } | undefined;
+	#unwatchTimer: ReturnType<typeof setTimeout> | undefined;
 	readonly #now: () => number;
 	readonly #uuid: () => string;
 
@@ -244,6 +263,7 @@ export class Machine {
 		const rpc = this.#rpc;
 		this.#rpc = undefined;
 		this.#subscribed = false;
+		this.#configWatch = undefined;
 		clearTimeout(this.#snoozeTimer);
 		rpc?.stop();
 	}
@@ -275,6 +295,7 @@ export class Machine {
 	#reset(): void {
 		this.#shell = undefined;
 		this.#config = undefined;
+		this.#limitSources = undefined;
 		this.#configLoad = undefined;
 		this.#rows = [];
 	}
@@ -292,6 +313,7 @@ export class Machine {
 				if (error === undefined) return;
 				this.#rpc = undefined;
 				this.#subscribed = false;
+				this.#configWatch = undefined;
 				if (error instanceof PairingError && error.kind === "repair") {
 					void this.store.save(this.url, undefined);
 					this.#reset();
@@ -326,6 +348,7 @@ export class Machine {
 			label: this.#config.environment?.label ?? credential.label,
 			canOperate: credential.scopes.includes(OPERATE_SCOPE),
 		});
+		this.#syncConfigWatch();
 		this.#derive();
 	}
 
@@ -359,6 +382,112 @@ export class Machine {
 	/** The providers and model preferences `models.ts` builds the catalog from. */
 	get modelConfig(): ModelConfig | undefined {
 		return this.#config;
+	}
+
+	/** Hub accounts' limits; undefined until the config subscription reports them. */
+	get limitSources(): readonly UsageLimitSourceSnapshot[] | undefined {
+		return this.#limitSources;
+	}
+
+	/** The settings a usage summary depends on, as one comparable value. */
+	get usageSettingsStamp(): string {
+		const { usagePriceOverrides, usageModelAliases, cursorKeychainUsageEnabled } = this.#config?.settings ?? {};
+		return JSON.stringify([usagePriceOverrides, usageModelAliases, cursorKeychainUsageEnabled]);
+	}
+
+	/**
+	 * Keeps the server config live while something shows limits or usage: providers (and their limits), settings and
+	 * hub accounts arrive as they change. Returns the release; the subscription lingers a minute after the last one.
+	 */
+	watchConfig(): () => void {
+		this.#configWatchers++;
+		clearTimeout(this.#unwatchTimer);
+		this.#syncConfigWatch();
+		let released = false;
+		return () => {
+			if (released) return;
+			released = true;
+			this.#configWatchers--;
+			if (this.#configWatchers === 0) this.#unwatchTimer = setTimeout(() => this.#syncConfigWatch(), CONFIG_WATCH_LINGER_MS);
+		};
+	}
+
+	#syncConfigWatch(): void {
+		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
+		const wanted = this.#configWatchers > 0 ? rpc : undefined;
+		if (this.#configWatch !== undefined && this.#configWatch.rpc !== wanted) {
+			this.#configWatch.stop();
+			this.#configWatch = undefined;
+		}
+		if (wanted === undefined || this.#configWatch !== undefined) return;
+		const watch = {
+			rpc: wanted,
+			stop: wanted.subscribe("subscribeServerConfig", () => ({ workspaceSnapshotsOnDemand: true, usageLimitSources: true }), (event) => this.#onConfigEvent(wanted, event as ConfigEvent), {
+				persistent: true,
+				// Not retried until the next connection: limits then update on refreshes only.
+				onEnd: () => {
+					if (this.#configWatch !== watch) return;
+					watch.stop();
+					this.#configWatch = undefined;
+				},
+			}),
+		};
+		this.#configWatch = watch;
+	}
+
+	#onConfigEvent(rpc: RpcSocket, event: ConfigEvent): void {
+		if (this.#rpc !== rpc) return;
+		const { config, payload } = event;
+		switch (event.type) {
+			case "snapshot":
+				if (config === undefined) return;
+				this.#config = config;
+				break;
+			case "usageLimitSourcesUpdated":
+				if (!Array.isArray(payload?.sources)) return;
+				this.#limitSources = payload.sources;
+				break;
+			case "providerStatuses":
+				if (this.#config === undefined || !Array.isArray(payload?.providers)) return;
+				this.#config = { ...this.#config, providers: payload.providers };
+				break;
+			case "settingsUpdated":
+				if (this.#config === undefined || payload?.settings === undefined) return;
+				this.#config = { ...this.#config, settings: payload.settings };
+				break;
+			default:
+				return;
+		}
+		this.configVersion++;
+		this.onChange();
+	}
+
+	/**
+	 * Re-reads every provider's limits and hub account now. Never `refreshModels`, which may open provider sessions;
+	 * the reply's providers apply at once, and hub accounts follow on the config subscription.
+	 */
+	async refreshProviders(): Promise<void> {
+		const rpc = this.#rpcFor(false);
+		const { providers } = await rpc.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { workspaceSnapshotsOnDemand: true });
+		if (this.#rpc !== rpc || this.#config === undefined || !Array.isArray(providers)) return;
+		this.#config = { ...this.#config, providers };
+		this.configVersion++;
+		this.onChange();
+	}
+
+	/** Cost and tokens for a window; T3 Code scans its transcript folders for every call, so callers cache. */
+	async usageSummary(input: UsageSummaryInput): Promise<UsageSummary> {
+		return readUsageSummary(await this.call<unknown>("server.getUsageSummary", input, DIAGNOSTICS_SCOPE));
+	}
+
+	/** Reloads model prices from T3 Code's rate table; it doesn't rescan, so read the summary again after. */
+	async refreshUsageRates(): Promise<void> {
+		await this.call("server.refreshUsageRates", {}, DIAGNOSTICS_SCOPE);
+	}
+
+	/** Spends one banked reset credit on a provider account or hub account. */
+	consumeResetCredit(input: ResetCreditInput): Promise<{ outcome: ResetCreditOutcome; warning?: string }> {
+		return this.call("provider.consumeResetCredit", input, PROVIDERS_SCOPE);
 	}
 
 	/** Resumes from the last applied sequence; the omit flags only go to servers that advertise them. */
