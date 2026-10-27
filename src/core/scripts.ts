@@ -77,15 +77,22 @@ export type TerminalSummary = {
 
 export const terminalKey = (threadId: string, terminalId: string): string => `${threadId}\n${terminalId}`;
 
+const sameState = (a: TerminalSummary | undefined, b: TerminalSummary): boolean =>
+	a !== undefined && a.status === b.status && a.exitCode === b.exitCode && (a.exitSignal ?? null) === (b.exitSignal ?? null) && a.hasRunningSubprocess === b.hasRunningSubprocess;
+
 /** Applies one `subscribeTerminalMetadata` event; the same map when it changes nothing the deck knows. */
 export function applyTerminalEvent(terminals: ReadonlyMap<string, TerminalSummary>, event: unknown): ReadonlyMap<string, TerminalSummary> {
 	const value = event as { type?: string; terminals?: TerminalSummary[]; terminal?: TerminalSummary; threadId?: string; terminalId?: string } | null;
 	switch (value?.type) {
 		case "snapshot":
 			return new Map((value.terminals ?? []).map((terminal) => [terminalKey(terminal.threadId, terminal.terminalId), terminal]));
-		case "upsert":
+		case "upsert": {
 			if (value.terminal === undefined) return terminals;
-			return new Map(terminals).set(terminalKey(value.terminal.threadId, value.terminal.terminalId), value.terminal);
+			const key = terminalKey(value.terminal.threadId, value.terminal.terminalId);
+			// Output moves labels and timestamps constantly; only a change the key shows repaints the deck.
+			if (sameState(terminals.get(key), value.terminal)) return terminals;
+			return new Map(terminals).set(key, value.terminal);
+		}
 		case "remove": {
 			if (value.threadId === undefined || value.terminalId === undefined) return terminals;
 			const next = new Map(terminals);

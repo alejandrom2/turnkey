@@ -199,8 +199,12 @@ function spendMachines(url: string | undefined, settings: LimitsSettings): Machi
 	return readyMachines(undefined).filter((machine) => targets.has(machine.url));
 }
 
-/** Flags provider access where a "spend" instance would spend, so those machines' next pairing asks for it. */
-function optInFor(url: string | undefined, settings: LimitsSettings): void {
+/**
+ * Flags provider access where a "spend" instance would spend, so those machines' next pairing asks for it. Only when
+ * the user turns "spend" on (and on a hold that spends), so Don't ask in the machine card sticks.
+ */
+function optInFor(url: string | undefined, settings: LimitsSettings, before: string | undefined): void {
+	if (resetAction(before) === "spend") return;
 	for (const machine of spendMachines(url, settings)) if (!grants(machine.scopes, PROVIDERS_SCOPE)) void deck.optInScope(machine.url, PROVIDERS_SCOPE);
 }
 
@@ -273,7 +277,6 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 	override onWillAppear(ev: WillAppearEvent<LimitsSettings>): void {
 		super.onWillAppear(ev);
 		watch.show(ev.action.id, this.machineOf(ev.action));
-		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action));
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<LimitsSettings>): void {
@@ -282,9 +285,10 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 	}
 
 	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<LimitsSettings>): Promise<void> {
+		const before = this.settingsOf(ev.action).resetAction;
 		super.onDidReceiveSettings(ev);
 		watch.show(ev.action.id, this.machineOf(ev.action));
-		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action));
+		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action), before);
 		if (streamDeck.ui.action?.id === ev.action.id) await this.#sendWindows(ev.action);
 	}
 
@@ -463,7 +467,6 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 	override onWillAppear(ev: WillAppearEvent<LimitsDialSettings>): void {
 		super.onWillAppear(ev);
 		watch.show(ev.action.id, this.machineOf(ev.action));
-		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action));
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<LimitsDialSettings>): void {
@@ -473,9 +476,10 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 	}
 
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<LimitsDialSettings>): void {
+		const before = this.settingsOf(ev.action).resetAction;
 		super.onDidReceiveSettings(ev);
 		watch.show(ev.action.id, this.machineOf(ev.action));
-		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action));
+		optInFor(this.machineOf(ev.action), this.settingsOf(ev.action), before);
 	}
 
 	#paintShown(): void {
