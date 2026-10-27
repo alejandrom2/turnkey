@@ -1,4 +1,5 @@
 import type { DeckThread } from "./board.js";
+import { t } from "./i18n.js";
 
 export type ActionKind =
 	| "open"
@@ -41,32 +42,32 @@ const no = (reason: string): Availability => ({ available: false, reason });
 /** Whether an action can act right now, and the short reason drawn on its key when it can't. */
 export function availability(kind: ActionKind, input: AvailabilityInput): Availability {
 	const { thread } = input;
-	if ((kind === "send" || kind === "steer" || kind === "new") && !input.hasPrompt) return no("No prompt");
-	if (kind === "new" || kind === "launch") return input.missing ? no(input.missing) : input.canOperate ? yes : no("Read only");
-	if (thread === undefined) return no(kind === "answer" || kind === "approve" || kind === "deny" ? "Nothing pending" : "No thread");
+	if ((kind === "send" || kind === "steer" || kind === "new") && !input.hasPrompt) return no(t("reason.noPrompt"));
+	if (kind === "new" || kind === "launch") return input.missing ? no(input.missing) : input.canOperate ? yes : no(t("reason.readOnly"));
+	if (thread === undefined) return no(kind === "answer" || kind === "approve" || kind === "deny" ? t("reason.nothingPending") : t("reason.noThread"));
 	if (kind === "open" || kind === "select") return yes;
 	// Opening a link or the thread only reads, so a read-only pairing may.
-	if (kind === "pr") return (thread.pullRequests?.length ?? 0) > 0 ? yes : no("No PR");
-	if (kind === "branch") return thread.branch ? yes : no("No branch");
+	if (kind === "pr") return (thread.pullRequests?.length ?? 0) > 0 ? yes : no(t("reason.noPr"));
+	if (kind === "branch") return thread.branch ? yes : no(t("reason.noBranch"));
 	switch (kind) {
 		case "stop":
 		case "steer":
-			if (!thread.active) return no("Not running");
+			if (!thread.active) return no(t("reason.notRunning"));
 			break;
 		case "pin":
-			if (thread.pinned) return no("Pinned");
+			if (thread.pinned) return no(t("reason.pinned"));
 			break;
 		case "unpin":
-			if (!thread.pinned) return no("Not pinned");
+			if (!thread.pinned) return no(t("reason.notPinned"));
 			break;
 		case "answer":
-			if (thread.pendingRequest === undefined || (thread.deck !== "approval" && thread.deck !== "question")) return no("Nothing pending");
+			if (thread.pendingRequest === undefined || (thread.deck !== "approval" && thread.deck !== "question")) return no(t("reason.nothingPending"));
 			break;
 		case "approve":
 		case "deny":
-			if (thread.pendingRequest === undefined || thread.deck !== "approval") return no("Nothing pending");
+			if (thread.pendingRequest === undefined || thread.deck !== "approval") return no(t("reason.nothingPending"));
 			break;
 	}
 	if (input.missing) return no(input.missing);
-	return input.canOperate ? yes : no("Read only");
+	return input.canOperate ? yes : no(t("reason.readOnly"));
 }

@@ -82,3 +82,11 @@ npx streamdeck pack com.alejandrom2.t3deck.sdPlugin
 - Logs are in `com.alejandrom2.t3deck.sdPlugin/logs/`. Keep the log level below `trace`, because trace would log access tokens.
 
 The visual style follows Stream Deck's native agent plugins: flat near-black keys, one white line glyph, a single status accent, and a gradient touch strip. The glyphs and art are drawn for this plugin.
+
+## Translations
+
+Every string the plugin shows lives in `com.alejandrom2.t3deck.sdPlugin/en.json`: the top-level `Name`, `Description`, `Category` and per-action entries translate the manifest for the Stream Deck app, and `Localization` holds everything drawn on keys, strips and settings pages. Stream Deck supports `de`, `en`, `es`, `fr`, `ja`, `ko`, `zh_CN` and `zh_TW`.
+
+To add a language, copy `en.json` to `de.json` (for example) next to it and translate the values, leaving keys and `{placeholders}` as they are. Keys you leave out fall back to English one by one. Thread titles, project and branch names, models, providers and T3 Code's own messages always show as T3 Code sends them, and prompts the deck sends to agents stay in English.
+
+`npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and other language files only use known keys with the same placeholders. After changing settings-page copy, run `node scripts/ui.ts`.

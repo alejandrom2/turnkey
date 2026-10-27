@@ -1,3 +1,4 @@
+import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { type Credential, OPERATE_SCOPE, PairingError, redeemPairingCode, socketUrl } from "./pairing.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
@@ -72,12 +73,12 @@ export type PendingRequest =
 export type SendMode = "auto" | "queue" | "steer" | "restart";
 type ThreadRef = Pick<ShellRow, "threadId">;
 
-const APPROVAL_HEADING: Record<string, string> = {
-	command: "Command approval",
-	"file-read": "File read approval",
-	"file-change": "File change approval",
-	permission: "App permission approval",
-	"mcp-elicitation": "App access approval",
+const APPROVAL_HEADING: Record<string, MessageKey> = {
+	command: "approval.command",
+	"file-read": "approval.fileRead",
+	"file-change": "approval.fileChange",
+	permission: "approval.permission",
+	"mcp-elicitation": "approval.mcpElicitation",
 };
 /** Approvals the deck answers; others (tool calls, app access, auth) open in T3 Code. */
 const ANSWERABLE = new Set(["command", "file-read", "file-change", "permission", "user_input"]);
@@ -162,7 +163,7 @@ export class Machine {
 		if (credential === undefined) return this.#set({ kind: "signed-out" });
 		if (credential.expiresAt <= this.#now()) {
 			void this.store.save(this.url, undefined);
-			return this.#set({ kind: "signed-out", message: "This pairing expired. Paste a new pair link." });
+			return this.#set({ kind: "signed-out", message: t("machine.pairingExpired") });
 		}
 		const rpc: RpcSocket = new RpcSocket({
 			authorize: () => socketUrl(this.url, credential, this.deps.fetch),
@@ -314,9 +315,9 @@ export class Machine {
 	#shellEnded(rpc: RpcSocket, error: Error | undefined): void {
 		if (error instanceof RpcError && error.tag === "EnvironmentAuthorizationError") {
 			this.stop();
-			return this.#set({ kind: "error", message: "This pairing can't read threads. Paste a new pair link." });
+			return this.#set({ kind: "error", message: t("machine.cannotRead") });
 		}
-		rpc.drop(error ?? new Error("T3 Code ended the thread feed."));
+		rpc.drop(error ?? new Error(t("connection.feedEnded")));
 	}
 
 	#apply(item: ShellItem): void {
@@ -506,7 +507,7 @@ export class Machine {
 		const pending = thread.pendingRequest;
 		if (pending === undefined) return undefined;
 		const base = { threadId: pending.threadId, requestId: pending.id };
-		const heading = APPROVAL_HEADING[pending.kind] ?? "Needs you in T3 Code";
+		const heading = t(APPROVAL_HEADING[pending.kind] ?? "approval.needsYou");
 		if (!ANSWERABLE.has(pending.kind)) return { type: "unsupported", ...base, heading };
 		const rpc = this.#rpcFor(false);
 		const { item } = await rpc.request<{ item: TurnItem | null }>("orchestration.getTurnItem", {

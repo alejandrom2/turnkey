@@ -1,11 +1,16 @@
-/** Quick Prompt's templates: everyday prompts plus T3 Code's commit step. */
+import { type MessageKey, t } from "./i18n.js";
+
+/**
+ * Quick Prompt's templates: everyday prompts plus T3 Code's commit step. Only labels are localized: the
+ * text goes to the agent, and the Prompts dial matches it against the user's own lines.
+ */
 export const QUICK_PROMPTS = {
-	continue: { label: "Continue", text: "Continue." },
-	test: { label: "Fix tests", text: "Run the tests and fix any failures." },
-	fix: { label: "Diagnose", text: "Diagnose the problem and fix it." },
-	explain: { label: "Explain", text: "Explain the current state of the work: what's done, what's left, and anything blocking it." },
-	commit: { label: "Commit", text: "Commit your changes with a clear message." },
-} as const;
+	continue: { label: "quick.continue", text: "Continue." },
+	test: { label: "quick.test", text: "Run the tests and fix any failures." },
+	fix: { label: "quick.fix", text: "Diagnose the problem and fix it." },
+	explain: { label: "quick.explain", text: "Explain the current state of the work: what's done, what's left, and anything blocking it." },
+	commit: { label: "quick.commit", text: "Commit your changes with a clear message." },
+} as const satisfies Record<string, { label: MessageKey; text: string }>;
 
 export type QuickTemplate = keyof typeof QUICK_PROMPTS | "custom";
 
@@ -15,8 +20,9 @@ export const quickTemplate = (value: unknown): QuickTemplate =>
 /** The prompt a Quick Prompt key sends and the label it shows unless it has a title. */
 export function quickPrompt(settings: { template?: unknown; prompt?: unknown }): { text: string; label: string } {
 	const template = quickTemplate(settings.template);
-	if (template === "custom") return { text: typeof settings.prompt === "string" ? settings.prompt.trim() : "", label: "Prompt" };
-	return { ...QUICK_PROMPTS[template] };
+	if (template === "custom") return { text: typeof settings.prompt === "string" ? settings.prompt.trim() : "", label: t("face.prompt") };
+	const { label, text } = QUICK_PROMPTS[template];
+	return { text, label: t(label) };
 }
 
 /**
@@ -43,5 +49,5 @@ export function dialPrompts(settings: { prompts?: unknown; templates?: unknown }
 		.map((text): DialPrompt => ({ text }));
 	if (settings.templates === false || settings.templates === "false") return own;
 	const seen = new Set(own.map((prompt) => sameText(prompt.text)));
-	return [...own, ...Object.values(QUICK_PROMPTS).filter((template) => !seen.has(sameText(template.text))).map((template) => ({ text: template.text, label: template.label }))];
+	return [...own, ...Object.values(QUICK_PROMPTS).filter((template) => !seen.has(sameText(template.text))).map((template) => ({ text: template.text, label: t(template.label) }))];
 }

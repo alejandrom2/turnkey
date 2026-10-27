@@ -1,8 +1,32 @@
 // Writes the property inspectors; every one ends with the shared T3 Code machine card: `node scripts/ui.ts`.
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const dir = join(import.meta.dirname, "..", "com.alejandrom2.t3deck.sdPlugin", "ui");
+const plugin = join(import.meta.dirname, "..", "com.alejandrom2.t3deck.sdPlugin");
+const dir = join(plugin, "ui");
+
+/**
+ * Copy comes from en.json's "Localization", written in as English. Elements name their key in `data-i18n` (text) or
+ * `data-i18n-<attribute>`; on load the inspector asks the plugin for the current language's table and swaps them.
+ */
+const messages: { inspector: { card: Record<string, string> } } = JSON.parse(readFileSync(join(plugin, "en.json"), "utf8")).Localization;
+
+const msg = (key: string): string => {
+	const value = key.split(".").reduce<unknown>((node, part) => (node as Record<string, unknown> | undefined)?.[part], messages);
+	if (typeof value !== "string") throw new Error(`en.json has no Localization.${key}`);
+	return value;
+};
+
+const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+/** Closes an opening tag with the key's text as its content: `<p class="hint"${text(key)}</p>`. */
+const text = (key: string) => ` data-i18n="${key}">${escape(msg(key))}`;
+
+/** A localized attribute: `label`, `placeholder`, `loading` or `aria-label`. */
+const attr = (name: string, key: string) => `${name}="${escape(msg(key))}" data-i18n-${name}="${key}"`;
+
+/** The card's script builds its copy at runtime, so it carries the English table to fall back on. */
+const cardStrings = Object.fromEntries(Object.keys(messages.inspector.card).map((name) => [`inspector.card.${name}`, msg(`inspector.card.${name}`)]));
 
 // Tokens from T3 Code's dark theme (apps/web/src/index.css) so the card reads like its pairing pages.
 const style = `
@@ -104,56 +128,56 @@ const style = `
 const card = `
 			<section class="t3" id="t3" aria-live="polite">
 				<p class="eyebrow">T3 Code</p>
-				<h2 id="t3-title">Choose a machine</h2>
-				<p class="lede" id="t3-lede">Looking for T3 Code on this machine…</p>
-				<div class="machines" id="t3-machines" role="radiogroup" aria-label="Machine for this action"></div>
+				<h2 id="t3-title"${text("inspector.card.choose")}</h2>
+				<p class="lede" id="t3-lede"${text("inspector.card.looking")}</p>
+				<div class="machines" id="t3-machines" role="radiogroup" ${attr("aria-label", "inspector.card.machineGroup")}></div>
 				<div class="add">
-					<p class="label">Add a machine</p>
+					<p class="label"${text("inspector.card.addMachine")}</p>
 					<div class="controls">
-						<input id="t3-link" type="url" autocomplete="off" spellcheck="false" placeholder="Paste a pair link from Settings → Sharing &amp; access" />
-						<button class="primary" id="t3-pair" type="button" disabled>Connect</button>
+						<input id="t3-link" type="url" autocomplete="off" spellcheck="false" ${attr("placeholder", "inspector.card.linkPlaceholder")} />
+						<button class="primary" id="t3-pair" type="button" disabled${text("inspector.card.connect")}</button>
 					</div>
-					<p class="access-help">T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing &amp; access.</p>
+					<p class="access-help"${text("inspector.card.accessHelp")}</p>
 					<p class="result" id="t3-result" hidden></p>
 				</div>
-				<p class="note">Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.</p>
+				<p class="note"${text("inspector.card.shared")}</p>
 			</section>
 			<details class="group">
-				<summary>Advanced</summary>
-				<sdpi-item label="App link">
+				<summary${text("inspector.advanced.title")}</summary>
+				<sdpi-item ${attr("label", "inspector.advanced.appLink")}>
 					<sdpi-textfield setting="scheme" global placeholder="t3code"></sdpi-textfield>
 				</sdpi-item>
-				<p class="hint">Use t3code-dev to open threads in a development build.</p>
-				<sdpi-item label="Dial strips">
+				<p class="hint"${text("inspector.advanced.appLinkHint")}</p>
+				<sdpi-item ${attr("label", "inspector.advanced.dialStrips")}>
 					<sdpi-select setting="stripBackground" global default="t3">
-						<option value="t3">T3 Code</option>
-						<option value="gradient">Gradient</option>
-						<option value="state">Thread state</option>
-						<option value="custom">Custom color</option>
+						<option value="t3"${text("inspector.background.t3")}</option>
+						<option value="gradient"${text("inspector.background.gradient")}</option>
+						<option value="state"${text("inspector.background.state")}</option>
+						<option value="custom"${text("inspector.background.custom")}</option>
 					</sdpi-select>
 				</sdpi-item>
-				<sdpi-item label="Strip color" id="strip-color" hidden>
+				<sdpi-item ${attr("label", "inspector.field.stripColor")} id="strip-color" hidden>
 					<sdpi-color setting="stripColor" global default="#121212"></sdpi-color>
 				</sdpi-item>
-				<sdpi-item label="State line">
-					<sdpi-checkbox setting="stripHairline" global default="true" label="Show the colored line under each strip"></sdpi-checkbox>
+				<sdpi-item ${attr("label", "inspector.advanced.stateLine")}>
+					<sdpi-checkbox setting="stripHairline" global default="true" ${attr("label", "inspector.advanced.stateLineLabel")}></sdpi-checkbox>
 				</sdpi-item>
-				<p class="hint">Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
-				<sdpi-item label="Strip style">
+				<p class="hint"${text("inspector.advanced.stateHint")}</p>
+				<sdpi-item ${attr("label", "inspector.advanced.stripStyle")}>
 					<sdpi-select setting="stripStyle" global default="classic">
-						<option value="classic">Classic</option>
-						<option value="list">List</option>
-						<option value="carousel">Carousel</option>
+						<option value="classic"${text("inspector.style.classic")}</option>
+						<option value="list"${text("inspector.style.list")}</option>
+						<option value="carousel"${text("inspector.style.carousel")}</option>
 					</sdpi-select>
 				</sdpi-item>
-				<sdpi-item label="Long text">
+				<sdpi-item ${attr("label", "inspector.field.longText")}>
 					<sdpi-select setting="textScroll" global default="horizontal">
-						<option value="horizontal">Scroll sideways</option>
-						<option value="vertical">Roll up line by line</option>
-						<option value="off">Don't scroll</option>
+						<option value="horizontal"${text("inspector.scroll.horizontal")}</option>
+						<option value="vertical"${text("inspector.scroll.vertical")}</option>
+						<option value="off"${text("inspector.scroll.off")}</option>
 					</sdpi-select>
 				</sdpi-item>
-				<p class="hint">List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.</p>
+				<p class="hint"${text("inspector.advanced.styleHint")}</p>
 			</details>`;
 
 /** Shows the element `id` only while `setting` (a global one with `global`) passes `test`, as it is edited and as settings arrive. */
@@ -168,32 +192,32 @@ const showWhen = (setting: string, id: string, test: string, global = false) => 
 
 /** A dial's own strip background, style and text scroll, over the global ones in Advanced. */
 const dialAppearance = `
-			<sdpi-item label="Strip">
+			<sdpi-item ${attr("label", "inspector.field.strip")}>
 				<sdpi-select setting="background" default="">
-					<option value="">Use global</option>
-					<option value="t3">T3 Code</option>
-					<option value="gradient">Gradient</option>
-					<option value="state">Thread state</option>
-					<option value="custom">Custom color</option>
+					<option value=""${text("inspector.background.global")}</option>
+					<option value="t3"${text("inspector.background.t3")}</option>
+					<option value="gradient"${text("inspector.background.gradient")}</option>
+					<option value="state"${text("inspector.background.state")}</option>
+					<option value="custom"${text("inspector.background.custom")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Strip color" id="background-color" hidden>
+			<sdpi-item ${attr("label", "inspector.field.stripColor")} id="background-color" hidden>
 				<sdpi-color setting="backgroundColor" default="#121212"></sdpi-color>
 			</sdpi-item>
-			<sdpi-item label="Style">
+			<sdpi-item ${attr("label", "inspector.field.style")}>
 				<sdpi-select setting="stripStyle" default="">
-					<option value="">Use global</option>
-					<option value="classic">Classic</option>
-					<option value="list">List</option>
-					<option value="carousel">Carousel</option>
+					<option value=""${text("inspector.background.global")}</option>
+					<option value="classic"${text("inspector.style.classic")}</option>
+					<option value="list"${text("inspector.style.list")}</option>
+					<option value="carousel"${text("inspector.style.carousel")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Long text">
+			<sdpi-item ${attr("label", "inspector.field.longText")}>
 				<sdpi-select setting="textScroll" default="">
-					<option value="">Use global</option>
-					<option value="horizontal">Scroll sideways</option>
-					<option value="vertical">Roll up line by line</option>
-					<option value="off">Don't scroll</option>
+					<option value=""${text("inspector.background.global")}</option>
+					<option value="horizontal"${text("inspector.scroll.horizontal")}</option>
+					<option value="vertical"${text("inspector.scroll.vertical")}</option>
+					<option value="off"${text("inspector.scroll.off")}</option>
 				</sdpi-select>
 			</sdpi-item>`;
 const dialAppearanceScript = showWhen("background", "background-color", `value === "custom"`);
@@ -202,6 +226,8 @@ const script = (extra = "") => `
 		<script>
 			const client = SDPIComponents.streamDeckClient;
 			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
+			const strings = ${JSON.stringify(cardStrings)};
+			const s = (key, params = {}) => (strings[key] ?? key).replace(/\\{(\\w+)\\}/g, (match, name) => (name in params ? String(params[name]) : match));
 			const icons = {
 				all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
 				local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
@@ -257,14 +283,14 @@ const script = (extra = "") => `
 			function machineActions(env) {
 				const actions = [];
 				if (env.state === "ready") {
-					actions.push(el("span", env.access === "Can act" ? "pill ready" : "pill muted", env.access === "Can act" ? "Connected" : "Read only"));
-					actions.push(button("Sign out", "ghost", "signOut", env.url));
+					actions.push(el("span", env.access === "Can act" ? "pill ready" : "pill muted", s(env.access === "Can act" ? "inspector.card.connected" : "inspector.card.readOnly")));
+					actions.push(button(s("inspector.card.signOut"), "ghost", "signOut", env.url));
 				} else if (env.state === "connecting") {
-					actions.push(el("span", "pill muted", "Connecting…"));
+					actions.push(el("span", "pill muted", s("inspector.card.connecting")));
 				} else if (env.state === "error") {
-					actions.push(button("Try again", "primary", "retry", env.url));
+					actions.push(button(s("inspector.card.tryAgain"), "primary", "retry", env.url));
 				} else {
-					const pill = el("button", "pill wait", "Needs pairing");
+					const pill = el("button", "pill wait", s("inspector.card.needsPairing"));
 					pill.type = "button";
 					pill.addEventListener("click", (click) => {
 						click.stopPropagation();
@@ -272,33 +298,30 @@ const script = (extra = "") => `
 					});
 					actions.push(pill);
 				}
-				if (!env.local) actions.push(button("Remove", "ghost", "remove", env.url));
+				if (!env.local) actions.push(button(s("inspector.card.remove"), "ghost", "remove", env.url));
 				return actions;
 			}
 
-			client.sendToPropertyInspector.subscribe(({ payload }) => {
-				if (payload?.event !== "status") return;
+			let lastStatus;
+			function renderStatus(payload) {
 				const environments = payload.environments ?? [];
 				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
 				const ready = environments.filter((env) => env.state === "ready");
 				const failed = environments.some((env) => env.state === "error") || payload.pairing?.state === "error";
 
 				$("t3").dataset.tone = failed ? "error" : "pairing";
-				$("t3-title").textContent = environments.length === 0 ? "Connect T3 Deck" : ready.length === 0 ? "Pair T3 Deck" : "Choose a machine";
-				$("t3-lede").textContent =
-					environments.length === 0
-						? "T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below."
-						: ready.length === 0
-							? "In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below."
-							: "This action shows and acts on threads from the machine you pick.";
+				$("t3-title").textContent = s(environments.length === 0 ? "inspector.card.connectTitle" : ready.length === 0 ? "inspector.card.pairTitle" : "inspector.card.choose");
+				$("t3-lede").textContent = s(
+					environments.length === 0 ? "inspector.card.notRunning" : ready.length === 0 ? "inspector.card.howToPair" : "inspector.card.picked",
+				);
 
 				const tiles = [];
 				if (environments.length > 1 || selected === "") {
 					tiles.push(tile({
 						url: "",
 						icon: "all",
-						name: "All machines",
-						where: environments.length === 0 ? "None yet" : ready.length + " of " + environments.length + " connected",
+						name: s("inspector.card.allMachines"),
+						where: environments.length === 0 ? s("inspector.card.noneYet") : s("inspector.card.connectedCount", { ready: ready.length, total: environments.length }),
 						checked: selected === "",
 					}));
 				}
@@ -310,7 +333,7 @@ const script = (extra = "") => `
 						where: env.where,
 						checked: env.url === selected,
 						actions: machineActions(env),
-						detail: env.state === "error" ? env.message : env.state === "signed-out" ? (env.message ?? "Paste a pair link from this machine below.") : undefined,
+						detail: env.state === "error" ? env.message : env.state === "signed-out" ? (env.message ?? s("inspector.card.pasteFromMachine")) : undefined,
 						detailTone: env.state === "signed-out" ? "muted" : undefined,
 					}));
 				}
@@ -320,18 +343,40 @@ const script = (extra = "") => `
 				const pairing = payload.pairing ?? { state: "idle" };
 				result.hidden = pairing.state === "idle";
 				result.className = "result " + pairing.state;
-				result.textContent = pairing.state === "error" ? pairing.message : "Connecting with the pair link…";
+				result.textContent = pairing.state === "error" ? pairing.message : s("inspector.card.pairing");
 				if (pairing.state === "idle" && pairedOnce) {
 					$("t3-link").value = "";
 					pairedOnce = false;
 				}
 				syncPairButton(pairing.state === "working");
+			}
+
+			/** Swaps the English copy for the plugin's current-language table; sdpi selects re-read their options on refresh. */
+			function applyStrings(table) {
+				Object.assign(strings, table);
+				for (const node of document.querySelectorAll("[data-i18n]")) if (table[node.dataset.i18n]) node.textContent = table[node.dataset.i18n];
+				for (const name of ["label", "placeholder", "loading", "aria-label"]) {
+					for (const node of document.querySelectorAll("[data-i18n-" + name + "]")) {
+						const value = table[node.getAttribute("data-i18n-" + name)];
+						if (value) node.setAttribute(name, value);
+					}
+				}
+				for (const select of document.querySelectorAll("sdpi-select")) if (select.querySelector("option")) select.refresh?.();
+				if (lastStatus) renderStatus(lastStatus);
+				else syncPairButton();
+			}
+
+			client.sendToPropertyInspector.subscribe(({ payload }) => {
+				if (payload?.event === "strings") return applyStrings(payload.strings ?? {});
+				if (payload?.event !== "status") return;
+				lastStatus = payload;
+				renderStatus(payload);
 			});
 
 			let pairedOnce = false;
 			const syncPairButton = (working = false) => {
 				$("t3-pair").disabled = working || !/[#?&]token=./.test($("t3-link").value);
-				$("t3-pair").textContent = working ? "Connecting…" : "Connect";
+				$("t3-pair").textContent = s(working ? "inspector.card.connecting" : "inspector.card.connect");
 			};
 			$("t3-link").addEventListener("input", () => syncPairButton());
 			$("t3-pair").addEventListener("click", () => {
@@ -342,6 +387,7 @@ const script = (extra = "") => `
 			$("t3-link").addEventListener("keydown", (key) => {
 				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
 			});
+			send("strings");
 			send("status");${showWhen("stripBackground", "strip-color", `value === "custom"`, true)}${extra}
 		</script>`;
 
@@ -359,237 +405,229 @@ const page = (title: string, fields = "", extra = "") => `<!doctype html>
 </html>
 `;
 
+const filterOptions = `
+				<sdpi-select setting="filter" default="all">
+					<option value="all"${text("inspector.filter.all")}</option>
+					<option value="attention"${text("inspector.filter.attention")}</option>
+					<option value="active"${text("inspector.filter.active")}</option>
+					<option value="unread"${text("inspector.filter.unread")}</option>
+				</sdpi-select>`;
+
+const authorityOptions = `
+				<sdpi-select setting="approvalAuthority" default="open">
+					<option value="open"${text("inspector.authority.open")}</option>
+					<option value="once"${text("inspector.authority.once")}</option>
+					<option value="session"${text("inspector.authority.session")}</option>
+					<option value="always"${text("inspector.authority.always")}</option>
+				</sdpi-select>`;
+
 const pages: Record<string, string> = {
 	"environments.html": page("T3 Deck"),
 	"slot.html": page(
 		"Thread",
 		`
-			<sdpi-item label="Slot">
+			<sdpi-item ${attr("label", "inspector.slot.label")}>
 				<sdpi-select setting="slot" default="">
-					<option value="">By key position</option>
-					<option value="0">Selected thread</option>
-					${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}${i === 0 ? " (most urgent)" : ""}</option>`).join("\n\t\t\t\t\t")}
+					<option value=""${text("inspector.slot.byPosition")}</option>
+					<option value="0"${text("inspector.slot.selected")}</option>
+					${Array.from({ length: 12 }, (_, i) => (i === 0 ? `<option value="1"${text("inspector.slot.first")}</option>` : `<option value="${i + 1}">${i + 1}</option>`)).join("\n\t\t\t\t\t")}
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">By key position fills Thread keys left to right, top to bottom. Threads are ordered: needs approval, has a question, running, then the rest. Tap opens, hold selects.</p>`,
+			<p class="hint"${text("inspector.slot.hint")}</p>`,
 	),
 	"activity.html": page(
 		"Activity",
 		`
-			<sdpi-item label="Show">
-				<sdpi-select setting="filter" default="all">
-					<option value="all">All threads</option>
-					<option value="attention">Needs you: approval, question, failure or unread result</option>
-					<option value="active">Working or queued</option>
-					<option value="unread">Unread</option>
-				</sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.show")}>${filterOptions}
 			</sdpi-item>
-			<sdpi-item label="Project">
-				<sdpi-select setting="project" datasource="getProjects" hot-reload loading="Loading projects…" default=""></sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.project")}>
+				<sdpi-select setting="project" datasource="getProjects" hot-reload ${attr("loading", "inspector.loading.projects")} default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint">Shows the most urgent matching thread. More Activity keys with the same settings show the next ones, by key position.</p>`,
+			<p class="hint"${text("inspector.activity.hint")}</p>`,
 	),
 	"answer.html": page(
 		"Answer Dial",
 		`
-			<sdpi-item label="Approvals">
-				<sdpi-select setting="approvalAuthority" default="open">
-					<option value="open">Open in T3 Code</option>
-					<option value="once">Allow once</option>
-					<option value="session">Allow for the session</option>
-					<option value="always">Always allow</option>
-				</sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.approvals")}>${authorityOptions}
 			</sdpi-item>
-			<sdpi-item label="To answer">
+			<sdpi-item ${attr("label", "inspector.field.toAnswer")}>
 				<sdpi-select setting="approvalConfirm" default="hold">
-					<option value="hold">Hold the dial</option>
-					<option value="tap">Press the dial</option>
+					<option value="hold"${text("inspector.answer.hold")}</option>
+					<option value="tap"${text("inspector.answer.press")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Turn between this choice and Deny. A request that doesn't offer the choice opens in T3 Code instead. Touch and hold the strip to read a long request in full.</p>${dialAppearance}`,
+			<p class="hint"${text("inspector.answer.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
 	"send.html": page(
 		"Send Prompt",
 		`
-			<sdpi-item label="Key title">
-				<sdpi-textfield setting="title" placeholder="Fix tests"></sdpi-textfield>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.send.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
-			<sdpi-item label="Prompt">
-				<sdpi-textarea setting="prompt" rows="4" placeholder="Run the tests and fix what fails"></sdpi-textarea>
+			<sdpi-item ${attr("label", "inspector.field.prompt")}>
+				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.send.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint">Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it.</p>`,
+			<p class="hint"${text("inspector.send.hint")}</p>`,
 	),
 	"steer.html": page(
 		"Steer",
 		`
-			<sdpi-item label="Key title">
-				<sdpi-textfield setting="title" placeholder="Keep it small"></sdpi-textfield>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.steer.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
-			<sdpi-item label="Prompt">
-				<sdpi-textarea setting="prompt" rows="4" placeholder="Keep the change small and skip the refactor"></sdpi-textarea>
+			<sdpi-item ${attr("label", "inspector.field.prompt")}>
+				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.steer.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint">Adds to the selected thread's running turn. It's dimmed while the thread is idle.</p>`,
+			<p class="hint"${text("inspector.steer.hint")}</p>`,
 	),
 	"quick.html": page(
 		"Quick Prompt",
 		`
-			<sdpi-item label="Key title">
-				<sdpi-textfield setting="title" placeholder="Optional label for this key"></sdpi-textfield>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.quick.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
-			<sdpi-item label="Prompt type">
+			<sdpi-item ${attr("label", "inspector.quick.type")}>
 				<sdpi-select setting="template" default="continue">
-					<option value="continue">Continue</option>
-					<option value="test">Run tests and fix failures</option>
-					<option value="fix">Diagnose and fix</option>
-					<option value="explain">Explain the current state</option>
-					<option value="commit">Commit your changes</option>
-					<option value="custom">Custom prompt</option>
+					<option value="continue"${text("inspector.quick.continue")}</option>
+					<option value="test"${text("inspector.quick.test")}</option>
+					<option value="fix"${text("inspector.quick.fix")}</option>
+					<option value="explain"${text("inspector.quick.explain")}</option>
+					<option value="commit"${text("inspector.quick.commit")}</option>
+					<option value="custom"${text("inspector.quick.custom")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Custom prompt" id="custom" hidden>
-				<sdpi-textarea setting="prompt" rows="4" placeholder="Type the prompt this key sends"></sdpi-textarea>
+			<sdpi-item ${attr("label", "inspector.quick.custom")} id="custom" hidden>
+				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.quick.customPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint">Goes to the thread selected in T3 Code. Hold the key to interrupt and restart with it.</p>`,
+			<p class="hint"${text("inspector.quick.hint")}</p>`,
 		showWhen("template", "custom", `value === "custom"`),
 	),
 	"new.html": page(
 		"New Thread",
 		`
-			<sdpi-item label="Create in">
+			<sdpi-item ${attr("label", "inspector.new.createIn")}>
 				<sdpi-select setting="destination" default="selected">
-					<option value="selected">Selected thread's project</option>
-					<option value="scratch">No project</option>
-					<option value="project">Chosen project</option>
+					<option value="selected"${text("inspector.new.selected")}</option>
+					<option value="scratch"${text("inspector.new.scratch")}</option>
+					<option value="project"${text("inspector.new.project")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Project" id="project" hidden>
-				<sdpi-select setting="project" datasource="getLaunchProjects" hot-reload loading="Loading projects…"></sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.project")} id="project" hidden>
+				<sdpi-select setting="project" datasource="getLaunchProjects" hot-reload ${attr("loading", "inspector.loading.projects")}></sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Prompt">
-				<sdpi-textarea setting="prompt" rows="4" placeholder="Optional: Review the open pull request"></sdpi-textarea>
+			<sdpi-item ${attr("label", "inspector.field.prompt")}>
+				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.new.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
-			<sdpi-item label="Thread title">
-				<sdpi-textfield setting="title" placeholder="Review PR"></sdpi-textfield>
+			<sdpi-item ${attr("label", "inspector.new.title")}>
+				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.new.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
-			<p class="hint">With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access.</p>`,
+			<p class="hint"${text("inspector.new.hint")}</p>`,
 		showWhen("destination", "project", `value === "project"`),
 	),
 	"model.html": page(
 		"Model",
 		`
-			<sdpi-item label="Model">
-				<sdpi-select setting="model" datasource="getModels" hot-reload loading="Loading models…" default=""></sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.model")}>
+				<sdpi-select setting="model" datasource="getModels" hot-reload ${attr("loading", "inspector.loading.models")} default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint">Cycling steps through T3 Code's favorite models, across providers, or the thread's provider's models when you have none. Picking another provider's model hands the thread over, as T3 Code's model picker does.</p>`,
+			<p class="hint"${text("inspector.model.hint")}</p>`,
 	),
 	"effort.html": page(
 		"Effort",
 		`
-			<sdpi-item label="Effort">
-				<sdpi-select setting="effort" datasource="getEfforts" hot-reload loading="Loading efforts…" default=""></sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.effort")}>
+				<sdpi-select setting="effort" datasource="getEfforts" hot-reload ${attr("loading", "inspector.loading.efforts")} default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint">Cycling steps through the efforts the selected thread's model offers. A set effort its model doesn't offer dims the key. Ultrathink doesn't change the effort: like T3 Code, it prefixes the prompts the deck sends to that thread until you pick another effort.</p>`,
+			<p class="hint"${text("inspector.effort.hint")}</p>`,
 	),
 	"permissions.html": page(
 		"Permissions",
 		`
-			<sdpi-item label="Access">
+			<sdpi-item ${attr("label", "inspector.field.access")}>
 				<sdpi-select setting="mode" default="">
-					<option value="">Cycle access modes</option>
-					<option value="approval-required">Supervised</option>
-					<option value="auto-accept-edits">Auto-accept edits</option>
-					<option value="auto">Auto</option>
-					<option value="full-access">Full access</option>
+					<option value=""${text("inspector.permissions.cycle")}</option>
+					<option value="approval-required"${text("inspector.permissions.approvalRequired")}</option>
+					<option value="auto-accept-edits"${text("inspector.permissions.autoAcceptEdits")}</option>
+					<option value="auto"${text("inspector.permissions.auto")}</option>
+					<option value="full-access"${text("inspector.permissions.fullAccess")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Applies to the selected thread from its next step. Only the modes its provider supports are offered.</p>`,
+			<p class="hint"${text("inspector.permissions.hint")}</p>`,
 	),
 	"approve.html": page(
 		"Approve",
 		`
-			<sdpi-item label="Approvals">
-				<sdpi-select setting="approvalAuthority" default="open">
-					<option value="open">Open in T3 Code</option>
-					<option value="once">Allow once</option>
-					<option value="session">Allow for the session</option>
-					<option value="always">Always allow</option>
-				</sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.approvals")}>${authorityOptions}
 			</sdpi-item>
-			<sdpi-item label="To answer">
+			<sdpi-item ${attr("label", "inspector.field.toAnswer")}>
 				<sdpi-select setting="approvalConfirm" default="hold">
-					<option value="hold">Hold the key</option>
-					<option value="tap">Tap the key</option>
+					<option value="hold"${text("inspector.approve.hold")}</option>
+					<option value="tap"${text("inspector.approve.tap")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Answers the selected thread's approval. A request that doesn't offer this choice, or that the deck can't answer, opens in T3 Code. Deny is its own key.</p>`,
+			<p class="hint"${text("inspector.approve.hint")}</p>`,
 	),
 	"organize.html": page(
 		"Organize",
 		`
-			<sdpi-item label="Action">
+			<sdpi-item ${attr("label", "inspector.organize.action")}>
 				<sdpi-select setting="organize" default="settle">
-					<option value="settle">Settle</option>
-					<option value="pin">Pin</option>
-					<option value="unpin">Unpin</option>
-					<option value="snooze">Snooze</option>
-					<option value="archive">Archive</option>
-					<option value="mark_unread">Mark unread</option>
+					<option value="settle"${text("inspector.organize.settle")}</option>
+					<option value="pin"${text("inspector.organize.pin")}</option>
+					<option value="unpin"${text("inspector.organize.unpin")}</option>
+					<option value="snooze"${text("inspector.organize.snooze")}</option>
+					<option value="archive"${text("inspector.organize.archive")}</option>
+					<option value="mark_unread"${text("inspector.organize.markUnread")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Snooze minutes">
+			<sdpi-item ${attr("label", "inspector.organize.snoozeMinutes")}>
 				<sdpi-textfield setting="snoozeMinutes" pattern="\\d+" placeholder="60"></sdpi-textfield>
 			</sdpi-item>`,
 	),
 	"prompts.html": page(
 		"Prompts Dial",
 		`
-			<sdpi-item label="Prompts">
-				<sdpi-textarea setting="prompts" rows="6" placeholder="One prompt per line"></sdpi-textarea>
+			<sdpi-item ${attr("label", "inspector.prompts.label")}>
+				<sdpi-textarea setting="prompts" rows="6" ${attr("placeholder", "inspector.prompts.placeholder")}></sdpi-textarea>
 			</sdpi-item>
-			<sdpi-item label="Templates">
-				<sdpi-checkbox setting="templates" default="true" label="Add Continue, Fix tests, Diagnose, Explain and Commit"></sdpi-checkbox>
+			<sdpi-item ${attr("label", "inspector.prompts.templates")}>
+				<sdpi-checkbox setting="templates" default="true" ${attr("label", "inspector.prompts.templatesLabel")}></sdpi-checkbox>
 			</sdpi-item>
-			<p class="hint">Rotate to choose, press to send to the selected thread, hold to start a new thread.</p>${dialAppearance}`,
+			<p class="hint"${text("inspector.prompts.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
 	"threads-dial.html": page(
 		"Threads Dial",
 		`
-			<sdpi-item label="Show">
-				<sdpi-select setting="filter" default="all">
-					<option value="all">All threads</option>
-					<option value="attention">Needs you: approval, question, failure or unread result</option>
-					<option value="active">Working or queued</option>
-					<option value="unread">Unread</option>
-				</sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.show")}>${filterOptions}
 			</sdpi-item>
-			<sdpi-item label="Project">
-				<sdpi-select setting="project" datasource="getProjects" hot-reload loading="Loading projects…" default=""></sdpi-select>
+			<sdpi-item ${attr("label", "inspector.field.project")}>
+				<sdpi-select setting="project" datasource="getProjects" hot-reload ${attr("loading", "inspector.loading.projects")} default=""></sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="From the last">
+			<sdpi-item ${attr("label", "inspector.threads.recency")}>
 				<sdpi-select setting="recency" default="all">
-					<option value="all">No limit</option>
-					<option value="24h">24 hours</option>
-					<option value="48h">48 hours</option>
-					<option value="3d">3 days</option>
-					<option value="7d">7 days</option>
+					<option value="all"${text("inspector.threads.noLimit")}</option>
+					<option value="24h"${text("inspector.threads.day")}</option>
+					<option value="48h"${text("inspector.threads.twoDays")}</option>
+					<option value="3d"${text("inspector.threads.threeDays")}</option>
+					<option value="7d"${text("inspector.threads.week")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Rotate through the matching threads, most urgent first; the one the dial rests on becomes T3 Code's selection. Press or tap opens it.</p>${dialAppearance}`,
+			<p class="hint"${text("inspector.threads.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
 	"power.html": page(
 		"Power Dial",
 		`
-			<sdpi-item label="This dial controls">
+			<sdpi-item ${attr("label", "inspector.power.controls")}>
 				<sdpi-select setting="dialControls" default="model">
-					<option value="model">Model</option>
-					<option value="effort">Effort</option>
-					<option value="permissions">Access</option>
+					<option value="model"${text("inspector.field.model")}</option>
+					<option value="effort"${text("inspector.field.effort")}</option>
+					<option value="permissions"${text("inspector.field.access")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Rotate to preview, press to apply to the selected thread. Model turns through T3 Code's favorite models across providers. Press with nothing to apply, or tap, to switch Speed when the model offers it. Ultrathink, where Claude offers it, prefixes the deck's next prompts to the thread.</p>${dialAppearance}`,
+			<p class="hint"${text("inspector.power.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
 };

@@ -2,6 +2,7 @@ import streamDeck from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
+import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
 import { UltrathinkArming } from "./core/ultrathink.js";
 import { type CredentialStore, Machine } from "./core/t3/machine.js";
@@ -67,6 +68,7 @@ type EnvironmentStatus = {
 	where: string;
 	local: boolean;
 	state: "ready" | "connecting" | "approving" | "signed-out" | "error";
+	/** A wire value the inspector maps to its own words. */
 	access?: "Read only" | "Can act";
 	message?: string;
 };
@@ -75,7 +77,7 @@ function environmentStatus(machine: Machine): EnvironmentStatus {
 	const { url, state } = machine;
 	const parsed = new URL(url);
 	const local = isLoopbackUrl(url);
-	const where = local ? "This machine" : parsed.host;
+	const where = local ? t("machine.thisMachine") : parsed.host;
 	const label = state.kind === "ready" ? state.label : machine.credential?.label;
 	const base = { url, local, where, name: label || (local ? "T3 Code" : parsed.hostname) };
 	switch (state.kind) {
@@ -142,7 +144,7 @@ class Deck implements CredentialStore {
 	/** Adds the machine a T3 Code pair link points at and redeems its one-time code. */
 	async pair(link: string): Promise<void> {
 		const parsed = parsePairingLink(link);
-		if (parsed === undefined) return this.#setPairing({ state: "error", message: "That doesn't look like a T3 Code pair link. Copy it from Settings → Sharing & access." });
+		if (parsed === undefined) return this.#setPairing({ state: "error", message: t("pairing.notALink") });
 		const url = preferLoopback(parsed.url);
 		this.#setPairing({ state: "working" });
 		const existing = this.#machines.get(url);

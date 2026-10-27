@@ -180,13 +180,6 @@ function textBlock({ lines, overflowed }: { lines: string[]; overflowed: boolean
 		.join("");
 }
 
-export const elapsed = (since: number | undefined, now: number): string => {
-	if (since === undefined) return "";
-	const seconds = Math.max(0, Math.floor((now - since) / 1000));
-	const minutes = Math.floor(seconds / 60);
-	return minutes >= 60 ? `${Math.floor(minutes / 60)}h${String(minutes % 60).padStart(2, "0")}` : `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
-};
-
 const background = (fill: string) => `<rect width="144" height="144" fill="${fill}"/>`;
 const overlay = (fill: string, opacity: number) => `<rect width="144" height="144" fill="${fill}" fill-opacity="${opacity}"/>`;
 const META = { size: 16, baseline: 31, right: 129 } as const;
