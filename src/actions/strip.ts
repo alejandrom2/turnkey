@@ -1,11 +1,13 @@
-import type { Action, DialAction, DialDownEvent, DialRotateEvent, DialUpEvent, FeedbackPayload, TouchTapEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { type Action, type DialAction, type DialDownEvent, type DialRotateEvent, type DialUpEvent, type FeedbackPayload, type TouchTapEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { t } from "../core/i18n.js";
 import { Marquee } from "../core/marquee.js";
 import type { CatalogModel } from "../core/models.js";
+import { motionMode } from "../core/motion.js";
+import { Pet, petArt } from "../core/pet.js";
 import { powerArt } from "../core/power.js";
-import { type DialPlace, dialRuns, type Run } from "../core/flow.js";
+import { dialGroups, type DialPlace, dialRuns, type Run } from "../core/flow.js";
 import { BLANK_ART, COLORS, glyphArt, type MarkPainter, resolveAppearance, type StripAppearance, stripCanvas } from "../core/render.js";
 import { type SliderInput, sliderArt, sliderLabelSlot, sliderLabelText } from "../core/slider.js";
 import { Slides } from "../core/slides.js";
@@ -46,10 +48,22 @@ const repaint = (owner: string) => painters.get(owner)?.();
 /** Where every visible dial of this plugin sits, for Flow runs across adjacent dials of every dial action. */
 const places = new Map<string, DialPlace>();
 let runs = new Map<string, Run>();
+let groups: string[][] = [];
+
+/** Walks the longest run of adjacent dials once the deck sits idle; only our own actions' input sends it away. */
+const pet = new Pet({ runs: () => groups, changed: (ids) => ids.forEach(repaint) });
+deck.onRepaint(() => pet.configure(deck.appearance.idlePet === "on", motionMode(deck.appearance.motion)));
+const leave = () => pet.input();
+streamDeck.actions.onKeyDown(leave);
+streamDeck.actions.onDialDown(leave);
+streamDeck.actions.onDialRotate(leave);
+streamDeck.actions.onTouchTap(leave);
 
 function placeDial(id: string, place: DialPlace | undefined): void {
 	if (place === undefined) places.delete(id);
 	else places.set(id, place);
+	groups = dialGroups([...places.values()]);
+	pet.dialsChanged();
 	const next = dialRuns([...places.values()]);
 	const changed = [...new Set([...runs.keys(), ...next.keys()])].filter((key) => JSON.stringify(runs.get(key)) !== JSON.stringify(next.get(key)));
 	runs = next;
@@ -158,10 +172,13 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 			await action.setFeedbackLayout(LAYOUT[presentation]);
 			this.forgetSent(action.id);
 		}
-		const appearance = this.#appearance(action);
 		const content = this.face(action);
 		const reading = this.#reading.get(action.id);
-		this.animate(action, content.moving === true && reading === undefined && picture === undefined);
+		// The pet skips a strip in the reading view; flashes and review cards build their own canvas without it.
+		const walk = reading === undefined ? pet.walk() : undefined;
+		const walking = walk !== undefined && walk.ids.includes(action.id);
+		const appearance = { ...this.#appearance(action), pet: walking ? petArt(walk, action.id) : undefined };
+		this.animate(action, (content.moving === true && reading === undefined && picture === undefined) || walking);
 		if (presentation === "slider") {
 			const canvas = stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
 			if (reading?.lines) return this.setFeedback(action, carouselFeedback(content, listFromContent(content), { appearance, scroll: "off", reading: { lines: reading.lines, top: reading.top } }));

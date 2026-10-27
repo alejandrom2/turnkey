@@ -28,6 +28,8 @@ type GlobalSettings = {
 	textScroll?: string;
 	/** Full (default), Reduced or Off. */
 	motion?: string;
+	/** "on" lets a small robot walk the dial strips while the deck sits idle; off by default. */
+	idlePet?: string;
 	/** Confirm before sending: review (default), hold or off; actions can override it. */
 	confirmSend?: string;
 	/** How a model's top effort level stands out: gradient (default), solid, model or off. */
@@ -39,13 +41,14 @@ type GlobalSettings = {
 	verboseUntil?: number;
 };
 
-const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll, motion, confirmSend, maxEffort }: GlobalSettings) => ({
+const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll, motion, idlePet, confirmSend, maxEffort }: GlobalSettings) => ({
 	stripBackground,
 	stripColor,
 	stripHairline,
 	stripStyle,
 	textScroll,
 	motion,
+	idlePet,
 	confirmSend,
 	maxEffort,
 });

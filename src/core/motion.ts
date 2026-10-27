@@ -112,9 +112,9 @@ export function threadMotion(
 	return { motion, moving };
 }
 
-type Timers = { set: (run: () => void, ms: number) => unknown; clear: (handle: unknown) => void };
+export type Timers = { set: (run: () => void, ms: number) => unknown; clear: (handle: unknown) => void };
 
-const realTimers: Timers = { set: (run, ms) => setTimeout(run, ms), clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>) };
+export const realTimers: Timers = { set: (run, ms) => setTimeout(run, ms), clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>) };
 
 /**
  * Drives frames for the instances that move. One timer for the whole deck, aligned to frame boundaries, running only
