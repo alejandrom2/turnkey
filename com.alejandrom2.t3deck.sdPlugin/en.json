@@ -32,7 +32,7 @@
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Fork",
-		"Tooltip": "Forks the thread from its newest finished turn and opens the fork."
+		"Tooltip": "Forks the thread from its newest finished reply and opens the fork."
 	},
 	"com.alejandrom2.t3deck.merge": {
 		"Name": "Merge Back",
@@ -912,7 +912,7 @@
 				"hint": "Stops the workflows the thread runs, as T3 Code's Lineage panel does. Only Claude's workflows can be stopped. Hold the key to stop; a stopped workflow can't be resumed."
 			},
 			"lineage": {
-				"forkHint": "Forks the thread from its newest finished turn into a new thread, as T3 Code's fork button does, then opens the fork.",
+				"forkHint": "Forks the thread from its newest finished reply into a new thread, as T3 Code's fork button on that reply does, then opens the fork.",
 				"mergeHint": "Merges a forked thread back into the thread it came from, as T3 Code's Merge does, then opens that thread. Hold the key to merge."
 			}
 		},
@@ -1009,7 +1009,7 @@
 			"nothingToFork": "Nothing to fork yet",
 			"holdToMerge": "Hold to merge",
 			"aFork": "A forked thread",
-			"aFinishedTurn": "A finished turn"
+			"aFinishedTurn": "A finished reply"
 		},
 		"worktree": {
 			"newThread": "New worktree",

@@ -33,13 +33,20 @@ describe("latestMergeBackRun (T3 Code's resolveLatestMergeBackRun cases)", () =>
 });
 
 describe("forkSourceRun", () => {
-	it("forks from the newest run that ended, as the server allows, skipping one still under way", () => {
+	const reply = (runId: string, status = "completed") => ({ type: "assistant_message", runId, status });
+
+	it("forks from the newest run with a finished reply, as T3 Code's timeline offers it", () => {
 		const runs = [
 			{ id: "first", status: "completed", ordinal: 1 },
 			{ id: "stopped", status: "interrupted", ordinal: 2 },
-			{ id: "running", status: "running", ordinal: 3 },
+			{ id: "silent", status: "failed", ordinal: 3 },
+			{ id: "running", status: "running", ordinal: 4 },
 		];
-		expect(forkSourceRun(runs)?.id).toBe("stopped");
-		expect(forkSourceRun([{ id: "queued", status: "queued", ordinal: 1 }])).toBeUndefined();
+		const items = [reply("first"), reply("stopped"), { type: "user_message", runId: "silent", status: "completed" }, reply("running")];
+		expect(forkSourceRun(runs, items)?.id).toBe("stopped");
+	});
+
+	it("never forks from a reply still streaming (T3 Code's case)", () => {
+		expect(forkSourceRun([{ id: "run", status: "completed", ordinal: 1 }], [reply("run", "running")])).toBeUndefined();
 	});
 });
