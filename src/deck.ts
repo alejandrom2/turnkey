@@ -1,5 +1,5 @@
-import streamDeck from "@elgato/streamdeck";
-import type { JsonValue } from "@elgato/utils";
+import streamDeck, { type Action } from "@elgato/streamdeck";
+import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
 import { readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
@@ -110,6 +110,7 @@ class Deck implements CredentialStore {
 	#statusSent: string | undefined;
 	#machineStates = "";
 	#pairing: PairingStatus = { state: "idle" };
+	#checklist: ((action: Action<JsonObject>) => JsonValue | undefined) | undefined;
 
 	async init(): Promise<void> {
 		streamDeck.settings.onDidReceiveGlobalSettings<GlobalSettings>((ev) => void this.#apply(ev.settings));
@@ -220,6 +221,11 @@ class Deck implements CredentialStore {
 		this.#syncClock();
 	}
 
+	/** Builds the open inspector's "What this action needs" list, sent with the connection status. */
+	useChecklist(checklist: (action: Action<JsonObject>) => JsonValue | undefined): void {
+		this.#checklist = checklist;
+	}
+
 	onRepaint(paint: () => void): void {
 		this.#painters.add(paint);
 	}
@@ -239,6 +245,7 @@ class Deck implements CredentialStore {
 			environments: this.machines.map(environmentStatus),
 			selected: normalizeEnvironmentUrl(settings.machine ?? "") ?? "",
 			pairing: this.#pairing,
+			requirements: this.#checklist?.(streamDeck.ui.action),
 		};
 		const signature = JSON.stringify(status);
 		if (!force && signature === this.#statusSent) return;
