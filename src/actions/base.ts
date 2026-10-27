@@ -14,7 +14,7 @@ import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
-import { messageTable, t } from "../core/i18n.js";
+import { htmlLang, messageTable, t } from "../core/i18n.js";
 import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels } from "../core/models.js";
 import { COLORS, type GlyphName, maxEffortStyle, type Paint, providerGradient, renderNoticeKey, renderResultKey, renderReviewKey, renderSkeletonKey, stripCanvas, stripIcon } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
@@ -295,7 +295,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 			case "status":
 				return deck.pushStatus(true);
 			case "strings":
-				return streamDeck.ui.sendToPropertyInspector({ event: "strings", strings: messageTable("inspector") });
+				return streamDeck.ui.sendToPropertyInspector({ event: "strings", strings: messageTable("inspector"), lang: htmlLang(streamDeck.i18n.language) });
 			case "getProjects":
 				return this.#sendProjects(ev.action);
 			case "getLaunchProjects":
