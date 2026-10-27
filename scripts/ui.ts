@@ -606,7 +606,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.model")}>
 				<sdpi-select setting="model" datasource="getModels" hot-reload ${attr("loading", "inspector.loading.models")} default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint"${text("inspector.model.hint")}</p>${confirmField}`,
+			<p class="hint"${text("inspector.model.hint")}</p>`,
 	),
 	"effort.html": page(
 		"Effort",
@@ -614,7 +614,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.effort")}>
 				<sdpi-select setting="effort" datasource="getEfforts" hot-reload ${attr("loading", "inspector.loading.efforts")} default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint"${text("inspector.effort.hint")}</p>${confirmField}`,
+			<p class="hint"${text("inspector.effort.hint")}</p>`,
 	),
 	"permissions.html": page(
 		"Permissions",
@@ -643,7 +643,7 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<p class="hint"${text("inspector.approve.hint")}</p>`,
 	),
-	"speed.html": page("Speed", confirmField),
+	"speed.html": page("Speed", ""),
 	"organize.html": page(
 		"Organize",
 		`
@@ -703,7 +703,7 @@ const pages: Record<string, string> = {
 					<option value="permissions"${text("inspector.field.access")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint"${text("inspector.power.hint")}</p>${confirmField}${dialAppearance}`,
+			<p class="hint"${text("inspector.power.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
 	"git-commit.html": page(

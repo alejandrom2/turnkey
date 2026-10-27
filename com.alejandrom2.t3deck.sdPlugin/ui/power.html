@@ -119,14 +119,6 @@
 				</sdpi-select>
 			</sdpi-item>
 			<p class="hint" data-i18n="inspector.power.hint">Rotate to preview, press to apply to the selected thread. Model turns through T3 Code's favorite models across providers. Press with nothing to apply, or tap, to switch Speed when the model offers it. Ultrathink, where Claude offers it, prefixes the deck's next prompts to the thread.</p>
-			<sdpi-item label="Confirm" data-i18n-label="inspector.field.confirm">
-				<sdpi-select setting="confirmSend" default="">
-					<option value="" data-i18n="inspector.background.global">Use global</option>
-					<option value="review" data-i18n="inspector.confirm.review">Review, then press again</option>
-					<option value="hold" data-i18n="inspector.confirm.hold">Hold to send</option>
-					<option value="off" data-i18n="inspector.confirm.off">Send right away</option>
-				</sdpi-select>
-			</sdpi-item>
 			<sdpi-item label="Strip" data-i18n-label="inspector.field.strip">
 				<sdpi-select setting="background" default="">
 					<option value="" data-i18n="inspector.background.global">Use global</option>
@@ -227,7 +219,7 @@
 						<option value="off" data-i18n="inspector.confirm.off">Send right away</option>
 					</sdpi-select>
 				</sdpi-item>
-				<p class="hint" data-i18n="inspector.advanced.confirmHint">Applies to prompts and to the Model, Effort, Speed and Power controls. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this.</p>
+				<p class="hint" data-i18n="inspector.advanced.confirmHint">Applies to Send Prompt, Steer, Quick Prompt and the Prompts dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this.</p>
 			</details>
 		</main>
 		<script>
