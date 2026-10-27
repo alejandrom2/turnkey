@@ -175,11 +175,6 @@
 			"connecting": "Connecting…",
 			"needsPairing": "Needs pairing"
 		},
-		"pr": {
-			"open": "Open",
-			"merged": "Merged",
-			"closed": "Closed"
-		},
 		"reason": {
 			"noPrompt": "No prompt",
 			"readOnly": "Read only",
@@ -322,6 +317,53 @@
 			"diagnostics": "Needs usage access — re-pair",
 			"other": "Needs more access — re-pair"
 		},
+		"pr": {
+			"open": "Open",
+			"merged": "Merged",
+			"closed": "Closed",
+			"draft": "Draft",
+			"face": {
+				"failing": "{count} checks failing",
+				"failingOne": "1 check failing",
+				"findings": "{count} findings",
+				"findingsOne": "1 finding",
+				"running": "Checks running",
+				"changesRequested": "Changes requested",
+				"approved": "Approved",
+				"passing": "Checks passing"
+			},
+			"fix": {
+				"title": "Fix findings",
+				"none": "No findings",
+				"threads": "{count} threads",
+				"threadOne": "1 thread",
+				"remarks": "{count} remarks",
+				"remarkOne": "1 remark",
+				"checks": "{count} checks",
+				"checkOne": "1 check"
+			},
+			"explain": {
+				"title": "Explain {term}"
+			},
+			"ask": {
+				"title": "Ask about {term}"
+			},
+			"guide": {
+				"title": "Review guide",
+				"write": "Press to write",
+				"writing": "Writing guide…",
+				"ready": "Ready: press to open",
+				"failed": "Failed: press to retry"
+			},
+			"dial": {
+				"title": "Pull requests",
+				"none": "No open pull requests"
+			},
+			"result": {
+				"queued": "Queued",
+				"offHead": "Started, off the PR head"
+			}
+		},
 		"repo": {
 			"action": {
 				"commit": "Commit",
@@ -349,6 +391,7 @@
 			"behind": "{count} behind",
 			"ahead": "{count} ahead",
 			"changes": "{files} files · +{insertions} −{deletions}",
+			"changesOne": "1 file · +{insertions} −{deletions}",
 			"hook": "Running {hook}",
 			"unknownOutcome": "Result unknown, check T3 Code",
 			"running": "Already running",
@@ -398,8 +441,10 @@
 				"createPr": "Create one with Create PR or in T3 Code.",
 				"checkoutBranch": "Check out a branch in the thread.",
 				"installEditor": "Install an editor T3 Code supports, like VS Code or Cursor.",
-				"pickAnother": "Pick another value above."
-			}
+				"pickAnother": "Pick another value above.",
+				"noFindings": "Nothing is failing or unresolved on it."
+			},
+			"findings": "Findings to fix"
 		},
 		"inspector": {
 			"card": {

@@ -19,6 +19,7 @@ export type Need =
 	| { kind: "scope"; scope: string; ok: boolean }
 	| { kind: "option"; option: string; ok: boolean }
 	| { kind: "pr"; ok: boolean | undefined }
+	| { kind: "findings"; ok: boolean | undefined }
 	| { kind: "branch"; ok: boolean }
 	| { kind: "repo"; ok: boolean | undefined; reason?: string }
 	| { kind: "editor"; ok: boolean }
@@ -68,6 +69,8 @@ function describe(need: Need): Requirement {
 			return make(`option:${need.option}`, t("needs.option", { option: need.option }), need.ok, ["needs.fix.switchModel"]);
 		case "pr":
 			return make("pr", t("needs.pr"), need.ok, ["needs.fix.createPr"]);
+		case "findings":
+			return make("findings", t("needs.findings"), need.ok, ["needs.fix.noFindings"]);
 		case "branch":
 			return make("branch", t("needs.branch"), need.ok, ["needs.fix.checkoutBranch"]);
 		case "repo":
