@@ -193,7 +193,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const { thread, state, pending, check, armed } = context;
 		const shown = pending ?? state.current;
 		const index = shown === undefined ? -1 : state.choices.findIndex((choice) => choice.key === shown.key);
-		const color = !check.available ? COLORS.muted : pending ? COLORS.attention : COLORS.accent;
+		const color = !check.available ? COLORS.muted : pending ? pendingColor(pending) : COLORS.accent;
 		return {
 			header: `${label}${index >= 0 && state.choices.length > 1 ? ` · ${index + 1}/${state.choices.length}` : ""}`,
 			icon: shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(glyph),
