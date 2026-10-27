@@ -82,21 +82,25 @@
 		"Name": "Branch",
 		"Tooltip": "The selected thread's branch. Tap opens the thread in T3 Code."
 	},
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
+	},
 	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Commit",
-		"Tooltip": "Commits the selected thread's changes, or also pushes them or opens a PR, with T3 Code's commit message unless you set one."
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
 	},
 	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Push",
-		"Tooltip": "Pushes the selected thread's branch. Hold to push."
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
 	},
 	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Create PR",
-		"Tooltip": "Pushes the selected thread's branch and opens a pull request for it. Hold to create."
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
 	},
 	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Pull",
-		"Tooltip": "Pulls the selected thread's branch when it is behind its upstream."
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
 		"Name": "Fix Findings",
@@ -713,7 +717,10 @@
 				"tap": "Tap",
 				"hold": "Hold",
 				"hint": "Acts on the selected thread's worktree, or its project's folder. Pushing to the default branch always needs a hold; a PR from it is refused, as T3 Code would offer a new branch first.",
-				"pullHint": "Pulls the selected thread's branch from its upstream when it is behind."
+				"pullHint": "Pulls the selected thread's branch from its upstream when it is behind.",
+				"push": "Push",
+				"createPr": "Create PR",
+				"pull": "Pull"
 			},
 			"card": {
 				"machine": "Machine",

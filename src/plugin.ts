@@ -4,7 +4,7 @@ import { RunScriptKey, ShareKey, UpdateKey } from "./actions/admin.js";
 import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.js";
 import { DevicesDial } from "./actions/devices.js";
 import { OpenInEditor } from "./actions/editor.js";
-import { CommitKey, CreatePrKey, PullKey, PushKey } from "./actions/git.js";
+import { CommitKey, CreatePrKey, GitKey, PullKey, PushKey } from "./actions/git.js";
 import { LimitsDial, LimitsKey } from "./actions/limits.js";
 import { ForkKey, MergeBackKey, StopWorkflowKey } from "./actions/lineage.js";
 import { OpenPreview } from "./actions/preview.js";
@@ -66,6 +66,7 @@ for (const instance of [
 	new PullRequest(),
 	new Branch(),
 	new Health(),
+	new GitKey(),
 	new CommitKey(),
 	new PushKey(),
 	new CreatePrKey(),

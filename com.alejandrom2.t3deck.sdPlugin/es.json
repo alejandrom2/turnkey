@@ -82,21 +82,25 @@
 		"Name": "Rama",
 		"Tooltip": "La rama del hilo seleccionado. Pulsar abre el hilo en T3 Code."
 	},
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
+	},
 	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Commit",
-		"Tooltip": "Hace commit de los cambios del hilo seleccionado, o además push o abre un PR, con el mensaje de commit de T3 Code salvo que fijes uno."
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
 	},
 	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Push",
-		"Tooltip": "Hace push de la rama del hilo seleccionado. Mantén para hacer push."
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
 	},
 	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Crear PR",
-		"Tooltip": "Hace push de la rama del hilo seleccionado y abre un pull request para ella. Mantén para crear."
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
 	},
 	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Pull",
-		"Tooltip": "Hace pull de la rama del hilo seleccionado cuando va por detrás de su upstream."
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
 		"Name": "Corregir hallazgos",
@@ -713,7 +717,10 @@
 				"tap": "Pulsar",
 				"hold": "Mantener",
 				"hint": "Actúa sobre el worktree del hilo seleccionado, o la carpeta de su proyecto. Hacer push a la rama por defecto siempre requiere mantener; un PR desde ella se rechaza, ya que T3 Code ofrecería antes una rama nueva.",
-				"pullHint": "Hace pull de la rama del hilo seleccionado desde su upstream cuando va por detrás."
+				"pullHint": "Hace pull de la rama del hilo seleccionado desde su upstream cuando va por detrás.",
+				"push": "Push",
+				"createPr": "Crear PR",
+				"pull": "Pull"
 			},
 			"card": {
 				"machine": "Equipo",
