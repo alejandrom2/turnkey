@@ -4,13 +4,11 @@
  */
 import type { DeckState } from "./board.js";
 import { elapsed, type MessageKey, t } from "./i18n.js";
-import { fit } from "./slider.js";
-import { COLORS, fitSize, glyph, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgDataUrl, svgText, textWidth } from "./render.js";
+import { COLORS, fit, fitSize, glyph, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgImage, svgText, textWidth } from "./render.js";
 
 export const INFOBAR = { width: 232, height: 50, layout: "layouts/infobar.json" } as const;
 
-const bar = (body: string) =>
-	svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${INFOBAR.width}" height="${INFOBAR.height}" viewBox="0 0 ${INFOBAR.width} ${INFOBAR.height}"><rect width="${INFOBAR.width}" height="${INFOBAR.height}" fill="${COLORS.key}"/>${body}</svg>`);
+const bar = (body: string) => svgImage(INFOBAR.width, INFOBAR.height, `<rect width="${INFOBAR.width}" height="${INFOBAR.height}" fill="${COLORS.key}"/>${body}`);
 
 /** The left tile: a glyph (or a provider mark) on a faint wash of its color. */
 function tile(icon: { glyph: GlyphName; color: string } | MarkPainter, wash: string | undefined): string {
@@ -18,7 +16,7 @@ function tile(icon: { glyph: GlyphName; color: string } | MarkPainter, wash: str
 	return box + (typeof icon === "function" ? icon(14, 14, 22) : glyph(icon.glyph, 14, 14, 22, icon.color));
 }
 
-export type ThreadCounts = { approval: number; question: number; running: number };
+type ThreadCounts = { approval: number; question: number; running: number };
 
 /** How many threads wait on an approval or an answer, and how many work: the info bar's chips. */
 export function threadCounts(threads: readonly { deck: DeckState }[]): ThreadCounts {
@@ -48,7 +46,7 @@ function chips(counts: ThreadCounts, right: number, baseline: number): { svg: st
 	return { svg: parts.join(""), width: right - x };
 }
 
-export type ActivityBarInput =
+type ActivityBarInput =
 	| { kind: "thread"; state: DeckState; title: string; detail: string; counts: ThreadCounts }
 	| { kind: "empty"; label: string; counts: ThreadCounts };
 
@@ -83,7 +81,7 @@ export function renderActivityBar(input: ActivityBarInput): string {
 	);
 }
 
-export type UsageBarInput = {
+type UsageBarInput = {
 	mark?: MarkPainter;
 	label: string;
 	/** The big figure on the right: the period's cost. */
@@ -103,7 +101,7 @@ export function renderUsageBar(input: UsageBarInput): string {
 		const size = fitSize(input.value, 96, [24, 21, 18, 15]);
 		const value = fit(input.value, 96, size);
 		parts.push(`<g${input.dim ? ` opacity=".45"` : ""}>${svgText(value, right, 33, size, 700, "#FFFFFF", ` text-anchor="end"`)}</g>`);
-		room -= textWidth(value, size) * 1.1 + 8;
+		room -= textWidth(value, size, 700) + 8;
 	}
 	parts.push(svgText(fit(input.label, room, 15), x, 22, 15, 650, input.available === false ? COLORS.muted : COLORS.text));
 	parts.push(svgText(fit(input.detail, room, 13), x, 40, 13, 600, COLORS.muted));

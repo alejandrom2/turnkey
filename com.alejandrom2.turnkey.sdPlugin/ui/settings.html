@@ -4,7 +4,7 @@
 		<meta charset="utf-8" />
 		<title data-i18n="inspector.settings.title">Turnkey Settings</title>
 		<style>
-			:root { color-scheme: dark; --t3-warning: #fcd34d; }
+			:root { color-scheme: dark; --t3-ok: #40C977; --t3-warning: #FCD34D; --t3-error: #f87171; }
 			body { font-family: "Segoe UI", Arial, Roboto, Helvetica, sans-serif; font-size: 9pt; }
 			[hidden] { display: none !important; }
 			.native { width: 100%; box-sizing: border-box; height: 24px; padding: 0 6px; font: inherit; color: #d8d8d8; background: #3d3d3d; border: 0; border-radius: 3px; }
@@ -15,10 +15,10 @@
 			button.text { padding: 0; font: inherit; color: #8fb3ff; background: none; border: 0; cursor: pointer; }
 			.state { white-space: nowrap; }
 			.state::before { content: "●"; margin-right: 4px; }
-			.state.ok { color: #40c977; }
+			.state.ok { color: var(--t3-ok); }
 			.state.wait { color: var(--t3-warning); }
 			.state.muted { color: #8f8f8f; }
-			.state.error { color: #f87171; }
+			.state.error, .hint.error { color: var(--t3-error); }
 			html, body { height: 100%; }
 			body { margin: 0; color: #d8d8d8; background: #262626; }
 			.win { display: grid; grid-template-columns: 150px minmax(0, 1fr); height: 100%; }
@@ -34,7 +34,6 @@
 			.lede { max-width: 460px; margin: 0 0 14px; color: #9a9a9a; line-height: 1.45; }
 			.hint { max-width: 460px; margin: -4px 0 12px 150px; color: #9a9a9a; line-height: 1.45; }
 			.hint.wide { margin: 6px 0 0; max-width: 520px; }
-			.hint.error { color: #f87171; }
 			.field { display: grid; grid-template-columns: 140px minmax(0, 320px); gap: 10px; align-items: center; margin: 0 0 8px; }
 			.field > label { color: #bdbdbd; }
 			.control { display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -47,7 +46,7 @@
 			.row .where { color: #8f8f8f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 			.row .state { font-size: 8.5pt; }
 			.row .detail { grid-column: 1 / -1; color: #9a9a9a; line-height: 1.35; }
-			.row .detail.error { color: #f87171; }
+			.row .detail.error { color: var(--t3-error); }
 			.row .buttons { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 			.access { grid-column: 1 / -1; display: grid; gap: 3px; margin-top: 4px; padding-top: 6px; border-top: 1px solid #424242; }
 			.access .heading { color: #9a9a9a; font-size: 8pt; letter-spacing: .06em; text-transform: uppercase; }

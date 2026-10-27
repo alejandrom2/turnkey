@@ -4,12 +4,15 @@ import {
 	accessTone,
 	COLORS,
 	dotsCue,
+	fit,
 	fitSize,
 	ladderCue,
 	effortGradient,
 	effortTone,
 	maxEffortStyle,
+	paintedGlyphArt,
 	providerGradient,
+	SPECTRUM,
 	sampleStops,
 	renderControlKey,
 	renderDecisionKey,
@@ -283,5 +286,21 @@ describe("sparkles", () => {
 		expect(opacities(0)).not.toEqual(opacities(1));
 		expect(opacities(0)).toEqual(opacities(6));
 		expect(new Set(opacities(0)).size).toBeGreaterThan(2);
+	});
+});
+
+describe("paintedGlyphArt", () => {
+	it("draws the same picture as the same markup, so repaints dedupe", () => {
+		const paint = { gradient: SPECTRUM };
+		expect(paintedGlyphArt("check", paint)(4, 4, 30)).toBe(paintedGlyphArt("check", paint)(4, 4, 30));
+		expect(paintedGlyphArt("check", paint)(4, 4, 30)).not.toBe(paintedGlyphArt("check", { gradient: [[0, "#000000"], [1, "#FFFFFF"]] })(4, 4, 30));
+	});
+});
+
+describe("fit", () => {
+	it("cuts by character, never inside an emoji", () => {
+		expect(fit("Short", 100, 15)).toBe("Short");
+		for (let width = 10; width < 80; width++) expect(fit("ab🎉🎉🎉🎉🎉🎉", width, 15)).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/);
+		expect(fit("ab🎉🎉🎉🎉🎉🎉", 40, 15)).toMatch(/…$/);
 	});
 });

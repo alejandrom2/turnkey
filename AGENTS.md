@@ -23,4 +23,4 @@ Turnkey for T3 Code is a Stream Deck (+) plugin that controls [T3 Code](https://
 
 ## Checks
 
-`npm run typecheck`, `npm test`, `npx oxlint src`, `npm run assets` (commit its changes), `npm run build`, `npx streamdeck validate com.alejandrom2.turnkey.sdPlugin`. Test behavior, not wiring. You can't run a real Stream Deck: say what you couldn't verify.
+`npm run typecheck` (src and scripts), `npm test`, `npm run lint`, `npm run assets` (commit its changes), `npm run build`, `npx streamdeck validate com.alejandrom2.turnkey.sdPlugin`. Test behavior, not wiring. You can't run a real Stream Deck: say what you couldn't verify.

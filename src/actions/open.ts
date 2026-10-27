@@ -1,4 +1,4 @@
-import streamDeck, { type Action, action, type DidReceiveSettingsEvent, type KeyUpEvent, type SendToPluginEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { type Action, action, type KeyUpEvent, type SendToPluginEvent } from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 
 import type { DeckThread } from "../core/board.js";
@@ -13,14 +13,14 @@ import type { Machine } from "../core/t3/machine.js";
 import { isThisComputer, OPERATE_SCOPE } from "../core/t3/pairing.js";
 import { pinnedName } from "../core/target.js";
 import { deck } from "../deck.js";
-import { canOperate, connectionFace, DeckAction, pressWhileDisconnected, selectedThread } from "./base.js";
+import { canOperate, DeckAction, machineName, machinesOn, pressWhileDisconnected, selectedThread, sendChoices } from "./base.js";
 import { threadNeeds } from "./needs.js";
+import { MachineWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 
 type OpenSettings = { machine?: string; mode?: string; editor?: string; target?: string; thread?: string; threadTitle?: string };
 
-const machineName = (machine: Machine): string => (machine.state.kind === "ready" ? machine.state.label : new URL(machine.url).host);
 const isHere = (machine: Machine): boolean => isThisComputer(new URL(machine.url).hostname);
 const folderName = (path: string): string => path.split(/[\\/]/).filter(Boolean).at(-1) ?? path;
 
@@ -41,43 +41,16 @@ type ThreadPreview = {
  * shows; a thread's tabs are listed when a key first shows it, its HTML render read when its runs move and it has no
  * preview tab.
  */
-class PreviewWatch {
-	readonly #shown = new Map<string, string | undefined>();
-	readonly #streams = new Map<string, () => void>();
+class Previews {
 	readonly #threads = new Map<string, ThreadPreview>();
-
-	show(id: string, url: string | undefined): void {
-		this.#shown.set(id, url);
-		this.sync();
-	}
-
-	hide(id: string): void {
-		this.#shown.delete(id);
-		this.sync();
-	}
-
-	sync(): void {
-		const urls = [...this.#shown.values()];
-		const wanted = new Set(deck.machines.filter((machine) => urls.some((url) => url === undefined || url === machine.url)).map((machine) => machine.url));
-		for (const [url, release] of this.#streams) {
-			if (wanted.has(url)) continue;
-			release();
-			this.#streams.delete(url);
-			this.#forget(url);
-		}
-		for (const machine of deck.machines) {
-			if (!wanted.has(machine.url) || this.#streams.has(machine.url)) continue;
-			this.#streams.set(
-				machine.url,
-				machine.live("subscribePreviewEvents", {}, (value) => this.#apply(machine, value as PreviewEvent), () => this.#forget(machine.url)),
-			);
-		}
-	}
+	readonly watch = new MachineWatch({
+		open: (machine) => machine.live("subscribePreviewEvents", {}, (value) => this.#apply(machine, value as PreviewEvent), () => this.#forget(machine)),
+		closed: (machine) => this.#forget(machine),
+	});
 
 	/** A new connection may have missed events: list again on next use. */
-	#forget(url: string): void {
-		const environmentId = deck.machines.find((machine) => machine.url === url)?.environmentId;
-		for (const key of this.#threads.keys()) if (key.startsWith(`${environmentId}/`)) this.#threads.delete(key);
+	#forget(machine: Machine): void {
+		for (const key of this.#threads.keys()) if (key.startsWith(`${machine.environmentId}/`)) this.#threads.delete(key);
 	}
 
 	#apply(machine: Machine, event: PreviewEvent): void {
@@ -145,8 +118,7 @@ class PreviewWatch {
 	}
 }
 
-const watch = new PreviewWatch();
-deck.onRepaint(() => watch.sync());
+const previews = new Previews();
 
 /**
  * Opens the selected thread's worktree (else its project's root) in an editor through `shell.openInEditor`, or the
@@ -155,8 +127,15 @@ deck.onRepaint(() => watch.sync());
  * machine only opens there, so the key says where.
  */
 abstract class OpenAction extends DeckAction<OpenSettings> {
+	protected override readonly watcher = previews.watch;
+
 	#previews(action: Action<OpenSettings>): boolean {
 		return modeOf("open", this.manifestId, this.settingsOf(action)) === "preview";
+	}
+
+	/** Only a key in Preview streams its machine's preview events. */
+	protected override watched(action: Action<OpenSettings>): readonly Machine[] {
+		return this.#previews(action) ? machinesOn(this.machineOf(action)) : [];
 	}
 
 	#editorState(action: Action<OpenSettings>) {
@@ -180,7 +159,7 @@ abstract class OpenAction extends DeckAction<OpenSettings> {
 
 	#previewState(action: Action<OpenSettings>) {
 		const { thread, gone, pinned } = this.target(action);
-		const found = thread === undefined || gone !== undefined ? { loading: false } : watch.of(thread);
+		const found = thread === undefined || gone !== undefined ? { loading: false } : previews.of(thread);
 		const remoteOnly = found.preview !== undefined && !reachableHere(found.preview.url, isHere(thread!.machine));
 		const reason =
 			gone ??
@@ -214,10 +193,8 @@ abstract class OpenAction extends DeckAction<OpenSettings> {
 		];
 	}
 
-	protected override async paint(action: Action<OpenSettings>): Promise<void> {
+	protected override async draw(action: Action<OpenSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		if (offline) return void (await this.setImage(action, offline));
 		if (this.#previews(action)) {
 			const { preview, render, loading, reason, pinned } = this.#previewState(action);
 			if (loading && reason === undefined) return void (await this.setImage(action, renderSkeletonKey()));
@@ -256,32 +233,9 @@ abstract class OpenAction extends DeckAction<OpenSettings> {
 		if (payload?.event !== "getEditors") return super.onSendToPlugin(ev);
 		await deck.refreshConfigs(this.machineOf(ev.action));
 		const machine = this.machineOf(ev.action);
-		const available = [...new Set(deck.machines.filter((candidate) => machine === undefined || candidate.url === machine).flatMap((candidate) => knownEditors(candidate.editors)))];
+		const available = [...new Set(machinesOn(machine).flatMap((candidate) => knownEditors(candidate.editors)))];
 		const items = [{ label: t("datasource.defaultEditor"), value: "" }, ...knownEditors(available).map((id) => ({ label: editorLabel(id), value: id }))];
-		const saved = this.settingsOf(ev.action).editor;
-		if (saved && !available.some((id) => id === saved)) items.push({ label: t("needs.notAvailable", { value: editorLabel(saved) }), value: saved });
-		await streamDeck.ui.sendToPropertyInspector({ event: "getEditors", items });
-	}
-
-	/** Only a key in Preview streams its machine's preview events. */
-	#watch(action: Action<OpenSettings>): void {
-		if (this.#previews(action)) watch.show(action.id, this.machineOf(action));
-		else watch.hide(action.id);
-	}
-
-	override onWillAppear(ev: WillAppearEvent<OpenSettings>): void {
-		super.onWillAppear(ev);
-		this.#watch(ev.action);
-	}
-
-	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<OpenSettings>): void {
-		super.onDidReceiveSettings(ev);
-		this.#watch(ev.action);
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<OpenSettings>): void {
-		watch.hide(ev.action.id);
-		super.onWillDisappear(ev);
+		await sendChoices("getEditors", items, this.settingsOf(ev.action).editor, (saved) => t("needs.notAvailable", { value: editorLabel(saved) }));
 	}
 }
 

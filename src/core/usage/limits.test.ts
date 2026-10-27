@@ -1,7 +1,7 @@
 // Cases ported from T3 Code's packages/shared/src/usageLimits.test.ts (pace, pools and pooled columns).
 import { describe, expect, it } from "vitest";
 
-import { collectLimitAccounts, collectLimitPools, elapsedShare, formatDuration, type LimitAccount, limitsExpireAt, limitsStale, paceOf, paceRemainingPercent } from "./limits.js";
+import { collectLimitAccounts, collectLimitPools, elapsedShare, type LimitAccount, limitsExpireAt, limitsStale, paceRemainingPercent } from "./limits.js";
 import type { LimitProvider } from "./types.js";
 
 const now = Date.parse("2026-09-03T12:00:00.000Z");
@@ -30,9 +30,6 @@ describe("pace", () => {
 	it("places the clock three fifths through a five-hour window with two hours left", () => {
 		expect(elapsedShare(window, now)).toBeCloseTo(0.6);
 		expect(paceRemainingPercent(window, now)).toBe(40);
-		expect(paceOf(window, now)).toBe("under");
-		expect(paceOf({ ...window, usedPercent: 62 }, now)).toBe("on");
-		expect(paceOf({ ...window, usedPercent: 80 }, now)).toBe("ahead");
 	});
 });
 
@@ -881,11 +878,5 @@ describe("staleness, as T3 Code's widget judges it", () => {
 	it("counts an unreadable read time as stale", () => {
 		const [pool] = collectLimitPools([account("not a time")], now);
 		expect(limitsStale(pool!, now)).toBe(true);
-	});
-
-	it("formats durations as T3 Code does", () => {
-		expect(formatDuration(2 * 3_600_000 + 14 * 60_000)).toBe("2h 14m");
-		expect(formatDuration(3 * 86_400_000 + 5 * 3_600_000)).toBe("3d 5h");
-		expect(formatDuration(-1)).toBe("0m");
 	});
 });

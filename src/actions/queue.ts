@@ -1,6 +1,5 @@
 import { type Action, action, type DialAction } from "@elgato/streamdeck";
 
-import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import { availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { t } from "../core/i18n.js";
@@ -9,8 +8,8 @@ import type { StripContent } from "../core/strip.js";
 import type { StripList } from "../core/styles.js";
 import { type QueuedMessage, queuePress, type ThreadQueue } from "../core/t3/queue.js";
 import { deck } from "../deck.js";
-import { canOperate, LONG_PRESS_MS, openThread, pressWhileDisconnected, queueOf, selectedThread } from "./base.js";
-import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
+import { canOperate, held, LONG_PRESS_MS, openThread, pressWhileDisconnected, queueOf, selectedThread } from "./base.js";
+import { type DialSettings, StripDial } from "./strip.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -41,10 +40,12 @@ export class QueueDial extends StripDial<DialSettings> {
 		return press === "start" ? t("strip.queueSendNow") : press === "steer" ? t("strip.queueSteer") : t("strip.queueRemoveOnly");
 	}
 
+	protected heading(): string {
+		return t("strip.queue");
+	}
+
 	protected face(action: Action<DialSettings>): StripContent {
-		const header = t("strip.queue");
-		const offline = disconnectedStrip(header, this.machineOf(action));
-		if (offline) return offline;
+		const header = this.heading();
 		const { thread, queue, items, index, item } = this.#state(action);
 		if (thread === undefined) return { header, icon: glyphArt("queued", COLORS.muted), accent: COLORS.muted, value: t("strip.noThread") };
 		const tone = toneOf(thread.deck, thread.unseen);
@@ -62,7 +63,6 @@ export class QueueDial extends StripDial<DialSettings> {
 	}
 
 	protected override list(action: Action<DialSettings>): StripList | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const { thread, queue, items, index } = this.#state(action);
 		if (thread === undefined || queue === undefined || items.length === 0) return undefined;
 		const check = this.#check(thread);
@@ -85,7 +85,7 @@ export class QueueDial extends StripDial<DialSettings> {
 		if (next !== undefined) this.#shown.set(dial.id, next.runId);
 	}
 
-	protected override async pressed(dial: DialAction<DialSettings>, held: number): Promise<void> {
+	protected override async pressed(dial: DialAction<DialSettings>, heldMs: number): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(dial))) return;
 		const { thread, queue, item } = this.#state(dial);
 		if (!(await this.allowed(dial, this.#check(thread)))) return;
@@ -93,8 +93,8 @@ export class QueueDial extends StripDial<DialSettings> {
 		if (item === undefined) return void (await this.flash(dial, false, t("strip.nothingQueued")));
 		const target = thread!;
 		// Between a long press and a confirming hold nothing happens, so an almost-hold never sends instead of removing.
-		if (held >= HOLD_CONFIRM_MS) return this.#change(dial, target, () => target.machine.cancelQueued(target, item.runId));
-		if (held >= LONG_PRESS_MS) return void (await this.flash(dial, false, t("result.holdToRemove")));
+		if (held(heldMs)) return this.#change(dial, target, () => target.machine.cancelQueued(target, item.runId));
+		if (heldMs >= LONG_PRESS_MS) return void (await this.flash(dial, false, t("result.holdToRemove")));
 		const press = queuePress(queue);
 		if (press === undefined) return void (await this.flash(dial, false, t("result.cantSteerYet")));
 		await this.#change(dial, target, () =>

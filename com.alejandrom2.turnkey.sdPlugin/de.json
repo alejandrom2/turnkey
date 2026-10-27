@@ -481,6 +481,7 @@
 		},
 		"connection": {
 			"noAnswer": "T3 Code hat nicht rechtzeitig geantwortet.",
+			"foreignLink": "T3 Code hat einen Link zu einer anderen Website gesendet.",
 			"closed": "Die Verbindung zu T3 Code wurde geschlossen.",
 			"failed": "Die Verbindung zu T3 Code ist fehlgeschlagen.",
 			"silent": "T3 Code antwortet nicht mehr.",
@@ -579,8 +580,6 @@
 			"holdTo": "Halten: bestätigen",
 			"holdOnDefault": "Halten: Push auf {branch}",
 			"starting": "Startet…",
-			"pulled": "Gepullt",
-			"upToDate": "Aktuell",
 			"files": "{count} Dateien",
 			"fileOne": "1 Datei"
 		},

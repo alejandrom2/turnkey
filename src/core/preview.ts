@@ -1,3 +1,5 @@
+import { isLoopbackHost } from "./t3/pairing.js";
+
 /**
  * A thread's preview, as T3 Code's preview panel and HTML renders expose it (packages/contracts/src/preview.ts,
  * packages/shared/src/htmlRender.ts). The deck only reads: opening a preview needs `preview:operate`.
@@ -39,12 +41,6 @@ export function applyPreviewEvent(sessions: readonly PreviewSession[], event: Pr
 	return event.snapshot === undefined ? [...sessions] : [...others, event.snapshot];
 }
 
-/** Hosts that mean "this computer": a preview there on another machine can't be reached from here. */
-export function isLoopbackHost(hostname: string): boolean {
-	const host = hostname.replace(/^\[|\]$/g, "").toLowerCase();
-	return host === "localhost" || host.endsWith(".localhost") || host === "::1" || host === "0.0.0.0" || host.startsWith("127.");
-}
-
 /** Whether `url` opens here: a loopback address on another machine only means that machine. */
 export const reachableHere = (url: string, machineIsHere: boolean): boolean => machineIsHere || !isLoopbackHost(new URL(url).hostname);
 
@@ -74,7 +70,7 @@ export function latestHtmlRender(items: readonly RenderItem[]): HtmlRender | { i
 }
 
 /** Digs `htmlRender` out of an MCP result: JSON text, `structuredContent`, or content blocks (shared/toolOutput.ts). */
-export function htmlRenderOutput(value: unknown, depth = 0): { attachmentId: string; title: string } | undefined {
+function htmlRenderOutput(value: unknown, depth = 0): { attachmentId: string; title: string } | undefined {
 	if (depth > 4 || value == null) return undefined;
 	if (typeof value === "string") {
 		try {

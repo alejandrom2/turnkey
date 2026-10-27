@@ -4,6 +4,10 @@ import { join } from "node:path";
 
 import { FEATURES } from "../src/core/features.ts";
 import { machineSummary, mergeGlobalSettings, needsFirstPairing } from "../src/core/panel.ts";
+import "./resolve-ts.mjs";
+
+// After the hook above: render.ts imports its neighbors as `.js`.
+const { COLORS } = await import("../src/core/render.ts");
 
 const plugin = join(import.meta.dirname, "..", "com.alejandrom2.turnkey.sdPlugin");
 const dir = join(plugin, "ui");
@@ -38,7 +42,7 @@ const manifest: { Version: string } = JSON.parse(readFileSync(join(plugin, "mani
 
 /** sdpi-components' font and Stream Deck's grays, shared by the panels and the settings window. */
 const baseStyle = `
-			:root { color-scheme: dark; --t3-warning: #fcd34d; }
+			:root { color-scheme: dark; --t3-ok: ${COLORS.done}; --t3-warning: ${COLORS.attention}; --t3-error: #f87171; }
 			body { font-family: "Segoe UI", Arial, Roboto, Helvetica, sans-serif; font-size: 9pt; }
 			[hidden] { display: none !important; }
 			.native { width: 100%; box-sizing: border-box; height: 24px; padding: 0 6px; font: inherit; color: #d8d8d8; background: #3d3d3d; border: 0; border-radius: 3px; }
@@ -49,10 +53,10 @@ const baseStyle = `
 			button.text { padding: 0; font: inherit; color: #8fb3ff; background: none; border: 0; cursor: pointer; }
 			.state { white-space: nowrap; }
 			.state::before { content: "●"; margin-right: 4px; }
-			.state.ok { color: #40c977; }
+			.state.ok { color: var(--t3-ok); }
 			.state.wait { color: var(--t3-warning); }
 			.state.muted { color: #8f8f8f; }
-			.state.error { color: #f87171; }`;
+			.state.error, .hint.error { color: var(--t3-error); }`;
 
 const style = `
 		<style>${baseStyle}
@@ -60,7 +64,6 @@ const style = `
 			.hint { color: #a8a8a8; line-height: 1.4; margin: -2px 0 8px 106px; font-size: 9pt; }
 			/* What broader access an action needs, said plainly. */
 			.hint.access { color: var(--t3-warning); }
-			.hint.error { color: #f87171; }
 			.link { width: 100%; box-sizing: border-box; padding: 4px 6px; font: inherit; color: #d8d8d8; background: #2d2d2d; border: 1px solid #3d3d3d; border-radius: 3px; }
 			.open { display: flex; align-items: center; gap: 6px; min-width: 0; }
 			.open .state { overflow: hidden; text-overflow: ellipsis; }
@@ -70,33 +73,43 @@ const style = `
 				cursor: pointer; margin: 0 0 8px; font-size: 8.5pt; font-weight: 600;
 				letter-spacing: .06em; text-transform: uppercase; color: #a8a8a8;
 			}
-		</style>`;
-
-const confirmOptions = `
-						<option value="review"${text("inspector.confirm.review")}</option>
-						<option value="hold"${text("inspector.confirm.hold")}</option>
-						<option value="off"${text("inspector.confirm.off")}</option>`;
-
-/** An action's own Confirm before sending, over the global one in Turnkey Settings. */
-const confirmField = `
-			<sdpi-item ${attr("label", "inspector.field.confirm")}>
-				<sdpi-select setting="confirmSend" default="">
-					<option value=""${text("inspector.background.global")}</option>${confirmOptions.replace(/\t\t\t\t\t\t</g, "\t\t\t\t\t<")}
-				</sdpi-select>
-			</sdpi-item>`;
-
-/** "What this action needs": each condition met (✓), not met (✗) or being checked (⋯), with its fixes. */
-const needsStyle = `
-		<style>
-			details.needs > summary .count.unmet { color: #f87171; }
+			/* "What this action needs": each condition met (✓), not met (✗) or being checked (⋯), with its fixes. */
+			details.needs > summary .count.unmet { color: var(--t3-error); }
 			.needs ul { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 6px; }
 			.needs li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 6px; font-size: 9pt; line-height: 1.35; color: #d8d8d8; }
 			.needs li .mark { font-weight: 700; text-align: center; }
-			.needs li[data-state="met"] .mark { color: #34d399; }
-			.needs li[data-state="unmet"] .mark { color: #f87171; }
+			.needs li[data-state="met"] .mark { color: var(--t3-ok); }
+			.needs li[data-state="unmet"] .mark { color: var(--t3-error); }
 			.needs li[data-state="checking"] .mark { color: #a8a8a8; }
 			.needs li .fix { grid-column: 2; color: #a8a8a8; }
 		</style>`;
+
+/** Choices both an action's panel and Turnkey Settings offer; a panel adds "Use global" first. */
+const CHOICES = {
+	background: [
+		["t3", "inspector.background.t3"],
+		["flow", "inspector.background.flow"],
+		["state", "inspector.background.state"],
+		["custom", "inspector.background.custom"],
+	],
+	style: [
+		["classic", "inspector.style.classic"],
+		["list", "inspector.style.list"],
+		["carousel", "inspector.style.carousel"],
+	],
+	scroll: [
+		["horizontal", "inspector.scroll.horizontal"],
+		["vertical", "inspector.scroll.vertical"],
+		["off", "inspector.scroll.off"],
+	],
+	confirm: [
+		["review", "inspector.confirm.review"],
+		["hold", "inspector.confirm.hold"],
+		["off", "inspector.confirm.off"],
+	],
+} satisfies Record<string, [string, string][]>;
+
+const USE_GLOBAL: [string, string] = ["", "inspector.background.global"];
 
 const needs = `
 			<details class="group needs" id="needs" hidden>
@@ -138,8 +151,8 @@ const showWhen = (setting: string, id: string, test: string) => `
 			}`;
 
 /**
- * A merged action's mode, first in its panel. `fallback` is the mode this page's UUID starts in: an older
- * single-purpose key opens the merged panel with its own mode selected, with nothing written to its settings.
+ * A labeled select. For a merged action's mode, first in its panel, `fallback` is the mode this page's UUID starts in:
+ * an older single-purpose key opens the merged panel with its own mode selected, with nothing written to its settings.
  */
 const modeField = (setting: string, label: string, fallback: string, options: [string, string][]) => `
 			<sdpi-item ${attr("label", label)}>
@@ -152,36 +165,14 @@ const modeField = (setting: string, label: string, fallback: string, options: [s
 const inModes = (setting: string, id: string, fallback: string, modes: string[]) =>
 	showWhen(setting, id, `${JSON.stringify(modes)}.includes(value === "" ? "${fallback}" : value)`);
 
+/** An action's own Confirm before sending, over the global one in Turnkey Settings. */
+const confirmField = modeField("confirmSend", "inspector.field.confirm", "", [USE_GLOBAL, ...CHOICES.confirm]);
+
 /** A dial's own strip background, style and text scroll, over the global ones in Turnkey Settings. */
-const dialAppearance = `
-			<sdpi-item ${attr("label", "inspector.field.strip")}>
-				<sdpi-select setting="background" default="">
-					<option value=""${text("inspector.background.global")}</option>
-					<option value="t3"${text("inspector.background.t3")}</option>
-					<option value="flow"${text("inspector.background.flow")}</option>
-					<option value="state"${text("inspector.background.state")}</option>
-					<option value="custom"${text("inspector.background.custom")}</option>
-				</sdpi-select>
-			</sdpi-item>
+const dialAppearance = `${modeField("background", "inspector.field.strip", "", [USE_GLOBAL, ...CHOICES.background])}
 			<sdpi-item ${attr("label", "inspector.field.stripColor")} id="background-color" hidden>
-				<sdpi-color setting="backgroundColor" default="#121212"></sdpi-color>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.field.style")}>
-				<sdpi-select setting="stripStyle" default="">
-					<option value=""${text("inspector.background.global")}</option>
-					<option value="classic"${text("inspector.style.classic")}</option>
-					<option value="list"${text("inspector.style.list")}</option>
-					<option value="carousel"${text("inspector.style.carousel")}</option>
-				</sdpi-select>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.field.longText")}>
-				<sdpi-select setting="textScroll" default="">
-					<option value=""${text("inspector.background.global")}</option>
-					<option value="horizontal"${text("inspector.scroll.horizontal")}</option>
-					<option value="vertical"${text("inspector.scroll.vertical")}</option>
-					<option value="off"${text("inspector.scroll.off")}</option>
-				</sdpi-select>
-			</sdpi-item>`;
+				<sdpi-color setting="backgroundColor" default="${COLORS.card}"></sdpi-color>
+			</sdpi-item>${modeField("stripStyle", "inspector.field.style", "", [USE_GLOBAL, ...CHOICES.style])}${modeField("textScroll", "inspector.field.longText", "", [USE_GLOBAL, ...CHOICES.scroll])}`;
 const dialAppearanceScript = showWhen("background", "background-color", `value === "custom"`);
 
 /** Lookups, element helpers and the language swap both pages share; `afterStrings` re-renders runtime copy. */
@@ -381,7 +372,7 @@ const page = (title: string, fields = "", extra = "") => `<!doctype html>
 	<head>
 		<meta charset="utf-8" />
 		<title>${title}</title>
-		<script src="sdpi-components.js"></script>${style}${needsStyle}
+		<script src="sdpi-components.js"></script>${style}
 	</head>
 	<body>
 		<main>${fields}${card}${needs}
@@ -424,7 +415,6 @@ const settingsPage = `<!doctype html>
 			.lede { max-width: 460px; margin: 0 0 14px; color: #9a9a9a; line-height: 1.45; }
 			.hint { max-width: 460px; margin: -4px 0 12px 150px; color: #9a9a9a; line-height: 1.45; }
 			.hint.wide { margin: 6px 0 0; max-width: 520px; }
-			.hint.error { color: #f87171; }
 			.field { display: grid; grid-template-columns: 140px minmax(0, 320px); gap: 10px; align-items: center; margin: 0 0 8px; }
 			.field > label { color: #bdbdbd; }
 			.control { display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -437,7 +427,7 @@ const settingsPage = `<!doctype html>
 			.row .where { color: #8f8f8f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 			.row .state { font-size: 8.5pt; }
 			.row .detail { grid-column: 1 / -1; color: #9a9a9a; line-height: 1.35; }
-			.row .detail.error { color: #f87171; }
+			.row .detail.error { color: var(--t3-error); }
 			.row .buttons { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 			.access { grid-column: 1 / -1; display: grid; gap: 3px; margin-top: 4px; padding-top: 6px; border-top: 1px solid #424242; }
 			.access .heading { color: #9a9a9a; font-size: 8pt; letter-spacing: .06em; text-transform: uppercase; }
@@ -476,31 +466,17 @@ const settingsPage = `<!doctype html>
 				<section id="section-appearance" hidden>
 					<h1${text("inspector.settings.appearance")}</h1>${field(
 						"inspector.advanced.dialStrips",
-						select("stripBackground", [
-							["t3", "inspector.background.t3"],
-							["flow", "inspector.background.flow"],
-							["state", "inspector.background.state"],
-							["custom", "inspector.background.custom"],
-						]),
+						select("stripBackground", CHOICES.background),
 					)}${field("inspector.field.stripColor", `<input type="color" data-setting="stripColor" />`, "", "strip-color")}${field(
 						"inspector.advanced.stateLine",
 						`<label class="check"><input type="checkbox" data-setting="stripHairline" /><span${text("inspector.advanced.stateLineLabel")}</span></label>`,
 						"inspector.advanced.stateHint",
 					)}${field(
 						"inspector.advanced.stripStyle",
-						select("stripStyle", [
-							["", "inspector.style.perDial"],
-							["classic", "inspector.style.classic"],
-							["list", "inspector.style.list"],
-							["carousel", "inspector.style.carousel"],
-						]),
+						select("stripStyle", [["", "inspector.style.perDial"], ...CHOICES.style]),
 					)}${field(
 						"inspector.field.longText",
-						select("textScroll", [
-							["horizontal", "inspector.scroll.horizontal"],
-							["vertical", "inspector.scroll.vertical"],
-							["off", "inspector.scroll.off"],
-						]),
+						select("textScroll", CHOICES.scroll),
 						"inspector.advanced.styleHint",
 					)}${field(
 						"inspector.advanced.maxEffort",
@@ -535,11 +511,7 @@ const settingsPage = `<!doctype html>
 				<section id="section-behavior" hidden>
 					<h1${text("inspector.settings.behavior")}</h1>${field(
 						"inspector.advanced.confirm",
-						select("confirmSend", [
-							["review", "inspector.confirm.review"],
-							["hold", "inspector.confirm.hold"],
-							["off", "inspector.confirm.off"],
-						]),
+						select("confirmSend", CHOICES.confirm),
 						"inspector.advanced.confirmHint",
 					)}${field("inspector.advanced.appLink", `<input class="native" data-setting="scheme" type="text" spellcheck="false" placeholder="t3code" />`, "inspector.advanced.appLinkHint")}
 				</section>
@@ -659,7 +631,7 @@ const settingsPage = `<!doctype html>
 			}
 
 			/** What Stream Deck's own fields showed for a setting never saved. */
-			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "#121212", stripHairline: true, stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
+			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "${COLORS.card}", stripHairline: true, stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
 			const globals = {};
 			function renderGlobals(settings) {
 				Object.assign(globals, settings);

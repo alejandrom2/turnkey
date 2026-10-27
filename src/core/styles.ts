@@ -5,7 +5,7 @@
  * the tiles and any text that scrolls.
  */
 import { t } from "./i18n.js";
-import { BLANK_ART, COLORS, glyphArt, type MarkPainter, queueBadge, type StripAppearance, stripCanvas, stripMarkIcon, subagentBadge, svgDataUrl, svgText, textWidth, wrapText } from "./render.js";
+import { badgeRow, BLANK_ART, COLORS, fadeMask, fit, glyphArt, type MarkPainter, skeletonRect, type StripAppearance, stripCanvas, stripMarkIcon, svgImage, svgText, textWidth, wrapText } from "./render.js";
 import { overflowIn, type ScrollLine, scrollLine, type StripContent, slotItems, type TextScroll, type TextSlot } from "./strip.js";
 
 export type StripStyle = "classic" | "list" | "carousel";
@@ -79,11 +79,11 @@ export function listRows(count: number, index: number, wrap = false): { previous
 	return { previous, selected: index, next, after: at(2) };
 }
 
-export const LIST_SELECTED: TextSlot = { width: 162, height: 20, size: 15, weight: 600, color: "#FFFFFF" };
-export const CAROUSEL_TITLE: TextSlot = { width: 184, height: 20, size: 15, weight: 700, color: "#FFFFFF" };
+const LIST_SELECTED: TextSlot = { width: 162, height: 20, size: 15, weight: 600, color: "#FFFFFF" };
+const CAROUSEL_TITLE: TextSlot = { width: 184, height: 20, size: 15, weight: 700, color: "#FFFFFF" };
 
 /** The item a carousel at `position` shows, or a list selects. */
-export const shownItem = (list: StripList, position = list.index): StripItem | undefined =>
+const shownItem = (list: StripList, position = list.index): StripItem | undefined =>
 	list.items.length === 0 ? undefined : list.items[mod(Math.round(position), list.items.length)];
 
 /** The style's line that may scroll: the selected row, or the carousel's title. */
@@ -94,7 +94,7 @@ export function styleLine(style: Exclude<StripStyle, "classic">, list: StripList
 	return scrollLine(item.label, style === "list" ? LIST_SELECTED : CAROUSEL_TITLE, scroll, style);
 }
 
-export type StyleOptions = {
+type StyleOptions = {
 	appearance: StripAppearance;
 	scroll: TextScroll;
 	/** The scrolling line's offset, in px. */
@@ -110,14 +110,14 @@ type Feedback = Record<string, string | { value: string; color: string }>;
 const canvasOf = (content: StripContent, appearance: StripAppearance) =>
 	stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
 
-const svg = (body: string) => svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${body}</svg>`);
+const svg = (body: string) => svgImage(200, 100, body);
 
 const DIVIDER = `<rect x="8" y="20" width="184" height="1" fill="#FFFFFF" fill-opacity=".12"/>`;
 const LIST_ART = svg(DIVIDER);
 /** The list's last row as a placeholder bar while it loads. */
-const LIST_LOADING_ART = svg(`${DIVIDER}<rect x="30" y="81" width="96" height="12" rx="6" fill="#FFFFFF" fill-opacity=".12"/>`);
+const LIST_LOADING_ART = svg(DIVIDER + skeletonRect(30, 81, 96, 12));
 
-const ROW_COLORS = { previous: "#9A9FA8", next: "#B8BCC6", after: "#73787F" } as const;
+const ROW_COLORS = { previous: "#9A9FA8", next: COLORS.secondary, after: "#73787F" } as const;
 
 export const READING = { visible: 4, width: 180, size: 14, lineHeight: 19, firstBaseline: 37 } as const;
 
@@ -190,10 +190,7 @@ const TILE = { center: 68, side: 54, far: 42, gap: 72, cy: 39, radius: 12 } as c
 /** A tile's name on the strip's bottom row, under `cx`: bolder and wider at the center, shortened to fit its column. */
 function tileCaption(text: string, cx: number, faded: number, color: string): string {
 	const size = 14 - 3 * faded;
-	const width = 84 - 20 * faded;
-	let shown = text;
-	while (shown.length > 1 && textWidth(shown, size) > width) shown = `${shown.slice(0, -2).trimEnd()}…`;
-	return svgText(shown, cx, 92, size, faded < 0.5 ? 700 : 600, color, ` text-anchor="middle"`);
+	return svgText(fit(text, 84 - 20 * faded, size), cx, 92, size, faded < 0.5 ? 700 : 600, color, ` text-anchor="middle"`);
 }
 
 /** One tile `distance` items from the center: smaller, dimmer and without the white border the further it is. */
@@ -208,7 +205,7 @@ function tile(item: StripItem, distance: number): string {
 	const body = box(`fill="#26282E"`) + (item.tint ? box(`fill="${item.tint}" fill-opacity=".24"`) : "") + item.art(cx - art / 2, TILE.cy - art / 2, art);
 	const faded = Math.min(1, away);
 	const border = away < 1 ? box(`fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-opacity="${(1 - faded).toFixed(2)}"`) : "";
-	const caption = item.caption === undefined ? "" : tileCaption(item.caption, cx, faded, away < 0.5 ? (item.color ?? "#FFFFFF") : "#B8BCC6");
+	const caption = item.caption === undefined ? "" : tileCaption(item.caption, cx, faded, away < 0.5 ? (item.color ?? "#FFFFFF") : COLORS.secondary);
 	return `<g opacity="${(1 - 0.55 * faded).toFixed(2)}">${body}${caption}</g>${border}`;
 }
 
@@ -255,12 +252,12 @@ export function styleFlash(style: Exclude<StripStyle, "classic">, ok: boolean, l
 }
 
 /** `queued` and `subagents` draw the first row's queue ("+N") and running subagents at its right. */
-export type ThreadRow = { title: string; art: MarkPainter; queued?: number; subagents?: number };
+type ThreadRow = { title: string; art: MarkPainter; queued?: number; subagents?: number };
 
 const ROWS = [
 	{ baseline: 31, size: 19, weight: 700, fill: "#FFFFFF", width: 184 },
-	{ baseline: 61, size: 17, weight: 600, fill: "#8A8A8A", width: 146 },
-	{ baseline: 89, size: 17, weight: 600, fill: "#8A8A8A", width: 146 },
+	{ baseline: 61, size: 17, weight: 600, fill: COLORS.faint, width: 146 },
+	{ baseline: 89, size: 17, weight: 600, fill: COLORS.faint, width: 146 },
 ] as const;
 
 /**
@@ -271,29 +268,16 @@ export function threadRowsArt(rows: readonly ThreadRow[]): string {
 	const parts: string[] = [];
 	rows.slice(0, 3).forEach((row, at) => {
 		const line = ROWS[at]!;
-		let right = 192;
-		let badge = "";
-		if (at === 0 && row.queued !== undefined && row.queued > 0) {
-			badge += queueBadge(row.queued, right, line.baseline - 16);
-			right -= Math.round(textWidth(`+${row.queued}`, 14) + 14) + 4;
-		}
-		if (at === 0 && row.subagents !== undefined && row.subagents > 0) {
-			const pill = subagentBadge(row.subagents, right, line.baseline - 16);
-			badge += pill.svg;
-			right -= pill.width + 4;
-		}
-		const width = badge ? Math.min(line.width, right - 12 - 4) : line.width;
+		const badges = at === 0 ? badgeRow(row.queued, row.subagents, 192, line.baseline - 16) : { svg: "", right: 192 };
+		const width = badges.svg ? Math.min(line.width, badges.right - 16) : line.width;
 		let text = svgText(row.title, 12, line.baseline, line.size, line.weight, line.fill);
-		if (textWidth(row.title, line.size) > width - 2) {
+		if (textWidth(row.title, line.size, line.weight) > width - 2) {
 			const end = 12 + width;
-			const top = line.baseline - line.size - 4;
-			parts.push(
-				`<defs><linearGradient id="row-fade-${at}" gradientUnits="userSpaceOnUse" x1="${end - 24}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="row-${at}" maskUnits="userSpaceOnUse" x="0" y="${top}" width="200" height="${line.size + 10}"><rect y="${top}" width="200" height="${line.size + 10}" fill="url(#row-fade-${at})"/></mask></defs>`,
-			);
+			parts.push(fadeMask(`row-${at}`, end - 24, end, { y: line.baseline - line.size - 4, width: 200, height: line.size + 10 }));
 			text = `<g mask="url(#row-${at})">${text}</g>`;
 		}
-		parts.push(text + badge);
+		parts.push(text + badges.svg);
 		if (at > 0) parts.push(row.art(168, line.baseline - 16, 20));
 	});
-	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${parts.join("")}</svg>`);
+	return svg(parts.join(""));
 }

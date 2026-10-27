@@ -120,57 +120,6 @@ ${withoutIcon.length ? `// Driver kinds without a built-in icon: ${withoutIcon.j
 export type ProviderMark = { viewBox: string; body: string; color: string; fill: "currentColor" | "native" };
 
 export const PROVIDER_MARKS: Record<string, ProviderMark> = ${JSON.stringify(marks, null, "\t")};
-
-export function providerMarkSvg(driverKind: string, size: number, opts?: { color?: string }): string | undefined {
-	const mark = PROVIDER_MARKS[driverKind];
-	if (!mark) return undefined;
-	const color = opts?.color ?? mark.color;
-	return \`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="\${size}" height="\${size}" viewBox="\${mark.viewBox}" preserveAspectRatio="xMidYMid meet" color="\${color}" fill="\${mark.fill === "currentColor" ? "currentColor" : "none"}">\${mark.body}</svg>\`;
-}
-
-// Port of providerInstanceInitials (packages/client-runtime/src/state/providerInstanceDisplay.ts).
-export function providerInstanceInitials(label: string): string {
-	const words = label
-		.replace(/[^\\P{P}'’]+/gu, " ")
-		.split(/\\s+/u)
-		.map((word) => word.replace(/^['’]+|['’]+$/gu, ""))
-		.filter(Boolean);
-	if (words.length === 0) return "";
-	if (words.length === 1) return Array.from(words[0]!).slice(0, 2).join("").toUpperCase();
-	return words
-		.slice(0, 2)
-		.map((word) => Array.from(word)[0]?.toUpperCase() ?? "")
-		.join("");
-}
-
-export function normalizeProviderAccentColor(value: string | undefined): string | undefined {
-	const trimmed = value?.trim();
-	if (!trimmed) return undefined;
-	return /^#[0-9a-fA-F]{6}$/u.test(trimmed) ? trimmed : undefined;
-}
-
-export function providerAccentForegroundColor(accentColor: string): "#000000" | "#ffffff" {
-	const linearChannel = (offset: number) => {
-		const value = Number.parseInt(accentColor.slice(offset, offset + 2), 16) / 255;
-		return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-	};
-	const luminance = 0.2126 * linearChannel(1) + 0.7152 * linearChannel(3) + 0.0722 * linearChannel(5);
-	const blackContrast = (luminance + 0.05) / 0.05;
-	const whiteContrast = 1.05 / (luminance + 0.05);
-	return blackContrast >= whiteContrast ? "#000000" : "#ffffff";
-}
-
-// T3's badge: accent background + contrast foreground, or muted (bg-card/text-muted-foreground) without an accent.
-export function initialsBadgeSvg(displayName: string, accentColor: string | undefined, size: number): string {
-	const accent = normalizeProviderAccentColor(accentColor);
-	const bg = accent ?? "#2a2a2a";
-	const fg = accent ? providerAccentForegroundColor(accent) : "#a3a3a3";
-	const text = providerInstanceInitials(displayName)
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;");
-	const r = size / 2;
-	return \`<svg xmlns="http://www.w3.org/2000/svg" width="\${size}" height="\${size}" viewBox="0 0 \${size} \${size}"><circle cx="\${r}" cy="\${r}" r="\${r}" fill="\${bg}"/><text x="\${r}" y="\${r}" dy="0.35em" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-weight="600" font-size="\${Math.round(size * 0.42)}" fill="\${fg}">\${text}</text></svg>\`;
-}
 `;
 writeFileSync(new URL("../src/core/providerIcons.ts", import.meta.url), out);
 console.log(`wrote ${Object.keys(marks).length} marks: ${Object.keys(marks).join(", ")}`);

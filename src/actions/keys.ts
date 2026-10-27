@@ -1,4 +1,4 @@
-import { type Action, action, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import { type Action, action, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confirmed } from "../core/approvals.js";
@@ -9,7 +9,6 @@ import { branchSummary } from "../core/git.js";
 import { type HealthMachine, healthIssues, summarizeHealth } from "../core/health.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import {
-	type CatalogModel,
 	cycleValue,
 	effortValues,
 	findModel,
@@ -18,7 +17,6 @@ import {
 	modelColor,
 	nextModel,
 	parseModelKey,
-	providerMark,
 	RUNTIME_MODES,
 	runtimeModes,
 	speedToggle,
@@ -37,7 +35,6 @@ import {
 	type GlyphName,
 	accessTone,
 	ladderCue,
-	type MarkPainter,
 	maxEffortStyle,
 	modelFill,
 	MODE_GLYPH,
@@ -60,18 +57,22 @@ import { connectionNotice, InfobarWriter } from "./infobar.js";
 import { connectionOf, threadNeeds } from "./needs.js";
 import {
 	canOperate,
-	connectionFace,
 	DeckAction,
 	LONG_PRESS_MS,
+	machineName,
+	machinesOn,
+	markArt,
 	openThread,
 	pressWhileDisconnected,
 	queuedCount,
 	selectedThread,
+	selectNew,
 	selectThread,
 	sendToThread,
 	speedPaint,
 	ultrathinkArmed,
 } from "./base.js";
+import { MachineWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -114,17 +115,11 @@ export class ThreadSlot extends DeckAction<SlotSettings> {
 		return pick(deck.board.threadsOn(machine), this.slotOf(action), machine);
 	}
 
-	protected override async paint(action: Action<SlotSettings>): Promise<void> {
+	protected override async draw(action: Action<SlotSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const machine = this.machineOf(action);
-		const offline = connectionFace(machine);
-		const { face, moving } = offline ? { face: offline, moving: false } : threadFace(this.#threadFor(action), t("face.noThread"), selectedThread(machine));
+		const { face, moving } = threadFace(this.#threadFor(action), t("face.noThread"), selectedThread(this.machineOf(action)));
 		this.animate(action, moving);
 		await this.setImage(action, face);
-	}
-
-	override onKeyDown(ev: KeyDownEvent<SlotSettings>): void {
-		this.pressStarted(ev.action.id);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<SlotSettings>): Promise<void> {
@@ -153,12 +148,10 @@ export class Activity extends DeckAction<ActivitySettings> {
 		return pick(threads, this.slotOf(action), machine);
 	}
 
-	protected override async paint(action: Action<ActivitySettings>): Promise<void> {
+	protected override async draw(action: Action<ActivitySettings>): Promise<void> {
 		if (action.isNeoInfobar()) return this.#paintBar(action);
 		if (!action.isKey()) return;
-		const machine = this.machineOf(action);
-		const offline = connectionFace(machine);
-		const { face, moving } = offline ? { face: offline, moving: false } : threadFace(this.#threadFor(action), t("face.allQuiet"), selectedThread(machine));
+		const { face, moving } = threadFace(this.#threadFor(action), t("face.allQuiet"), selectedThread(this.machineOf(action)));
 		this.animate(action, moving);
 		await this.setImage(action, face);
 	}
@@ -203,9 +196,7 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 		return "send";
 	}
 
-	protected get steers(): boolean {
-		return false;
-	}
+	protected readonly steers: boolean = false;
 
 	#check(action: Action<T>) {
 		const { text, label } = this.prompt(this.settingsOf(action));
@@ -227,15 +218,11 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 		return thread && JSON.stringify([thread.key, text]);
 	}
 
-	protected override async paint(action: Action<T>): Promise<void> {
+	protected override async draw(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
 		const { label, check, thread, pinned } = this.#check(action);
 		const glyph = this.glyphName(this.settingsOf(action));
 		await this.setImage(action, renderControlKey({ glyph, primary: !this.steers, label, available: check.available, ultrathink: ultrathinkArmed(thread), pinned }));
-	}
-
-	override onKeyDown(ev: KeyDownEvent<T>): void {
-		this.pressStarted(ev.action.id);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
@@ -260,7 +247,7 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 	}
 }
 
-type SendSettings = PromptSettings & { label?: string; template?: string };
+type SendSettings = PromptSettings & { template?: string };
 
 /** Sends the key's own prompt, or one of a few everyday ones (continue, fix tests, …), to the selected thread. */
 abstract class SendAction extends PromptKey<SendSettings> {
@@ -274,7 +261,7 @@ abstract class SendAction extends PromptKey<SendSettings> {
 
 	protected prompt(settings: SendSettings) {
 		const { text, label } = templatePrompt(modeOf("send", this.manifestId, settings), settings.prompt);
-		return { text, label: settings.title || settings.label || label };
+		return { text, label: settings.title || label };
 	}
 }
 
@@ -292,9 +279,7 @@ export class Steer extends PromptKey<PromptSettings> {
 		return "steer";
 	}
 
-	protected override get steers(): boolean {
-		return true;
-	}
+	protected override readonly steers = true;
 
 	protected prompt(settings: PromptSettings) {
 		return { text: settings.prompt?.trim() ?? "", label: settings.title || undefined };
@@ -304,7 +289,7 @@ export class Steer extends PromptKey<PromptSettings> {
 type NewThreadSettings = { prompt?: string; title?: string; destination?: string; project?: string; machine?: string; startIn?: string };
 
 /** The machine a new thread starts on when no thread is near: the action's machine, else the first that may act. */
-const launchMachine = (machine?: string) => deck.machines.find((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine));
+const launchMachine = (machine?: string) => machinesOn(machine).find((candidate) => candidate.canOperate);
 
 /**
  * Starts a thread with `prompt` in `near`'s project, or in the scratch project when the board is empty,
@@ -314,10 +299,8 @@ export async function startThread(near: DeckThread | undefined, machine: string 
 	const target = near?.machine ?? launchMachine(machine);
 	if (target === undefined) throw new Error("No machine can start threads.");
 	const created = await target.launch(near ? { projectId: near.projectId } : { scratch: true }, prompt, { title, fallbackModel: near?.model });
-	selectThread({ key: `${target.environmentId}/${created.threadId}`, machine: target });
+	selectNew(target, created.threadId);
 }
-
-export const launchable = (near: DeckThread | undefined, machine: string | undefined): boolean => (near !== undefined ? canOperate(near) : launchMachine(machine) !== undefined);
 
 type LaunchPlan = { near: DeckThread | undefined; target: Machine | undefined; where: { projectId: string } | { scratch: true }; missing?: string };
 
@@ -349,7 +332,7 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 		return { plan, worktree, check: availability("launch", { canOperate: plan.target?.canOperate ?? false, missing }) };
 	}
 
-	protected override async paint(action: Action<NewThreadSettings>): Promise<void> {
+	protected override async draw(action: Action<NewThreadSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const { title } = this.settingsOf(action);
 		const { worktree, check } = this.#check(action);
@@ -367,7 +350,7 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 			async () => {
 				const workspaceStrategy = worktree && "projectId" in plan.where ? await target.worktreeStrategy(plan.where.projectId) : undefined;
 				const created = await target.launch(plan.where, prompt, { title: ev.payload.settings.title, fallbackModel: plan.near?.model, workspaceStrategy });
-				selectThread({ key: `${target.environmentId}/${created.threadId}`, machine: target });
+				selectNew(target, created.threadId);
 				if (prompt === "" && target.environmentId !== undefined) {
 					await openExternal(threadDeepLink({ environmentId: target.environmentId, threadId: created.threadId }, deck.scheme));
 				}
@@ -432,7 +415,7 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		return { which, pinned: pinning && thread?.pinned === true, targeted, thread, check: availability(kind, { thread, gone, canOperate: canOperate(thread) }) };
 	}
 
-	protected override async paint(action: Action<OrganizeSettings>): Promise<void> {
+	protected override async draw(action: Action<OrganizeSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const { which, pinned, targeted, thread, check } = this.#check(action);
 		const [glyph, label] = ORGANIZE_FACE[which];
@@ -451,7 +434,7 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		const url = this.machineOf(action);
 		return [
 			{ kind: "paired", connection: connectionOf(url) },
-			{ kind: "operate", ok: thread?.machine.canOperate ?? deck.machines.some((machine) => machine.canOperate && (url === undefined || machine.url === url)) },
+			{ kind: "operate", ok: canOperate(thread, url) },
 			{ kind: "snoozed", ok: thread !== undefined },
 		];
 	}
@@ -465,10 +448,6 @@ export class Organize extends DeckAction<OrganizeSettings> {
 	protected override reviewScope(action: Action<OrganizeSettings>): string | undefined {
 		const { which, thread } = this.#check(action);
 		return asksFirst(which) && thread ? JSON.stringify([which, thread.key, snoozeMinutes(this.settingsOf(action))]) : undefined;
-	}
-
-	override onKeyDown(ev: KeyDownEvent<OrganizeSettings>): void {
-		this.pressStarted(ev.action.id);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<OrganizeSettings>): Promise<void> {
@@ -494,12 +473,6 @@ export class Organize extends DeckAction<OrganizeSettings> {
 	}
 }
 
-
-const markOf =
-	(model: CatalogModel): MarkPainter =>
-	(x, y, size) =>
-		providerMark(model, x, y, size, { acpIcons: deck.acpIcons });
-
 /** A setting key: the current value or the one it applies, highlighted when the thread already has it. */
 abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 	/** The face, the availability, what a press applies (undefined: already current), and whether the face moves. */
@@ -511,12 +484,11 @@ abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 		return { ...target, config: target.thread?.machine.modelConfig };
 	}
 
-	protected override async paint(action: Action<T>): Promise<void> {
+	protected override async draw(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		const state = offline === undefined ? this.state(action) : undefined;
-		this.animate(action, state?.moving === true);
-		await this.setImage(action, offline ?? state!.face);
+		const state = this.state(action);
+		this.animate(action, state.moving === true);
+		await this.setImage(action, state.face);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
@@ -550,7 +522,7 @@ export class ModelKey extends SettingKey<ModelSettings> {
 		const cue = catalog.length > 1 && position >= 0 ? dotsCue(catalog.length, position, modelFill(maxEffortStyle(deck.appearance.maxEffort), shown && modelColor(shown))) : undefined;
 		// The name takes the model's color unless the key's Name color is White.
 		const labelColor = this.settingsOf(action).nameColor === "white" ? undefined : shown && modelColor(shown);
-		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, labelColor, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue, pinned });
+		const face = renderControlKey({ glyph: "model", mark: shown && markArt(shown), label, labelColor, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue, pinned });
 		if (thread === undefined || target === undefined) return { face, check };
 		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;
 		return { face, check, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
@@ -729,20 +701,14 @@ export class Approve extends DeckAction<ApproveSettings> {
 		return { thread, pinned, check, request, press, confirm: approvalConfirm(settings.approvalConfirm), authority };
 	}
 
-	protected override async paint(action: Action<ApproveSettings>): Promise<void> {
+	protected override async draw(action: Action<ApproveSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const face = connectionFace(this.machineOf(action));
-		if (face) return void (await this.setImage(action, face));
 		const { check, request, press, authority, confirm, pinned } = this.#state(action);
 		if (!check.available) return void (await this.setImage(action, renderDecisionKey({ kind: "approve", armed: false, caption: authorityLabel(authority), detail: check.reason, pinned })));
 		if (request === undefined) return void (await this.setImage(action, renderSkeletonKey()));
 		const label = press?.label ?? authorityLabel("open");
 		const caption = press?.kind === "respond" && confirm === "hold" ? t("strip.withHold", { label }) : label;
 		await this.setImage(action, renderDecisionKey({ kind: "approve", armed: true, caption, detail: requestSummary(request), pinned }));
-	}
-
-	override onKeyDown(ev: KeyDownEvent<ApproveSettings>): void {
-		this.pressStarted(ev.action.id);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<ApproveSettings>): Promise<void> {
@@ -766,10 +732,8 @@ export class Deny extends DeckAction {
 		return { thread, pinned, check, request: check.available && thread !== undefined ? requestFor(thread) : undefined };
 	}
 
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
+	protected override async draw(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
-		const face = connectionFace(this.machineOf(action));
-		if (face) return void (await this.setImage(action, face));
 		const { check, request, pinned } = this.#state(action);
 		if (check.available && request === undefined) return void (await this.setImage(action, renderSkeletonKey()));
 		await this.setImage(action, renderDecisionKey({ kind: "deny", armed: check.available, caption: t("face.deny"), detail: request ? requestSummary(request) : check.available ? undefined : check.reason, pinned }));
@@ -785,9 +749,6 @@ export class Deny extends DeckAction {
 	}
 }
 
-const machineName = (machine: Machine): string =>
-	machine.state.kind === "ready" ? machine.state.label : machine.credential?.label || new URL(machine.url).host;
-
 /** A machine as Health weighs it: its connection, and its providers once connected. */
 export const healthMachine = (machine: Machine): HealthMachine => ({
 	name: machineName(machine),
@@ -796,6 +757,8 @@ export const healthMachine = (machine: Machine): HealthMachine => ({
 	message: machine.state.kind === "error" ? machine.state.message : undefined,
 	providers: machine.modelConfig?.providers,
 });
+
+const healthWatch = new MachineWatch({ open: (machine) => machine.watchConfig() });
 
 const HEALTH_COLOR = { error: COLORS.error, attention: COLORS.attention, note: COLORS.done, ok: COLORS.done, connecting: COLORS.muted } as const;
 
@@ -807,32 +770,12 @@ const HEALTH_COLOR = { error: COLORS.error, attention: COLORS.attention, note: C
 @action({ UUID: `${ID}.health` })
 export class Health extends DeckAction {
 	/** Provider statuses stay live only while a Health key shows them. */
-	readonly #shown = new Map<string, string | undefined>();
-	readonly #watches = new Map<string, () => void>();
-
-	constructor() {
-		super();
-		deck.onRepaint(() => this.#sync());
-	}
-
-	#machines(action: Action<JsonObject>): Machine[] {
-		const url = this.machineOf(action);
-		return deck.machines.filter((machine) => url === undefined || machine.url === url);
-	}
-
-	#sync(): void {
-		const urls = [...this.#shown.values()];
-		const wanted = new Set(deck.machines.filter((machine) => urls.some((url) => url === undefined || url === machine.url)).map((machine) => machine.url));
-		for (const [url, release] of this.#watches) {
-			if (wanted.has(url)) continue;
-			release();
-			this.#watches.delete(url);
-		}
-		for (const machine of deck.machines) if (wanted.has(machine.url) && !this.#watches.has(machine.url)) this.#watches.set(machine.url, machine.watchConfig());
-	}
+	protected override readonly watcher = healthWatch;
+	/** Health is the connection's own face. */
+	protected override readonly showsConnection = false;
 
 	override needs(action: Action<JsonObject>): Need[] {
-		const machines = this.#machines(action);
+		const machines = machinesOn(this.machineOf(action));
 		const issues = healthIssues(machines.filter((machine) => machine.state.kind === "ready").map(healthMachine));
 		// Notes (an update available, a provider turned off on purpose) never fail the check.
 		const problems = issues
@@ -841,10 +784,10 @@ export class Health extends DeckAction {
 		return [{ kind: "paired", connection: connectionOf(this.machineOf(action)) }, { kind: "providers", problems }];
 	}
 
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
+	protected override async draw(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
 		const url = this.machineOf(action);
-		const machines = this.#machines(action);
+		const machines = machinesOn(url);
 		if (machines.length === 0) {
 			const title = url === undefined ? t("notice.notFound") : t("notice.machineRemoved");
 			return void (await this.setImage(action, renderInfoKey({ glyph: "plug", title, detail: url === undefined ? t("notice.openThenPress") : t("notice.pickAnother"), available: false })));
@@ -856,24 +799,6 @@ export class Health extends DeckAction {
 		await this.setImage(action, renderInfoKey({ glyph: pairing ? "key" : "health", color, tint: loud ? color : undefined, title: summary.title, detail: summary.detail }));
 	}
 
-	override onWillAppear(ev: WillAppearEvent<JsonObject>): void {
-		super.onWillAppear(ev);
-		this.#shown.set(ev.action.id, this.machineOf(ev.action));
-		this.#sync();
-	}
-
-	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<JsonObject>): void {
-		super.onDidReceiveSettings(ev);
-		this.#shown.set(ev.action.id, this.machineOf(ev.action));
-		this.#sync();
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<JsonObject>): void {
-		this.#shown.delete(ev.action.id);
-		this.#sync();
-		super.onWillDisappear(ev);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		await deck.retry(this.machineOf(ev.action));
 	}
@@ -882,7 +807,7 @@ export class Health extends DeckAction {
 /** The selected thread's branch. Tap opens the thread in T3 Code. */
 @action({ UUID: `${ID}.branch` })
 export class Branch extends DeckAction {
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
+	protected override async draw(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
 		const thread = selectedThread(machine);
@@ -893,7 +818,7 @@ export class Branch extends DeckAction {
 		const face = check.available
 			? renderInfoKey({ glyph: thread!.worktreePath ? "worktree" : "branch", title: thread!.branch!, detail: (status && branchSummary(status)) ?? (thread!.projectTitle || undefined) })
 			: renderInfoKey({ glyph: "branch", title: t("face.branch"), detail: check.reason, available: false });
-		await this.setImage(action, connectionFace(machine) ?? face);
+		await this.setImage(action, face);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {

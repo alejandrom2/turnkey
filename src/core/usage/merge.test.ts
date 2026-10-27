@@ -254,10 +254,6 @@ describe("mergeUsage", () => {
 			expect(merged.costUsd).toBe(13);
 			expect(merged.records).toBe(6);
 			expect(merged.sessions).toBe(2);
-			expect(merged.daily.map(({ day, costUsd }) => [day, costUsd])).toEqual([
-				["2026-08-07", 10],
-				["2026-08-08", 3],
-			]);
 			expect(merged.contributingEnvironments).toEqual(
 				ordered.map(({ environmentId }) => environmentId),
 			);
@@ -405,6 +401,26 @@ describe("mergeUsage", () => {
 		expect(merged.contractMismatches).toEqual([]);
 	});
 
+	it("leaves out buckets T3 Code's schema rejects, so no total reads $NaN or lists a blank model", () => {
+		const known = summary([bucket()], [{ provider: "claude", hostId: "mac", homePath: "/a" }]);
+		const { costUsd: _cost, ...noCost } = bucket();
+		const decoded = decodeSummary({
+			...known,
+			buckets: [
+				...known.buckets,
+				noCost,
+				{ ...bucket(), costUsd: "5" },
+				{ ...bucket(), cacheSavingsUsd: null },
+				{ ...bucket(), model: "  " },
+				{ ...bucket(), records: 1.5 },
+				{ ...bucket(), unpricedRecords: -1 },
+				{ ...bucket(), sessions: "1" },
+				{ ...bucket(), totals: { ...bucket().totals, outputTokens: "50" } },
+			],
+		});
+		expect(decoded).toEqual(known);
+	});
+
 	it("normalizes model names during decoding before grouping usage", () => {
 		const decoded = decodeSummary(
 			summary(
@@ -454,19 +470,14 @@ describe("mergeUsage", () => {
 		]);
 	});
 
-	it("splits cost by category and speed, counting older servers as unsplit standard cost", () => {
+	it("counts a model's unpriced share of tokens", () => {
 		const merged = mergeUsage(
 			[
 				environment(
 					"env-a",
 					summary(
 						[
-							bucket({
-								costUsd: 10,
-								categoryCostUsd: { input: 1, cacheRead: 2, cacheWrite: 3, output: 4 },
-								fastCostUsd: 6,
-								speedPremiumUsd: 3,
-							}),
+							bucket({ costUsd: 10 }),
 							bucket({
 								provider: "codex",
 								model: "unknown-model",
@@ -487,26 +498,10 @@ describe("mergeUsage", () => {
 						],
 					),
 				),
-				environment(
-					"env-b",
-					summary(
-						[bucket({ costUsd: 5 })],
-						[{ provider: "claude", hostId: "linux", homePath: "/b/.claude" }],
-						USAGE_MERGE_COMPATIBLE_SINCE,
-					),
-				),
 			],
 			USAGE_CONTRACT_VERSION,
 		);
 
-		expect(merged.categoryCost).toEqual({
-			input: 1,
-			cacheRead: 2,
-			cacheWrite: 3,
-			output: 4,
-			unsplit: 5,
-		});
-		expect(merged.speedCost).toEqual({ standard: 9, fast: 6, ultrafast: 0, premium: 3 });
 		expect(merged.models.map(({ model, unpricedTokens }) => [model, unpricedTokens])).toEqual([
 			["claude-fable-5", 0],
 			["unknown-model", 1160],

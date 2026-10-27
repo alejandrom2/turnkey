@@ -2,7 +2,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { COLORS, glyph, type GlyphName, renderControlKey } from "../src/core/render.ts";
+import { glyph, type GlyphName, renderControlKey, svgMarkup } from "../src/core/render.ts";
 
 const root = join(import.meta.dirname, "..", "com.alejandrom2.turnkey.sdPlugin", "imgs");
 
@@ -60,8 +60,7 @@ const ACTIONS: Record<string, GlyphName> = {
 	share: "share",
 };
 
-const svg = (size: number, body: string, background?: string) =>
-	`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${background ? `<rect width="${size}" height="${size}" fill="${background}"/>` : ""}${body}</svg>`;
+const svg = (size: number, body: string) => svgMarkup(size, size, body);
 
 const write = (path: string, contents: string) => {
 	mkdirSync(join(root, path, ".."), { recursive: true });

@@ -132,6 +132,9 @@ function reviewThreadContext(thread: PullRequestReviewThread, pullRequestNumber:
 	};
 }
 
+/** A check that failed or was cancelled, as T3 Code counts failing checks. */
+export const failing = (check: Pick<PullRequestCheck, "status">): boolean => check.status === "failure" || check.status === "cancelled";
+
 /** What a Fix Findings handoff would carry: unresolved threads, line-less review remarks and failing checks. */
 export function findings(input: { reviewThreads: readonly PullRequestReviewThread[]; comments: readonly PullRequestComment[]; checks: readonly PullRequestCheck[] }) {
 	const threads = input.reviewThreads.filter((thread) => !thread.isResolved && thread.comments.some((comment) => comment.body.trim().length > 0));
@@ -139,7 +142,7 @@ export function findings(input: { reviewThreads: readonly PullRequestReviewThrea
 	const remarks = input.comments.filter(
 		(comment) => (comment.kind === "review" || comment.kind === "review-comment") && !attached.has(comment.id) && visibleBody(comment.body) !== null,
 	);
-	const checks = input.checks.filter((check) => check.status === "failure" || check.status === "cancelled");
+	const checks = input.checks.filter(failing);
 	return { threads, remarks, checks, total: threads.length + remarks.length + checks.length };
 }
 
@@ -155,19 +158,13 @@ export function buildFixFindingsHandoff(input: {
 	checks: readonly PullRequestCheck[];
 	commentsTruncated: boolean;
 }): Handoff {
-	const threads = input.reviewThreads.filter((thread) => !thread.isResolved && thread.comments.some((comment) => comment.body.trim().length > 0));
-	const attached = new Set(input.reviewThreads.flatMap((thread) => thread.comments.map((comment) => comment.id)));
-	const unattachable = input.comments
-		.filter((comment) => (comment.kind === "review" || comment.kind === "review-comment") && !attached.has(comment.id))
-		.flatMap((comment) => {
-			const body = visibleBody(comment.body);
-			if (body === null) return [];
-			const where = comment.path === null ? "" : ` on \`${boundedField(comment.path)}\``;
-			return [`${boundedField(comment.author?.login ?? "ghost")}${where}: ${boundedField(body)}`];
-		});
-	const failingChecks = input.checks
-		.filter((check) => check.status === "failure" || check.status === "cancelled")
-		.map((check) => boundedField(check.description ? `${check.name}: ${check.description}` : check.name));
+	const found = findings(input);
+	const threads = found.threads;
+	const unattachable = found.remarks.map((comment) => {
+		const where = comment.path === null ? "" : ` on \`${boundedField(comment.path)}\``;
+		return `${boundedField(comment.author?.login ?? "ghost")}${where}: ${boundedField(visibleBody(comment.body)!)}`;
+	});
+	const failingChecks = found.checks.map((check) => boundedField(check.description ? `${check.name}: ${check.description}` : check.name));
 	const includedChecks = failingChecks.slice(-FINDING_LIMIT);
 	const includedRemarks = unattachable.slice(Math.max(0, unattachable.length - (FINDING_LIMIT - includedChecks.length)));
 	const includedThreads = threads.slice(Math.max(0, threads.length - (FINDING_LIMIT - includedChecks.length - includedRemarks.length)));
@@ -343,6 +340,12 @@ export function handoffMessage(handoff: Handoff): { text: string; context?: Mess
 	return { text: text.trim(), ...(records.length === 0 ? {} : { context: { version: 1, records } }) };
 }
 
+/** A thread's pull request: the open one for its branch (not another layer of a stack), else any open one, else its first. */
+export function threadPullRequest<T extends { state?: string; headBranch?: string }>(links: readonly T[], branch: string | undefined): T | undefined {
+	const open = links.filter((link) => link.state === "open");
+	return open.find((link) => link.headBranch !== undefined && link.headBranch === branch) ?? open[0] ?? links[0];
+}
+
 /** The pull request a thread links, as `pullRequests.*` name it; undefined on servers that don't send the repository. */
 export function threadPullRequestRef(projectId: string, link: { host?: string; repository?: string; number: number }): PullRequestRef | undefined {
 	if (!link.repository) return undefined;
@@ -354,7 +357,7 @@ export type ChecksState = "none" | "pending" | "failing" | "passing";
 /** `classifyPullRequestChecks`. */
 export function classifyChecks(checks: readonly PullRequestCheck[]): ChecksState {
 	if (checks.length === 0) return "none";
-	if (checks.some((check) => check.status === "failure" || check.status === "cancelled")) return "failing";
+	if (checks.some(failing)) return "failing";
 	if (checks.some((check) => check.status === "pending" || check.status === "action-required")) return "pending";
 	return "passing";
 }

@@ -13,8 +13,6 @@ type EnvironmentId = string;
 const CURSOR_USAGE_WINDOWS = [{ id: "totalPercentUsed" }, { id: "autoPercentUsed" }, { id: "apiPercentUsed" }] as const;
 
 const MINUTE = 60_000;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
 
 function cursorUsageWindowRank(id: string): number {
 	const rank = CURSOR_USAGE_WINDOWS.findIndex((window) => window.id === id);
@@ -223,7 +221,7 @@ export function collectLimitAccounts(presentations: LimitPresentations): readonl
 	return [...accounts.values()];
 }
 
-export interface LimitPoolMember {
+interface LimitPoolMember {
 	readonly account: LimitAccount;
 	readonly window: ServerProviderUsageWindow;
 	readonly refillPercent: number;
@@ -426,14 +424,10 @@ function poolWindows(accounts: readonly LimitAccount[], now: number): readonly L
 }
 
 /** Why an account shows no limits, or null when it does; T3 Code returns its sentence, the deck the reason. */
-export function limitsNotice(limits: ServerProviderUsageLimits): "unsupported" | "probeFailed" | "empty" | null {
+function limitsNotice(limits: ServerProviderUsageLimits): "unsupported" | "probeFailed" | "empty" | null {
 	if (limits.unavailable?.reason === "unsupported") return "unsupported";
 	if (limits.unavailable?.reason === "probeFailed") return "probeFailed";
 	return limits.windows.length === 0 ? "empty" : null;
-}
-
-export function remainingPercent(window: ServerProviderUsageWindow): number {
-	return Math.round(100 - Math.max(0, Math.min(100, window.usedPercent)));
 }
 
 function resetMillis(window: ServerProviderUsageWindow): number | null {
@@ -459,28 +453,13 @@ export function paceRemainingPercent(
 	return elapsed === null ? null : Math.round((1 - elapsed) * 100);
 }
 
-export type LimitPace = "ahead" | "on" | "under";
-
-export function paceOf(window: ServerProviderUsageWindow, now: number): LimitPace | null {
-	const elapsed = elapsedShare(window, now);
-	return elapsed === null ? null : paceOfShares(window.usedPercent, elapsed);
-}
+type LimitPace = "ahead" | "on" | "under";
 
 function paceOfShares(usedPercent: number, elapsed: number): LimitPace {
 	const gap = usedPercent - elapsed * 100;
 	if (gap > 5) return "ahead";
 	if (gap < -5) return "under";
 	return "on";
-}
-
-export function formatDuration(ms: number): string {
-	const remaining = Math.max(0, ms);
-	const days = Math.floor(remaining / DAY);
-	const hours = Math.floor((remaining % DAY) / HOUR);
-	const minutes = Math.floor((remaining % HOUR) / MINUTE);
-	if (days > 0) return `${days}d ${hours}h`;
-	if (hours > 0) return `${hours}h ${minutes}m`;
-	return `${minutes}m`;
 }
 
 /** Snapshots expire after 15 minutes, as the widget's do. */
