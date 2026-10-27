@@ -784,6 +784,7 @@
 				"maxEffortHint": "Gradient colors every effort level along a ladder in the model's own color, turning toward violet at the top, and gives each model and Fast its provider's gradient. Solid and Model color mark only the top effort level, in violet or the model's color; Off leaves them plain. Ultrathink keeps T3 Code's spectrum.",
 				"motionHint": "Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.",
 				"idlePet": "Idle pet",
+				"previewPet": "Preview pet",
 				"idlePetHint": "After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a T3 Deck action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.",
 				"confirm": "Confirm before sending",
 				"confirmHint": "Applies to Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."

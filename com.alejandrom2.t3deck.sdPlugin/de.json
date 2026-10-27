@@ -784,6 +784,7 @@
 				"maxEffortHint": "Verlauf färbt jede Aufwandsstufe entlang einer Leiter in der Farbe des Modells, zur Spitze hin violett, und gibt jedem Modell und Schnell den Verlauf seines Anbieters. Einfarbig und Modellfarbe markieren nur die höchste Aufwandsstufe, in Violett oder der Farbe des Modells; Aus lässt sie schlicht. Ultrathink behält das Spektrum von T3 Code.",
 				"motionHint": "Voll lässt laufende Threads kreisen, lässt Threads, die auf dich warten, pulsieren und lässt Abschlüsse und Fehler aufblitzen. Reduziert kreist langsam und pulsiert nicht. Aus hält jede Ansicht still.",
 				"idlePet": "Leerlauf-Haustier",
+				"previewPet": "Haustier zeigen",
 				"idlePetHint": "Nach zwei Minuten ohne Drücken, Drehen oder Berühren läuft ein kleiner Roboter über deine längste Reihe benachbarter Regler-Leisten, bis zu dreimal, im Abstand von vier Minuten. Jedes Drücken, Drehen oder Berühren einer T3 Deck-Aktion schickt ihn weg. Er folgt Bewegung: Reduziert läuft gemächlich, Aus hält ihn fern.",
 				"confirm": "Vor dem Senden bestätigen",
 				"confirmHint": "Gilt für Prompt senden, Lenken, Schnell-Prompt, Skill ausführen, den Prompt-Regler und den Skill-Regler; Modell, Aufwand, Tempo, Zugriff und der Power-Regler wirken immer sofort. Prüfen zeigt beim ersten Drücken, was wohin geht; drücke innerhalb von 10 Sekunden erneut, um zu senden. Halten sendet bei gehaltenem Druck, daher kann Halten nicht zugleich neu starten oder einen Thread starten. Jede Aktion kann das überschreiben."

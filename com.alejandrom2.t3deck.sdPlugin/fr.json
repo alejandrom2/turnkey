@@ -784,6 +784,7 @@
 				"maxEffortHint": "Dégradé colore chaque niveau d'effort le long d'une échelle dans la couleur du modèle, virant au violet en haut, et donne à chaque modèle et à Rapide le dégradé de son fournisseur. Uni et Couleur du modèle ne marquent que le niveau d'effort le plus haut, en violet ou dans la couleur du modèle ; Désactivé les laisse neutres. Ultrathink garde le spectre de T3 Code.",
 				"motionHint": "Complète fait tourner les fils en cours, fait pulser les fils qui vous attendent et fait clignoter les fins et les échecs. Réduite tourne lentement et ne pulse pas. Désactivée garde chaque touche immobile.",
 				"idlePet": "Compagnon au repos",
+				"previewPet": "Aperçu du compagnon",
 				"idlePetHint": "Après deux minutes sans appui, rotation ni toucher, un petit robot traverse votre plus longue rangée de bandeaux de molettes voisines, jusqu'à trois fois, à quatre minutes d'intervalle. Tout appui, rotation ou toucher sur une action T3 Deck le fait partir. Il suit Animation : Réduite le fait marcher calmement, Désactivée le tient à l'écart.",
 				"confirm": "Confirmer avant d'envoyer",
 				"confirmHint": "S'applique à Envoyer prompt, Orienter, Prompt rapide, Lancer skill, la Molette prompts et la Molette skills ; Modèle, Effort, Vitesse, Accès et la Molette puissance s'appliquent toujours immédiatement. Vérifier montre quoi va où au premier appui ; rappuyez dans les 10 secondes pour envoyer. Maintenir envoie sur un appui maintenu, donc maintenir ne peut plus aussi relancer ou démarrer un fil. Chaque action peut remplacer ce choix."

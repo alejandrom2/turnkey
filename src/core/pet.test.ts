@@ -55,6 +55,28 @@ describe("Pet", () => {
 		expect([empty.pet.state, empty.time.pending()]).toEqual(["off", 0]);
 	});
 
+	it("previews one walk at once, even off or with Motion off, then goes back to its settings", () => {
+		const off = setup();
+		off.pet.configure(false, "off");
+		off.pet.preview();
+		expect(off.pet.state).toBe("walking");
+		expect(off.pet.walk()?.bounce).toBe(false);
+		off.time.advance(walkMs(3, "reduced"));
+		expect([off.pet.state, off.time.pending()]).toEqual(["off", 0]);
+
+		const on = setup();
+		on.pet.configure(true, "full");
+		on.pet.preview();
+		expect(on.pet.walk()?.bounce).toBe(true);
+		on.time.advance(walkMs(3, "full"));
+		expect(on.pet.state).toBe("idle");
+
+		const cut = setup();
+		cut.pet.preview();
+		cut.pet.input();
+		expect([cut.pet.state, cut.time.pending()]).toEqual(["off", 0]);
+	});
+
 	it("walks the longest run after two idle minutes, entering at one end and leaving at the other", () => {
 		const { pet, time, changed } = setup([["x"], ["a", "b", "c"], ["y", "z"]]);
 		pet.configure(true, "full");

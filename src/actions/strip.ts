@@ -54,6 +54,7 @@ let groups: string[][] = [];
 const pet = new Pet({ runs: () => groups, changed: (ids) => ids.forEach(repaint) });
 deck.onRepaint(() => pet.configure(deck.appearance.idlePet === "on", motionMode(deck.appearance.motion)));
 const leave = () => pet.input();
+deck.previewPet = () => pet.preview();
 streamDeck.actions.onKeyDown(leave);
 streamDeck.actions.onDialDown(leave);
 streamDeck.actions.onDialRotate(leave);
