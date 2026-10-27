@@ -668,7 +668,16 @@
 				"needsNotMet": " · {count} not met",
 				"needsMet": "Met",
 				"needsUnmet": "Not met",
-				"needsChecking": "Checking"
+				"needsChecking": "Checking",
+				"optInTitle": "Extra access",
+				"optInHeld": "Granted",
+				"optInPending": "Next pairing",
+				"optInDrop": "Don't ask",
+				"scopeProviders": "Provider accounts (spend resets)",
+				"scopeMaintain": "Updates (Update T3)",
+				"scopeTerminal": "Terminal: runs commands (Run Script)",
+				"scopeTerminalRead": "Terminal status (Run Script)",
+				"scopeShare": "Guest links (Share Thread)"
 			},
 			"advanced": {
 				"title": "Advanced",
