@@ -258,7 +258,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	}
 
 	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, T>): Promise<void> {
-		const payload = ev.payload as { event?: string; url?: string; link?: string } | null;
+		const payload = ev.payload as { event?: string; url?: string; link?: string; scope?: string } | null;
 		switch (payload?.event) {
 			case "retry":
 				return deck.retry(payload.url);
@@ -270,6 +270,9 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				return;
 			case "pair":
 				if (payload.link) await deck.pair(payload.link);
+				return;
+			case "unflagScope":
+				if (payload.url && payload.scope) await deck.unflagScope(payload.url, payload.scope);
 				return;
 			case "selectMachine": {
 				const settings = { ...this.settingsOf(ev.action), machine: payload.url ?? "" } as T;

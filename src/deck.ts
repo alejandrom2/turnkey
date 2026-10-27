@@ -3,7 +3,7 @@ import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
 import { QueueStore } from "./core/queues.js";
-import { readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
+import { dropScopeRequest, optInStatus, type OptInStatus, readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
 import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
 import { Animator, motionMode, nextMinute, Transitions } from "./core/motion.js";
@@ -91,15 +91,17 @@ type EnvironmentStatus = {
 	/** A wire value the inspector maps to its own words. */
 	access?: "Read only" | "Can act";
 	message?: string;
+	/** Broader scopes this machine holds or asks for at its next pairing. */
+	optIn: OptInStatus[];
 };
 
-function environmentStatus(machine: Machine): EnvironmentStatus {
+function environmentStatus(machine: Machine, requests: ScopeRequests): EnvironmentStatus {
 	const { url, state } = machine;
 	const parsed = new URL(url);
 	const local = isLoopbackUrl(url);
 	const where = local ? t("machine.thisMachine") : parsed.host;
 	const label = state.kind === "ready" ? state.label : machine.credential?.label;
-	const base = { url, local, where, name: label || (local ? "T3 Code" : parsed.hostname) };
+	const base = { url, local, where, name: label || (local ? "T3 Code" : parsed.hostname), optIn: optInStatus(machine.scopes, requests[url] ?? []) };
 	switch (state.kind) {
 		case "ready":
 			return { ...base, state: "ready", access: state.canOperate ? "Can act" : "Read only" };
@@ -205,12 +207,22 @@ class Deck implements CredentialStore {
 		await this.#apply(this.#settings);
 	}
 
-	/** Flags a broader scope for the machine's next pairing, when the user turns on an action that needs it there. */
-	async optInScope(url: string, scope: OptInScope): Promise<void> {
-		const next = requestScope(this.#scopeRequests, url, scope);
+	/** Flags broader scopes for the machine's next pairing, when the user turns on an action that needs them there. */
+	async optInScope(url: string, ...scopes: OptInScope[]): Promise<void> {
+		const next = scopes.reduce((requests, scope) => requestScope(requests, url, scope), this.#scopeRequests);
 		if (next === this.#scopeRequests) return;
 		this.#scopeRequests = next;
 		await this.#persist();
+		void this.pushStatus();
+	}
+
+	/** Un-flags a scope from the inspector's machine card: the next pairing won't ask for it. */
+	async unflagScope(url: string, scope: string): Promise<void> {
+		const next = dropScopeRequest(this.#scopeRequests, url, scope);
+		if (next === this.#scopeRequests) return;
+		this.#scopeRequests = next;
+		await this.#persist();
+		void this.pushStatus();
 	}
 
 	/** Whether the machine's next pairing will ask for `scope`. */
@@ -268,7 +280,7 @@ class Deck implements CredentialStore {
 		if (settings === undefined) return;
 		const status = {
 			event: "status",
-			environments: this.machines.map(environmentStatus),
+			environments: this.machines.map((machine) => environmentStatus(machine, this.#scopeRequests)),
 			selected: normalizeEnvironmentUrl(settings.machine ?? "") ?? "",
 			pairing: this.#pairing,
 			requirements: this.#checklist?.(streamDeck.ui.action),

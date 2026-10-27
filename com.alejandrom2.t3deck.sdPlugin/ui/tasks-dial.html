@@ -59,6 +59,11 @@
 			.machine .actions { display: flex; align-items: center; gap: 4px; }
 			.machine .detail { grid-column: 2 / 4; margin: 4px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-error); }
 			.machine .detail.muted { color: var(--t3-muted); }
+			/* Broader access a machine holds or asks for at its next pairing. */
+			.machine .optins { grid-column: 2 / 4; display: grid; gap: 3px; margin: 6px 0 0; }
+			.machine .optin { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--t3-muted); }
+			.machine .optin .scope { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--t3-foreground); }
+			.machine .optin.pending .scope { color: var(--t3-warning); }
 
 			.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
 			.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -227,7 +232,7 @@
 		<script>
 			const client = SDPIComponents.streamDeckClient;
 			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
-			const strings = {"inspector.card.choose":"Choose a machine","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.shared":"Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.","inspector.card.connectTitle":"Connect T3 Deck","inspector.card.pairTitle":"Pair T3 Deck","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.picked":"This action shows and acts on threads from the machine you pick.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…","inspector.card.needsTitle":"What this action needs","inspector.card.needsNotMet":" · {count} not met","inspector.card.needsMet":"Met","inspector.card.needsUnmet":"Not met","inspector.card.needsChecking":"Checking"};
+			const strings = {"inspector.card.choose":"Choose a machine","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.shared":"Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.","inspector.card.connectTitle":"Connect T3 Deck","inspector.card.pairTitle":"Pair T3 Deck","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.picked":"This action shows and acts on threads from the machine you pick.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…","inspector.card.needsTitle":"What this action needs","inspector.card.needsNotMet":" · {count} not met","inspector.card.needsMet":"Met","inspector.card.needsUnmet":"Not met","inspector.card.needsChecking":"Checking","inspector.card.optInTitle":"Extra access","inspector.card.optInHeld":"Granted","inspector.card.optInPending":"Next pairing","inspector.card.optInDrop":"Don't ask","inspector.card.scopeProviders":"Provider accounts (spend resets)","inspector.card.scopeMaintain":"Updates (Update T3)","inspector.card.scopeTerminal":"Terminal: runs commands (Run Script)","inspector.card.scopeTerminalRead":"Terminal status (Run Script)","inspector.card.scopeShare":"Guest links (Share Thread)"};
 			const s = (key, params = {}) => (strings[key] ?? key).replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match));
 			const icons = {
 				all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
@@ -251,7 +256,7 @@
 				return node;
 			};
 
-			function tile({ url, icon, name, where, checked, actions = [], detail, detailTone }) {
+			function tile({ url, icon, name, where, checked, actions = [], detail, detailTone, optIn }) {
 				const node = el("div", "machine");
 				node.setAttribute("role", "radio");
 				node.setAttribute("aria-checked", String(checked));
@@ -273,7 +278,37 @@
 				right.append(...actions);
 				node.append(glyph, text, right);
 				if (detail) node.append(el("p", detailTone === "muted" ? "detail muted" : "detail", detail));
+				if (optIn?.length) node.append(optIns(url, optIn));
 				return node;
+			}
+
+			const SCOPE_NAMES = {
+				"providers:manage": "inspector.card.scopeProviders",
+				"environment:maintain": "inspector.card.scopeMaintain",
+				"terminal:operate": "inspector.card.scopeTerminal",
+				"terminal:read": "inspector.card.scopeTerminalRead",
+				"access:write": "inspector.card.scopeShare",
+			};
+			/** Each opt-in scope: held by the pairing, or flagged for the next one with a way to take it back. */
+			function optIns(url, optIn) {
+				const list = el("div", "optins");
+				list.setAttribute("aria-label", s("inspector.card.optInTitle"));
+				for (const { scope, state } of optIn) {
+					const row = el("div", "optin " + state);
+					row.append(el("span", "scope", SCOPE_NAMES[scope] ? s(SCOPE_NAMES[scope]) : scope));
+					row.append(el("span", state === "held" ? "pill ready" : "pill wait", s(state === "held" ? "inspector.card.optInHeld" : "inspector.card.optInPending")));
+					if (state === "pending") {
+						const drop = el("button", "ghost", s("inspector.card.optInDrop"));
+						drop.type = "button";
+						drop.addEventListener("click", (click) => {
+							click.stopPropagation();
+							send("unflagScope", { url, scope });
+						});
+						row.append(drop);
+					}
+					list.append(row);
+				}
+				return list;
 			}
 
 			const focusLink = () => {
@@ -355,6 +390,7 @@
 						actions: machineActions(env),
 						detail: env.state === "error" ? env.message : env.state === "signed-out" ? (env.message ?? s("inspector.card.pasteFromMachine")) : undefined,
 						detailTone: env.state === "signed-out" ? "muted" : undefined,
+						optIn: env.optIn,
 					}));
 				}
 				$("t3-machines").replaceChildren(...tiles);
