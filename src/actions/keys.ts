@@ -1,4 +1,4 @@
-import streamDeck, { type Action, action, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import { type Action, action, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confirmed } from "../core/approvals.js";
@@ -58,7 +58,6 @@ import { deck } from "../deck.js";
 import { gitTarget, statuses } from "./git.js";
 import { connectionNotice, InfobarWriter } from "./infobar.js";
 import { connectionOf, threadNeeds } from "./needs.js";
-import { pullRequestKeyFace } from "./pr.js";
 import {
 	canOperate,
 	connectionFace,
@@ -877,33 +876,6 @@ export class Health extends DeckAction {
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		await deck.retry(this.machineOf(ev.action));
-	}
-}
-
-/** The selected thread's pull request: number and state, with live checks, review and findings. Tap opens it in the browser. */
-@action({ UUID: `${ID}.pr` })
-export class PullRequest extends DeckAction {
-	#state(action: Action<JsonObject>) {
-		const thread = selectedThread(this.machineOf(action));
-		const pr = thread?.pullRequests.find((link) => link.state === "open") ?? thread?.pullRequests[0];
-		return { thread, pr, check: availability("pr", { thread, canOperate: true }) };
-	}
-
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
-		if (!action.isKey()) return;
-		const face = connectionFace(this.machineOf(action));
-		if (face) return void (await this.setImage(action, face));
-		const { thread, pr, check } = this.#state(action);
-		if (pr === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "pullRequest", title: t("face.pullRequest"), detail: check.available ? undefined : check.reason, available: false })));
-		await this.setImage(action, pullRequestKeyFace(thread!, pr));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { pr, check } = this.#state(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		if (!URL.canParse(pr!.url) || new URL(pr!.url).protocol !== "https:") return void (await this.flash(ev.action, false, t("result.notWebLink")));
-		await this.run(ev.action, () => streamDeck.system.openUrl(pr!.url));
 	}
 }
 

@@ -12,7 +12,7 @@ import { RunSkillKey, SkillsDial } from "./actions/skills.js";
 import { RunTaskKey, TasksDial } from "./actions/tasks.js";
 import { UsageDial, UsageKey } from "./actions/usage.js";
 import "./actions/needs.js";
-import { AskPrKey, ExplainPrKey, FixFindingsKey, PrDial, ReviewGuideKey } from "./actions/pr.js";
+import { AskPrKey, ExplainPrKey, FixFindingsKey, PrDial, PullRequest, ReviewGuideKey } from "./actions/pr.js";
 import {
 	Activity,
 	Approve,
@@ -25,7 +25,6 @@ import {
 	Organize,
 	Permissions,
 	PlanKey,
-	PullRequest,
 	QuickPrompt,
 	SendPrompt,
 	SpeedKey,
