@@ -137,6 +137,21 @@ const showWhen = (setting: string, id: string, test: string) => `
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["${setting}"]));
 			}`;
 
+/**
+ * A merged action's mode, first in its panel. `fallback` is the mode this page's UUID starts in: an older
+ * single-purpose key opens the merged panel with its own mode selected, with nothing written to its settings.
+ */
+const modeField = (setting: string, label: string, fallback: string, options: [string, string][]) => `
+			<sdpi-item ${attr("label", label)}>
+				<sdpi-select setting="${setting}" default="${fallback}">
+					${options.map(([value, key]) => `<option value="${value}"${text(key)}</option>`).join("\n\t\t\t\t\t")}
+				</sdpi-select>
+			</sdpi-item>`;
+
+/** Shows `id` only in `modes`; an unsaved mode is the page's `fallback`. */
+const inModes = (setting: string, id: string, fallback: string, modes: string[]) =>
+	showWhen(setting, id, `${JSON.stringify(modes)}.includes(value === "" ? "${fallback}" : value)`);
+
 /** A dial's own strip background, style and text scroll, over the global ones in T3 Deck Settings. */
 const dialAppearance = `
 			<sdpi-item ${attr("label", "inspector.field.strip")}>
@@ -764,6 +779,31 @@ const gitConfirm = `
 				</sdpi-select>
 			</sdpi-item>`;
 
+/** Git's panel, starting in `fallback`: the message only for commits, and Pull's own hint. */
+const gitPage = (fallback: string) =>
+	page(
+		"Git",
+		`${modeField("gitAction", "inspector.git.action", fallback, [
+			["commit", "inspector.git.commit"],
+			["commit_push", "inspector.git.commitPush"],
+			["commit_push_pr", "inspector.git.commitPushPr"],
+			["push", "inspector.git.push"],
+			["create_pr", "inspector.git.createPr"],
+			["pull", "inspector.git.pull"],
+		])}
+			<sdpi-item ${attr("label", "inspector.git.message")} id="git-message" hidden>
+				<sdpi-textfield setting="commitMessage" ${attr("placeholder", "inspector.git.messagePlaceholder")}></sdpi-textfield>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title"></sdpi-textfield>
+			</sdpi-item>${gitConfirm}
+			<p class="hint" id="git-hint" hidden${text("inspector.git.hint")}</p>
+			<p class="hint" id="git-pull-hint" hidden${text("inspector.git.pullHint")}</p>`,
+		inModes("gitAction", "git-message", fallback, ["commit", "commit_push", "commit_push_pr"]) +
+			inModes("gitAction", "git-hint", fallback, ["commit", "commit_push", "commit_push_pr", "push", "create_pr"]) +
+			inModes("gitAction", "git-pull-hint", fallback, ["pull"]),
+	);
+
 /** What the Limits key and dial show, and what holding them does. */
 const limitsFields = `
 			<sdpi-item ${attr("label", "inspector.limits.show")}>
@@ -1124,34 +1164,10 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.power.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript + showWhen("dialControls", "model-row", `value === "" || value === "model"`),
 	),
-	"git-commit.html": page(
-		"Commit",
-		`
-			<sdpi-item ${attr("label", "inspector.git.action")}>
-				<sdpi-select setting="gitAction" default="commit">
-					<option value="commit"${text("inspector.git.commit")}</option>
-					<option value="commit_push"${text("inspector.git.commitPush")}</option>
-					<option value="commit_push_pr"${text("inspector.git.commitPushPr")}</option>
-				</sdpi-select>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.git.message")}>
-				<sdpi-textfield setting="commitMessage" ${attr("placeholder", "inspector.git.messagePlaceholder")}></sdpi-textfield>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
-				<sdpi-textfield setting="title"></sdpi-textfield>
-			</sdpi-item>${gitConfirm}
-			<p class="hint"${text("inspector.git.hint")}</p>`,
-	),
-	"git.html": page(
-		"Git",
-		`${gitConfirm}
-			<p class="hint"${text("inspector.git.hint")}</p>`,
-	),
-	"git-pull.html": page(
-		"Pull",
-		`${gitConfirm}
-			<p class="hint"${text("inspector.git.pullHint")}</p>`,
-	),
+	"git.html": gitPage("commit"),
+	"git-push.html": gitPage("push"),
+	"git-pr.html": gitPage("create_pr"),
+	"git-pull.html": gitPage("pull"),
 	"pr-fix.html": page(
 		"Fix Findings",
 		`

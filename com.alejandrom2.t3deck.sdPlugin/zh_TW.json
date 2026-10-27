@@ -82,21 +82,25 @@
 		"Name": "分支",
 		"Tooltip": "所選對話的分支。點按可在 T3 Code 中開啟對話。"
 	},
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
 	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "提交",
-		"Tooltip": "提交所選對話的變更，或同時推送、建立 PR；除非你自行設定，否則使用 T3 Code 產生的提交訊息。"
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
 	},
 	"com.alejandrom2.t3deck.git.push": {
-		"Name": "推送",
-		"Tooltip": "推送所選對話的分支。長按以推送。"
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
 	},
 	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "建立 PR",
-		"Tooltip": "推送所選對話的分支並為其建立 PR。長按以建立。"
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
 	},
 	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "拉取",
-		"Tooltip": "在所選對話的分支落後上游時拉取。"
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
 		"Name": "修正問題",
@@ -713,7 +717,10 @@
 				"tap": "點按",
 				"hold": "長按",
 				"hint": "作用於所選對話的工作樹或其專案資料夾。推送到預設分支一律需要長按；從預設分支建立 PR 會被拒絕，因為 T3 Code 會先建議建立新分支。",
-				"pullHint": "在所選對話的分支落後上游時，從上游拉取。"
+				"pullHint": "在所選對話的分支落後上游時，從上游拉取。",
+				"push": "推送",
+				"createPr": "建立 PR",
+				"pull": "拉取"
 			},
 			"card": {
 				"machine": "裝置",

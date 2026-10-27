@@ -82,21 +82,25 @@
 		"Name": "Branche",
 		"Tooltip": "La branche du fil sélectionné. Un appui ouvre le fil dans T3 Code."
 	},
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
 	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Commit",
-		"Tooltip": "Fait un commit des modifications du fil sélectionné, et éventuellement un push ou une PR, avec le message de commit de T3 Code sauf si vous en définissez un."
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
 	},
 	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Push",
-		"Tooltip": "Fait un push de la branche du fil sélectionné. Maintenir pour pusher."
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
 	},
 	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Créer PR",
-		"Tooltip": "Fait un push de la branche du fil sélectionné et ouvre une pull request pour elle. Maintenir pour créer."
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
 	},
 	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Pull",
-		"Tooltip": "Fait un pull de la branche du fil sélectionné quand elle est en retard sur son upstream."
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
 		"Name": "Corriger retours",
@@ -713,7 +717,10 @@
 				"tap": "Appuyer",
 				"hold": "Maintenir",
 				"hint": "Agit sur le worktree du fil sélectionné, ou le dossier de son projet. Un push sur la branche par défaut demande toujours un maintien ; une PR depuis celle-ci est refusée, car T3 Code proposerait d'abord une nouvelle branche.",
-				"pullHint": "Fait un pull de la branche du fil sélectionné depuis son upstream quand elle est en retard."
+				"pullHint": "Fait un pull de la branche du fil sélectionné depuis son upstream quand elle est en retard.",
+				"push": "Push",
+				"createPr": "Créer une PR",
+				"pull": "Pull"
 			},
 			"card": {
 				"machine": "Machine",
