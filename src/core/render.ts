@@ -36,6 +36,9 @@ const GLYPHS = {
 	play: `<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor" stroke="none"/>`,
 	/** Lucide's circle-x, Deny's counterpart to the circled check. */
 	denyCircle: `<circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" />`,
+	/** Lucide's check and message-circle: a thread key's done and idle marks. */
+	checkBare: `<path d="M20 6 9 17l-5-5" />`,
+	chatRound: `<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />`,
 	/** Lucide's zap, filled: Speed while fast. */
 	speedFilled: `<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" fill="currentColor" />`,
 } as const;
@@ -58,10 +61,10 @@ const THREAD_GLYPH: Record<DeckState, GlyphName> = {
 	question: "clock",
 	running: "spinner",
 	queued: "clock",
-	done: "check",
+	done: "checkBare",
 	failed: "error",
 	stopped: "pause",
-	idle: "chat",
+	idle: "chatRound",
 };
 
 /** T3 Code's access-mode icons. */
@@ -247,19 +250,21 @@ export function threadTint(state: DeckState, unseen = false): string | undefined
 	return undefined;
 }
 
-/** Resting wash opacities: tinted states, the white wash of a selected untinted key, a tinted selected key. */
-export const WASH = { tint: 0.18, unseenDone: 0.12, selected: 0.15, selectedTint: 0.3 } as const;
+/** A thread key's tile: gray, or a deep shade of what it needs (amber waiting on you, red failed, green unseen done). */
+const THREAD_TILE = { base: "#363636", [COLORS.attention]: "#5B3322", [COLORS.error]: "#5C2328", [COLORS.done]: "#1E4A32" } as Record<string, string>;
+
+/** Wash opacities over the tile: a selected key's white, and how far a pulse or flash brightens it. */
+export const WASH = { selected: 0.15, selectedTint: 0.1 } as const;
 /** Titles of the keys that aren't selected. */
 const UNSELECTED_OPACITY = 0.55;
 
 /** A thread: state glyph top-left, meta top-right, up to three title lines below, tinted by what it needs. */
 export function renderThreadKey(input: ThreadKeyInput): string {
-	const parts = [background(COLORS.key)];
 	const tint = threadTint(input.state, input.unseen);
+	const parts = [background(THREAD_TILE[tint ?? ""] ?? THREAD_TILE.base!)];
 	const wash = input.motion?.wash;
-	if (tint) parts.push(overlay(tint, wash ?? (input.selected ? WASH.selectedTint : input.state === "done" ? WASH.unseenDone : WASH.tint)));
-	else if (wash !== undefined) parts.push(overlay(STATE_COLOR[input.state], wash));
-	if (input.selected && !tint) parts.push(overlay("#FFFFFF", WASH.selected));
+	if (wash !== undefined) parts.push(overlay(tint ?? STATE_COLOR[input.state], wash));
+	if (input.selected) parts.push(overlay("#FFFFFF", tint ? WASH.selectedTint : WASH.selected));
 	const dim = input.selected === false ? UNSELECTED_OPACITY : undefined;
 
 	const glyphColor = tint ?? COLORS.text;
@@ -275,7 +280,7 @@ export function renderThreadKey(input: ThreadKeyInput): string {
 			textEl(deletions, META.baseline, { x: META.right, size: META.size, fill: COLORS.error, anchor: "end" }),
 		);
 	} else if (input.meta) {
-		parts.push(textEl(input.meta, META.baseline, { x: META.right, size: META.size, opacity: 0.5, anchor: "end" }));
+		parts.push(textEl(input.meta, META.baseline, { x: META.right, size: META.size, fill: "#9A9A9A", anchor: "end" }));
 	}
 
 	const dot = input.unseen === true && input.state !== "done";
