@@ -50,6 +50,9 @@ const usage = (period: string): Placed => ({ action: "usage", name: "Usage", set
 /** Run Skill keys start unpicked: skills come from each thread's provider and checkout. */
 const skill = (): Placed => ({ action: "skill", name: "Run Skill" });
 
+/** Run Script keys start unpicked, so the bundled profile never asks a machine for terminal access by itself. */
+const script = (): Placed => ({ action: "script", name: "Run Script" });
+
 /** Run Task keys start unpicked: tasks are the user's own. */
 const task = (): Placed => ({ action: "task", name: "Run Task" });
 
@@ -173,6 +176,13 @@ const PROFILES: Profile[] = [
 					[quick("continue"), { action: "stop", name: "Stop" }, { action: "approve", name: "Approve" }, { action: "health", name: "Health" }],
 				],
 				dials: [{ action: "dial.tasks", name: "Tasks Dial" }, { action: "dial.queue", name: "Queue Dial" }, DIALS[0]!, DIALS[3]!],
+			},
+			{
+				name: "ADMIN",
+				keys: [
+					[{ action: "update", name: "Update T3" }, script(), script(), script()],
+					[{ action: "share", name: "Share Thread" }, { action: "health", name: "Health" }, { action: "editor", name: "Open in Editor" }, { action: "stop", name: "Stop" }],
+				],
 			},
 			{
 				name: "USAGE",
