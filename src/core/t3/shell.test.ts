@@ -175,6 +175,17 @@ describe("deck status", () => {
 		expect(listed.map((row) => row.threadId)).toEqual(["parent"]);
 		expect(listed[0]).toMatchObject({ deck: "approval", pendingRequest: { id: "rr-child", threadId: "child" } });
 	});
+
+	it("counts the subagents a turn has out, as T3 Code's background work banner does, and nothing else", () => {
+		const tasks = [
+			{ taskId: "1", kind: "subagent" },
+			{ taskId: "2", kind: "subagent", awaited: true },
+			{ taskId: "3", kind: "command" },
+		];
+		const state = reduce([snapshot([running("a", { pendingBackgroundTasks: tasks }), running("b")])]);
+		expect(byId(state).a?.subagents).toBe(2);
+		expect(byId(state).b?.subagents).toBe(0);
+	});
 });
 
 describe("unread", () => {

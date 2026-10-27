@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { type GitMachine, gitBlocker, gitCwd, gitSummary, needsDefaultBranchHold, pull, readStatus, reasonText, runStackedAction, stackedActionInput, type VcsStatus } from "./git.js";
+import {
+	branchSummary,
+	type GitMachine,
+	gitBlocker,
+	gitCwd,
+	gitSummary,
+	needsDefaultBranchHold,
+	pull,
+	readStatus,
+	reasonText,
+	runStackedAction,
+	stackedActionInput,
+	type VcsStatus,
+	worktreeBase,
+} from "./git.js";
 import { RpcError } from "./t3/rpc.js";
 
 const STATUS: VcsStatus = {
@@ -131,5 +145,25 @@ describe("gitBlocker", () => {
 		expect(gitSummary(STATUS, "commit")).toBe("3 files · +12 −4");
 		expect(gitSummary({ ...STATUS, hasWorkingTreeChanges: false, aheadCount: 2 }, "push")).toBe("2 ahead");
 		expect(gitSummary({ ...STATUS, behindCount: 3 }, "pull")).toBe("3 behind");
+	});
+});
+
+describe("worktreeBase", () => {
+	it("starts from the default branch, else the checked-out one, as T3 Code's branch picker seeds it", () => {
+		expect(worktreeBase([{ name: "feature", current: true, isDefault: false }, { name: "main", current: false, isDefault: true }])).toBe("main");
+		expect(worktreeBase([{ name: "feature", current: true, isDefault: false }])).toBe("feature");
+		expect(worktreeBase([])).toBeUndefined();
+	});
+});
+
+describe("branchSummary", () => {
+	const status = (files: number, ahead: number, behind: number) =>
+		({ workingTree: { files: Array.from({ length: files }), insertions: 0, deletions: 0 }, aheadCount: ahead, behindCount: behind }) as unknown as VcsStatus;
+
+	it("counts changed files and commits ahead and behind, or says nothing for a clean, even checkout", () => {
+		expect(branchSummary(status(3, 2, 1))).toBe("3 files · ↑2 · ↓1");
+		expect(branchSummary(status(1, 0, 0))).toBe("1 file");
+		expect(branchSummary(status(0, 0, 4))).toBe("↓4");
+		expect(branchSummary(status(0, 0, 0))).toBeUndefined();
 	});
 });

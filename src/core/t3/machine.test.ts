@@ -575,6 +575,134 @@ describe("Machine details", () => {
 	});
 });
 
+describe("Machine workflows", () => {
+	it("stops a workflow, wording T3 Code's refusal by its reason", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const stopping = h.machine.stopWorkflow(row(h.machine), "node-1");
+		await flush();
+		expect(socket.request("orchestration.stopWorkflow").payload).toEqual({ threadId: "thr_123", subagentId: "node-1" });
+		socket.receive({
+			_tag: "Exit",
+			requestId: socket.request("orchestration.stopWorkflow").id,
+			exit: { _tag: "Failure", cause: [{ _tag: "Fail", error: { _tag: "OrchestrationV2StopWorkflowError", threadId: "thr_123", subagentId: "node-1", reason: "not-running" } }] },
+		});
+		await expect(stopping).rejects.toMatchObject({ reason: "No longer running" });
+	});
+});
+
+describe("Machine lineage", () => {
+	/** Answers the bounded thread snapshot a verb reads first with these runs. */
+	const snapshotWith = async (socket: FakeSocket, runs: object[], turnItems: object[] = []) => {
+		await flush();
+		socket.receive({ _tag: "Chunk", requestId: socket.request("orchestration.subscribeThread").id, values: [{ kind: "snapshot", projection: { runs, turnItems } }] });
+		await flush();
+	};
+
+	it("forks from the newest finished reply under an id it picks, named as T3 Code names forks", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const forking = h.machine.fork(row(h.machine));
+		await snapshotWith(
+			socket,
+			[{ id: "run:3", status: "completed", ordinal: 3 }, { id: "run:4", status: "running", ordinal: 4 }],
+			[{ type: "assistant_message", runId: "run:3", status: "completed" }, { type: "assistant_message", runId: "run:4", status: "running" }],
+		);
+		expect(socket.request("orchestration.dispatchCommand").payload).toMatchObject({
+			type: "thread.fork",
+			createdBy: "user",
+			creationSource: "mobile",
+			sourceThreadId: "thr_123",
+			targetThreadId: "uuid-1",
+			sourcePoint: { type: "run", runId: "run:3" },
+			title: "Fix flaky shell resume test fork",
+		});
+		socket.reply("orchestration.dispatchCommand", { sequence: 4813 });
+		expect(await forking).toEqual({ threadId: "uuid-1" });
+	});
+
+	it("merges back from the latest finished run, and refuses while there is none", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const merging = h.machine.mergeBack(row(h.machine), "parent");
+		await snapshotWith(socket, [{ id: "run:2", status: "waiting", ordinal: 2 }]);
+		expect(socket.request("orchestration.dispatchCommand").payload).toMatchObject({ type: "thread.merge_back", sourceThreadId: "thr_123", targetThreadId: "parent", sourcePoint: { type: "run", runId: "run:2" } });
+		socket.reply("orchestration.dispatchCommand", { sequence: 4813 });
+		await merging;
+
+		const refused = expect(h.machine.mergeBack(row(h.machine), "parent")).rejects.toMatchObject({ reason: "Finish a turn first" });
+		await snapshotWith(socket, [{ id: "run:5", status: "running", ordinal: 5 }]);
+		await refused;
+	});
+});
+
+describe("Machine worktrees", () => {
+	it("starts a worktree from the default branch, from origin as T3 Code's setting defaults", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const strategy = h.machine.worktreeStrategy("p-1");
+		await flush();
+		expect(socket.request("vcs.listRefs").payload).toEqual({ cwd: "/Users/me/code/app", limit: 100 });
+		socket.reply("vcs.listRefs", { isRepo: true, refs: [{ name: "feature", current: true, isDefault: false }, { name: "main", current: false, isDefault: true }] });
+		expect(await strategy).toEqual({ type: "worktree", baseRef: "main", startFromOrigin: true });
+
+		const notRepo = expect(h.machine.worktreeStrategy("p-1")).rejects.toMatchObject({ reason: "Not a git repository" });
+		await flush();
+		socket.reply("vcs.listRefs", { isRepo: false, refs: [] });
+		await notRepo;
+	});
+
+	it("follows the project's own start-from-origin setting", async () => {
+		const h = setup({ config: { ...CONFIG, settings: { ...CONFIG.settings, newWorktreesStartFromOrigin: true, projectSettingsOverrides: { "p-1": { newWorktreesStartFromOrigin: false } } } } });
+		const socket = await connect(h);
+		const strategy = h.machine.worktreeStrategy("p-1");
+		await flush();
+		socket.reply("vcs.listRefs", { isRepo: true, refs: [{ name: "main", current: true, isDefault: true }] });
+		expect(await strategy).toEqual({ type: "worktree", baseRef: "main" });
+	});
+});
+
+describe("Machine skills", () => {
+	const skill = (name: string) => ({ name, path: `/skills/${name}`, enabled: true });
+	const withSkills = { ...CONFIG, providers: [{ ...CONFIG.providers[0], skills: [skill("global")] }] };
+	const reads = (socket: FakeSocket) => socket.sent.filter((frame) => frame._tag === "Request" && frame.tag === "server.refreshProviders").length;
+
+	it("reads a checkout's skills once per snapshot lifetime, showing the provider's list until then", async () => {
+		const h = setup({ config: withSkills });
+		const socket = await connect(h);
+		expect(h.machine.skills("claudeAgent", "/repo")).toEqual({ skills: [skill("global")], loading: true });
+		expect(socket.request("server.refreshProviders").payload).toEqual({ instanceId: "claudeAgent", cwd: "/repo", workspaceSnapshotsOnDemand: true });
+		h.machine.skills("claudeAgent", "/repo");
+		expect(reads(socket)).toBe(1);
+
+		socket.reply("server.refreshProviders", { providers: [{ instanceId: "claudeAgent", workspaceSnapshots: [{ cwd: "/repo", checkedAt: "x", slashCommands: [], skills: [skill("repo")] }] }] });
+		await flush();
+		expect(h.machine.skills("claudeAgent", "/repo")).toEqual({ skills: [skill("repo")], loading: false });
+		expect(h.machine.modelConfig?.providers?.[0]?.skills).toEqual([skill("global")]);
+		expect(reads(socket)).toBe(1);
+
+		vi.setSystemTime(NOW + 5 * 60_000);
+		h.machine.skills("claudeAgent", "/repo");
+		expect(reads(socket)).toBe(2);
+	});
+
+	it("retries a failed read after a pause, three times at most", async () => {
+		const h = setup({ config: withSkills });
+		const socket = await connect(h);
+		for (let attempt = 1; attempt <= 3; attempt++) {
+			h.machine.skills("claudeAgent", "/repo");
+			expect(reads(socket)).toBe(attempt);
+			socket.reply("server.refreshProviders", { providers: [] });
+			await flush();
+			h.machine.skills("claudeAgent", "/repo");
+			expect(reads(socket)).toBe(attempt);
+			await vi.advanceTimersByTimeAsync(10_000);
+		}
+		h.machine.skills("claudeAgent", "/repo");
+		expect(reads(socket)).toBe(3);
+	});
+});
+
 describe("Machine usage and limits", () => {
 	const limits = { checkedAt: "2026-10-27T09:59:00.000Z", windows: [{ id: "primary", kind: "session", label: "Session", usedPercent: 37 }] };
 	const codex = { instanceId: "codex", driver: "codex", enabled: true, installed: true, models: [], usageLimits: limits };
