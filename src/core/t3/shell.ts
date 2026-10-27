@@ -55,6 +55,8 @@ export type ThreadShell = {
 	snoozedAt?: string | null;
 	pinnedAt?: string | null;
 	lastVisitedAt?: string | null;
+	/** Server-clock open history; absent on servers that predate it, null for a thread never opened. */
+	opens?: { openedAt: number } | null;
 	deletedAt?: string | null;
 };
 
@@ -229,7 +231,20 @@ export type ShellRow = {
 	pendingRequest: { id: string; kind: string; createdAt: string; threadId: string } | undefined;
 	parentThreadId: string | null;
 	updatedAt: number;
+	/** When T3 Code last opened this thread, in server ms; the board follows the newest one as the selection. */
+	openedAt: number | undefined;
 };
+
+/**
+ * `opens.openedAt` is stamped by the server clock on a `thread.visit` with `opened: true`, which the web sends when
+ * a thread mounts; reopens within 10 minutes keep the old stamp (packages/shared/src/paletteSearch.ts:722).
+ * `lastVisitedAt` is a read watermark set to the row's `updatedAt` that keeps moving while a viewed thread
+ * streams, so it stands in only on servers without open tracking.
+ */
+export function openedAt(thread: ThreadShell): number | undefined {
+	const ms = thread.opens === undefined ? time(thread.lastVisitedAt) : (thread.opens?.openedAt ?? Number.NaN);
+	return Number.isNaN(ms) ? undefined : ms;
+}
 
 /** Sidebar status priority (resolveSidebarThreadStatus), folded onto the deck's states. */
 export function deckState(thread: ThreadShell, runtime: ThreadStatus | null, blocker: "approval" | "question" | undefined): DeckState {
@@ -297,6 +312,7 @@ export function shellRows(state: ShellState, capabilities: ThreadCapabilities, n
 			pendingRequest: pending === undefined ? undefined : { id: pending.id, kind: pending.kind, createdAt: pending.createdAt, threadId: pending.threadId },
 			parentThreadId: thread.lineage?.parentThreadId ?? null,
 			updatedAt: time(thread.updatedAt),
+			openedAt: openedAt(thread),
 		});
 	}
 	return rows;

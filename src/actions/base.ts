@@ -8,27 +8,35 @@ import streamDeck, {
 } from "@elgato/streamdeck";
 import type { JsonObject, JsonValue } from "@elgato/utils";
 
+import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
-import { renderNoticeKey } from "../core/render.js";
+import { FLASH_MS, failureLabel } from "../core/feedback.js";
+import { COLORS, renderNoticeKey, renderResultKey, stripCanvas, stripIcon } from "../core/render.js";
+import { assignSlots, type SlotIndex } from "../core/slots.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 
 export const LONG_PRESS_MS = 500;
 const logger = streamDeck.logger.createScope("actions");
 
+const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+type Placement = { device: string; position?: { row: number; column: number } };
+
 /** Shared lifecycle: visibility drives the clock, every board change repaints visible instances. */
 export abstract class DeckAction<T extends JsonObject = JsonObject> extends SingletonAction<T> {
 	readonly #pressedAt = new Map<string, number>();
 	readonly #settings = new Map<string, T>();
+	readonly #placed = new Map<string, Placement>();
 	/** Last image or feedback sent per instance; the once-a-second clock repaints only what changed. */
 	readonly #sent = new Map<string, string>();
+	/** Instances showing a press result; live repaints wait until it clears. */
+	readonly #flashing = new Map<string, ReturnType<typeof setTimeout>>();
 
 	constructor() {
 		super();
-		deck.onRepaint(() => {
-			for (const action of this.actions) void this.paint(action);
-		});
+		deck.onRepaint(() => this.#repaintAll());
 	}
 
 	protected abstract paint(action: Action<T>): Promise<void> | void;
@@ -43,35 +51,64 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		return typeof machine === "string" && machine !== "" ? normalizeEnvironmentUrl(machine) : undefined;
 	}
 
+	/** Keys of this action that fill positions together: by default, those following the same machine. */
+	protected slotGroup(settings: T): string {
+		return typeof settings.machine === "string" ? settings.machine : "";
+	}
+
+	/** A slot set by hand; actions without a slot setting always fill by position. */
+	protected slotNumber(_settings: T): number | undefined {
+		return undefined;
+	}
+
+	/** This key's place in its thread list, from its slot setting or its position on the device. */
+	protected slotOf(action: Action<T>): SlotIndex {
+		const keys = [...this.#placed].map(([id, placement]) => {
+			const settings = this.#settings.get(id) ?? ({} as T);
+			return { id, group: `${placement.device}|${this.slotGroup(settings)}`, position: placement.position, slot: this.slotNumber(settings) };
+		});
+		return assignSlots(keys).get(action.id) ?? 0;
+	}
+
 	protected async setImage(action: Action<T>, image: string): Promise<void> {
-		if (!action.isKey() || this.#sent.get(action.id) === image) return;
+		if (!action.isKey() || this.#flashing.has(action.id) || this.#sent.get(action.id) === image) return;
 		this.#sent.set(action.id, image);
 		await action.setImage(image);
 	}
 
 	protected async setFeedback(action: Action<T>, feedback: Record<string, string>): Promise<void> {
 		const signature = JSON.stringify(feedback);
-		if (!action.isDial() || this.#sent.get(action.id) === signature) return;
+		if (!action.isDial() || this.#flashing.has(action.id) || this.#sent.get(action.id) === signature) return;
 		this.#sent.set(action.id, signature);
 		await action.setFeedback(feedback);
 	}
 
-	override async onWillAppear(ev: WillAppearEvent<T>): Promise<void> {
+	override onWillAppear(ev: WillAppearEvent<T>): void {
 		this.#settings.set(ev.action.id, ev.payload.settings);
+		this.#placed.set(ev.action.id, { device: ev.action.device.id, position: ev.action.isKey() ? ev.action.coordinates : undefined });
 		this.#sent.delete(ev.action.id);
 		deck.setVisible(ev.action.id, true);
-		await this.paint(ev.action);
+		this.#repaintAll();
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<T>): void {
 		this.#settings.delete(ev.action.id);
+		this.#placed.delete(ev.action.id);
 		this.#sent.delete(ev.action.id);
+		clearTimeout(this.#flashing.get(ev.action.id));
+		this.#flashing.delete(ev.action.id);
 		deck.setVisible(ev.action.id, false);
+		this.#repaintAll();
 	}
 
-	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<T>): Promise<void> {
+	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<T>): void {
 		this.#settings.set(ev.action.id, ev.payload.settings);
-		await this.paint(ev.action);
+		this.#repaintAll();
+	}
+
+	/** One key's position or slot moves the others, so every visible instance repaints; `#sent` drops repeats. */
+	#repaintAll(): void {
+		for (const action of this.actions) if (this.#placed.has(action.id)) void this.paint(action);
 	}
 
 	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, T>): Promise<void> {
@@ -92,41 +129,91 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				const settings = { ...this.settingsOf(ev.action), machine: payload.url ?? "" } as T;
 				this.#settings.set(ev.action.id, settings);
 				await ev.action.setSettings(settings);
-				await this.paint(ev.action);
+				this.#repaintAll();
+				await this.#sendProjects(ev.action);
 				return deck.pushStatus(true);
 			}
 			case "status":
 				return deck.pushStatus(true);
+			case "getProjects":
+				return this.#sendProjects(ev.action);
 		}
+	}
+
+	/** sdpi-components' `getProjects` datasource: the projects of the action's machine, or of every machine. */
+	async #sendProjects(action: Action<T>): Promise<void> {
+		const url = this.machineOf(action);
+		const machines = deck.machines.filter((machine) => machine.state.kind === "ready" && (url === undefined || machine.url === url));
+		const items = [{ label: "Any project", value: "" }];
+		for (const machine of machines) {
+			const where = machines.length > 1 && machine.state.kind === "ready" ? ` · ${machine.state.label}` : "";
+			for (const project of machine.projects) items.push({ label: `${machine.isScratch(project.id) ? "No project" : project.title}${where}`, value: project.id });
+		}
+		await streamDeck.ui.sendToPropertyInspector({ event: "getProjects", items });
 	}
 
 	protected pressStarted(id: string): void {
 		this.#pressedAt.set(id, Date.now());
 	}
 
-	protected wasLongPress(id: string): boolean {
+	/** How long the press that just ended was held, in ms. */
+	protected heldFor(id: string): number {
 		const started = this.#pressedAt.get(id);
 		this.#pressedAt.delete(id);
-		return started !== undefined && Date.now() - started >= LONG_PRESS_MS;
+		return started === undefined ? 0 : Date.now() - started;
 	}
 
-	/** Runs a deck command, flashing the key or dial red with a logged reason when it fails. */
-	protected async run(action: Action<T>, work: () => Promise<unknown>): Promise<void> {
+	protected wasLongPress(id: string): boolean {
+		return this.heldFor(id) >= LONG_PRESS_MS;
+	}
+
+	/** Shows a press result on the key or strip for a moment, then the live face again. */
+	protected async flash(action: Action<T>, ok: boolean, label: string): Promise<void> {
+		clearTimeout(this.#flashing.get(action.id));
+		this.#flashing.set(
+			action.id,
+			setTimeout(() => {
+				this.#flashing.delete(action.id);
+				this.#sent.delete(action.id);
+				if (this.#placed.has(action.id)) void this.paint(action);
+			}, FLASH_MS),
+		);
+		const color = ok ? COLORS.done : COLORS.error;
+		if (action.isKey()) await action.setImage(renderResultKey({ ok, label }));
+		else if (action.isDial()) {
+			await action.setFeedback({ canvas: stripCanvas(color), header: ok ? "Done" : "Not now", glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" });
+		}
+	}
+
+	/** Flashes why the action can't act when `check` says so; true when it may go ahead. */
+	protected async allowed(action: Action<T>, check: Availability): Promise<boolean> {
+		if (check.available) return true;
+		await this.flash(action, false, check.reason);
+		return false;
+	}
+
+	/** Runs a deck command, then flashes `success`, or a short reason (logged in full) when it fails. */
+	protected async run(action: Action<T>, work: () => Promise<unknown>, success = "Done"): Promise<void> {
 		try {
 			await work();
-			if (action.isKey()) await action.showOk();
+			await this.flash(action, true, success);
 		} catch (error) {
 			// The message only: errors never carry tokens or ticket URLs, but their causes might.
-			logger.warn(`${this.manifestId} failed: ${error instanceof Error ? error.message : String(error)}`);
-			if (action.isKey() || action.isDial()) await action.showAlert();
+			logger.warn(`${this.manifestId} failed: ${message(error)}`);
+			await this.flash(action, false, failureLabel(error));
 		}
 	}
 }
 
+/** Selects the thread the way T3 Code's own open does, and opens it in the desktop app. */
 export async function openThread(thread: DeckThread): Promise<void> {
-	deck.board.focus(thread.key);
-	void deck.board.markSeen(thread.key).catch(() => undefined);
+	selectThread(thread);
 	await openExternal(threadDeepLink(thread, deck.scheme));
+}
+
+/** Selects the thread without opening the app; a failed visit only leaves T3 Code's stamp behind. */
+export function selectThread(thread: Pick<DeckThread, "key" | "machine">): void {
+	void deck.board.select(thread.key, thread.machine.url).catch((error: unknown) => logger.warn(`Selecting a thread failed: ${message(error)}`));
 }
 
 export type ConnectionProblem = "none" | "missing" | "pair" | "offline";
@@ -171,4 +258,5 @@ export async function pressWhileDisconnected(machine?: string): Promise<boolean>
 export const canOperate = (thread?: DeckThread): boolean =>
 	thread !== undefined ? thread.machine.canOperate : deck.machines.some((machine) => machine.canOperate);
 
-export const preferredThread = (machine?: string): DeckThread | undefined => deck.board.focusedOn(machine);
+/** The thread every "selected thread" action targets: T3 Code's selection on the action's machine, or across all. */
+export const selectedThread = (machine?: string): DeckThread | undefined => deck.board.selectedOn(machine);

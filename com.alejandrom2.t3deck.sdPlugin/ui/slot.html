@@ -102,8 +102,9 @@
 	<body>
 		<main>
 			<sdpi-item label="Slot">
-				<sdpi-select setting="slot" default="1">
-					<option value="0">Focused thread</option>
+				<sdpi-select setting="slot" default="">
+					<option value="">By key position</option>
+					<option value="0">Selected thread</option>
 					<option value="1">1 (most urgent)</option>
 					<option value="2">2</option>
 					<option value="3">3</option>
@@ -118,7 +119,7 @@
 					<option value="12">12</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Threads are ordered: needs approval, has a question, running, then the rest.</p>
+			<p class="hint">By key position fills Thread keys left to right, top to bottom. Threads are ordered: needs approval, has a question, running, then the rest. Tap opens, hold selects.</p>
 			<section class="t3" id="t3" aria-live="polite">
 				<p class="eyebrow">T3 Code</p>
 				<h2 id="t3-title">Choose a machine</h2>

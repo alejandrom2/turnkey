@@ -111,7 +111,9 @@ const APPROVAL_HEADING: Record<string, string> = {
 };
 /** Approvals the deck answers; others (tool calls, app access, auth) open in T3 Code. */
 const ANSWERABLE = new Set(["command", "file-read", "file-change", "permission", "user_input"]);
-const DECK_DECISIONS: Decision[] = ["accept", "acceptForSession", "decline"];
+const DECK_DECISIONS: Decision[] = ["accept", "acceptForSession", "acceptAlways", "decline"];
+/** Assumed when a request lists no options; "always" is offered only when the adapter lists it. */
+const DEFAULT_DECISIONS: Decision[] = ["accept", "acceptForSession", "decline"];
 
 type TurnItem = {
 	type: string;
@@ -122,6 +124,9 @@ type TurnItem = {
 	questions?: Question[];
 	responseMode?: "message";
 };
+
+/** T3 Code has no accessory source yet; an "accessory" literal will be proposed upstream before this ships. */
+export const DECK_CREATION_SOURCE = "mobile";
 
 /** First line of the message, as T3 Code seeds titles (`deriveThreadTitleSeed`). */
 export function titleSeed(text: string): string {
@@ -357,7 +362,7 @@ export class Machine {
 		await this.#dispatch({
 			type: "message.dispatch",
 			createdBy: "user",
-			creationSource: "web",
+			creationSource: DECK_CREATION_SOURCE,
 			threadId: thread.threadId,
 			messageId: this.#uuid(),
 			text,
@@ -394,7 +399,7 @@ export class Machine {
 		const title = options.title?.trim();
 		await rpc.request("orchestration.launchThread", {
 			commandId: this.#uuid(),
-			creationSource: "web",
+			creationSource: DECK_CREATION_SOURCE,
 			threadId,
 			projectId,
 			title: title || titleSeed(message),
@@ -430,13 +435,14 @@ export class Machine {
 	}
 
 	/**
-	 * Marks the thread read up to its current row, as T3 Code's visit tracker does. Every visit is broadcast
-	 * to all clients, so callers send it only for an explicit open.
+	 * Marks the thread read up to its current row, as T3 Code's visit tracker does; `opened` also stamps the open
+	 * that the deck's selection follows. Every visit is broadcast to all clients, so callers send it only for an
+	 * explicit selection.
 	 */
-	async visit(thread: ThreadRef): Promise<void> {
+	async visit(thread: ThreadRef, options: { opened?: boolean } = {}): Promise<void> {
 		const visitedAt = this.#shell?.threads.get(thread.threadId)?.updatedAt;
 		if (visitedAt === undefined || !this.canOperate || this.#capabilities.threadVisitedTracking !== true) return;
-		await this.#dispatch({ type: "thread.visit", threadId: thread.threadId, visitedAt });
+		await this.#dispatch({ type: "thread.visit", threadId: thread.threadId, visitedAt, ...(options.opened ? { opened: true } : {}) });
 	}
 
 	async markUnread(thread: ThreadRef): Promise<unknown> {
@@ -501,13 +507,13 @@ export class Machine {
 		}
 		if (found.item.type !== "approval_request") return { type: "unsupported", ...base, heading };
 		const offered = found.item.options?.map((option) => option.decision);
-		const decisions = offered === undefined ? DECK_DECISIONS : DECK_DECISIONS.filter((decision) => offered.includes(decision));
+		const decisions = offered === undefined ? DEFAULT_DECISIONS : DECK_DECISIONS.filter((decision) => offered.includes(decision));
 		return {
 			type: "approval",
 			...base,
 			heading,
 			summary: found.item.prompt?.trim() || found.item.reason?.trim() || heading,
-			decisions: decisions.length > 0 ? decisions : DECK_DECISIONS,
+			decisions: decisions.length > 0 ? decisions : DEFAULT_DECISIONS,
 		};
 	}
 

@@ -22,7 +22,7 @@
 			"Name": "Thread",
 			"UUID": "com.alejandrom2.t3deck.slot",
 			"Icon": "imgs/actions/slot/icon",
-			"Tooltip": "One thread from the board: status, title and timer. Tap opens it in T3 Code; hold focuses it for the dials.",
+			"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it.",
 			"PropertyInspectorPath": "ui/slot.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/slot/key", "ShowTitle": true, "TitleAlignment": "top" }]
@@ -31,8 +31,8 @@
 			"Name": "Activity",
 			"UUID": "com.alejandrom2.t3deck.activity",
 			"Icon": "imgs/actions/activity/icon",
-			"Tooltip": "How many turns are running and how many need you. Tap opens the most urgent thread.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "The most urgent thread matching a filter. Tap opens it in T3 Code.",
+			"PropertyInspectorPath": "ui/activity.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/activity/key", "ShowTitle": false }]
 		},
@@ -40,7 +40,7 @@
 			"Name": "Stop",
 			"UUID": "com.alejandrom2.t3deck.stop",
 			"Icon": "imgs/actions/stop/icon",
-			"Tooltip": "Interrupts the focused thread's running turn, or the most urgent running one.",
+			"Tooltip": "Stops the running turn of the thread selected in T3 Code.",
 			"PropertyInspectorPath": "ui/environments.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/stop/key", "ShowTitle": false }]
@@ -49,7 +49,7 @@
 			"Name": "Send Prompt",
 			"UUID": "com.alejandrom2.t3deck.send",
 			"Icon": "imgs/actions/send/icon",
-			"Tooltip": "Sends a saved prompt to the focused thread. Hold to interrupt and restart with it.",
+			"Tooltip": "Sends a saved prompt to the selected thread. Hold to interrupt and restart with it.",
 			"PropertyInspectorPath": "ui/send.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/send/key", "ShowTitle": false }]
@@ -58,7 +58,7 @@
 			"Name": "New Thread",
 			"UUID": "com.alejandrom2.t3deck.new",
 			"Icon": "imgs/actions/new/icon",
-			"Tooltip": "Starts a new thread with a saved prompt in the focused thread's project.",
+			"Tooltip": "Starts a new thread with a saved prompt in the selected thread's project.",
 			"PropertyInspectorPath": "ui/new.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/new/key", "ShowTitle": false }]
@@ -67,7 +67,7 @@
 			"Name": "Organize",
 			"UUID": "com.alejandrom2.t3deck.organize",
 			"Icon": "imgs/actions/organize/icon",
-			"Tooltip": "Settles, pins, snoozes, archives or marks the focused thread unread.",
+			"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread.",
 			"PropertyInspectorPath": "ui/organize.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/organize/key", "ShowTitle": false }]
@@ -76,13 +76,13 @@
 			"Name": "Threads Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.threads",
 			"Icon": "imgs/actions/dial-threads/icon",
-			"Tooltip": "Rotate to move focus across threads; press or tap to open the focused thread.",
+			"Tooltip": "Rotate to select a thread in T3 Code; press or tap to open it.",
 			"PropertyInspectorPath": "ui/environments.html",
 			"Controllers": ["Encoder"],
 			"Encoder": {
 				"layout": "layouts/strip.json",
 				"Icon": "imgs/actions/dial-threads/icon",
-				"TriggerDescription": { "Rotate": "Focus thread", "Push": "Open in T3 Code", "Touch": "Open in T3 Code" }
+				"TriggerDescription": { "Rotate": "Select thread", "Push": "Open in T3 Code", "Touch": "Open in T3 Code" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-threads/key" }]
 		},
@@ -90,7 +90,7 @@
 			"Name": "Model Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.model",
 			"Icon": "imgs/actions/dial-model/icon",
-			"Tooltip": "Adjusts the focused thread's model options, such as effort, as its provider reports them.",
+			"Tooltip": "Adjusts the selected thread's model options, such as effort, as its provider reports them.",
 			"PropertyInspectorPath": "ui/environments.html",
 			"Controllers": ["Encoder"],
 			"Encoder": {
@@ -104,7 +104,7 @@
 			"Name": "Prompts Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.prompts",
 			"Icon": "imgs/actions/dial-prompts/icon",
-			"Tooltip": "Rotate through saved prompts. Press sends to the focused thread; hold starts a new thread.",
+			"Tooltip": "Rotate through saved prompts. Press sends to the selected thread; hold starts a new thread.",
 			"PropertyInspectorPath": "ui/prompts.html",
 			"Controllers": ["Encoder"],
 			"Encoder": {
@@ -118,13 +118,13 @@
 			"Name": "Answer Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.answer",
 			"Icon": "imgs/actions/dial-answer/icon",
-			"Tooltip": "Answers an agent's question choice by choice. Approvals open the thread in T3 Code.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "Answers an agent's question choice by choice, and approvals as far as its settings allow.",
+			"PropertyInspectorPath": "ui/answer.html",
 			"Controllers": ["Encoder"],
 			"Encoder": {
 				"layout": "layouts/strip.json",
 				"Icon": "imgs/actions/dial-answer/icon",
-				"TriggerDescription": { "Rotate": "Choose answer", "Push": "Confirm", "Touch": "Open thread" }
+				"TriggerDescription": { "Rotate": "Choose answer", "Push": "Answer (hold by default)", "Touch": "Open thread" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-answer/key" }]
 		}

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { type BoardMachine, ThreadBoard } from "./board.js";
+import { type BoardMachine, SELECT_DEBOUNCE_MS, ThreadBoard } from "./board.js";
 import type { MachineState } from "./t3/machine.js";
 import type { ShellRow } from "./t3/shell.js";
 
@@ -25,6 +25,7 @@ function row(threadId: string, patch: Partial<ShellRow> = {}): ShellRow {
 		pendingRequest: undefined,
 		parentThreadId: null,
 		updatedAt: 0,
+		openedAt: undefined,
 		...patch,
 	};
 }
@@ -75,23 +76,105 @@ describe("ThreadBoard", () => {
 		expect(listener).toHaveBeenCalledTimes(2);
 	});
 
-	it("moves focus within the list and clamps at the ends", () => {
-		const board = new ThreadBoard(() => [machine("a", [row("a1", { deck: "approval" }), row("a2", { deck: "running" }), row("a3")])]);
+	it("selects the thread opened last on each machine, and the latest selection across machines", () => {
+		const a = machine("a", [row("a1", { openedAt: 100 }), row("a2", { openedAt: 300 }), row("a3")]);
+		const b = machine("b", [row("b1", { openedAt: 50 })]);
+		const board = new ThreadBoard(() => [a, b]);
 		board.update();
-		expect(board.focused?.threadId).toBe("a1");
-		board.moveFocus(5);
-		expect(board.focused?.threadId).toBe("a3");
-		board.moveFocus(-1);
-		expect(board.focused?.threadId).toBe("a2");
+		expect(board.selectedOn("a")?.key).toBe("a/a2");
+		expect(board.selectedOn("b")?.key).toBe("b/b1");
+		// Machines' clocks are never compared once running: a later open on b wins even with a smaller stamp.
+		b.rows = [row("b1", { openedAt: 50 }), row("b2", { openedAt: 60 })];
+		board.update();
+		expect(board.selectedOn()?.key).toBe("b/b2");
+		a.rows = [row("a1", { openedAt: 400 }), row("a2", { openedAt: 300 }), row("a3")];
+		board.update();
+		expect(board.selectedOn()?.key).toBe("a/a1");
+		expect(board.selectedOn("b")?.key).toBe("b/b2");
 	});
 
-	it("marks an unseen result read in T3 Code, and leaves read threads alone", async () => {
-		const source = machine("a", [row("done", { deck: "done", unseen: true }), row("idle")]);
-		const board = new ThreadBoard(() => [source]);
+	it("falls back to the newest-opened listed thread, then the most urgent, when the selection is not listed", () => {
+		const a = machine("a", [row("a1", { openedAt: 100 }), row("a2", { openedAt: 300 })]);
+		const board = new ThreadBoard(() => [a]);
 		board.update();
-		await board.markSeen("a/done");
-		await board.markSeen("a/idle");
-		expect(source.visit).toHaveBeenCalledTimes(1);
-		expect(source.visit).toHaveBeenCalledWith(expect.objectContaining({ threadId: "done" }));
+		a.rows = [row("a1", { openedAt: 100 })];
+		board.update();
+		expect(board.selectedOn()?.key).toBe("a/a1");
+		const fresh = new ThreadBoard(() => [machine("a", [row("idle"), row("ask", { deck: "approval" })])]);
+		fresh.update();
+		expect(fresh.selectedOn()?.key).toBe("a/ask");
+	});
+
+	it("selects on the deck at once, visits with opened, and ignores the echo of its own visit", async () => {
+		let now = 1_000;
+		const a = machine("a", [row("a1", { openedAt: 100 }), row("a2", { openedAt: 200 }), row("a3")]);
+		const board = new ThreadBoard(() => [a], () => now);
+		board.update();
+		await board.select("a/a1", "a");
+		expect(board.selectedOn()?.key).toBe("a/a1");
+		expect(a.visit).toHaveBeenCalledWith(expect.objectContaining({ threadId: "a1" }), { opened: true });
+		await board.select("a/a3", "a");
+		// The a1 open lands after the a3 pick: it is the deck's own echo, not a new selection.
+		a.rows = [row("a1", { openedAt: 500 }), row("a2", { openedAt: 200 }), row("a3")];
+		board.update();
+		expect(board.selectedOn()?.key).toBe("a/a3");
+		// A later open in T3 Code moves the selection again.
+		now += 10_000;
+		a.rows = [row("a1", { openedAt: 500 }), row("a2", { openedAt: 900 }), row("a3", { openedAt: 600 })];
+		board.update();
+		expect(board.selectedOn()?.key).toBe("a/a2");
+	});
+
+	it("takes the first open on a machine that had no stamps as a new selection", async () => {
+		const a = machine("a", [row("a1", { openedAt: 100 })]);
+		const b = machine("b", [row("b1"), row("b2")]);
+		const board = new ThreadBoard(() => [a, b]);
+		board.update();
+		await board.select("a/a1", "a");
+		b.rows = [row("b1"), row("b2", { openedAt: 5 })];
+		board.update();
+		expect(board.selectedOn()?.key).toBe("b/b2");
+	});
+
+	it("selects a launched thread once the shell lists it", async () => {
+		const a = machine("a", [row("a1", { openedAt: 100 })]);
+		const board = new ThreadBoard(() => [a]);
+		board.update();
+		await board.select("a/new", "a");
+		expect(board.selectedOn()?.key).toBe("a/a1");
+		a.rows = [row("a1", { openedAt: 100 }), row("new")];
+		board.update();
+		expect(board.selectedOn()?.key).toBe("a/new");
+		expect(a.visit).not.toHaveBeenCalled();
+	});
+
+	it("shows a dial's pending choice at once and selects it once the dial rests", () => {
+		vi.useFakeTimers();
+		try {
+			const a = machine("a", [row("a1", { deck: "approval", openedAt: 100 }), row("a2", { deck: "running" }), row("a3")]);
+			const board = new ThreadBoard(() => [a]);
+			board.update();
+			const listener = vi.fn();
+			board.subscribe(listener);
+			board.step(1);
+			board.step(5);
+			expect(board.pendingOn()?.key).toBe("a/a3");
+			expect(board.selectedOn()?.key).toBe("a/a1");
+			expect(listener).toHaveBeenCalledTimes(2);
+			vi.advanceTimersByTime(SELECT_DEBOUNCE_MS - 1);
+			expect(a.visit).not.toHaveBeenCalled();
+			vi.advanceTimersByTime(1);
+			expect(a.visit).toHaveBeenCalledTimes(1);
+			expect(a.visit).toHaveBeenCalledWith(expect.objectContaining({ threadId: "a3" }), { opened: true });
+			expect(board.selectedOn()?.key).toBe("a/a3");
+			expect(board.pendingOn()).toBeUndefined();
+			// Turning back onto the selection cancels the pending choice without a visit.
+			board.step(-1);
+			board.step(1);
+			vi.advanceTimersByTime(SELECT_DEBOUNCE_MS);
+			expect(a.visit).toHaveBeenCalledTimes(1);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

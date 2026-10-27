@@ -262,7 +262,7 @@ describe("Machine commands", () => {
 	it("dispatches messages with the server-resolved delivery modes", async () => {
 		const h = setup();
 		const socket = await connect(h);
-		const base = { type: "message.dispatch", createdBy: "user", creationSource: "web", threadId: "thr_123", text: "Also update the docs", attachments: [] };
+		const base = { type: "message.dispatch", createdBy: "user", creationSource: "mobile", threadId: "thr_123", text: "Also update the docs", attachments: [] };
 		expect(await dispatched(socket, () => h.machine.send(row(h.machine), "Also update the docs"))).toEqual({
 			...base,
 			messageId: "uuid-1",
@@ -280,6 +280,8 @@ describe("Machine commands", () => {
 		const h = setup();
 		const socket = await connect(h);
 		expect(await dispatched(socket, () => h.machine.visit(row(h.machine)))).toMatchObject({ type: "thread.visit", threadId: "thr_123", visitedAt: "2026-10-27T09:59:30.500Z" });
+		const opened = await dispatched(socket, () => h.machine.visit(row(h.machine), { opened: true }));
+		expect(opened).toMatchObject({ type: "thread.visit", visitedAt: "2026-10-27T09:59:30.500Z", opened: true });
 		expect(await dispatched(socket, () => h.machine.snooze(row(h.machine), 30))).toMatchObject({ type: "thread.snooze", snoozedUntil: "2026-10-27T10:30:00.000Z" });
 		await expect(h.machine.pin(row(h.machine))).rejects.toThrow("can't pin threads");
 	});
@@ -294,7 +296,7 @@ describe("Machine commands", () => {
 		expect(await launched).toEqual({ threadId: "uuid-1" });
 		expect(request.payload).toEqual({
 			commandId: "uuid-2",
-			creationSource: "web",
+			creationSource: "mobile",
 			threadId: "uuid-1",
 			projectId: "p-1",
 			title: "Add retry to the upload client",
@@ -352,6 +354,20 @@ describe("Machine details", () => {
 			summary: "pnpm test --filter shell",
 			decisions: ["accept", "decline"],
 		});
+	});
+
+	it("offers Always allow only when the adapter lists it", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const loading = h.machine.pendingRequest(row(h.machine));
+		await flush();
+		const item = { type: "approval_request", requestId: "runtime-request:claudeAgent:toolu_01AbC", requestKind: "command", prompt: "ls" };
+		socket.reply("orchestration.getTurnItem", { item: { ...item, options: [{ decision: "acceptAlways" }, { decision: "decline" }] } });
+		expect(await loading).toMatchObject({ type: "approval", decisions: ["acceptAlways", "decline"] });
+		const unlisted = h.machine.pendingRequest(row(h.machine));
+		await flush();
+		socket.reply("orchestration.getTurnItem", { item });
+		expect(await unlisted).toMatchObject({ type: "approval", decisions: ["accept", "acceptForSession", "decline"] });
 	});
 
 	it("falls back to one bounded thread snapshot for questions, then unsubscribes", async () => {
