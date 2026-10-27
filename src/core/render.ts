@@ -36,6 +36,8 @@ const GLYPHS = {
 	play: `<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor" stroke="none"/>`,
 	/** Lucide's circle-x, Deny's counterpart to the circled check. */
 	denyCircle: `<circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" />`,
+	/** Lucide's chart-no-axes-column, T3 Code's Usage icon. */
+	usage: `<path d="M5 21v-6" /><path d="M12 21V3" /><path d="M19 21V9" />`,
 	/** Lucide's zap, filled: Speed while fast. */
 	speedFilled: `<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" fill="currentColor" />`,
 } as const;
