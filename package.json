@@ -1,5 +1,6 @@
 {
 	"name": "turnkey",
+	"version": "0.9.0",
 	"private": true,
 	"description": "Stream Deck plugin for T3 Code environments, over T3 Code's client API.",
 	"scripts": {
@@ -8,7 +9,8 @@
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"i18n:check": "vitest run src/core/i18n.test.ts",
-		"assets": "node --import ./scripts/resolve-ts.mjs scripts/icons.ts && node scripts/ui.ts && node scripts/profiles.ts"
+		"assets": "node --import ./scripts/resolve-ts.mjs scripts/icons.ts && node scripts/ui.ts && node scripts/profiles.ts && node scripts/version.ts",
+		"version:sync": "node scripts/version.ts"
 	},
 	"type": "module",
 	"devDependencies": {

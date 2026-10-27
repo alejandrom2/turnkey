@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Commit messages
+        if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
+        run: node scripts/commits.ts ${{ github.event.before }}..${{ github.sha }}
+      - name: Commit messages
+        if: github.event_name == 'pull_request'
+        run: node scripts/commits.ts origin/${{ github.base_ref }}..HEAD
+      - run: npm run typecheck
+      - run: npm test
+      - run: npx oxlint src
+      # Generated inspectors, icons and the manifest version must be committed as `npm run assets` writes them.
+      # Profile zips are left out: zip output differs between platforms.
+      - run: npm run assets
+      - run: git diff --exit-code -- . ':(exclude)*.streamDeckProfile'
+      - run: npm run build
+      - run: npx streamdeck validate com.alejandrom2.turnkey.sdPlugin

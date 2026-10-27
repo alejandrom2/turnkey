@@ -180,6 +180,12 @@ Every string lives in `com.alejandrom2.turnkey.sdPlugin/en.json`, with one file 
 
 `npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and every language file has exactly English's keys, the same placeholders per key and no empty strings. After changing settings-page copy, run `node scripts/ui.ts`.
 
+## Releases
+
+Commits follow [Conventional Commits](https://www.conventionalcommits.org): `feat:` adds a minor version, `fix:` a patch, and `!` or `BREAKING CHANGE:` a major once past 1.0. CI rejects other subjects; enable the same check locally with `git config core.hooksPath .githooks`.
+
+On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it tags the release, publishes the GitHub Release with the notes, and attaches `com.alejandrom2.turnkey.streamDeckPlugin`, packed with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`). `npm run assets` keeps the manifest's version in step with `package.json`.
+
 ## License
 
 MIT © 2026 Alejandro Martinez. See [LICENSE](LICENSE). Bundled third-party code and assets keep their own licenses: T3 Code (MIT) and Lucide (ISC), in [LICENSES](LICENSES).
