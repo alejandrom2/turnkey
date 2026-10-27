@@ -304,7 +304,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 				preview.key = undefined;
 			});
 		}
-		await this.apply(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)));
+		if (toggle !== undefined) await this.apply(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)));
 	}
 
 	#apply(thread: DeckThread, choice: PowerChoice, armed: boolean): (() => Promise<unknown>) | undefined {
