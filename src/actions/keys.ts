@@ -5,6 +5,7 @@ import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confi
 import { type Availability, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, organize, type OrganizeAction, threadDeepLink } from "../core/commands.js";
+import { branchSummary } from "../core/git.js";
 import { type HealthMachine, healthIssues, summarizeHealth } from "../core/health.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import {
@@ -50,6 +51,7 @@ import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../cor
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
+import { gitTarget, statuses } from "./git.js";
 import { connectionOf } from "./needs.js";
 import { pullRequestKeyFace } from "./pr.js";
 import {
@@ -78,6 +80,7 @@ function threadFace(thread: DeckThread | undefined, emptyLabel: string, selected
 		state: thread.deck,
 		title: thread.title,
 		meta: elapsed(thread.active ? thread.activeSince : thread.updatedAt, now),
+		worktree: thread.worktreePath !== undefined,
 		diff: thread.active ? undefined : thread.machine.turnDiff(thread),
 		unseen: thread.unseen,
 		selected: selected === undefined ? undefined : thread.key === selected.key,
@@ -337,7 +340,7 @@ export class QuickPrompt extends PromptKey<QuickSettings> {
 	}
 }
 
-type NewThreadSettings = { prompt?: string; title?: string; destination?: string; project?: string; machine?: string };
+type NewThreadSettings = { prompt?: string; title?: string; destination?: string; project?: string; machine?: string; startIn?: string };
 
 /** The machine a new thread starts on when no thread is near: the action's machine, else the first that may act. */
 const launchMachine = (machine?: string) => deck.machines.find((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine));
@@ -376,27 +379,33 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 		return { near, target: near?.machine ?? launchMachine(machine), where: near ? { projectId: near.projectId } : { scratch: true } };
 	}
 
-	#check(action: Action<NewThreadSettings>): { plan: LaunchPlan; check: Availability } {
+	#check(action: Action<NewThreadSettings>): { plan: LaunchPlan; worktree: boolean; check: Availability } {
 		const plan = this.#plan(action);
-		return { plan, check: availability("launch", { canOperate: plan.target?.canOperate ?? false, missing: plan.missing }) };
+		const settings = this.settingsOf(action);
+		const worktree = settings.startIn === "worktree";
+		// A worktree is made on the first message, as in T3 Code's composer, and needs a project's repository.
+		const missing = plan.missing ?? (!worktree ? undefined : "scratch" in plan.where ? t("worktree.noProject") : !settings.prompt?.trim() ? t("worktree.needsPrompt") : undefined);
+		return { plan, worktree, check: availability("launch", { canOperate: plan.target?.canOperate ?? false, missing }) };
 	}
 
 	protected override async paint(action: Action<NewThreadSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const { title } = this.settingsOf(action);
-		await this.setImage(action, renderControlKey({ glyph: "compose", label: title || undefined, available: this.#check(action).check.available }));
+		const { worktree, check } = this.#check(action);
+		await this.setImage(action, renderControlKey({ glyph: worktree ? "worktree" : "compose", label: title || (worktree ? t("worktree.newThread") : undefined), available: check.available }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<NewThreadSettings>): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { plan, check } = this.#check(ev.action);
+		const { plan, worktree, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		const target = plan.target!;
 		const prompt = ev.payload.settings.prompt?.trim() ?? "";
 		await this.run(
 			ev.action,
 			async () => {
-				const created = await target.launch(plan.where, prompt, { title: ev.payload.settings.title, fallbackModel: plan.near?.model });
+				const workspaceStrategy = worktree && "projectId" in plan.where ? await target.worktreeStrategy(plan.where.projectId) : undefined;
+				const created = await target.launch(plan.where, prompt, { title: ev.payload.settings.title, fallbackModel: plan.near?.model, workspaceStrategy });
 				selectThread({ key: `${target.environmentId}/${created.threadId}`, machine: target });
 				if (prompt === "" && target.environmentId !== undefined) {
 					await openExternal(threadDeepLink({ environmentId: target.environmentId, threadId: created.threadId }, deck.scheme));
@@ -894,8 +903,11 @@ export class Branch extends DeckAction {
 		const machine = this.machineOf(action);
 		const thread = selectedThread(machine);
 		const check = availability("branch", { thread, canOperate: true });
+		// The checkout's status is shared with the git keys: read when it first shows and when the turn moves.
+		const target = check.available ? gitTarget(machine) : undefined;
+		const status = target && statuses.get(target);
 		const face = check.available
-			? renderInfoKey({ glyph: "branch", title: thread!.branch!, detail: thread!.projectTitle || undefined })
+			? renderInfoKey({ glyph: thread!.worktreePath ? "worktree" : "branch", title: thread!.branch!, detail: (status && branchSummary(status)) ?? (thread!.projectTitle || undefined) })
 			: renderInfoKey({ glyph: "branch", title: t("face.branch"), detail: check.reason, available: false });
 		await this.setImage(action, connectionFace(machine) ?? face);
 	}

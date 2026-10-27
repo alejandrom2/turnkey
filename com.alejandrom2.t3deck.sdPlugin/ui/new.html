@@ -121,6 +121,13 @@
 			<sdpi-item label="Project" data-i18n-label="inspector.field.project" id="project" hidden>
 				<sdpi-select setting="project" datasource="getLaunchProjects" hot-reload loading="Loading projects…" data-i18n-loading="inspector.loading.projects"></sdpi-select>
 			</sdpi-item>
+			<sdpi-item label="Start in" data-i18n-label="inspector.new.startIn">
+				<sdpi-select setting="startIn" default="folder">
+					<option value="folder" data-i18n="inspector.new.folder">Project folder</option>
+					<option value="worktree" data-i18n="inspector.new.worktree">New worktree</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint" id="worktree-hint" hidden data-i18n="inspector.new.worktreeHint">A new worktree starts from the repository's default branch, as T3 Code's composer does, and takes its branch name from the prompt; it needs a prompt and a project.</p>
 			<sdpi-item label="Prompt" data-i18n-label="inspector.field.prompt">
 				<sdpi-textarea setting="prompt" rows="4" placeholder="Optional: Review the open pull request" data-i18n-placeholder="inspector.new.promptPlaceholder"></sdpi-textarea>
 			</sdpi-item>
@@ -410,6 +417,13 @@
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["destination"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["destination"]));
+			}
+			{
+				const field = document.querySelector('[setting="startIn"]');
+				const apply = (value) => { $("worktree-hint").hidden = !((value) => value === "worktree")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["startIn"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["startIn"]));
 			}
 		</script>
 	</body>

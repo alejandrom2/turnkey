@@ -649,6 +649,13 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.project")} id="project" hidden>
 				<sdpi-select setting="project" datasource="getLaunchProjects" hot-reload ${attr("loading", "inspector.loading.projects")}></sdpi-select>
 			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.new.startIn")}>
+				<sdpi-select setting="startIn" default="folder">
+					<option value="folder"${text("inspector.new.folder")}</option>
+					<option value="worktree"${text("inspector.new.worktree")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint" id="worktree-hint" hidden${text("inspector.new.worktreeHint")}</p>
 			<sdpi-item ${attr("label", "inspector.field.prompt")}>
 				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.new.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
@@ -656,7 +663,7 @@ const pages: Record<string, string> = {
 				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.new.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
 			<p class="hint"${text("inspector.new.hint")}</p>`,
-		showWhen("destination", "project", `value === "project"`),
+		showWhen("destination", "project", `value === "project"`) + showWhen("startIn", "worktree-hint", `value === "worktree"`),
 	),
 	"model.html": page(
 		"Model",
