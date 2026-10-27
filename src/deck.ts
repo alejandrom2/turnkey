@@ -257,7 +257,9 @@ class Deck implements CredentialStore {
 	/** Connection status for the open property inspector; sent only when it changes unless `force`d. */
 	async pushStatus(force = false): Promise<void> {
 		if (streamDeck.ui.action === undefined) return;
-		const settings = (await streamDeck.ui.action.getSettings()) as { machine?: string };
+		// The inspector can close mid-request; the app then never answers and the SDK rejects after a timeout.
+		const settings = (await streamDeck.ui.action.getSettings().catch(() => undefined)) as { machine?: string } | undefined;
+		if (settings === undefined) return;
 		const status = {
 			event: "status",
 			environments: this.machines.map(environmentStatus),
