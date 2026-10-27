@@ -15,7 +15,7 @@ export function slideFrame(elapsed: number): { progress: number; next: number | 
 }
 
 /** What a carousel points at: the item's index and key, and whether turning past the end comes round. */
-export type SlideTarget = { index: number; key: string; count: number; wrap?: boolean };
+type SlideTarget = { index: number; key: string; count: number; wrap?: boolean };
 
 type Track = { key: string; shown: number; from: number; to: number; startedAt?: number; timer?: ReturnType<typeof setTimeout> };
 

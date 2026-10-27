@@ -6,13 +6,17 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
-  actions: write
+  contents: read
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     outputs:
       pr: ${{ steps.release.outputs.pr }}
     steps:
@@ -29,6 +33,8 @@ jobs:
     needs: release-please
     if: needs.release-please.outputs.pr
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -39,8 +45,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run assets
-      # Profile zips come out slightly different on Linux; the committed ones stay.
-      - run: git checkout -- '*.streamDeckProfile'
       - name: Commit the version
         run: |
           git diff --quiet && exit 0
@@ -49,9 +53,14 @@ jobs:
           git commit -am "chore: version for the release"
           git push
 
-  # A merged release PR leaves package.json at a version with no tag yet: tag it, then publish that tag.
+  # A merged release PR leaves package.json at a version with no tag yet: once CI passes, tag it, then publish that tag.
   tag:
+    needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v7
         with:

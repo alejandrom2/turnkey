@@ -3,15 +3,15 @@
  * a stepped track with the current value filled and a previewed one as a hollow thumb, and what the ends mean (or
  * what pressing does) along the bottom.
  */
-import { COLORS, type MarkPainter, type Paint, paintFill, sparkles, svgDataUrl, svgText, textWidth } from "./render.js";
+import { COLORS, fadeMask, fit, type MarkPainter, type Paint, paintFill, pills, sparkles, svgImage, svgText, textWidth } from "./render.js";
 
 /** A mark and a word on the bottom row; the word dims unless painted. */
-export type FooterItem = { mark: MarkPainter; text: string; paint?: Paint };
+type FooterItem = { mark: MarkPainter; text: string; paint?: Paint };
 
 export type SliderInput = {
 	label: string;
 	labelColor?: string;
-	/** How many stops the track has, at least two. */
+	/** How many stops the track has; a track draws at least two, pages one pill per stop. */
 	stops: number;
 	/** The thread's value, filled up to; -1 when it isn't on the track. */
 	current: number;
@@ -43,45 +43,13 @@ export type SliderInput = {
 	labelOffset?: number;
 };
 
-export const SLIDER = { x: 12, width: 176, y: 41, height: 18, inset: 12 } as const;
+const SLIDER = { x: 12, width: 176, y: 41, height: 18, inset: 12 } as const;
 
 /** The center of stop `index` of `stops` along the track. */
 export const stopX = (index: number, stops: number): number =>
 	+(SLIDER.x + SLIDER.inset + (index * (SLIDER.width - 2 * SLIDER.inset)) / Math.max(1, stops - 1)).toFixed(2);
 
 const BADGE = 20;
-
-/** `text` cut with an ellipsis to fit `width` at `size`. */
-export function fit(text: string, width: number, size: number): string {
-	if (textWidth(text, size) <= width) return text;
-	const chars = [...text];
-	while (chars.length > 1 && textWidth(`${chars.join("")}…`, size) > width) chars.pop();
-	return `${chars.join("").trimEnd()}…`;
-}
-
-/**
- * One pill per choice across the track, as the Model key's pages: the thread's filled in its paint, the previewed one
- * outlined, the rest dim. Past eight, the pills stand for stretches of the list.
- */
-function pagePills(count: number, current: number | undefined, preview: number | undefined, paint: Paint, drop: number): string {
-	const shown = Math.min(count, 8);
-	const gap = 6;
-	const width = (SLIDER.width - gap * (shown - 1)) / shown;
-	const height = 12;
-	const y = SLIDER.y + drop + (SLIDER.height - height) / 2;
-	const slot = (index: number | undefined) => (index === undefined ? undefined : count > shown ? Math.round((index * (shown - 1)) / (count - 1)) : index);
-	const at = slot(current);
-	const next = slot(preview);
-	const parts: string[] = [];
-	for (let index = 0; index < shown; index++) {
-		const x = +(SLIDER.x + index * (width + gap)).toFixed(2);
-		const box = (extra: string) => `<rect x="${x}" y="${y}" width="${+width.toFixed(2)}" height="${height}" rx="${height / 2}" ${extra}/>`;
-		if (index === at) parts.push(box(`fill="${paintFill(paint, `slider-page-${index}`, x, x + width, parts)}"`));
-		else if (index === next) parts.push(box(`fill="#FFFFFF" fill-opacity=".18" stroke="#FFFFFF" stroke-width="2"`));
-		else parts.push(box(`fill="#FFFFFF" fill-opacity=".14"`));
-	}
-	return parts.join("");
-}
 
 /** The label line as the marquee measures it. */
 export const sliderLabelText = (input: Pick<SliderInput, "label">): string => input.label;
@@ -98,7 +66,6 @@ export const sliderLabelSlot = (input: Pick<SliderInput, "badges" | "lead">) => 
 });
 
 export function sliderArt(input: SliderInput): string {
-	const stops = Math.max(2, input.stops);
 	const cy = SLIDER.y + SLIDER.height / 2;
 	const badges = (input.badges ?? []).slice(0, 2);
 	const parts: string[] = [];
@@ -116,17 +83,21 @@ export function sliderArt(input: SliderInput): string {
 		// At rest the tail fades out; while it scrolls the label is clipped to its room instead.
 		const shape =
 			offset === 0
-				? `<linearGradient id="slider-label-fade" gradientUnits="userSpaceOnUse" x1="${end - 22}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="slider-label" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="34"><rect width="200" height="34" fill="url(#slider-label-fade)"/></mask>`
-				: `<clipPath id="slider-label"><rect x="${start}" y="0" width="${labelRoom}" height="34"/></clipPath>`;
-		parts.push(`<defs>${shape}</defs>`, label(+(start - offset).toFixed(1), offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
+				? fadeMask("slider-label", end - 22, end, { y: 0, width: 200, height: 34 })
+				: `<defs><clipPath id="slider-label"><rect x="${start}" y="0" width="${labelRoom}" height="34"/></clipPath></defs>`;
+		parts.push(shape, label(+(start - offset).toFixed(1), offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
 	} else parts.push(label(start));
 
-	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
 	if (input.pages) {
-		const pills = pagePills(stops, current, input.preview, input.fill ?? COLORS.accent, input.lower ? 16 : 0);
-		parts.push(input.dim ? `<g opacity=".45">${pills}</g>` : pills);
+		const current = input.current >= 0 && input.current < input.stops ? input.current : undefined;
+		const height = 12;
+		const box = { x: SLIDER.x, y: SLIDER.y + (input.lower ? 16 : 0) + (SLIDER.height - height) / 2, width: SLIDER.width, height, gap: 6 };
+		const pages = pills(box, input.stops, current, input.fill ?? COLORS.accent, "slider-page", input.preview);
+		parts.push(input.dim ? `<g opacity=".45">${pages}</g>` : pages);
 		return finish(parts, input);
 	}
+	const stops = Math.max(2, input.stops);
+	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
 	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	if (current !== undefined) {
 		const fill = paintFill(input.fill ?? COLORS.accent, "slider-fill", SLIDER.x, SLIDER.x + SLIDER.width, track);
@@ -138,7 +109,7 @@ export function sliderArt(input: SliderInput): string {
 	if (current !== undefined) track.push(`<circle cx="${stopX(current, stops)}" cy="${cy}" r="11" fill="#FFFFFF"/>`);
 	const preview = input.preview;
 	if (preview !== undefined && preview >= 0 && preview < stops && preview !== current) {
-		track.push(`<circle cx="${stopX(preview, stops)}" cy="${cy}" r="9.5" fill="#111111" fill-opacity=".55" stroke="#FFFFFF" stroke-width="2.5"/>`);
+		track.push(`<circle cx="${stopX(preview, stops)}" cy="${cy}" r="9.5" fill="${COLORS.key}" fill-opacity=".55" stroke="#FFFFFF" stroke-width="2.5"/>`);
 	}
 	parts.push(input.dim ? `<g opacity=".45">${track.join("")}</g>` : track.join(""));
 	return finish(parts, input);
@@ -169,5 +140,5 @@ function finish(parts: string[], input: SliderInput): string {
 		parts.push(svgText(fit(input.ends[0], half, 15), SLIDER.x, 85, 15, 600, "#FFFFFF", ` fill-opacity=".5"`));
 		parts.push(svgText(fit(input.ends[1], half, 15), SLIDER.x + SLIDER.width, 85, 15, 600, "#FFFFFF", ` fill-opacity=".5" text-anchor="end"`));
 	}
-	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${parts.join("")}</svg>`);
+	return svgImage(200, 100, parts.join(""));
 }

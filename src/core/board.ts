@@ -44,7 +44,7 @@ function rank(thread: DeckThread): number {
 /** Running rows sort by start, not by `updatedAt`, which moves several times a second while a turn streams. */
 const recency = (thread: DeckThread): number => (thread.active ? (thread.activeSince ?? thread.updatedAt) : thread.updatedAt);
 
-export function orderThreads(threads: DeckThread[]): DeckThread[] {
+function orderThreads(threads: DeckThread[]): DeckThread[] {
 	return threads.sort((a, b) => rank(a) - rank(b) || recency(b) - recency(a) || a.key.localeCompare(b.key));
 }
 
@@ -93,7 +93,11 @@ export class ThreadBoard {
 	update(): void {
 		const threads: DeckThread[] = [];
 		const byMachine = new Map<string, DeckThread[]>();
-		for (const machine of this.machines()) {
+		const machines = this.machines();
+		// A removed machine's selection goes with it; one that is only offline keeps its own.
+		const present = new Set(machines.map((machine) => machine.url));
+		for (const map of [this.#selected, this.#newest]) for (const url of map.keys()) if (!present.has(url)) map.delete(url);
+		for (const machine of machines) {
 			if (machine.state.kind !== "ready") continue;
 			const environmentId = machine.state.environmentId;
 			const own = machine.rows.map((row): DeckThread => ({ ...row, key: `${environmentId}/${row.threadId}`, machine: machine as Machine, environmentId }));

@@ -38,7 +38,7 @@ export class RpcError extends Error {
 }
 
 /** The innermost string cause: dispatch errors wrap a policy's plain-text reason in generic messages. */
-export function causeReason(error: unknown): string | undefined {
+function causeReason(error: unknown): string | undefined {
 	let reason: string | undefined;
 	for (let cause = (error as { cause?: unknown } | null)?.cause, depth = 0; cause != null && depth < 8; depth++) {
 		if (typeof cause === "string") {
@@ -56,20 +56,22 @@ export type RpcState =
 	| { kind: "retrying"; error: Error; delayMs: number }
 	| { kind: "stopped"; error?: Error };
 
-export type RpcSocketOptions = {
+type RpcSocketOptions = {
 	/** Resolves the socket URL with a fresh ticket. An error with `fatal: true` stops reconnecting. */
 	authorize: () => Promise<string>;
 	socket: SocketFactory;
 	onState: (state: RpcState) => void;
 	/** Runs once per opened socket, after live subscriptions were re-sent. */
 	onOpen?: () => void;
+	/** Where a frame the client couldn't handle is reported; never with the frame or the URL, which can carry secrets. */
+	warn?: (message: string) => void;
 	random?: () => number;
 	now?: () => number;
 };
 
-export const PING_INTERVAL_MS = 5_000;
-export const SILENCE_TIMEOUT_MS = 15_000;
-export const OPEN_TIMEOUT_MS = 15_000;
+const PING_INTERVAL_MS = 5_000;
+const SILENCE_TIMEOUT_MS = 15_000;
+const OPEN_TIMEOUT_MS = 15_000;
 const STABLE_AFTER_MS = 30_000;
 const MAX_DELAY_MS = 300_000;
 
@@ -79,7 +81,7 @@ export function retryDelayMs(failures: number, random: number): number {
 	return Math.round(ceiling / 2 + (ceiling / 2) * random);
 }
 
-type Pending = { resolve: (value: unknown) => void; reject: (error: Error) => void };
+type Pending = { resolve: (value: unknown) => void; reject: (error: Error) => void; timer?: ReturnType<typeof setTimeout> };
 type Subscription = {
 	tag: string;
 	payload: () => unknown;
@@ -97,8 +99,8 @@ type Frame =
 type Cause = { _tag: "Fail"; error: { _tag?: string; message?: string; cause?: unknown; requiredPermission?: unknown; detail?: unknown; reason?: unknown } } | { _tag: "Die"; defect: unknown } | { _tag: "Interrupt" };
 
 export function causeError(cause: Cause[] | undefined): RpcError {
-	const reasons = cause ?? [];
-	const fail = reasons.find((reason) => reason._tag === "Fail");
+	const reasons = Array.isArray(cause) ? cause : [];
+	const fail = reasons.find((reason) => reason?._tag === "Fail");
 	if (fail?._tag === "Fail") {
 		const { _tag, message, requiredPermission, detail, reason: code } = fail.error ?? {};
 		// Source control and pull request errors carry their sentence in `detail`, not in a cause.
@@ -111,7 +113,7 @@ export function causeError(cause: Cause[] | undefined): RpcError {
 			typeof code === "string" ? code : undefined,
 		);
 	}
-	const die = reasons.find((reason) => reason._tag === "Die");
+	const die = reasons.find((reason) => reason?._tag === "Die");
 	if (die?._tag === "Die") {
 		const defect = die.defect as { message?: string } | string | undefined;
 		return new RpcError("Die", typeof defect === "string" ? defect : (defect?.message ?? "T3 Code failed the request."));
@@ -119,7 +121,7 @@ export function causeError(cause: Cause[] | undefined): RpcError {
 	return new RpcError("Interrupt", "The request was interrupted.");
 }
 
-export const isFatal = (error: unknown): boolean => (error as { fatal?: unknown } | null)?.fatal === true;
+const isFatal = (error: unknown): boolean => (error as { fatal?: unknown } | null)?.fatal === true;
 
 export class RpcSocket {
 	#socket: SocketLike | undefined;
@@ -141,10 +143,6 @@ export class RpcSocket {
 	constructor(private readonly options: RpcSocketOptions) {
 		this.#random = options.random ?? Math.random;
 		this.#now = options.now ?? Date.now;
-	}
-
-	get isOpen(): boolean {
-		return this.#open;
 	}
 
 	start(): void {
@@ -177,10 +175,20 @@ export class RpcSocket {
 		if (this.#socket !== undefined) this.#lost(error);
 	}
 
-	request<T>(tag: string, payload: unknown): Promise<T> {
+	/** `timeoutMs` rejects with a `Timeout` RpcError when T3 Code hasn't answered by then; the socket stays up. */
+	request<T>(tag: string, payload: unknown, timeoutMs?: number): Promise<T> {
 		if (!this.#open) return Promise.reject(new RpcError("Disconnected", "Not connected to T3 Code."));
 		const id = this.#nextId++;
-		const result = new Promise<T>((resolve, reject) => this.#pending.set(id, { resolve: resolve as (value: unknown) => void, reject }));
+		const result = new Promise<T>((resolve, reject) => {
+			const pending: Pending = { resolve: resolve as (value: unknown) => void, reject };
+			if (timeoutMs !== undefined) {
+				pending.timer = setTimeout(() => {
+					this.#pending.delete(id);
+					reject(new RpcError("Timeout", t("connection.noAnswer")));
+				}, timeoutMs);
+			}
+			this.#pending.set(id, pending);
+		});
 		this.#send({ _tag: "Request", id, tag, payload, headers: [] });
 		return result;
 	}
@@ -264,7 +272,14 @@ export class RpcSocket {
 		} catch {
 			return;
 		}
-		for (const frame of (Array.isArray(parsed) ? parsed : [parsed]) as Frame[]) this.#handle(frame);
+		for (const frame of (Array.isArray(parsed) ? parsed : [parsed]) as unknown[]) {
+			if (frame === null || typeof frame !== "object") continue;
+			try {
+				this.#handle(frame as Frame);
+			} catch (error) {
+				this.options.warn?.(`Couldn't handle a ${String((frame as { _tag?: unknown })._tag)} frame: ${error instanceof Error ? error.message : String(error)}`);
+			}
+		}
 	}
 
 	#handle(frame: Frame): void {
@@ -273,7 +288,7 @@ export class RpcSocket {
 				const subscription = this.#subscriptionFor(frame.requestId);
 				if (subscription === undefined) return;
 				try {
-					for (const value of frame.values ?? []) subscription.onValue(value);
+					for (const value of Array.isArray(frame.values) ? frame.values : []) subscription.onValue(value);
 				} finally {
 					if (subscription.id === frame.requestId) this.#send({ _tag: "Ack", requestId: frame.requestId });
 				}
@@ -283,15 +298,16 @@ export class RpcSocket {
 				const pending = this.#pending.get(frame.requestId);
 				if (pending !== undefined) {
 					this.#pending.delete(frame.requestId);
-					if (frame.exit._tag === "Success") pending.resolve(frame.exit.value ?? null);
-					else pending.reject(causeError(frame.exit.cause));
+					clearTimeout(pending.timer);
+					if (frame.exit?._tag === "Success") pending.resolve(frame.exit.value ?? null);
+					else pending.reject(causeError(frame.exit?._tag === "Failure" ? frame.exit.cause : undefined));
 					return;
 				}
 				const subscription = this.#subscriptionFor(frame.requestId);
 				if (subscription === undefined) return;
 				subscription.id = undefined;
 				if (!subscription.persistent) this.#subscriptions.delete(subscription);
-				subscription.onEnd?.(frame.exit._tag === "Success" ? undefined : causeError(frame.exit.cause));
+				subscription.onEnd?.(frame.exit?._tag === "Success" ? undefined : causeError(frame.exit?._tag === "Failure" ? frame.exit.cause : undefined));
 				return;
 			}
 			default:
@@ -344,7 +360,10 @@ export class RpcSocket {
 				// Already closed.
 			}
 		}
-		for (const pending of this.#pending.values()) pending.reject(new RpcError("Disconnected", error.message));
+		for (const pending of this.#pending.values()) {
+			clearTimeout(pending.timer);
+			pending.reject(new RpcError("Disconnected", error.message));
+		}
 		this.#pending.clear();
 		for (const subscription of [...this.#subscriptions]) {
 			subscription.id = undefined;

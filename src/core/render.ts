@@ -1,5 +1,5 @@
 import type { DeckState } from "./board.js";
-import { flowArt, type Run } from "./flow.js";
+import type { Run } from "./flow.js";
 import { LUCIDE } from "./icons.js";
 import type { RuntimeMode } from "./t3/shell.js";
 
@@ -17,6 +17,14 @@ export const COLORS = {
 	accent: "#5B8CFF",
 	unread: "#007BE5",
 	dim: "#3A3D44",
+	/** Secondary strip text: a detail line, the next row, a far tile's name. */
+	secondary: "#B8BCC6",
+	/** Dimmed text: a thread key's elapsed time, the strip's other thread rows. */
+	faint: "#9A9A9A",
+	/** What a white provider mark becomes on a fill, so a white thumb stands out. */
+	neutral: "#8E9199",
+	/** T3 Code's card: the strip's background. */
+	card: "#121212",
 } as const;
 
 export const STATE_COLOR: Record<DeckState, string> = {
@@ -83,11 +91,15 @@ export const MODE_GLYPH: Record<RuntimeMode, GlyphName> = {
  * T3 Code's `.ultrathink-frame` spectrum (apps/web/src/index.css), its saturate(.82) brightness(.92) filter baked into
  * the stops because Stream Deck's SVG renderer can't be relied on for filters.
  */
-const ULTRATHINK_STOPS = ["#D76868", "#D49324", "#33AE61", "#28A396", "#4176CE", "#C54986", "#D76868"];
-const SPECTRUM_OFFSETS = [0, 0.18, 0.36, 0.54, 0.72, 0.9, 1];
-
-/** The spectrum's gradient stops, for fills that carry it (Ultrathink on a track). */
-export const spectrumStops = (): string => ULTRATHINK_STOPS.map((color, index) => `<stop offset="${SPECTRUM_OFFSETS[index]}" stop-color="${color}"/>`).join("");
+export const SPECTRUM: Stops = [
+	[0, "#D76868"],
+	[0.18, "#D49324"],
+	[0.36, "#33AE61"],
+	[0.54, "#28A396"],
+	[0.72, "#4176CE"],
+	[0.9, "#C54986"],
+	[1, "#D76868"],
+];
 
 /** How effort and models are colored (Advanced → Colors): gradients by default. */
 export type MaxEffortStyle = "gradient" | "solid" | "model" | "off";
@@ -104,7 +116,6 @@ const EFFORT_GRADIENT: Stops = [
 	[0.55, MAX_VIOLET],
 	[1, "#8B84FB"],
 ];
-export const SPECTRUM: Stops = ULTRATHINK_STOPS.map((color, index) => [SPECTRUM_OFFSETS[index]!, color] as const);
 
 const hex = (color: string) => [1, 3, 5].map((at) => Number.parseInt(color.slice(at, at + 2), 16));
 const toHex = (rgb: number[]) => `#${rgb.map((value) => Math.round(Math.max(0, Math.min(255, value))).toString(16).padStart(2, "0")).join("").toUpperCase()}`;
@@ -142,8 +153,8 @@ export function sampleStops(stops: Stops, t: number): string {
 
 /** Any provider's gradient: a light tint of its color into the color itself; gray for white marks. */
 export const providerGradient = (color: string | undefined): Stops => [
-	[0, mix(color ?? "#8E9199", "#FFFFFF", 0.45)],
-	[1, color ?? "#8E9199"],
+	[0, mix(color ?? COLORS.neutral, "#FFFFFF", 0.45)],
+	[1, color ?? COLORS.neutral],
 ];
 
 /**
@@ -187,36 +198,40 @@ const ACCESS_GRADIENT: Stops = [
 export const accessTone = (t: number): { text: string; fill: Paint } => ({ text: sampleStops(ACCESS_GRADIENT, t), fill: { gradient: ACCESS_GRADIENT } });
 
 /** A model's track fill: its provider's gradient, or its color; gray for white marks, so the white thumb stands out. */
-export const modelFill = (style: MaxEffortStyle, color: string | undefined): Paint => (style === "gradient" ? { gradient: providerGradient(color) } : (color ?? "#8E9199"));
+export const modelFill = (style: MaxEffortStyle, color: string | undefined): Paint => (style === "gradient" ? { gradient: providerGradient(color) } : (color ?? COLORS.neutral));
+
+const gradientStops = (stops: Stops): string => stops.map(([offset, color]) => `<stop offset="${offset}" stop-color="${color}"/>`).join("");
 
 /** `paint` as a fill attribute value, defining its gradient (`id`, along x1→x2) into `defs` when it has one. */
 export function paintFill(paint: Paint, id: string, x1: number, x2: number, defs: string[]): string {
 	if (typeof paint === "string") return paint;
-	const stops = paint.gradient.map(([offset, color]) => `<stop offset="${offset}" stop-color="${color}"/>`).join("");
-	defs.push(`<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="0" x2="${x2}" y2="0">${stops}</linearGradient></defs>`);
+	defs.push(`<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="0" x2="${x2}" y2="0">${gradientStops(paint.gradient)}</linearGradient></defs>`);
 	return `url(#${id})`;
 }
 
 /** A static 120° spectrum border, like T3 Code's composer while Ultrathink is on. */
-export function ultrathinkFrame(width: number, height: number, radius: number, stroke: number): string {
-	const stops = ULTRATHINK_STOPS.map((color, index) => `<stop offset="${SPECTRUM_OFFSETS[index]}" stop-color="${color}"/>`).join("");
+function ultrathinkFrame(width: number, height: number, radius: number, stroke: number): string {
 	const inset = stroke / 2;
 	return (
-		`<defs><linearGradient id="ultrathink" gradientUnits="userSpaceOnUse" x1="0" y1="${height * 0.21}" x2="${width}" y2="${height * 0.79}">${stops}</linearGradient></defs>` +
+		`<defs><linearGradient id="ultrathink" gradientUnits="userSpaceOnUse" x1="0" y1="${height * 0.21}" x2="${width}" y2="${height * 0.79}">${gradientStops(SPECTRUM)}</linearGradient></defs>` +
 		`<rect x="${inset}" y="${inset}" width="${width - stroke}" height="${height - stroke}" rx="${radius}" fill="none" stroke="url(#ultrathink)" stroke-width="${stroke}"/>`
 	);
 }
 
-export const FONT_FAMILY =
+const FONT_FAMILY =
 	process.platform === "win32" ? `'Segoe UI Variable','Segoe UI',sans-serif` : `-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif`;
 
 export const escapeXml = (text: string) =>
 	text.replace(/[<>&"']/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[char]!);
 
-export const svgDataUrl = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+export const svgMarkup = (width: number, height: number, body: string) =>
+	`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body}</svg>`;
 
-const keySvg = (body: string) =>
-	svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">${body}</svg>`);
+/** A `width` × `height` picture as the data URL Stream Deck's setImage and setFeedback take. */
+export const svgImage = (width: number, height: number, body: string) =>
+	`data:image/svg+xml;base64,${Buffer.from(svgMarkup(width, height, body)).toString("base64")}`;
+
+const keySvg = (body: string) => svgImage(144, 144, body);
 
 export function glyph(name: GlyphName, x: number, y: number, size: number, color: string = COLORS.text, strokeWidth = 2, rotate = 0): string {
 	const scale = size / 24;
@@ -228,8 +243,11 @@ const WIDE = new Set("MW@#%&");
 /** Hangul, kana, CJK ideographs and full-width forms: a full em each. */
 const FULL_WIDTH = /[\u1100-\u115F\u2E80-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]/;
 
-/** Approximate advance of `text` in px for the system UI font at weight 600. */
-export function textWidth(text: string, fontSize: number): number {
+/** Bold (700 and up) runs about a tenth wider than 600. */
+const BOLD = 0.88;
+
+/** Approximate advance of `text` in px for the system UI font at weight 600, or bold from 700. */
+export function textWidth(text: string, fontSize: number, weight = 600): number {
 	let em = 0;
 	for (const char of text) {
 		if (char === " ") em += 0.33;
@@ -240,7 +258,15 @@ export function textWidth(text: string, fontSize: number): number {
 		else if (char >= "A" && char <= "Z") em += 0.64;
 		else em += 0.56;
 	}
-	return em * fontSize;
+	return weight >= 700 ? (em * fontSize) / BOLD : em * fontSize;
+}
+
+/** `text` cut by character with an ellipsis to fit `width`. */
+export function fit(text: string, width: number, size: number, weight?: number): string {
+	if (textWidth(text, size, weight) <= width) return text;
+	const chars = [...text];
+	while (chars.length > 1 && textWidth(`${chars.join("")}…`, size, weight) > width) chars.pop();
+	return `${chars.join("").trimEnd()}…`;
 }
 
 /** Longest character prefix of `text` that fits `maxWidth`, at least one character. */
@@ -252,7 +278,7 @@ function fitChars(text: string, maxWidth: number, fontSize: number): string {
 }
 
 /** Wrapped lines; `overflowed` when text was left over, `cut` lists lines that end mid-word, both drawn faded. */
-export type Wrapped = { lines: string[]; overflowed: boolean; cut?: number[] };
+type Wrapped = { lines: string[]; overflowed: boolean; cut?: number[] };
 
 /**
  * Greedy word wrap by measured width. A word wider than a line breaks after a hyphen that fits; otherwise it breaks
@@ -301,36 +327,31 @@ export function wrapText(text: string, maxWidth: number, fontSize: number, maxLi
 }
 
 /** The first of `sizes` at which every word of `text` fits `maxWidth`, else the smallest: a size step beats breaking a word. */
-export function fitSize(text: string, maxWidth: number, sizes: readonly number[]): number {
+export function fitSize(text: string, maxWidth: number, sizes: readonly number[], weight?: number): number {
 	const words = text.trim().split(/\s+/);
-	return sizes.find((size) => words.every((word) => textWidth(word, size) <= maxWidth)) ?? sizes[sizes.length - 1];
+	return sizes.find((size) => words.every((word) => textWidth(word, size, weight) <= maxWidth)) ?? sizes[sizes.length - 1];
 }
 
-type TextStyle = { x: number; size: number; fill?: string; opacity?: number; anchor?: "end" | "middle" };
+const FADE_OUT: Stops = [[0, "#fff"], [1, "#000"]];
 
-const textEl = (content: string, y: number, style: TextStyle, extra = "") =>
-	`<text x="${style.x}" y="${y}" font-family="${FONT_FAMILY}" font-size="${style.size}" font-weight="600" fill="${style.fill ?? "#FFFFFF"}"${
-		style.opacity === undefined ? "" : ` fill-opacity="${style.opacity}"`
-	}${style.anchor ? ` text-anchor="${style.anchor}"` : ""}${extra}>${escapeXml(content)}</text>`;
+/** Defines mask `id`: what it covers fades out to the right from x1 to x2, across a band of the picture. */
+export const fadeMask = (id: string, x1: number, x2: number, band: { y: number; width: number; height: number }): string =>
+	`<defs><linearGradient id="${id}-fade" gradientUnits="userSpaceOnUse" x1="${x1}" y1="0" x2="${x2}" y2="0">${gradientStops(FADE_OUT)}</linearGradient>` +
+	`<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="${band.y}" width="${band.width}" height="${band.height}"><rect y="${band.y}" width="${band.width}" height="${band.height}" fill="url(#${id}-fade)"/></mask></defs>`;
 
 type BlockOptions = { x: number; firstBaseline: number; lineHeight: number; size: number; maxWidth: number; opacity?: number; fill?: string; anchor?: "middle" };
 
 /** Lines from `firstBaseline` down; a cut line, and an overflowed last line, fade out over the right edge of the wrap box. */
 function textBlock({ lines, overflowed, cut }: Wrapped, opts: BlockOptions): string {
-	const style: TextStyle = { x: opts.x, size: opts.size, opacity: opts.opacity, fill: opts.fill, anchor: opts.anchor };
+	const attrs = `${opts.opacity === undefined ? "" : ` fill-opacity="${opts.opacity}"`}${opts.anchor ? ` text-anchor="${opts.anchor}"` : ""}`;
+	const text = (line: string, y: number, extra = "") => svgText(line, opts.x, y, opts.size, 600, opts.fill ?? "#FFFFFF", attrs + extra);
 	return lines
 		.map((line, index) => {
 			const y = opts.firstBaseline + index * opts.lineHeight;
 			const fades = cut?.includes(index) || (overflowed && index === lines.length - 1);
-			if (!fades) return textEl(line, y, style);
+			if (!fades) return text(line, y);
 			const end = opts.anchor === "middle" ? opts.x + opts.maxWidth / 2 : opts.x + opts.maxWidth;
-			const top = y - opts.size;
-			const height = opts.size * 1.6;
-			return (
-				`<defs><linearGradient id="fade-g${y}" gradientUnits="userSpaceOnUse" x1="${end - 28}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>` +
-				`<mask id="fade${y}" maskUnits="userSpaceOnUse" x="0" y="${top}" width="144" height="${height}"><rect x="0" y="${top}" width="144" height="${height}" fill="url(#fade-g${y})"/></mask></defs>` +
-				textEl(line, y, style, ` mask="url(#fade${y})"`)
-			);
+			return fadeMask(`fade${y}`, end - 28, end, { y: y - opts.size, width: 144, height: opts.size * 1.6 }) + text(line, y, ` mask="url(#fade${y})"`);
 		})
 		.join("");
 }
@@ -345,7 +366,7 @@ const TITLE_SIZES = [17, 15] as const;
 /** How a thread key moves: the spinner's angle, and a wash opacity in place of the resting one (pulse or flash). */
 export type KeyMotion = { spin?: number; wash?: number };
 
-export type ThreadKeyInput = {
+type ThreadKeyInput = {
 	state: DeckState;
 	title: string;
 	/** Top-right text, usually elapsed time. A non-empty `diff` takes its place. */
@@ -363,25 +384,26 @@ export type ThreadKeyInput = {
 	worktree?: boolean;
 };
 
-/** "+N" in a small pill, right-aligned at `right`, top at `top`: messages waiting in a thread's queue. */
-export function queueBadge(count: number, right: number, top: number): string {
-	const label = `+${count}`;
-	const width = Math.round(textWidth(label, 14) + 14);
-	return `<rect x="${right - width}" y="${top}" width="${width}" height="20" rx="10" fill="#FFFFFF" fill-opacity=".14"/>` + textEl(label, top + 15, { x: right - width / 2, size: 14, fill: COLORS.text, anchor: "middle" });
-}
-
-/** A bot and "N" in a small pill, right-aligned at `right`, top at `top`: subagents running for a thread. */
-export function subagentBadge(count: number, right: number, top: number): { svg: string; width: number } {
-	const label = String(count);
-	const width = Math.round(textWidth(label, 14) + 32);
-	const left = right - width;
-	return {
-		width,
-		svg:
-			`<rect x="${left}" y="${top}" width="${width}" height="20" rx="10" fill="#FFFFFF" fill-opacity=".14"/>` +
-			glyph("subagent", left + 6, top + 3, 14, COLORS.text, 2.2) +
-			textEl(label, top + 15, { x: right - 8, size: 14, fill: COLORS.text, anchor: "end" }),
-	};
+/**
+ * A thread's queue ("+N") and running subagents (a bot and N) as small pills, right-aligned at `right`, top at `top`.
+ * `right` comes back as the left edge of the row, less a gap.
+ */
+export function badgeRow(queued: number | undefined, subagents: number | undefined, right: number, top: number): { svg: string; right: number } {
+	const pill = (left: number, width: number) => `<rect x="${left}" y="${top}" width="${width}" height="20" rx="10" fill="#FFFFFF" fill-opacity=".14"/>`;
+	let svg = "";
+	if (queued !== undefined && queued > 0) {
+		const label = `+${queued}`;
+		const width = Math.round(textWidth(label, 14) + 14);
+		svg += pill(right - width, width) + svgText(label, right - width / 2, top + 15, 14, 600, COLORS.text, ` text-anchor="middle"`);
+		right -= width + 4;
+	}
+	if (subagents !== undefined && subagents > 0) {
+		const label = String(subagents);
+		const width = Math.round(textWidth(label, 14) + 32);
+		svg += pill(right - width, width) + glyph("subagent", right - width + 6, top + 3, 14, COLORS.text, 2.2) + svgText(label, right - 8, top + 15, 14, 600, COLORS.text, ` text-anchor="end"`);
+		right -= width + 4;
+	}
+	return { svg, right };
 }
 
 /** The wash and glyph color of a state that wants attention: amber approval, indigo question, red failed, green unseen done. */
@@ -397,7 +419,7 @@ export function threadTint(state: DeckState, unseen = false): string | undefined
 const THREAD_TILE = { base: "#363636", [COLORS.attention]: "#4E4114", [COLORS.question]: "#2F3360", [COLORS.error]: "#5C2328", [COLORS.done]: "#1E4A32" } as Record<string, string>;
 
 /** Wash opacities over the tile: a selected key's white, and how far a pulse or flash brightens it. */
-export const WASH = { selected: 0.15, selectedTint: 0.1 } as const;
+const WASH = { selected: 0.15, selectedTint: 0.1 } as const;
 /** Titles of the keys that aren't selected. */
 const UNSELECTED_OPACITY = 0.55;
 
@@ -419,25 +441,17 @@ export function renderThreadKey(input: ThreadKeyInput): string {
 		const deletions = `-${diff.deletions}`;
 		const additionsRight = Math.round(META.right - textWidth(deletions, META.size) - 8);
 		parts.push(
-			textEl(`+${diff.additions}`, META.baseline, { x: additionsRight, size: META.size, fill: COLORS.done, anchor: "end" }),
-			textEl(deletions, META.baseline, { x: META.right, size: META.size, fill: COLORS.error, anchor: "end" }),
+			svgText(`+${diff.additions}`, additionsRight, META.baseline, META.size, 600, COLORS.done, ` text-anchor="end"`),
+			svgText(deletions, META.right, META.baseline, META.size, 600, COLORS.error, ` text-anchor="end"`),
 		);
 	} else if (input.meta) {
-		parts.push(textEl(input.meta, META.baseline, { x: META.right, size: META.size, fill: "#9A9A9A", anchor: "end" }));
+		parts.push(svgText(input.meta, META.right, META.baseline, META.size, 600, COLORS.faint, ` text-anchor="end"`));
 	}
 
-	let badgeRight: number = META.right;
-	if (input.queued !== undefined && input.queued > 0) {
-		parts.push(queueBadge(input.queued, META.right, 40));
-		badgeRight -= Math.round(textWidth(`+${input.queued}`, 14) + 14) + 4;
-	}
-	if (input.subagents !== undefined && input.subagents > 0) {
-		const pill = subagentBadge(input.subagents, badgeRight, 40);
-		parts.push(pill.svg);
-		badgeRight -= pill.width + 4;
-	}
+	const badges = badgeRow(input.queued, input.subagents, META.right, 40);
+	parts.push(badges.svg);
 	// The worktree mark gives way when the queue and subagent pills need the row.
-	if (input.worktree && badgeRight >= 78) parts.push(glyph("worktree", 58, 42, 16, COLORS.muted, 2.2));
+	if (input.worktree && badges.right >= 78) parts.push(glyph("worktree", 58, 42, 16, COLORS.muted, 2.2));
 
 	const dot = input.unseen === true && input.state !== "done";
 	const maxWidth = dot ? 100 : 114;
@@ -447,10 +461,10 @@ export function renderThreadKey(input: ThreadKeyInput): string {
 	return keySvg(parts.join(""));
 }
 
-export type ControlTone = "default" | "approve" | "deny";
+type ControlTone = "default" | "approve" | "deny";
 /** Draws an icon at (x, y) in a `size` box: a provider mark instead of a glyph. */
 export type MarkPainter = (x: number, y: number, size: number) => string;
-export type ControlKeyInput = {
+type ControlKeyInput = {
 	glyph: GlyphName;
 	/** Replaces the glyph, as on the Model key. */
 	mark?: MarkPainter;
@@ -574,21 +588,30 @@ export function ladderCue(count: number, index: number, spectrum = false, paint?
 	return `${defs.join("")}<rect x="16" y="110" width="112" height="18" rx="9" fill="#FFFFFF" fill-opacity=".1"/><rect x="16" y="110" width="${filled}" height="18" rx="9" fill="${fill}"/>${glitter}${dots}<circle cx="${x(at)}" cy="119" r="10" fill="#FFFFFF"/>`;
 }
 
-/** One pill per item, the current one bright: where a value sits among a few (favorite models). */
-export function dotsCue(count: number, index: number, paint: Paint = "#FFFFFF"): string {
+/**
+ * One pill per choice, evenly across `box`: the current one in `paint`, a previewed one outlined, the rest dim. Past
+ * eight, the pills stand for stretches of the list.
+ */
+export function pills(box: { x: number; y: number; width: number; height: number; gap: number }, count: number, current: number | undefined, paint: Paint, id: string, preview?: number): string {
 	const shown = Math.min(count, 8);
-	// The pills share the key's width evenly, however many there are.
-	const gap = shown <= 5 ? 8 : 5;
-	const width = (112 - gap * (shown - 1)) / shown;
-	const at = count > shown ? Math.round((index * (shown - 1)) / (count - 1)) : index;
+	const width = (box.width - box.gap * (shown - 1)) / shown;
+	const slot = (index: number | undefined) => (index === undefined ? undefined : count > shown ? Math.round((index * (shown - 1)) / (count - 1)) : index);
+	const at = slot(current);
+	const next = slot(preview);
 	const parts: string[] = [];
-	for (let i = 0; i < shown; i++) {
-		const x = +(16 + i * (width + gap)).toFixed(2);
-		const fill = i === at ? paintFill(paint, "cue-page", x, x + width, parts) : "#FFFFFF";
-		parts.push(`<rect x="${x}" y="118" width="${+width.toFixed(2)}" height="8" rx="4" fill="${fill}"${i === at ? "" : ` fill-opacity=".14"`}/>`);
+	for (let index = 0; index < shown; index++) {
+		const x = +(box.x + index * (width + box.gap)).toFixed(2);
+		const pill = (extra: string) => `<rect x="${x}" y="${box.y}" width="${+width.toFixed(2)}" height="${box.height}" rx="${box.height / 2}" ${extra}/>`;
+		if (index === at) parts.push(pill(`fill="${paintFill(paint, id, x, x + width, parts)}"`));
+		else if (index === next) parts.push(pill(`fill="#FFFFFF" fill-opacity=".18" stroke="#FFFFFF" stroke-width="2"`));
+		else parts.push(pill(`fill="#FFFFFF" fill-opacity=".14"`));
 	}
 	return parts.join("");
 }
+
+/** One pill per item along the bottom, sharing the key's width evenly: where a value sits among a few (favorite models). */
+export const dotsCue = (count: number, index: number, paint: Paint = "#FFFFFF"): string =>
+	pills({ x: 16, y: 118, width: 112, height: 8, gap: count <= 5 ? 8 : 5 }, count, index, paint, "cue-page");
 
 const CAPTION = { x: 72, maxWidth: 124 } as const;
 
@@ -618,10 +641,15 @@ export function renderDecisionKey(input: { kind: "approve" | "deny"; armed: bool
 	return keySvg(background(COLORS.key) + parts.join(""));
 }
 
+const SKELETON = `fill="#FFFFFF" fill-opacity=".12"`;
+
+/** A placeholder bar for data on its way. */
+export const skeletonRect = (x: number, y: number, width: number, height: number): string =>
+	`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${height / 2}" ${SKELETON}/>`;
+
 /** A face whose data is still on its way: a glyph-sized disc and two bars, static. */
 export function renderSkeletonKey(): string {
-	const bar = (y: number, width: number) => `<rect x="15" y="${y}" width="${width}" height="13" rx="6.5" fill="#FFFFFF" fill-opacity=".1"/>`;
-	return keySvg(background(COLORS.key) + `<circle cx="32" cy="32" r="19" fill="#FFFFFF" fill-opacity=".1"/>` + bar(72, 104) + bar(94, 72));
+	return keySvg(background(COLORS.key) + `<circle cx="32" cy="32" r="19" ${SKELETON}/>` + skeletonRect(15, 72, 104, 13) + skeletonRect(15, 94, 72, 13));
 }
 
 /** The card a first press shows before anything is sent: what, to which thread, and the content, then "press again". */
@@ -639,7 +667,17 @@ export function renderReviewKey(input: { glyph: GlyphName; verb: string; target:
 	return keySvg(parts.join(""));
 }
 
-export type NoticeKeyInput = { glyph: GlyphName; title: string; detail?: string; tone?: "muted" | "attention" };
+type NoticeKeyInput = { glyph: GlyphName; title: string; detail?: string; tone?: "muted" | "attention" };
+
+/** A thread key's title, up to three lines (two over a detail), and a muted detail line under it. */
+function titleDetail(text: string, detail: string | undefined): string {
+	const size = fitSize(text, 114, TITLE_SIZES);
+	const title = wrapText(text, 114, size, detail ? 2 : 3, { cut: true });
+	const block = textBlock(title, { ...TITLE, size, maxWidth: 114 });
+	if (!detail) return block;
+	const firstBaseline = TITLE.firstBaseline + title.lines.length * TITLE.lineHeight;
+	return block + textBlock(wrapText(detail, 114, 15, 1), { x: TITLE.x, firstBaseline, lineHeight: 18, size: 15, maxWidth: 114, opacity: 0.5 });
+}
 
 /** Sign-in, connection and removal notices, laid out like a thread key so they read as native. */
 export function renderNoticeKey(input: NoticeKeyInput): string {
@@ -647,17 +685,11 @@ export function renderNoticeKey(input: NoticeKeyInput): string {
 	const parts = [background(COLORS.key)];
 	if (attention) parts.push(overlay(COLORS.attention, 0.18), glyph(input.glyph, 12, 12, 40, COLORS.attention));
 	else parts.push(`<g opacity=".5">${glyph(input.glyph, 12, 12, 40)}</g>`);
-	const size = fitSize(input.title, 114, TITLE_SIZES);
-	const title = wrapText(input.title, 114, size, input.detail ? 2 : 3, { cut: true });
-	parts.push(textBlock(title, { ...TITLE, size, maxWidth: 114 }));
-	if (input.detail) {
-		const firstBaseline = TITLE.firstBaseline + title.lines.length * TITLE.lineHeight;
-		parts.push(textBlock(wrapText(input.detail, 114, 15, 1), { x: TITLE.x, firstBaseline, lineHeight: 18, size: 15, maxWidth: 114, opacity: 0.5 }));
-	}
+	parts.push(titleDetail(input.title, input.detail));
 	return keySvg(parts.join(""));
 }
 
-export type InfoKeyInput = {
+type InfoKeyInput = {
 	glyph: GlyphName;
 	mark?: MarkPainter;
 	/** Glyph color; white by default. */
@@ -678,21 +710,14 @@ export type InfoKeyInput = {
 export function renderInfoKey(input: InfoKeyInput): string {
 	const parts = [background(input.active ? COLORS.keyActive : COLORS.key)];
 	if (input.tint) parts.push(overlay(input.tint, 0.2));
-	const content: string[] = [input.mark ? input.mark(14, 14, 36) : glyph(input.glyph, 12, 12, 40, input.color ?? COLORS.text, 2, input.spin ?? 0)];
-	const size = fitSize(input.title, 114, TITLE_SIZES);
-	const title = wrapText(input.title, 114, size, input.detail ? 2 : 3, { cut: true });
-	content.push(textBlock(title, { ...TITLE, size, maxWidth: 114 }));
-	if (input.detail) {
-		const firstBaseline = TITLE.firstBaseline + title.lines.length * TITLE.lineHeight;
-		content.push(textBlock(wrapText(input.detail, 114, 15, 1), { x: TITLE.x, firstBaseline, lineHeight: 18, size: 15, maxWidth: 114, opacity: 0.5 }));
-	}
+	const content = [input.mark ? input.mark(14, 14, 36) : glyph(input.glyph, 12, 12, 40, input.color ?? COLORS.text, 2, input.spin ?? 0), titleDetail(input.title, input.detail)];
 	if (input.pinned) content.push(pinMark());
 	parts.push(input.available === false ? `<g opacity=".5">${content.join("")}</g>` : content.join(""));
 	return keySvg(parts.join(""));
 }
 
 /** How a dial strip's background looks: T3 Code's card, Flow (one picture across adjacent dials), tinted by thread state, or one color. */
-export type StripBackground = "t3" | "flow" | "state" | "custom";
+type StripBackground = "t3" | "flow" | "state" | "custom";
 /** `run` places a dial in its run of adjacent dials, for Flow; `pet` is the idle pet's art while it crosses this strip. */
 export type StripAppearance = { background: StripBackground; color?: string; hairline: boolean; run?: Run; pet?: string };
 /** What a strip is about, for the State background: done, failed, waiting on you, or nothing to report. */
@@ -704,7 +729,7 @@ export const DEFAULT_APPEARANCE: StripAppearance = { background: "t3", hairline:
 export const stripBackground = (value: unknown): StripBackground | undefined =>
 	value === "gradient" ? "t3" : value === "t3" || value === "flow" || value === "state" || value === "custom" ? value : undefined;
 
-const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+export const isHexColor = (value: unknown): value is string => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
 
 /** The dial's own background when it sets one, else the global one; a custom color must be `#rrggbb`. */
 export function resolveAppearance(
@@ -716,7 +741,7 @@ export function resolveAppearance(
 	const color = own === "custom" ? dial.backgroundColor : global.stripColor;
 	const hairline = global.stripHairline !== false && global.stripHairline !== "false";
 	if (background !== "custom") return { background, hairline };
-	return typeof color === "string" && HEX_COLOR.test(color) ? { background, color, hairline } : { background: "t3", hairline };
+	return isHexColor(color) ? { background, color, hairline } : { background: "t3", hairline };
 }
 
 /** A state's strip tone, matching thread keys: a done thread stays green only while unseen (`unseen` false). */
@@ -724,7 +749,48 @@ export const toneOf = (state: DeckState | undefined, unseen?: boolean): StripTon
 	state === "done" ? (unseen === false ? "neutral" : "done") : state === "failed" ? "failed" : state === "approval" || state === "question" ? "attention" : "neutral";
 
 const TONE_TINT: Record<Exclude<StripTone, "neutral">, string> = { done: COLORS.done, failed: COLORS.error, attention: COLORS.attention };
-const T3_CARD = "#121212";
+
+const FLOW = { width: 200, height: 100 } as const;
+
+/** A smooth wave across `width`: a cubic per half period, so neighboring slices meet without a seam. */
+function wave(width: number, y: number, amplitude: number, period: number, phase: number): string {
+	const half = period / 2;
+	let x = -phase - period;
+	let up = true;
+	let path = `M${x} ${y}`;
+	while (x < width + period) {
+		const peak = up ? y - amplitude : y + amplitude;
+		path += ` C${+(x + half * 0.36).toFixed(1)} ${peak} ${+(x + half * 0.64).toFixed(1)} ${peak} ${+(x + half).toFixed(1)} ${y}`;
+		x += half;
+		up = !up;
+	}
+	return path;
+}
+
+/**
+ * Dial `run.position`'s slice of the Flow picture for a run of `run.length` dials: a dark blue-violet field with two
+ * soft ribbons in T3 Code's accent running its whole width. Gradients only, no filters.
+ */
+export function flowArt(run: Run): string {
+	const width = FLOW.width * Math.max(1, run.length);
+	const ribbon = (id: string, from: string, to: string) =>
+		`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${width}" y2="0">${gradientStops([[0, from], [0.5, to], [1, from]])}</linearGradient>`;
+	const glow = (id: string, color: string, cx: number, cy: number, r: number, opacity: number) =>
+		`<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy}" r="${r}"><stop offset="0" stop-color="${color}" stop-opacity="${opacity}"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></radialGradient>`;
+	const defs =
+		`<defs><linearGradient id="flow-field" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${width}" y2="${FLOW.height}">${gradientStops([[0, "#0C1222"], [0.55, "#14122A"], [1, "#0E1A24"]])}</linearGradient>` +
+		ribbon("flow-a", COLORS.accent, "#8B6CF6") +
+		ribbon("flow-b", "#2BB3A3", COLORS.accent) +
+		glow("flow-low", COLORS.accent, width * 0.22, FLOW.height * 1.25, Math.max(170, width * 0.4), 0.26) +
+		glow("flow-high", "#8B6CF6", width * 0.82, -FLOW.height * 0.2, Math.max(150, width * 0.32), 0.16) +
+		`</defs>`;
+	const body =
+		`<rect width="${width}" height="${FLOW.height}" fill="url(#flow-field)"/><rect width="${width}" height="${FLOW.height}" fill="url(#flow-low)"/><rect width="${width}" height="${FLOW.height}" fill="url(#flow-high)"/>` +
+		`<path d="${wave(width, 74, 15, 520, 60)}" fill="none" stroke="url(#flow-a)" stroke-width="34" stroke-opacity=".16" stroke-linecap="round"/>` +
+		`<path d="${wave(width, 87, 8, 300, 150)}" fill="none" stroke="url(#flow-b)" stroke-width="9" stroke-opacity=".28" stroke-linecap="round"/>` +
+		`<path d="${wave(width, 70, 12, 520, 60)}" fill="none" stroke="#FFFFFF" stroke-width="1.2" stroke-opacity=".14"/>`;
+	return `${defs}<g transform="translate(${-run.position * FLOW.width} 0)">${body}</g>`;
+}
 
 function stripFill(appearance: StripAppearance, tone: StripTone): string {
 	switch (appearance.background) {
@@ -736,18 +802,16 @@ function stripFill(appearance: StripAppearance, tone: StripTone): string {
 			if (tone === "neutral") break;
 			return (
 				`<defs><linearGradient id="t" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${TONE_TINT[tone]}" stop-opacity=".32"/><stop offset="1" stop-color="${TONE_TINT[tone]}" stop-opacity=".1"/></linearGradient></defs>` +
-				`<rect width="200" height="100" fill="${T3_CARD}"/><rect width="200" height="100" fill="url(#t)"/>`
+				`<rect width="200" height="100" fill="${COLORS.card}"/><rect width="200" height="100" fill="url(#t)"/>`
 			);
 	}
-	return `<rect width="200" height="100" fill="${T3_CARD}"/>`;
+	return `<rect width="200" height="100" fill="${COLORS.card}"/>`;
 }
 
 /** Touch-strip background, with a hairline tinted by state unless turned off, and T3 Code's Ultrathink frame when armed. */
 export function stripCanvas(accent: string = COLORS.accent, appearance: StripAppearance = DEFAULT_APPEARANCE, tone: StripTone = "neutral", ultrathink = false): string {
 	const hairline = appearance.hairline ? `<rect y="95" width="200" height="5" fill="${accent}"/>` : "";
-	return svgDataUrl(
-		`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${stripFill(appearance, tone)}${appearance.pet ?? ""}${hairline}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}</svg>`,
-	);
+	return svgImage(200, 100, `${stripFill(appearance, tone)}${appearance.pet ?? ""}${hairline}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}`);
 }
 
 /** A glyph as a painter, so strips can draw it at any size or compose it into a larger picture. */
@@ -756,16 +820,15 @@ export const glyphArt =
 	(x, y, size) =>
 		glyph(name, x, y, size, color);
 
-let paintedIds = 0;
-
 /** A glyph in any paint: a gradient shows through the glyph's shape, laid corner to corner. */
 export function paintedGlyphArt(name: GlyphName, paint: Paint): MarkPainter {
 	if (typeof paint === "string") return glyphArt(name, paint);
+	// Named by what it draws, so the same picture is the same markup and repaints dedupe.
+	const colors = paint.gradient.map(([offset, color]) => `${color.slice(1)}${offset}`).join("-");
 	return (x, y, size) => {
-		const id = `glyph-paint-${paintedIds++}`;
-		const stops = paint.gradient.map(([offset, color]) => `<stop offset="${offset}" stop-color="${color}"/>`).join("");
+		const id = `glyph-${name}-${x}-${y}-${size}-${colors}`;
 		return (
-			`<defs><linearGradient id="${id}-fill" gradientUnits="userSpaceOnUse" x1="${x}" y1="${y}" x2="${x + size}" y2="${y + size}">${stops}</linearGradient>` +
+			`<defs><linearGradient id="${id}-fill" gradientUnits="userSpaceOnUse" x1="${x}" y1="${y}" x2="${x + size}" y2="${y + size}">${gradientStops(paint.gradient)}</linearGradient>` +
 			`<mask id="${id}" maskUnits="userSpaceOnUse" x="${x}" y="${y}" width="${size}" height="${size}">${glyph(name, x, y, size, "#FFFFFF")}</mask></defs>` +
 			`<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="url(#${id}-fill)" mask="url(#${id})"/>`
 		);
@@ -773,13 +836,12 @@ export function paintedGlyphArt(name: GlyphName, paint: Paint): MarkPainter {
 }
 
 /** A provider mark (or any painter) in a square icon slot, 38×38 by default: the strip's. */
-export const stripMarkIcon = (mark: MarkPainter, box = 38): string =>
-	svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${box}" height="${box}" viewBox="0 0 ${box} ${box}">${mark(1, 1, box - 2)}</svg>`);
+export const stripMarkIcon = (mark: MarkPainter, box = 38): string => svgImage(box, box, mark(1, 1, box - 2));
 
 export const stripIcon = (name: GlyphName, color: string = COLORS.text): string => stripMarkIcon(glyphArt(name, color));
 
 /** A strip text line drawn as a picture, for text wider than its slot. */
-export type LineArt = { text: string; width: number; height: number; size: number; weight: number; color: string; offset: number; overflow: number };
+type LineArt = { text: string; width: number; height: number; size: number; weight: number; color: string; offset: number; overflow: number };
 
 const FADE_PX = 14;
 
@@ -791,21 +853,20 @@ export function lineArt(line: LineArt): string {
 	const mask =
 		`<defs><linearGradient id="f" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="${left > 0 ? 0 : 1}"/><stop offset="${left}" stop-color="#fff"/><stop offset="${right}" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="${right < 1 ? 0 : 1}"/></linearGradient>` +
 		`<mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="${line.width}" height="${line.height}"><rect width="${line.width}" height="${line.height}" fill="url(#f)"/></mask></defs>`;
-	const text = `<text x="${-line.offset}" y="${baseline}" font-family="${FONT_FAMILY}" font-size="${line.size}" font-weight="${line.weight}" fill="${line.color}" xml:space="preserve">${escapeXml(line.text)}</text>`;
-	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${line.width}" height="${line.height}" viewBox="0 0 ${line.width} ${line.height}">${mask}<g mask="url(#m)">${text}</g></svg>`);
+	const text = svgText(line.text, -line.offset, baseline, line.size, line.weight, line.color, ` xml:space="preserve"`);
+	return svgImage(line.width, line.height, `${mask}<g mask="url(#m)">${text}</g>`);
 }
 
 /** Wrapped `lines` rolled up by `offset` px, one slot height per line, the last followed by the first again. */
-export type RollArt = { lines: readonly string[]; width: number; height: number; size: number; weight: number; color: string; offset: number };
+type RollArt = { lines: readonly string[]; width: number; height: number; size: number; weight: number; color: string; offset: number };
 
 export function rollArt(art: RollArt): string {
 	const baseline = Math.round(art.height / 2 + art.size * 0.36);
 	const step = Math.floor(art.offset / art.height);
 	const shift = art.offset - step * art.height;
-	const line = (index: number, y: number) =>
-		`<text x="0" y="${y}" font-family="${FONT_FAMILY}" font-size="${art.size}" font-weight="${art.weight}" fill="${art.color}" xml:space="preserve">${escapeXml(art.lines[index % art.lines.length] ?? "")}</text>`;
+	const line = (index: number, y: number) => svgText(art.lines[index % art.lines.length] ?? "", 0, y, art.size, art.weight, art.color, ` xml:space="preserve"`);
 	const body = line(step, baseline - shift) + (shift > 0 ? line(step + 1, baseline - shift + art.height) : "");
-	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${art.width}" height="${art.height}" viewBox="0 0 ${art.width} ${art.height}">${body}</svg>`);
+	return svgImage(art.width, art.height, body);
 }
 
 /** Text in the system font, for pictures drawn outside the layouts' native text items. */
@@ -813,4 +874,4 @@ export const svgText = (content: string, x: number, y: number, size: number, wei
 	`<text x="${x}" y="${y}" font-family="${FONT_FAMILY}" font-size="${size}" font-weight="${weight}" fill="${fill}"${extra}>${escapeXml(content)}</text>`;
 
 /** Clears a strip picture slot. */
-export const BLANK_ART = svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>`);
+export const BLANK_ART = svgImage(1, 1, "");

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import type { ModelConfig } from "./models.js";
-import { dialControl, isTopEffort, powerIconUrl, powerState, stepChoice } from "./power.js";
+import { effortGradient, sampleStops } from "./render.js";
+import { dialControl, effortToneOf, isTopEffort, powerArt, powerState, stepChoice } from "./power.js";
 
-const svg = (dataUrl: string) => Buffer.from(dataUrl.replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
 
 const effort = { id: "effort", label: "Effort", type: "select" as const, options: [{ id: "low", label: "Low" }, { id: "high", label: "High", isDefault: true }, { id: "ultrathink", label: "Ultrathink" }], promptInjectedValues: ["ultrathink"] };
 const CONFIG: ModelConfig = {
@@ -27,8 +27,7 @@ describe("Power dial", () => {
 		expect(state.choices.map((choice) => choice.icon.kind === "mark" && choice.icon.model.driver)).toEqual(["codex", "claudeAgent"]);
 		const previewed = stepChoice(state, undefined, -1)!;
 		expect(previewed.label).toBe("Codex · GPT-5.5");
-		expect(svg(powerIconUrl(previewed.icon))).not.toBe(svg(powerIconUrl(state.current!.icon)));
-		expect(svg(powerIconUrl(state.current!.icon))).toMatch(/^<svg[^>]*width="38" height="38"/);
+		expect(powerArt(previewed.icon)(0, 0, 38)).not.toBe(powerArt(state.current!.icon)(0, 0, 38));
 	});
 
 	it("shows a model outside the favorites as current without listing it", () => {
@@ -68,5 +67,28 @@ describe("isTopEffort", () => {
 		expect(isTopEffort(choices, "high")).toBe(false);
 		expect(isTopEffort(choices, "ultrathink")).toBe(false);
 		expect(isTopEffort([level("max")], "max")).toBe(false);
+	});
+});
+
+describe("effortToneOf", () => {
+	const level = (key: string, ultrathink = false) => ({ kind: "effort" as const, key, label: key, icon: { kind: "glyph" as const, name: "effort" as const }, optionId: "effort", value: key, ultrathink });
+	const choices = [level("low"), level("medium"), level("high"), level("ultrathink", true)];
+
+	it("colors a level by how far up its ladder it sits, Ultrathink aside", () => {
+		const gradient = effortGradient("#3366FF");
+		expect(effortToneOf(choices, "low", "gradient", "#3366FF")?.text).toBe(sampleStops(gradient, 0));
+		expect(effortToneOf(choices, "medium", "gradient", "#3366FF")?.text).toBe(sampleStops(gradient, 0.5));
+		expect(effortToneOf(choices, "high", "gradient", "#3366FF")?.text).toBe(sampleStops(gradient, 1));
+	});
+
+	it("marks only the top level under the solid style", () => {
+		expect(effortToneOf(choices, "high", "solid", undefined)).toBeDefined();
+		expect(effortToneOf(choices, "medium", "solid", undefined)).toBeUndefined();
+	});
+
+	it("leaves Ultrathink and unknown levels uncolored", () => {
+		expect(effortToneOf(choices, "ultrathink", "gradient", "#3366FF")).toBeUndefined();
+		expect(effortToneOf(choices, "max", "gradient", "#3366FF")).toBeUndefined();
+		expect(effortToneOf(choices, undefined, "gradient", "#3366FF")).toBeUndefined();
 	});
 });

@@ -1,15 +1,6 @@
-import streamDeck, {
-	type Action,
-	action,
-	type DidReceiveSettingsEvent,
-	type KeyDownEvent,
-	type KeyUpEvent,
-	type SendToPluginEvent,
-	type WillDisappearEvent,
-} from "@elgato/streamdeck";
+import streamDeck, { type Action, action, type DidReceiveSettingsEvent, type KeyUpEvent, type SendToPluginEvent, type WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 
-import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { DeckThread } from "../core/board.js";
 import { t } from "../core/i18n.js";
 import { spinAngle } from "../core/motion.js";
@@ -24,8 +15,9 @@ import { ACCESS_SCOPE, isThisComputer, MAINTAIN_SCOPE, type OptInScope, TERMINAL
 import { RpcError } from "../core/t3/rpc.js";
 import { fetchUpdateTarget, RESTART_TIMEOUT_MS, updateFailure, updateRoute, type UpdateStage } from "../core/update.js";
 import { deck } from "../deck.js";
-import { connectionFace, DeckAction, pressWhileDisconnected } from "./base.js";
+import { connectionFace, DeckAction, errorMessage, held, machineName, pressWhileDisconnected, sendChoices } from "./base.js";
 import { connectionOf, threadNeeds } from "./needs.js";
+import { MachineWatch } from "./watch.js";
 
 /**
  * Keys that need access a standard pairing doesn't ask for: updating T3 Code, running scripts in its terminals, and
@@ -35,8 +27,6 @@ import { connectionOf, threadNeeds } from "./needs.js";
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("admin");
 
-const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
-const machineName = (machine: Machine) => (machine.state.kind === "ready" ? machine.state.label : new URL(machine.url).host);
 
 /** Flags what `machine` lacks of `scopes` for its next pairing; true when it holds them all. */
 async function ensureScopes(machine: Machine, scopes: readonly OptInScope[]): Promise<boolean> {
@@ -79,6 +69,8 @@ type UpdateRun = { stage: UpdateStage; target?: string; deadline?: number };
 export class UpdateKey extends DeckAction<UpdateSettings> {
 	readonly #runs = new Map<string, UpdateRun>();
 	#watch: ReturnType<typeof setInterval> | undefined;
+	/** Its run's stages show through a restart, and it may follow this computer rather than its Machine setting. */
+	protected override readonly showsConnection = false;
 
 	constructor() {
 		super();
@@ -93,7 +85,7 @@ export class UpdateKey extends DeckAction<UpdateSettings> {
 		return machines.find((machine) => isThisComputer(new URL(machine.url).hostname)) ?? (machines.length === 1 ? machines[0] : undefined);
 	}
 
-	protected override async paint(action: Action<UpdateSettings>): Promise<void> {
+	protected override async draw(action: Action<UpdateSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const machine = this.#machine(action);
 		const run = machine && this.#runs.get(machine.url);
@@ -122,12 +114,8 @@ export class UpdateKey extends DeckAction<UpdateSettings> {
 		);
 	}
 
-	override onKeyDown(ev: KeyDownEvent<UpdateSettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent<UpdateSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
+		const heldMs = this.heldFor(ev.action.id);
 		const machine = this.#machine(ev.action);
 		if (await pressWhileDisconnected(machine?.url ?? this.machineOf(ev.action))) return;
 		if (machine === undefined) return void (await this.flash(ev.action, false, t("update.pickMachine")));
@@ -135,7 +123,7 @@ export class UpdateKey extends DeckAction<UpdateSettings> {
 		if (!(await ensureScopes(machine, [MAINTAIN_SCOPE]))) return void (await this.flash(ev.action, false, needsAccessLabel(MAINTAIN_SCOPE)));
 		const route = updateRoute(machine.updateEnvironment);
 		if (route.kind === "manual") return void (await this.flash(ev.action, false, t(route.reason)));
-		if (held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("update.holdToUpdate")));
+		if (!held(heldMs)) return void (await this.flash(ev.action, false, t("update.holdToUpdate")));
 		await this.#update(machine);
 	}
 
@@ -160,7 +148,7 @@ export class UpdateKey extends DeckAction<UpdateSettings> {
 			set({ stage: "restarting", target: landing, deadline: Date.now() + RESTART_TIMEOUT_MS });
 			this.#syncWatch();
 		} catch (error) {
-			logger.warn(`Updating T3 Code failed: ${message(error)}${error instanceof RpcError && error.code ? ` (${error.code})` : ""}`);
+			logger.warn(`Updating T3 Code failed: ${errorMessage(error)}${error instanceof RpcError && error.code ? ` (${error.code})` : ""}`);
 			set(undefined);
 			const label = error instanceof RpcError && error.tag === "ServerSelfUpdateError" ? updateFailure(error.code) : error instanceof RpcError && error.reason ? error.reason : updateFailure(undefined);
 			await this.#flashFor(machine.url, label);
@@ -231,33 +219,8 @@ const SCRIPT_SCOPES = [TERMINAL_SCOPE, TERMINAL_READ_SCOPE] as const;
 /** When the deck last started or stopped each script's terminal, by thread key and terminal id. */
 const scriptRuns = new Map<string, { startedAt?: number; stoppedAt?: number }>();
 
-/**
- * Which machines' terminals visible Run Script keys show: their terminal states stay live meanwhile. Nothing runs
- * while none shows.
- */
-class TerminalWatch {
-	readonly #shown = new Map<string, string>();
-	readonly #watched = new Map<string, () => void>();
-
-	show(id: string, url: string | undefined): void {
-		if (url === undefined) this.#shown.delete(id);
-		else if (this.#shown.get(id) === url) return;
-		else this.#shown.set(id, url);
-		this.#sync();
-	}
-
-	#sync(): void {
-		const wanted = new Set(this.#shown.values());
-		for (const [url, release] of this.#watched) {
-			if (wanted.has(url)) continue;
-			release();
-			this.#watched.delete(url);
-		}
-		for (const machine of deck.machines) if (wanted.has(machine.url) && !this.#watched.has(machine.url)) this.#watched.set(machine.url, machine.watchTerminals());
-	}
-}
-
-const terminals = new TerminalWatch();
+/** The terminal states of the machines visible Run Script keys run on stay live. */
+const terminals = new MachineWatch({ open: (machine) => machine.watchTerminals() });
 
 const SCRIPT_DETAIL: Record<Exclude<ScriptState["kind"], "exited">, Parameters<typeof t>[0]> = {
 	idle: "script.idle",
@@ -275,6 +238,12 @@ const SCRIPT_DETAIL: Record<Exclude<ScriptState["kind"], "exited">, Parameters<t
 @action({ UUID: `${ID}.script` })
 export class RunScriptKey extends DeckAction<ScriptSettings> {
 	readonly #grace = new Map<string, ReturnType<typeof setTimeout>>();
+	protected override readonly watcher = terminals;
+
+	protected override watched(action: Action<ScriptSettings>): readonly Machine[] {
+		const { thread, script } = this.#state(action);
+		return thread !== undefined && script !== undefined ? [thread.machine] : [];
+	}
 
 	#state(action: Action<ScriptSettings>) {
 		const settings = this.settingsOf(action);
@@ -307,15 +276,9 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 		return { terminalId, key, local, state };
 	}
 
-	protected override async paint(action: Action<ScriptSettings>): Promise<void> {
+	protected override async draw(action: Action<ScriptSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		if (offline) {
-			this.animate(action, false);
-			return void (await this.setImage(action, offline));
-		}
 		const { thread, script, name, reason, pinned } = this.#state(action);
-		terminals.show(action.id, script === undefined ? undefined : thread?.machine.url);
 		const title = name || t("script.title");
 		if (reason !== undefined || thread === undefined || script === undefined) {
 			this.animate(action, false);
@@ -347,7 +310,6 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<ScriptSettings>): void {
-		terminals.show(ev.action.id, undefined);
 		clearTimeout(this.#grace.get(ev.action.id));
 		this.#grace.delete(ev.action.id);
 		super.onWillDisappear(ev);
@@ -363,12 +325,8 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 		if (streamDeck.ui.action?.id === ev.action.id) await this.#sendScripts(ev.action);
 	}
 
-	override onKeyDown(ev: KeyDownEvent<ScriptSettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent<ScriptSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
+		const heldMs = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		// Scripts come from the server config, which nothing keeps live here: a script added since needs a fresh read.
 		const before = this.#state(ev.action);
@@ -379,7 +337,7 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 		if (!(await ensureScopes(machine, SCRIPT_SCOPES))) return void (await this.flash(ev.action, false, needsAccessLabel(TERMINAL_SCOPE)));
 		const { terminalId, key, local, state } = this.#run(thread, script);
 		if (scriptBusy(state)) {
-			if (held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("script.holdToStop")));
+			if (!held(heldMs)) return void (await this.flash(ev.action, false, t("script.holdToStop")));
 			return this.run(ev.action, async () => {
 				await machine.interruptScript(thread.threadId, terminalId);
 				scriptRuns.set(key, { ...local, stoppedAt: Date.now() });
@@ -409,8 +367,7 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 		const { scripts } = this.#state(action);
 		const settings = this.settingsOf(action);
 		const items = [{ label: t("datasource.chooseScript"), value: "" }, ...scripts.map((script) => ({ label: script.name, value: script.id }))];
-		if (settings.script && !scripts.some((script) => script.id === settings.script)) items.push({ label: t("needs.notAvailable", { value: settings.scriptName ?? settings.script }), value: settings.script });
-		await streamDeck.ui.sendToPropertyInspector({ event: "getScripts", items });
+		await sendChoices("getScripts", items, settings.script, (saved) => t("needs.notAvailable", { value: settings.scriptName ?? saved }));
 	}
 
 	override needs(action: Action<ScriptSettings>): Need[] {
@@ -450,10 +407,8 @@ export class ShareKey extends DeckAction<ShareSettings> {
 		return { thread, share, view, reason, pinned: target.pinned };
 	}
 
-	protected override async paint(action: Action<ShareSettings>): Promise<void> {
+	protected override async draw(action: Action<ShareSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		if (offline) return void (await this.setImage(action, offline));
 		const { thread, share, view, reason, pinned } = this.#state(action);
 		this.#expireAt(action, view?.kind === "active" ? share?.expiresAt : undefined);
 		const title = thread?.title ?? t("share.title");
@@ -485,12 +440,8 @@ export class ShareKey extends DeckAction<ShareSettings> {
 		super.onWillDisappear(ev);
 	}
 
-	override onKeyDown(ev: KeyDownEvent<ShareSettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent<ShareSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
+		const heldMs = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		// Guest links may have been turned on in Labs since the config was read; nothing keeps it live here.
 		const before = this.#state(ev.action);
@@ -499,7 +450,7 @@ export class ShareKey extends DeckAction<ShareSettings> {
 		if (reason !== undefined || thread === undefined) return void (await this.flash(ev.action, false, reason ?? t("failure.failed")));
 		if (view === undefined) return;
 		if (view.kind !== "none") {
-			if (held >= HOLD_CONFIRM_MS) return this.#close(ev.action, thread);
+			if (held(heldMs)) return this.#close(ev.action, thread);
 			const link = links.get(thread.key);
 			if (view.kind === "active" && link !== undefined && link.shareId === share?.id) return this.run(ev.action, () => copied(link.url));
 			return void (await this.flash(ev.action, false, t(view.kind === "expired" ? "share.holdToClear" : "share.holdToStop")));
@@ -559,7 +510,7 @@ async function copied(url: string): Promise<void> {
 	try {
 		await copyText(url);
 	} catch (error) {
-		logger.warn(`Copying the guest link failed: ${message(error)}`);
+		logger.warn(`Copying the guest link failed: ${errorMessage(error)}`);
 		throw new RpcError("Copy", "Copying failed.", t("share.copyFailed"));
 	}
 }

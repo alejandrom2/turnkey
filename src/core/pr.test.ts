@@ -11,6 +11,7 @@ import {
 	handoffMessage,
 	type PrMachine,
 	prRequests,
+	threadPullRequest,
 	threadPullRequestRef,
 } from "./pr.js";
 
@@ -47,6 +48,15 @@ describe("pull request helpers", () => {
 		expect(classifyChecks([check("success"), check("skipped")])).toBe("passing");
 		expect(changeRequestLabel("https://gitlab.example.com/a/b/-/merge_requests/3")).toBe("MR");
 		expect(changeRequestLabel("https://github.com/a/b/pull/3")).toBe("PR");
+	});
+
+	it("pick the open pull request for the thread's branch over another open one, else any open one, else the first", () => {
+		const link = (number: number, state: "open" | "merged", headBranch: string) => ({ number, state, headBranch });
+		const stack = [link(1, "open", "base-layer"), link(2, "open", "feature"), link(3, "merged", "old")];
+		expect(threadPullRequest(stack, "feature")?.number).toBe(2);
+		expect(threadPullRequest(stack, "elsewhere")?.number).toBe(1);
+		expect(threadPullRequest([link(3, "merged", "old")], "feature")?.number).toBe(3);
+		expect(threadPullRequest([], "feature")).toBeUndefined();
 	});
 
 	it("name a thread's pull request only when the server sent its repository", () => {

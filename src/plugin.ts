@@ -40,6 +40,8 @@ setTranslator((key) => streamDeck.i18n.translate(key));
 
 // A stray rejection (a request the app never answered) would otherwise take every key and dial down with it.
 process.on("unhandledRejection", (reason) => streamDeck.logger.warn(`Unhandled rejection: ${reason instanceof Error ? reason.message : String(reason)}`));
+// The SDK logs only the first uncaught exception (`process.once`), and a second would end the plugin.
+process.on("uncaughtException", (error: unknown) => streamDeck.logger.error(`Uncaught exception: ${error instanceof Error ? error.message : String(error)}`));
 
 for (const instance of [
 	new ThreadSlot(),

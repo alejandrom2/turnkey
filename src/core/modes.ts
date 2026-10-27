@@ -43,8 +43,8 @@ export const MERGED = {
 	},
 } as const;
 
-export type MergedAction = keyof typeof MERGED;
-export type ModeOf<A extends MergedAction> = (typeof MERGED)[A]["modes"][number];
+type MergedAction = keyof typeof MERGED;
+type ModeOf<A extends MergedAction> = (typeof MERGED)[A]["modes"][number];
 
 /** The mode a UUID starts in: an alias's own, else the merged action's default. */
 export function defaultMode<A extends MergedAction>(action: A, manifestId: string | undefined): ModeOf<A> {
