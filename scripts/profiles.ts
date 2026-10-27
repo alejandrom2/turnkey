@@ -151,7 +151,7 @@ const PROFILES: Profile[] = [
 				name: "USAGE",
 				keys: [
 					[limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly")],
-					[usage("1"), usage("7"), usage("30"), usage("90")],
+					[usage("1"), usage("7"), usage("30"), { action: "health", name: "Health" }],
 				],
 				dials: [{ action: "dial.limits", name: "Limits Dial" }, { action: "dial.usage", name: "Usage Dial", settings: { period: "7" } }, DIALS[0]!, DIALS[3]!],
 			},
