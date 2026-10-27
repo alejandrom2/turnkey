@@ -60,7 +60,7 @@ export class OpenInEditor extends DeckAction<EditorSettings> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { thread, cwd, editor, reason } = this.#state(ev.action);
 		if (reason !== undefined) return void (await this.flash(ev.action, false, reason));
-		await this.run(ev.action, () => thread!.machine.call("shell.openInEditor", openInEditorInput(cwd!, editor!), OPERATE_SCOPE), t("result.opened"));
+		await this.run(ev.action, () => thread!.machine.call("shell.openInEditor", openInEditorInput(cwd!, editor!), OPERATE_SCOPE));
 	}
 
 	/** The Editor setting's choices: T3 Code's default, then every editor the action's machines have. */

@@ -151,7 +151,7 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 		const machine = this.machineOf(dial);
 		if (await pressWhileDisconnected(machine)) return;
 		const thread = deck.board.shownOn(machine, this.#match(dial));
-		if (await this.allowed(dial, availability("open", { thread, canOperate: true }))) await this.run(dial, () => openThread(thread!), t("result.opened"));
+		if (await this.allowed(dial, availability("open", { thread, canOperate: true }))) await this.run(dial, () => openThread(thread!));
 	}
 }
 
@@ -331,12 +331,12 @@ export class ModelDial extends StripDial<PowerSettings> {
 		if (wants === "apply") {
 			if (work === undefined) return;
 			const { preview } = context;
-			return this.apply(dial, async () => {
+			return this.run(dial, async () => {
 				await work();
 				preview.key = undefined;
 			});
 		}
-		if (toggle !== undefined) await this.apply(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)));
+		if (toggle !== undefined) await this.run(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)));
 	}
 
 	#apply(thread: DeckThread, choice: PowerChoice, armed: boolean): (() => Promise<unknown>) | undefined {
@@ -460,9 +460,9 @@ export class PromptDial extends StripDial<PromptListSettings> {
 			}),
 		});
 		if (go === undefined) return;
-		if (go === "new") return this.run(dial, () => startThread(thread, machine, text!), t("result.started"));
+		if (go === "new") return this.run(dial, () => startThread(thread, machine, text!));
 		if (!(await this.allowed(dial, availability("send", { thread, canOperate: canOperate(thread), hasPrompt: text !== undefined })))) return;
-		await this.run(dial, () => sendToThread(thread!, text!, "auto"), t("result.sent"));
+		await this.run(dial, () => sendToThread(thread!, text!, "auto"));
 	}
 
 	override onWillDisappear(ev: Parameters<StripDial<PromptListSettings>["onWillDisappear"]>[0]): void {
@@ -621,27 +621,27 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 		const answering = thread === undefined ? undefined : this.#answering(dial, thread);
 		if (thread === undefined || answering === undefined) return void (await this.allowed(dial, availability("answer", { thread, canOperate: canOperate(thread) })));
 		const { request, picks } = answering;
-		if (request.type === "unsupported") return void (await this.run(dial, () => openThread(thread), t("result.opened")));
+		if (request.type === "unsupported") return void (await this.run(dial, () => openThread(thread)));
 		if (request.type === "approval") {
 			const press = this.#choices(dial, request)[picks[0] ?? 0];
-			if (press.kind === "open") return void (await this.run(dial, () => openThread(thread), t("result.opened")));
+			if (press.kind === "open") return void (await this.run(dial, () => openThread(thread)));
 			if (!(await this.allowed(dial, availability(press.decision === "decline" ? "deny" : "approve", { thread, canOperate: canOperate(thread) })))) return;
 			if (!confirmed(press, approvalConfirm(this.settingsOf(dial).approvalConfirm), held)) return void (await this.flash(dial, false, t("result.holdToAnswer")));
-			return void (await this.run(dial, () => thread.machine.respond(request.threadId, request.requestId, press.decision), t(press.decision === "decline" ? "result.denied" : "result.allowed")));
+			return void (await this.run(dial, () => thread.machine.respond(request.threadId, request.requestId, press.decision)));
 		}
 		const answerable = request.questions[answering.step]?.options.length ?? 0;
-		if (answerable === 0) return void (await this.run(dial, () => openThread(thread), t("result.opened")));
+		if (answerable === 0) return void (await this.run(dial, () => openThread(thread)));
 		if (answering.step < request.questions.length - 1) {
 			answering.step += 1;
 			return void (await this.paint(dial));
 		}
 		if (!(await this.allowed(dial, availability("answer", { thread, canOperate: canOperate(thread) })))) return;
-		await this.run(dial, () => thread.machine.answer(request.threadId, request.requestId, buildAnswers(request.questions, picks, request.messageMode)), t("result.answered"));
+		await this.run(dial, () => thread.machine.answer(request.threadId, request.requestId, buildAnswers(request.questions, picks, request.messageMode)));
 	}
 
 	protected override async tapped(dial: DialAction<AnswerSettings>): Promise<void> {
 		const thread = this.#target(this.machineOf(dial));
-		if (thread !== undefined) await this.run(dial, () => openThread(thread), t("result.opened"));
+		if (thread !== undefined) await this.run(dial, () => openThread(thread));
 	}
 
 	override onWillDisappear(ev: Parameters<StripDial<AnswerSettings>["onWillDisappear"]>[0]): void {
