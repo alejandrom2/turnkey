@@ -118,3 +118,29 @@ describe("UsageStore", () => {
 		expect([usagePeriod("7"), usagePeriod(90), usagePeriod("month"), usagePeriod(undefined)]).toEqual([7, 90, 30, 30]);
 	});
 });
+
+describe("UsageStore edges", () => {
+	it("reads again after a running read when asked to, so new prices land", async () => {
+		const store = new UsageStore(() => undefined);
+		let release!: (value: UsageSummary) => void;
+		const a = reader([() => new Promise((resolve) => (release = resolve)), async () => summary(9)]);
+		const first = store.refresh(a, 7);
+		const after = store.refresh(a, 7, true);
+		await settle();
+		expect(a.inputs).toHaveLength(1);
+		release(summary(1));
+		await first;
+		await after;
+		expect(a.inputs).toHaveLength(2);
+		expect(store.view([a], 7).merged?.costUsd).toBe(9);
+	});
+
+	it("says who must update when no answer has a contract it can merge", async () => {
+		const store = new UsageStore(() => undefined);
+		const newer = reader([async () => summary(1, { contractVersion: 7 })]);
+		const older = reader([async () => summary(1, { contractVersion: 3 })], "http://old");
+		await Promise.all([store.refresh(newer, 7), store.refresh(older, 7)]);
+		expect(store.view([newer], 7)).toEqual({ loading: false, mismatch: "clientBehind" });
+		expect(store.view([older], 7)).toEqual({ loading: false, mismatch: "serverBehind" });
+	});
+});
