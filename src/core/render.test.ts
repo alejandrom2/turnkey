@@ -73,6 +73,13 @@ describe("wrapText", () => {
 	it("measures wide characters wider than narrow ones", () => {
 		expect(textWidth("WWW", 10)).toBeGreaterThan(textWidth("iii", 10));
 	});
+
+	it("measures Chinese, Japanese and Korean characters a full em wide, and wraps them by character", () => {
+		for (const text of ["実行中", "运行中", "執行中", "실행 중"]) expect(textWidth(text.replace(" ", ""), 10)).toBe(10 * [...text.replace(" ", "")].length);
+		const { lines } = wrapText("スレッドを選択してください", 60, 15, 3);
+		expect(lines.length).toBeGreaterThan(1);
+		for (const line of lines) expect(textWidth(line, 15)).toBeLessThanOrEqual(60);
+	});
 });
 
 describe("renderThreadKey", () => {
