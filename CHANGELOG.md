@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/alejandrom2/turnkey/compare/v0.9.0...v0.9.1) (2026-10-27)
+
+
+### Maintenance
+
+* Releases now come from a tag: merging a release PR tags the version, and every `v*` tag publishes the GitHub Release with the packed plugin.
+
 ## 0.9.0 (2026-10-27)
 
 First private beta of Turnkey for T3 Code.
