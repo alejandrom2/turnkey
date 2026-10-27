@@ -495,10 +495,14 @@ export function ladderCue(count: number, index: number, spectrum = false, paint?
 /** One pill per item, the current one bright: where a value sits among a few (favorite models). */
 export function dotsCue(count: number, index: number): string {
 	const shown = Math.min(count, 8);
-	const width = shown <= 5 ? 16 : 10;
-	const gap = shown <= 5 ? 8 : 4;
+	// The pills share the key's width evenly, as Elgato's do, however many there are.
+	const gap = shown <= 5 ? 8 : 5;
+	const width = (112 - gap * (shown - 1)) / shown;
 	const at = count > shown ? Math.round((index * (shown - 1)) / (count - 1)) : index;
-	return Array.from({ length: shown }, (_, i) => `<rect x="${16 + i * (width + gap)}" y="118" width="${width}" height="8" rx="4" fill="#FFFFFF"${i === at ? "" : ` fill-opacity=".14"`}/>`).join("");
+	return Array.from(
+		{ length: shown },
+		(_, i) => `<rect x="${+(16 + i * (width + gap)).toFixed(2)}" y="118" width="${+width.toFixed(2)}" height="8" rx="4" fill="#FFFFFF"${i === at ? "" : ` fill-opacity=".14"`}/>`,
+	).join("");
 }
 
 /** A small mode pill: filled when the key's mode is the thread's, outlined when it only applies it. */
