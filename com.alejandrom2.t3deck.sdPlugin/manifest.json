@@ -50,7 +50,7 @@
 			"Name": "Send Prompt",
 			"UUID": "com.alejandrom2.t3deck.send",
 			"Icon": "imgs/actions/send/icon",
-			"Tooltip": "Sends a saved prompt to the selected thread. Hold to interrupt and restart with it.",
+			"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it.",
 			"PropertyInspectorPath": "ui/send.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/send/key", "ShowTitle": false }]
@@ -65,13 +65,14 @@
 			"States": [{ "Image": "imgs/actions/steer/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Quick Prompt",
+			"Name": "Send Prompt",
 			"UUID": "com.alejandrom2.t3deck.quick",
 			"Icon": "imgs/actions/quick/icon",
-			"Tooltip": "Sends an everyday prompt to the selected thread: continue, fix tests, diagnose, explain, commit, or your own.",
+			"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it.",
 			"PropertyInspectorPath": "ui/quick.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/quick/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/quick/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
 			"Name": "Stop",

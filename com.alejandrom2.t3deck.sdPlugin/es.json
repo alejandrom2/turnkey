@@ -12,15 +12,15 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "Enviar prompt",
-		"Tooltip": "Envía un prompt guardado al hilo seleccionado. Mantén para interrumpir y reiniciar con él."
+		"Tooltip": "Envía tu propio prompt, o uno habitual (continuar, arreglar tests, explicar, hacer commit…), al hilo seleccionado. Mantén para interrumpir y reiniciar con él."
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "Guiar",
 		"Tooltip": "Añade una instrucción guardada al turno en curso del hilo seleccionado."
 	},
 	"com.alejandrom2.t3deck.quick": {
-		"Name": "Prompt rápido",
-		"Tooltip": "Envía un prompt habitual al hilo seleccionado: continuar, arreglar tests, diagnosticar, explicar, hacer commit o uno propio."
+		"Name": "Enviar prompt",
+		"Tooltip": "Envía tu propio prompt, o uno habitual (continuar, arreglar tests, explicar, hacer commit…), al hilo seleccionado. Mantén para interrumpir y reiniciar con él."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Detener",
@@ -810,7 +810,7 @@
 				"previewPet": "Ver mascota",
 				"idlePetHint": "Tras dos minutos sin pulsar, girar ni tocar, un pequeño robot recorre tu fila más larga de franjas de diales vecinos, hasta tres veces, con cuatro minutos entre cada una. Cualquier pulsación, giro o toque en una acción de T3 Deck lo ahuyenta. Sigue a Movimiento: Reducido camina con calma, Desactivado lo mantiene alejado.",
 				"confirm": "Confirmar antes de enviar",
-				"confirmHint": "Se aplica a Enviar prompt, Guiar, Prompt rápido, Ejecutar skill, el Dial de prompts y el Dial de skills; Modelo, Esfuerzo, Velocidad, Acceso y el Dial de potencia se aplican siempre al momento. Revisar muestra qué va adónde en la primera pulsación; pulsa otra vez en 10 segundos para enviar. Mantener envía con una pulsación mantenida, así que mantener no puede además reiniciar ni iniciar un hilo. Cada acción puede cambiarlo."
+				"confirmHint": "Se aplica a Enviar prompt, Guiar, Ejecutar skill, el Dial de prompts y el Dial de skills; Modelo, Esfuerzo, Velocidad, Acceso y el Dial de potencia se aplican siempre al momento. Revisar muestra qué va adónde en la primera pulsación; pulsa otra vez en 10 segundos para enviar. Mantener envía con una pulsación mantenida, así que mantener no puede además reiniciar ni iniciar un hilo. Cada acción puede cambiarlo."
 			},
 			"field": {
 				"strip": "Franja",
@@ -907,7 +907,9 @@
 			"send": {
 				"titlePlaceholder": "Arreglar tests",
 				"promptPlaceholder": "Ejecuta los tests y arregla lo que falle",
-				"hint": "Va al hilo seleccionado en T3 Code: inicia un turno, o guía o se pone en cola tras uno en curso. Mantén la tecla para interrumpir y reiniciar con él."
+				"hint": "Va al hilo seleccionado en T3 Code: inicia un turno, o guía o se pone en cola tras uno en curso. Mantén la tecla para interrumpir y reiniciar con él.",
+				"myText": "Mi texto",
+				"text": "Texto"
 			},
 			"steer": {
 				"titlePlaceholder": "Que sea pequeño",
@@ -915,16 +917,11 @@
 				"hint": "Se añade al turno en curso del hilo seleccionado. Aparece atenuada mientras el hilo está inactivo."
 			},
 			"quick": {
-				"titlePlaceholder": "Etiqueta opcional para esta tecla",
-				"type": "Tipo de prompt",
 				"continue": "Continuar",
 				"test": "Ejecutar tests y arreglar fallos",
 				"fix": "Diagnosticar y arreglar",
 				"explain": "Explicar el estado actual",
-				"commit": "Hacer commit de tus cambios",
-				"custom": "Prompt personalizado",
-				"customPlaceholder": "Escribe el prompt que envía esta tecla",
-				"hint": "Va al hilo seleccionado en T3 Code. Mantén la tecla para interrumpir y reiniciar con él."
+				"commit": "Hacer commit de tus cambios"
 			},
 			"new": {
 				"createIn": "Crear en",

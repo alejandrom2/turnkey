@@ -435,7 +435,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 
 type PromptListSettings = DialSettings & { prompts?: string; templates?: boolean };
 
-/** Rotate through the user's prompts and Quick Prompt's templates. Press or tap sends to the selected thread; hold starts a new thread. */
+/** Rotate through the user's prompts and Send Prompt's templates. Press or tap sends to the selected thread; hold starts a new thread. */
 @action({ UUID: `${ID}.dial.prompts` })
 export class PromptDial extends StripDial<PromptListSettings> {
 	readonly #index = new Map<string, number>();
