@@ -496,6 +496,23 @@ const gitConfirm = `
 				</sdpi-select>
 			</sdpi-item>`;
 
+/** What the Limits key and dial show, and what holding them does. */
+const limitsFields = `
+			<sdpi-item ${attr("label", "inspector.limits.show")}>
+				<sdpi-select setting="show" default="left">
+					<option value="left"${text("inspector.limits.left")}</option>
+					<option value="used"${text("inspector.limits.used")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.limits.resetAction")}>
+				<sdpi-select setting="resetAction" default="open">
+					<option value="open"${text("inspector.limits.open")}</option>
+					<option value="spend"${text("inspector.limits.spend")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint" id="spend-hint" hidden${text("inspector.limits.spendHint")}</p>`;
+const limitsScript = showWhen("resetAction", "spend-hint", `value === "spend"`);
+
 const pages: Record<string, string> = {
 	"environments.html": page("T3 Deck"),
 	"slot.html": page(
@@ -771,6 +788,24 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<p class="hint"${text("inspector.pr.dialHint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
+	),
+	"limits.html": page(
+		"Limits",
+		`
+			<sdpi-item ${attr("label", "inspector.limits.provider")}>
+				<sdpi-select setting="provider" datasource="getLimitProviders" hot-reload ${attr("loading", "inspector.loading.providers")} default=""></sdpi-select>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.limits.window")}>
+				<sdpi-select setting="window" datasource="getLimitWindows" hot-reload ${attr("loading", "inspector.loading.windows")} default=""></sdpi-select>
+			</sdpi-item>${limitsFields}
+			<p class="hint"${text("inspector.limits.hint")}</p>`,
+		limitsScript,
+	),
+	"limits-dial.html": page(
+		"Limits Dial",
+		`${limitsFields}
+			<p class="hint"${text("inspector.limits.hint")}</p>${dialAppearance}`,
+		dialAppearanceScript + limitsScript,
 	),
 	"editor.html": page(
 		"Open in Editor",

@@ -39,7 +39,7 @@ export const stopX = (index: number, stops: number): number =>
 const BADGE = 20;
 
 /** `text` cut with an ellipsis to fit `width` at `size`. */
-function fit(text: string, width: number, size: number): string {
+export function fit(text: string, width: number, size: number): string {
 	if (textWidth(text, size) <= width) return text;
 	const chars = [...text];
 	while (chars.length > 1 && textWidth(`${chars.join("")}…`, size) > width) chars.pop();
