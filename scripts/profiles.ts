@@ -167,6 +167,14 @@ const PROFILES: Profile[] = [
 				dials: [{ action: "dial.pr", name: "PR Dial" }, DIALS[0]!, DIALS[2]!, DIALS[3]!],
 			},
 			{
+				name: "DEVICES",
+				keys: [
+					[{ action: "preview", name: "Open Preview" }, { action: "editor", name: "Open in Editor" }, quick("test"), { action: "stop", name: "Stop" }],
+					[organize("snooze"), organize("wake"), { action: "approve", name: "Approve" }, { action: "health", name: "Health" }],
+				],
+				dials: [{ action: "dial.devices", name: "Devices Dial" }, DIALS[0]!, { action: "dial.queue", name: "Queue Dial" }, DIALS[3]!],
+			},
+			{
 				name: "TASKS",
 				keys: [
 					[task(), task(), task(), task()],
