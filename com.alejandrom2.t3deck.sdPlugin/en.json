@@ -156,6 +156,17 @@
 			"TriggerDescription": { "Rotate": "Choose provider and window", "Push": "Refresh (hold: reset)", "Touch": "Refresh", "LongTouch": "Read details" }
 		}
 	},
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "Usage",
+		"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices."
+	},
+	"com.alejandrom2.t3deck.dial.usage": {
+		"Name": "Usage Dial",
+		"Tooltip": "Rotate through a period's total and each model's cost, tokens, cache hit rate and cost per million tokens. Press or tap refreshes; a long press reloads model prices.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose model", "Push": "Refresh (hold: prices too)", "Touch": "Refresh", "LongTouch": "Read details" }
+		}
+	},
 	"Localization": {
 		"result": {
 			"done": "Done",
@@ -782,7 +793,31 @@
 				"spend": "Use a banked reset",
 				"hint": "Pooled across the provider's accounts on the chosen machines, as T3 Code's Limits shows it. Tap refreshes. The tick on the bar is where even pace would be.",
 				"spendHint": "Holding spends one reset credit on the account T3 Code would refill first. It needs provider access: if the pairing lacks it, the machine's next pair link asks for it."
+			},
+			"usage": {
+				"period": "Period",
+				"day": "Past 24h",
+				"week": "7 days",
+				"month": "30 days",
+				"quarter": "90 days",
+				"hint": "T3 Code's API estimate for the period, across the chosen machines; a folder two machines share counts once. Tap reads again, hold also reloads model prices. Needs usage access.",
+				"dialHint": "Rotate from the period's total through each model, by cost. Press or tap reads again; a long press also reloads model prices. Needs usage access."
 			}
+		},
+		"usage": {
+			"title": "Usage",
+			"period": {
+				"day": "Past 24h",
+				"week": "7 days",
+				"month": "30 days",
+				"quarter": "90 days"
+			},
+			"allModels": "All models",
+			"tokens": "{tokens} tokens",
+			"sessions": "{count} sessions",
+			"unpriced": "Unpriced",
+			"cacheHit": "{percent} cache",
+			"perMillion": "{cost}/M"
 		},
 		"limits": {
 			"title": "Limits",

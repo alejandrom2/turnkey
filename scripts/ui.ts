@@ -513,6 +513,17 @@ const limitsFields = `
 			<p class="hint" id="spend-hint" hidden${text("inspector.limits.spendHint")}</p>`;
 const limitsScript = showWhen("resetAction", "spend-hint", `value === "spend"`);
 
+/** T3 Code's Usage periods; its page opens on 30 days. */
+const periodField = `
+			<sdpi-item ${attr("label", "inspector.usage.period")}>
+				<sdpi-select setting="period" default="30">
+					<option value="1"${text("inspector.usage.day")}</option>
+					<option value="7"${text("inspector.usage.week")}</option>
+					<option value="30"${text("inspector.usage.month")}</option>
+					<option value="90"${text("inspector.usage.quarter")}</option>
+				</sdpi-select>
+			</sdpi-item>`;
+
 const pages: Record<string, string> = {
 	"environments.html": page("T3 Deck"),
 	"slot.html": page(
@@ -806,6 +817,17 @@ const pages: Record<string, string> = {
 		`${limitsFields}
 			<p class="hint"${text("inspector.limits.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript + limitsScript,
+	),
+	"usage.html": page(
+		"Usage",
+		`${periodField}
+			<p class="hint"${text("inspector.usage.hint")}</p>`,
+	),
+	"usage-dial.html": page(
+		"Usage Dial",
+		`${periodField}
+			<p class="hint"${text("inspector.usage.dialHint")}</p>${dialAppearance}`,
+		dialAppearanceScript,
 	),
 	"editor.html": page(
 		"Open in Editor",
