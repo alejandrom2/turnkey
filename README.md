@@ -99,6 +99,14 @@ Limits come from T3 Code's live server config: the same pooled figures as **Usag
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
+### Diagnostics
+
+Under **Diagnostics** in any action's settings:
+
+- **Verbose logging** writes more detail to the plugin's log for 24 hours, then turns itself off, across restarts too. It never logs tokens.
+- **Open logs folder** shows the plugin's logs.
+- **Export diagnostics** saves a file to the logs folder and shows it: plugin, Stream Deck, OS and Node versions, each machine's host, state, access and environment id, how many of each action are on the deck, and the last 50 warnings and errors. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report.
+
 ## Limits
 
 - **Free-text answers and approval feedback** need T3 Code; the dials pick from the offered choices.

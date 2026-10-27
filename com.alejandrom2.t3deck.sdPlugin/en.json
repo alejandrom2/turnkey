@@ -666,7 +666,20 @@
 				"needsNotMet": " · {count} not met",
 				"needsMet": "Met",
 				"needsUnmet": "Not met",
-				"needsChecking": "Checking"
+				"needsChecking": "Checking",
+				"verboseUntil": "On until {time}, then back to normal logging.",
+				"verboseOff": "Logs more detail for 24 hours, then turns itself off. Never logs tokens.",
+				"diagnosticsFailed": "That didn't work. Open the logs folder to look yourself."
+			},
+			"diagnostics": {
+				"title": "Diagnostics",
+				"verbose": "Verbose logging",
+				"verboseLabel": "On for 24 hours",
+				"logs": "Logs",
+				"openLogs": "Open logs folder",
+				"report": "Report",
+				"export": "Export diagnostics",
+				"exportHint": "Saves versions, machines (host, state and access only), action counts and recent errors to a file in the logs folder and shows it. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report."
 			},
 			"advanced": {
 				"title": "Advanced",
