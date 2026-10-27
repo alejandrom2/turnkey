@@ -26,6 +26,8 @@ function row(threadId: string, patch: Partial<ShellRow> = {}): ShellRow {
 		parentThreadId: null,
 		updatedAt: 0,
 		openedAt: undefined,
+		runStamp: "",
+		mayQueue: false,
 		...patch,
 	};
 }

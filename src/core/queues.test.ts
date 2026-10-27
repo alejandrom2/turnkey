@@ -16,7 +16,7 @@ describe("QueueStore", () => {
 	it("never reads a thread with nothing queued", () => {
 		const { read } = reads();
 		const store = new QueueStore(() => undefined);
-		expect(store.of({ key: "a" }, read)).toBe(EMPTY_QUEUE);
+		expect(store.of({ key: "a", runStamp: "0", mayQueue: false }, read)).toBe(EMPTY_QUEUE);
 		expect(read).not.toHaveBeenCalled();
 	});
 
@@ -24,29 +24,45 @@ describe("QueueStore", () => {
 		const { read, resolve } = reads();
 		const onChange = vi.fn();
 		const store = new QueueStore(onChange);
-		expect(store.of({ key: "a", queueStamp: "1" }, read)).toBeUndefined();
-		store.of({ key: "a", queueStamp: "1" }, read);
+		expect(store.of({ key: "a", runStamp: "1", mayQueue: true }, read)).toBeUndefined();
+		store.of({ key: "a", runStamp: "1", mayQueue: true }, read);
 		expect(read).toHaveBeenCalledTimes(1);
-		store.of({ key: "a", queueStamp: "2" }, read);
+		store.of({ key: "a", runStamp: "2", mayQueue: true }, read);
 		expect(read).toHaveBeenCalledTimes(1);
 		await resolve(queue("first"));
 		expect(onChange).toHaveBeenCalled();
 		expect(read).toHaveBeenCalledTimes(2);
-		expect(store.of({ key: "a", queueStamp: "2" }, read)?.items.map((item) => item.text)).toEqual(["first"]);
+		expect(store.of({ key: "a", runStamp: "2", mayQueue: true }, read)?.items.map((item) => item.text)).toEqual(["first"]);
 		await resolve(queue("first", "second"));
-		expect(store.of({ key: "a", queueStamp: "2" }, read)?.items).toHaveLength(2);
+		expect(store.of({ key: "a", runStamp: "2", mayQueue: true }, read)?.items).toHaveLength(2);
 		expect(read).toHaveBeenCalledTimes(2);
 	});
 
 	it("reads again after the deck changed the queue, even mid-read", async () => {
 		const { read, resolve } = reads();
 		const store = new QueueStore(() => undefined);
-		store.of({ key: "a", queueStamp: "1" }, read);
+		store.of({ key: "a", runStamp: "1", mayQueue: true }, read);
 		store.invalidate("a");
 		await resolve(queue("old"));
 		expect(read).toHaveBeenCalledTimes(2);
 		await resolve(queue());
-		expect(store.of({ key: "a", queueStamp: "1" }, read)?.items).toEqual([]);
+		expect(store.of({ key: "a", runStamp: "1", mayQueue: true }, read)?.items).toEqual([]);
 		expect(read).toHaveBeenCalledTimes(2);
+	});
+
+	it("reads once more when the shell stops saying queued while messages were waiting, then lets go", async () => {
+		const { read, resolve } = reads();
+		const store = new QueueStore(() => undefined);
+		store.of({ key: "a", runStamp: "1", mayQueue: true }, read);
+		await resolve(queue("older", "newest"));
+		// Removing the newest message leaves the latest run cancelled, with "older" still queued.
+		expect(store.of({ key: "a", runStamp: "2", mayQueue: false }, read)?.items).toHaveLength(2);
+		expect(read).toHaveBeenCalledTimes(2);
+		await resolve(queue("older"));
+		expect(store.of({ key: "a", runStamp: "2", mayQueue: false }, read)?.items.map((item) => item.text)).toEqual(["older"]);
+		store.of({ key: "a", runStamp: "3", mayQueue: false }, read);
+		await resolve(queue());
+		expect(store.of({ key: "a", runStamp: "3", mayQueue: false }, read)).toBe(EMPTY_QUEUE);
+		expect(read).toHaveBeenCalledTimes(3);
 	});
 });

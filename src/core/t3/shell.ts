@@ -254,11 +254,13 @@ export type ShellRow = {
 	updatedAt: number;
 	/** When T3 Code last opened this thread, in server ms; the board follows the newest one as the selection. */
 	openedAt: number | undefined;
+	/** Changes whenever the thread's runs move: the shell carries no queue, so the deck reads it again then. */
+	runStamp: string;
 	/**
-	 * Set while messages wait in the thread's queue (its latest run is queued), and changed when its runs move: the
-	 * shell carries no queue itself, so the deck reads the queue again when this changes.
+	 * Messages may wait in the queue. The shell's status is its latest run's, leaving out a held queue
+	 * (ProjectionStore.ts `selectShellThreadRows`), so a stopped thread may hold one too.
 	 */
-	queueStamp?: string;
+	mayQueue: boolean;
 };
 
 /**
@@ -347,7 +349,8 @@ export function shellRows(state: ShellState, capabilities: ThreadCapabilities, n
 			parentThreadId: thread.lineage?.parentThreadId ?? null,
 			updatedAt: time(thread.updatedAt),
 			openedAt: openedAt(thread),
-			...(thread.status === "queued" ? { queueStamp: [thread.latestRunId, thread.activeRunId, thread.activityRunStatus ?? ""].join("|") } : {}),
+			runStamp: [thread.status, thread.latestRunId, thread.activeRunId, thread.activityRunStatus ?? ""].join("|"),
+			mayQueue: thread.status === "queued" || thread.status === "interrupted",
 		});
 	}
 	return rows;
