@@ -16,7 +16,7 @@ import { canOperate, connectionFace, DeckAction, pressWhileDisconnected, sendToT
 import { threadNeeds } from "./needs.js";
 import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("skills");
 
 /** The skills the thread's composer would offer: its provider's, for its checkout. Only call it for a shown thread. */

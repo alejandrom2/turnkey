@@ -38,7 +38,7 @@ import { canOperate, colorStyle, LONG_PRESS_MS, openThread, pressWhileDisconnect
 import { applyEffort, launchable, requestFor, startThread } from "./keys.js";
 import { type DialSettings, disconnectedStrip, markArt, StripDial } from "./strip.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 
 /** A thread's state in a line, with its queue when messages wait there and the subagents it has out. */
 function statusLine(thread: DeckThread): string {

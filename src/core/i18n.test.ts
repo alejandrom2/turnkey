@@ -8,7 +8,7 @@ import { elapsed, formatMessage, htmlLang, messageTable, setTranslator, t } from
 type Json = { [key: string]: Json } | string;
 
 const root = join(import.meta.dirname, "..", "..");
-const plugin = join(root, "com.alejandrom2.t3deck.sdPlugin");
+const plugin = join(root, "com.alejandrom2.turnkey.sdPlugin");
 const readJson = (path: string) => JSON.parse(readFileSync(path, "utf8"));
 
 const en = readJson(join(plugin, "en.json"));

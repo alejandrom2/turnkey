@@ -24,7 +24,7 @@ export function hostOf(url: string): string {
 
 const REDACTED = "[redacted]";
 /** Action UUIDs in log lines are long but safe. */
-const PLUGIN_ID = "com.alejandrom2.t3deck.";
+const PLUGIN_ID = "com.alejandrom2.turnkey.";
 
 /** Blanks what could be a credential in free text: URLs shrink to their origin, auth headers, `token=…` pairs, long opaque strings. */
 export function redact(text: string): string {

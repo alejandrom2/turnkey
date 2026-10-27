@@ -1,4 +1,4 @@
-import en from "../../com.alejandrom2.t3deck.sdPlugin/en.json";
+import en from "../../com.alejandrom2.turnkey.sdPlugin/en.json";
 
 /**
  * Keys are dot paths into en.json's nested "Localization" object, because the SDK's I18nProvider resolves them with

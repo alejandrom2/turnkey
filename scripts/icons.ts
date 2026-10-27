@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { COLORS, glyph, type GlyphName, renderControlKey } from "../src/core/render.ts";
 
-const root = join(import.meta.dirname, "..", "com.alejandrom2.t3deck.sdPlugin", "imgs");
+const root = join(import.meta.dirname, "..", "com.alejandrom2.turnkey.sdPlugin", "imgs");
 
 const ACTIONS: Record<string, GlyphName> = {
 	slot: "pulse",

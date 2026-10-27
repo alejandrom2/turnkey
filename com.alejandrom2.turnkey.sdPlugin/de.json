@@ -1,0 +1,1248 @@
+{
+	"Name": "Turnkey for T3 Code",
+	"Description": "T3 Code-Threads vom Stream Deck aus beobachten und steuern: Thread-Status, Stopp, Prompts, Modelloptionen und Antworten, über alle Anbieter hinweg.",
+	"Category": "Turnkey for T3 Code",
+	"com.alejandrom2.turnkey.slot": {
+		"Name": "Thread",
+		"Tooltip": "Ein Thread vom Board, nach Tastenposition belegt: Status, Titel und Timer. Tippen öffnet ihn in T3 Code; Halten wählt ihn aus."
+	},
+	"com.alejandrom2.turnkey.activity": {
+		"Name": "Aktivität",
+		"Tooltip": "Der dringendste Thread, der zum Filter passt. Tippen öffnet ihn in T3 Code."
+	},
+	"com.alejandrom2.turnkey.new": {
+		"Name": "Neuer Thread",
+		"Tooltip": "Startet einen neuen Thread im Projekt des ausgewählten Threads, ohne Projekt oder in einem gewählten; mit gespeichertem Prompt oder leer."
+	},
+	"com.alejandrom2.turnkey.send": {
+		"Name": "Prompt senden",
+		"Tooltip": "Sendet deinen eigenen Prompt oder einen Alltags-Prompt (fortfahren, Tests reparieren, erklären, committen …) an den ausgewählten Thread. Halten unterbricht und startet damit neu."
+	},
+	"com.alejandrom2.turnkey.steer": {
+		"Name": "Lenken",
+		"Tooltip": "Fügt dem laufenden Durchlauf des ausgewählten Threads eine gespeicherte Anweisung hinzu."
+	},
+	"com.alejandrom2.turnkey.skill": {
+		"Name": "Skill ausführen",
+		"Tooltip": "Führt einen Anbieter-Skill des Threads aus, so als würde man ihn im Composer von T3 Code auswählen und senden."
+	},
+	"com.alejandrom2.turnkey.stop": {
+		"Name": "Stopp",
+		"Tooltip": "Stoppt den laufenden Durchlauf des ausgewählten Threads oder, je nach Einstellung, die Workflows, die er ausführt (Claude). Workflows zum Stoppen halten."
+	},
+	"com.alejandrom2.turnkey.model": {
+		"Name": "Modell",
+		"Tooltip": "Wechselt den ausgewählten Thread zu einem Favoritenmodell oder zum nächsten der T3 Code-Favoriten."
+	},
+	"com.alejandrom2.turnkey.effort": {
+		"Name": "Aufwand",
+		"Tooltip": "Legt den Denkaufwand des ausgewählten Threads fest oder schaltet durch, was sein Modell bietet."
+	},
+	"com.alejandrom2.turnkey.speed": {
+		"Name": "Tempo",
+		"Tooltip": "Schaltet den Schnellmodus des ausgewählten Threads um, wo sein Modell ihn bietet."
+	},
+	"com.alejandrom2.turnkey.permissions": {
+		"Name": "Berechtigungen",
+		"Tooltip": "Legt den Zugriff des ausgewählten Threads fest, von Überwacht bis Vollzugriff, oder schaltet durch."
+	},
+	"com.alejandrom2.turnkey.plan": {
+		"Name": "Planen",
+		"Tooltip": "Wechselt den ausgewählten Thread zwischen Umsetzen und Planen."
+	},
+	"com.alejandrom2.turnkey.approve": {
+		"Name": "Freigeben",
+		"Tooltip": "Beantwortet die Freigabe des ausgewählten Threads, soweit seine Einstellungen es erlauben, oder öffnet sie in T3 Code."
+	},
+	"com.alejandrom2.turnkey.deny": {
+		"Name": "Ablehnen",
+		"Tooltip": "Lehnt die Freigabe des ausgewählten Threads ab."
+	},
+	"com.alejandrom2.turnkey.organize": {
+		"Name": "Organisieren",
+		"Tooltip": "Erledigt, heftet an, stellt zurück, archiviert oder markiert den ausgewählten Thread als ungelesen, oder weckt den zuletzt zurückgestellten Thread."
+	},
+	"com.alejandrom2.turnkey.fork": {
+		"Name": "Fork",
+		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
+	},
+	"com.alejandrom2.turnkey.branch": {
+		"Name": "Branch",
+		"Tooltip": "Der Branch des ausgewählten Threads. Tippen öffnet den Thread in T3 Code."
+	},
+	"com.alejandrom2.turnkey.git": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.turnkey.pr": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.turnkey.task": {
+		"Name": "Aufgabe ausführen",
+		"Tooltip": "Eine geplante Aufgabe von T3 Code: ihr Name und wann sie als Nächstes läuft. Drücken führt sie jetzt aus."
+	},
+	"com.alejandrom2.turnkey.usage": {
+		"Name": "Nutzung",
+		"Tooltip": "Geschätzte API-Kosten, Tokens und Sitzungen eines Zeitraums, wie „Usage“ in T3 Code sie zeigt, auf einem Rechner oder allen. Tippen aktualisiert; Halten lädt zusätzlich die Modellpreise neu."
+	},
+	"com.alejandrom2.turnkey.limits": {
+		"Name": "Limits",
+		"Tooltip": "Das Abo-Limit eines Anbieters, zusammengefasst wie die Limits in T3 Code: % übrig, nächster Reset und angesparte Resets. Tippen aktualisiert; Halten öffnet „Usage“ in T3 Code oder nutzt einen Reset."
+	},
+	"com.alejandrom2.turnkey.open": {
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
+	},
+	"com.alejandrom2.turnkey.health": {
+		"Name": "Zustand",
+		"Tooltip": "Die Verbindung zu T3 Code und seinen Anbietern: das schwerste Problem zuerst (offline, Kopplung nötig, nicht angemeldet, Version nicht unterstützt, nicht verfügbar). Tippen verbindet neu."
+	},
+	"com.alejandrom2.turnkey.update": {
+		"Name": "T3 aktualisieren",
+		"Tooltip": "Die T3 Code-Version auf einem Rechner. Halten aktualisiert auf die neueste Version; braucht Update-Zugriff, angefragt bei der nächsten Kopplung dieses Rechners."
+	},
+	"com.alejandrom2.turnkey.script": {
+		"Name": "Skript ausführen",
+		"Tooltip": "Führt eines der gespeicherten Skripte des Projekts im Terminal des Threads aus; Halten stoppt es. Braucht Terminal-Zugriff (Shell), angefragt bei der nächsten Kopplung dieses Rechners."
+	},
+	"com.alejandrom2.turnkey.share": {
+		"Name": "Thread teilen",
+		"Tooltip": "Erstellt einen Gastlink für den Thread und kopiert ihn; zeigt Geteilt und den Gast. Halten beendet das Teilen. Braucht Gastlink-Zugriff, angefragt bei der nächsten Kopplung dieses Rechners."
+	},
+	"com.alejandrom2.turnkey.dial.threads": {
+		"Name": "Thread-Regler",
+		"Tooltip": "Drehen geht durch die Threads, die zum Filter passen, und wählt sie in T3 Code aus; Drücken oder Tippen öffnet einen.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Thread wählen", "Push": "In T3 Code öffnen", "Touch": "In T3 Code öffnen" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.model": {
+		"Name": "Power-Regler",
+		"Tooltip": "Ändert Modell, Aufwand oder Zugriff des ausgewählten Threads; Drücken oder Tippen schaltet das Tempo um, wo verfügbar.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Vorschau", "Push": "Anwenden (oder Tempo)", "Touch": "Tempo umschalten" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.prompts": {
+		"Name": "Prompt-Regler",
+		"Tooltip": "Drehen geht durch deine Prompts und Vorlagen. Drücken sendet an den ausgewählten Thread; Halten startet einen neuen Thread.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Prompt wählen", "Push": "Senden (Halten: neuer Thread)", "Touch": "Senden" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.answer": {
+		"Name": "Antwort-Regler",
+		"Tooltip": "Beantwortet die Frage eines Agenten Option für Option, und Freigaben, soweit seine Einstellungen es erlauben.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Antwort wählen", "Push": "Antworten (standardmäßig halten)", "Touch": "Thread öffnen" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.queue": {
+		"Name": "Warteschlangen-Regler",
+		"Tooltip": "Drehen geht durch die eingereihten Nachrichten des ausgewählten Threads. Drücken sendet eine sofort (lenkt sie ein oder startet sie, wenn nichts läuft); Halten entfernt sie.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Nachricht wählen", "Push": "Jetzt senden (Halten: entfernen)", "Touch": "Thread öffnen" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.tasks": {
+		"Name": "Aufgaben-Regler",
+		"Tooltip": "Drehen geht durch die geplanten Aufgaben von T3 Code, jeweils mit nächster Ausführung. Drücken führt die angezeigte jetzt aus; Tippen schaltet sie aus oder wieder ein.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Aufgabe wählen", "Push": "Jetzt ausführen", "Touch": "Ein/aus" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.skills": {
+		"Name": "Skill-Regler",
+		"Tooltip": "Drehen geht durch die Anbieter-Skills des Threads. Drücken oder Tippen führt den angezeigten aus; Berühren und Halten liest seine Beschreibung.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Skill wählen", "Push": "Skill ausführen", "Touch": "Skill ausführen", "LongTouch": "Beschreibung lesen" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.pr": {
+		"Name": "PR-Regler",
+		"Tooltip": "Drehen geht durch offene Pull Requests. Drücken führt Befunde beheben aus, Tippen öffnet ihn im Browser, Berühren und Halten liest seine Befunde.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Pull Request wählen", "Push": "Befunde beheben (halten)", "Touch": "Im Browser öffnen", "LongTouch": "Befunde lesen" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.limits": {
+		"Name": "Limit-Regler",
+		"Tooltip": "Drehen geht durch die Limit-Fenster aller Anbieter. Drücken oder Tippen aktualisiert; gedrückt halten öffnet „Usage“ in T3 Code oder nutzt einen Reset.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Anbieter und Fenster wählen", "Push": "Aktualisieren (Halten: Reset)", "Touch": "Aktualisieren", "LongTouch": "Details lesen" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.usage": {
+		"Name": "Nutzungs-Regler",
+		"Tooltip": "Drehen geht durch die Summe eines Zeitraums und für jedes Modell Kosten, Tokens, Cache-Trefferquote und Kosten pro Million Tokens. Drücken oder Tippen aktualisiert; langes Drücken lädt die Modellpreise neu.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Modell wählen", "Push": "Aktualisieren (Halten: auch Preise)", "Touch": "Aktualisieren", "LongTouch": "Details lesen" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.devices": {
+		"Name": "Geräte-Regler",
+		"Tooltip": "Drehen geht durch die Simulatoren und Emulatoren von T3 Code. Drücken startet oder öffnet das angezeigte Gerät im „Device panel“ des Threads; Halten schaltet es aus. Berühren sucht erneut nach Geräten.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Gerät wählen", "Push": "Starten/öffnen (Halten: aus)", "Touch": "Erneut suchen" }
+		}
+	},
+	"com.alejandrom2.turnkey.git.commit": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.turnkey.git.push": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.turnkey.git.pr": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.turnkey.git.pull": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.turnkey.pr.fix": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.turnkey.pr.explain": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.turnkey.pr.ask": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.turnkey.pr.guide": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.turnkey.quick": {
+		"Name": "Prompt senden",
+		"Tooltip": "Sendet deinen eigenen Prompt oder einen Alltags-Prompt (fortfahren, Tests reparieren, erklären, committen …) an den ausgewählten Thread. Halten unterbricht und startet damit neu."
+	},
+	"com.alejandrom2.turnkey.workflow.stop": {
+		"Name": "Stopp",
+		"Tooltip": "Stoppt den laufenden Durchlauf des ausgewählten Threads oder, je nach Einstellung, die Workflows, die er ausführt (Claude). Workflows zum Stoppen halten."
+	},
+	"com.alejandrom2.turnkey.merge": {
+		"Name": "Fork",
+		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
+	},
+	"com.alejandrom2.turnkey.editor": {
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
+	},
+	"com.alejandrom2.turnkey.preview": {
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
+	},
+	"Localization": {
+		"result": {
+			"done": "Fertig",
+			"opened": "Geöffnet",
+			"sent": "Gesendet",
+			"started": "Gestartet",
+			"loading": "Lädt…",
+			"holdToAllow": "Halten: erlauben",
+			"holdToAnswer": "Halten: antworten",
+			"holdToSend": "Halten: senden",
+			"holdToSettle": "Halten: erledigen",
+			"holdToSnooze": "Halten: zurückstellen",
+			"notWebLink": "Kein Weblink",
+			"holdToRemove": "Halten: entfernen",
+			"cantSteerYet": "Noch nicht lenkbar"
+		},
+		"face": {
+			"noThread": "Kein Thread",
+			"allQuiet": "Alles ruhig",
+			"model": "Modell",
+			"effort": "Aufwand",
+			"access": "Zugriff",
+			"plan": "Planen",
+			"build": "Umsetzen",
+			"deny": "Ablehnen",
+			"pullRequest": "Pull Request",
+			"branch": "Branch",
+			"needsYou": "Braucht dich",
+			"prompt": "Prompt"
+		},
+		"review": {
+			"send": "Senden?",
+			"restart": "Neustart damit?",
+			"steer": "Lenken?",
+			"newThread": "Neuer Thread?",
+			"settle": "Erledigen?",
+			"snooze": "{duration} zurückstellen?",
+			"pressAgain": "Erneut drücken",
+			"pressToSend": "Zum Senden erneut drücken",
+			"to": "An {thread}",
+			"runSkill": "Skill ausführen?"
+		},
+		"organize": {
+			"settle": "Erledigen",
+			"pin": "Anheften",
+			"unpin": "Lösen",
+			"snooze": "Zurückstellen",
+			"snoozeFor": "{duration} zurückstellen",
+			"archive": "Archivieren",
+			"markUnread": "Ungelesen",
+			"wake": "Thread wecken",
+			"nothingSnoozed": "Nichts zurückgestellt"
+		},
+		"notice": {
+			"openT3Code": "T3 Code öffnen",
+			"thenPress": "dann drücken",
+			"notFound": "T3 Code nicht gefunden",
+			"openThenPress": "Öffnen, dann drücken",
+			"machineRemoved": "Rechner entfernt",
+			"pickAnother": "Anderen wählen",
+			"pickAnotherMachine": "Anderen Rechner wählen",
+			"pickAnotherInSettings": "In Einstellungen anderen wählen",
+			"pairDeck": "Turnkey koppeln",
+			"pastePairLink": "Kopplungslink in Einstellungen einfügen",
+			"connecting": "Verbinde…",
+			"pressToRetry": "Drücken: erneut"
+		},
+		"health": {
+			"allConnected": "Alle verbunden",
+			"offline": "Offline",
+			"someOffline": "Teils offline",
+			"readyCount": "{ready} von {total} bereit",
+			"connected": "Verbunden",
+			"readOnly": "Nur lesen",
+			"connecting": "Verbinde…",
+			"needsPairing": "Kopplung nötig",
+			"notFound": "Nicht gefunden",
+			"unavailable": "Nicht verfügbar",
+			"unauthenticated": "Nicht angemeldet",
+			"unsupported": "Version nicht unterstützt",
+			"broken": "Bekannt defekte Version",
+			"needsAttention": "Braucht Aufmerksamkeit",
+			"updateAvailable": "Update verfügbar",
+			"disabled": "Deaktiviert",
+			"providerUpdate": "{provider}-Update verfügbar",
+			"providerOff": "{provider} ist aus",
+			"more": "+{count} weitere"
+		},
+		"reason": {
+			"noPrompt": "Kein Prompt",
+			"readOnly": "Nur lesen",
+			"nothingPending": "Nichts offen",
+			"noThread": "Kein Thread",
+			"noPr": "Kein PR",
+			"noBranch": "Kein Branch",
+			"notRunning": "Läuft nicht",
+			"pinned": "Angeheftet",
+			"notPinned": "Nicht angeheftet",
+			"pickProject": "Projekt wählen",
+			"noProject": "Kein Projekt",
+			"unavailable": "Nicht verfügbar",
+			"noModels": "Keine Modelle",
+			"noEffort": "Kein Aufwand",
+			"noModes": "Keine Modi",
+			"notOffered": "Nicht angeboten",
+			"noFastMode": "Kein Schnellmodus",
+			"noPlanMode": "Kein Planmodus",
+			"pickThread": "Thread wählen",
+			"targetGone": "Nicht verfügbar: {thread}"
+		},
+		"failure": {
+			"readOnly": "Nur lesen",
+			"offline": "Offline",
+			"updateT3": "T3 Code aktualisieren",
+			"noModel": "Kein Modell",
+			"noMachine": "Kein Rechner",
+			"timedOut": "Timeout",
+			"failed": "Fehler"
+		},
+		"status": {
+			"needsApproval": "Braucht Freigabe",
+			"hasQuestion": "Hat eine Frage",
+			"running": "Läuft {time}",
+			"queued": "Eingereiht",
+			"done": "Fertig",
+			"failed": "Fehler",
+			"stopped": "Gestoppt",
+			"idle": "Inaktiv",
+			"queuedCount": "+{count} eingereiht",
+			"subagent": "{count} Subagent",
+			"subagents": "{count} Subagenten"
+		},
+		"filter": {
+			"all": "Threads",
+			"attention": "Braucht dich",
+			"active": "Aktiv",
+			"unread": "Ungelesen"
+		},
+		"strip": {
+			"done": "Fertig",
+			"notNow": "Nicht jetzt",
+			"noThread": "Kein Thread",
+			"noThreads": "Keine Threads",
+			"allQuiet": "Alles ruhig",
+			"default": "Standard",
+			"pressToApply": "Drücken: anwenden",
+			"speed": "Tempo: {speed}",
+			"prompts": "Prompts",
+			"noPrompts": "Keine Prompts",
+			"addPrompts": "In Einstellungen hinzufügen",
+			"answer": "Antwort",
+			"nothingPending": "Nichts offen",
+			"approvals": "Freigaben: {authority}",
+			"approval": "Freigabe",
+			"question": "Frage",
+			"pressToOpen": "Drücken: in T3 Code öffnen",
+			"openInT3Code": "In T3 Code öffnen",
+			"withHold": "{label} · halten",
+			"queue": "Warteschlange",
+			"nothingQueued": "Nichts eingereiht",
+			"queuedMessage": "Eingereihte Nachricht",
+			"queueHeld": "Angehalten · Drücken sendet jetzt",
+			"queueSendNow": "Drücken sendet · Halten entfernt",
+			"queueSteer": "Drücken lenkt ein · Halten entfernt",
+			"queueRemoveOnly": "Halten: entfernen"
+		},
+		"power": {
+			"quicker": "Schneller",
+			"deeper": "Gründlicher",
+			"asksFirst": "Fragt zuerst",
+			"handsOff": "Freie Hand"
+		},
+		"approval": {
+			"open": "In T3 öffnen",
+			"once": "Einmal erlauben",
+			"session": "Sitzung erlauben",
+			"always": "Immer erlauben",
+			"deny": "Ablehnen",
+			"needsYou": "Braucht dich in T3 Code",
+			"command": "Befehlsfreigabe",
+			"fileRead": "Freigabe: Datei lesen",
+			"fileChange": "Freigabe: Dateiänderung",
+			"permission": "Freigabe: App-Berechtigung",
+			"mcpElicitation": "Freigabe: App-Zugriff"
+		},
+		"mode": {
+			"approvalRequired": "Überwacht",
+			"autoAcceptEdits": "Änderungen auto-annehmen",
+			"auto": "Auto",
+			"fullAccess": "Vollzugriff"
+		},
+		"option": {
+			"off": "Aus",
+			"on": "An",
+			"fast": "Schnell",
+			"normal": "Normal"
+		},
+		"quick": {
+			"continue": "Weiter",
+			"test": "Tests fixen",
+			"fix": "Diagnose",
+			"explain": "Erklären",
+			"commit": "Commit"
+		},
+		"time": {
+			"minutes": "{minutes}m",
+			"hours": "{hours}h",
+			"days": "{days}T"
+		},
+		"datasource": {
+			"cycleFavorites": "Favoriten durchschalten",
+			"cycleModels": "Modelle durchschalten",
+			"cycleEfforts": "Aufwand durchschalten",
+			"anyProject": "Beliebiges Projekt",
+			"noProject": "Kein Projekt",
+			"defaultEditor": "Standard von T3 Code",
+			"firstProvider": "Erster mit Limits",
+			"firstWindow": "Kürzestes Fenster",
+			"chooseThread": "Thread wählen…",
+			"chooseScript": "Skript wählen…"
+		},
+		"machine": {
+			"thisMachine": "Dieser Rechner",
+			"pairingExpired": "Diese Kopplung ist abgelaufen. Füge einen neuen Kopplungslink ein.",
+			"cannotRead": "Diese Kopplung kann keine Threads lesen. Füge einen neuen Kopplungslink ein."
+		},
+		"pairing": {
+			"notALink": "Das sieht nicht nach einem T3 Code-Kopplungslink aus. Kopiere ihn unter „Settings → Sharing & access“.",
+			"unreachable": "T3 Code unter {host} nicht erreichbar. Prüfe, ob es läuft und von diesem Computer erreichbar ist.",
+			"notT3": "{host} scheint kein T3 Code-Server zu sein.",
+			"tooOld": "T3 Code auf diesem Rechner ist zu alt für Turnkey. Aktualisiere T3 Code.",
+			"tooNew": "Dieses T3 Code ist neuer, als Turnkey versteht. Aktualisiere Turnkey.",
+			"linkUsed": "Dieser Kopplungslink wurde schon benutzt oder ist abgelaufen. Erstelle einen neuen unter „Settings → Sharing & access“.",
+			"noAccess": "Dieser Kopplungslink gibt keinen Zugriff auf Threads. Erstelle einen, der das tut.",
+			"refused": "T3 Code hat den Kopplungslink abgelehnt ({status}).",
+			"noRead": "Dieser Kopplungslink erlaubt kein Lesen von Threads. Erstelle einen, der das tut.",
+			"different": "Unter {host} antwortet jetzt ein anderes T3 Code.",
+			"ended": "T3 Code hat diese Kopplung beendet. Füge einen neuen Kopplungslink ein, um neu zu verbinden.",
+			"cannotOpen": "T3 Code konnte keine Verbindung öffnen ({status})."
+		},
+		"connection": {
+			"noAnswer": "T3 Code hat nicht rechtzeitig geantwortet.",
+			"closed": "Die Verbindung zu T3 Code wurde geschlossen.",
+			"failed": "Die Verbindung zu T3 Code ist fehlgeschlagen.",
+			"silent": "T3 Code antwortet nicht mehr.",
+			"feedEnded": "T3 Code hat den Thread-Feed beendet.",
+			"disconnected": "Von T3 Code getrennt."
+		},
+		"access": {
+			"sourceControl": "Braucht Versionskontroll-Zugriff — neu koppeln",
+			"diagnostics": "Braucht Nutzungszugriff — neu koppeln",
+			"providers": "Braucht Anbieter-Zugriff — zum Aktivieren neu koppeln",
+			"maintain": "Braucht Update-Zugriff — zum Aktivieren neu koppeln",
+			"terminal": "Braucht Terminal-Zugriff — zum Aktivieren neu koppeln",
+			"share": "Braucht Zugriff zum Teilen — zum Aktivieren neu koppeln",
+			"other": "Braucht mehr Zugriff — neu koppeln",
+			"rePair": "Zum Aktivieren neu koppeln"
+		},
+		"pr": {
+			"open": "Offen",
+			"merged": "Gemergt",
+			"closed": "Geschlossen",
+			"draft": "Entwurf",
+			"face": {
+				"failing": "{count} Checks rot",
+				"failingOne": "1 Check rot",
+				"findings": "{count} Befunde",
+				"findingsOne": "1 Befund",
+				"running": "Checks laufen",
+				"changesRequested": "Änderungen gewünscht",
+				"approved": "Genehmigt",
+				"passing": "Checks grün"
+			},
+			"fix": {
+				"title": "Befunde beheben",
+				"none": "Keine Befunde",
+				"threads": "{count} Diskussionen",
+				"threadOne": "1 Diskussion",
+				"remarks": "{count} Anmerkungen",
+				"remarkOne": "1 Anmerkung",
+				"checks": "{count} Checks",
+				"checkOne": "1 Check",
+				"named": "{findings}: {names}"
+			},
+			"explain": {
+				"title": "{term} erklären"
+			},
+			"ask": {
+				"title": "Zu {term} fragen"
+			},
+			"guide": {
+				"title": "Review-Leitfaden",
+				"write": "Drücken: schreiben",
+				"writing": "Schreibe Leitfaden…",
+				"ready": "Fertig: Drücken öffnet",
+				"failed": "Fehler: Drücken wiederholt"
+			},
+			"dial": {
+				"title": "Pull Requests",
+				"none": "Keine offenen Pull Requests"
+			},
+			"result": {
+				"queued": "Eingereiht",
+				"offHead": "Gestartet, nicht auf PR-Head"
+			}
+		},
+		"repo": {
+			"action": {
+				"commit": "Commit",
+				"commitPush": "Commit & Push",
+				"commitPushPr": "Commit, Push & PR",
+				"push": "Push",
+				"createPr": "PR erstellen",
+				"pull": "Pull"
+			},
+			"reason": {
+				"notRepo": "Kein Git-Repository",
+				"detached": "Detached HEAD: Branch auschecken",
+				"noUpstream": "Kein Upstream-Branch",
+				"diverged": "Divergiert: erst rebasen oder mergen",
+				"upToDate": "Aktuell",
+				"clean": "Nichts zu committen",
+				"uncommitted": "Erst Änderungen committen oder stashen",
+				"behind": "Hinter Upstream: erst pullen",
+				"noRemote": "Erst ein origin-Remote hinzufügen",
+				"nothingToPush": "Keine Commits zum Pushen",
+				"prOpen": "PR #{number} ist offen",
+				"prFromDefault": "Auf {branch}: erst Branch erstellen",
+				"nothingForPr": "Keine Commits für einen PR"
+			},
+			"behind": "{count} hinterher",
+			"ahead": "{count} voraus",
+			"changes": "{files} Dateien · +{insertions} −{deletions}",
+			"changesOne": "1 Datei · +{insertions} −{deletions}",
+			"hook": "{hook} läuft",
+			"unknownOutcome": "Ergebnis unklar, T3 Code prüfen",
+			"running": "Läuft bereits",
+			"holdTo": "Halten: bestätigen",
+			"holdOnDefault": "Halten: Push auf {branch}",
+			"starting": "Startet…",
+			"pulled": "Gepullt",
+			"upToDate": "Aktuell",
+			"files": "{count} Dateien",
+			"fileOne": "1 Datei"
+		},
+		"needs": {
+			"paired": "Mit T3 Code gekoppelt",
+			"operate": "Kann Threads steuern",
+			"thread": "Ein ausgewählter Thread",
+			"running": "Ein laufender Durchlauf",
+			"pending": "Eine offene Anfrage",
+			"prompt": "Ein gespeicherter Prompt",
+			"scope": {
+				"sourceControl": "Versionskontroll-Zugriff",
+				"diagnostics": "Nutzungszugriff",
+				"providers": "Anbieter-Zugriff",
+				"maintain": "Update-Zugriff (aktualisiert T3 Code auf diesem Rechner)",
+				"terminal": "Terminal-Zugriff (führt Befehle auf diesem Rechner aus)",
+				"terminalRead": "Zugriff auf Terminal-Status",
+				"share": "Gastlink-Zugriff (teilt Threads mit Externen)",
+				"other": "Zugriff: {scope}"
+			},
+			"option": "{option} beim Modell des Threads",
+			"optionEffort": "Denkaufwand",
+			"optionFast": "Schnellmodus",
+			"optionPlan": "Planmodus",
+			"pr": "Ein Pull Request",
+			"branch": "Ein Branch",
+			"repo": "Etwas zum Ausführen",
+			"editor": "Ein Editor auf dem Rechner",
+			"limits": "Ein Anbieter, der Limits meldet",
+			"snoozed": "Ein zurückgestellter Thread",
+			"preview": "Eine Vorschau oder ein HTML-Rendering",
+			"devices": "Ein Simulator oder Emulator",
+			"notAvailable": "Nicht verfügbar: {value}",
+			"problem": "{subject}: {text}",
+			"problemOn": "{subject} ({machine}): {text}",
+			"fix": {
+				"openT3": "Öffne T3 Code auf diesem Computer und drücke dann die Taste.",
+				"addMachine": "Oder füge unter „Rechner hinzufügen“ einen Kopplungslink ein.",
+				"pickMachine": "Wähle unten einen anderen Rechner.",
+				"pairLink": "Füge unter „Rechner hinzufügen“ einen Kopplungslink aus T3 Code ein.",
+				"reachable": "Prüfe, ob der Rechner an und erreichbar ist.",
+				"pressRetry": "Drücke die Taste, um es jetzt erneut zu versuchen.",
+				"canAct": "Kopple erneut mit einem Link, der steuern darf, nicht nur lesen.",
+				"openThread": "Öffne einen Thread in T3 Code.",
+				"selectThread": "Oder wähle einen mit einer Thread-Taste oder dem Thread-Regler.",
+				"startTurn": "Sende einen Prompt, um einen Durchlauf zu starten.",
+				"waitForAgent": "Wartet, bis ein Agent fragt.",
+				"typePrompt": "Gib oben einen Prompt ein.",
+				"newPairLink": "Erstelle in T3 Code unter „Settings → Sharing & access“ einen Kopplungslink.",
+				"standardAccess": "Behalte den Standardzugriff und verbinde dich dann unten mit dem neuen Link.",
+				"switchModel": "Wechsle den Thread zu einem Modell, das es bietet.",
+				"createPr": "Erstelle einen mit „PR erstellen“ oder in T3 Code.",
+				"checkoutBranch": "Checke im Thread einen Branch aus.",
+				"installEditor": "Installiere einen von T3 Code unterstützten Editor, etwa VS Code oder Cursor.",
+				"signInProvider": "Melde dich in T3 Code bei Codex oder Claude an; sie melden Abo-Limits.",
+				"pickAnother": "Wähle oben einen anderen Wert.",
+				"noFindings": "Daran schlägt nichts fehl und nichts ist offen.",
+				"providersInT3": "Behebe sie in T3 Code unter „Settings → Providers“.",
+				"queueMessage": "Sende eine Nachricht, während der Thread arbeitet; sie wartet in seiner Warteschlange.",
+				"addTask": "Füge eine in T3 Code unter „Settings → Scheduled tasks“ hinzu.",
+				"snoozeOne": "Stelle einen mit einer Organisieren-Taste oder in T3 Code zurück.",
+				"openPreview": "Öffne eine Seite im Vorschaubereich des Threads in T3 Code oder bitte den Agenten, HTML zu rendern.",
+				"turnOnDevices": "Aktiviere „Devices“ im „Device panel“ von T3 Code, mit Xcode oder Android Studio auf diesem Rechner.",
+				"optInNext": "Die nächste Kopplung dieses Rechners fragt danach, sobald eine Aktion hier es braucht.",
+				"addScript": "Füge eines in T3 Code über die Schaltfläche „Add action“ des Projekts hinzu.",
+				"guestLinks": "Aktiviere „Guest links“ in T3 Code unter „Settings → Labs“, während T3 Connect läuft.",
+				"selfUpdate": "Aktualisiere T3 Code auf diesem Rechner manuell."
+			},
+			"findings": "Zu behebende Befunde",
+			"providers": "Anbieter bereit",
+			"queued": "Eine eingereihte Nachricht",
+			"tasks": "Eine geplante Aufgabe",
+			"script": "Ein gespeichertes Skript im Projekt des Threads",
+			"guestLinks": "Gastlinks aktiviert",
+			"selfUpdate": "T3 Code kann sich selbst aktualisieren"
+		},
+		"editor": {
+			"title": "Im Editor öffnen",
+			"none": "Kein Editor auf diesem Rechner",
+			"noFolder": "Kein Ordner",
+			"opensOn": "Öffnet auf {machine}"
+		},
+		"devices": {
+			"title": "Geräte",
+			"ios": "iOS",
+			"android": "Android",
+			"open": "Hier öffnen",
+			"running": "Läuft",
+			"starting": "Startet…",
+			"stopped": "Gestoppt",
+			"loading": "Suche Geräte…",
+			"unreadable": "Geräte nicht lesbar",
+			"off": "Geräte sind aus",
+			"turnOn": "In T3 Code aktivieren",
+			"hubStarting": "Starte Geräte-Hub…",
+			"hubFailed": "Der Geräte-Hub konnte nicht starten.",
+			"none": "Keine Simulatoren oder Emulatoren",
+			"touchToCheck": "Berühren: erneut suchen",
+			"pressToStart": "Drücken startet · Berühren sucht",
+			"pressToOpen": "Drücken öffnet · Halten schaltet aus",
+			"holdToStartCloud": "Halten startet: EAS kostet",
+			"physical": "Echtes Gerät nicht abschaltbar"
+		},
+		"openPreview": {
+			"title": "Vorschau öffnen",
+			"none": "Keine Vorschau",
+			"onlyOn": "Nur auf {machine}",
+			"htmlRender": "HTML-Rendering"
+		},
+		"inspector": {
+			"editor": {
+				"label": "Editor",
+				"loading": "Lade Editoren…",
+				"hint": "Öffnet den Worktree des ausgewählten Threads oder den Ordner seines Projekts. T3 Code startet den Editor auf seinem eigenen Rechner, der nicht dieser sein muss."
+			},
+			"devices": {
+				"hint": "Listet die Simulatoren und Emulatoren des Rechners des Threads und seiner Geräte-Hosts. Drücken startet das angezeigte Gerät im „Device panel“ des Threads oder öffnet es dort, wenn es läuft; Halten schaltet es aus. Ein Cloud-Gerät (EAS) muss per Halten gestartet werden, da Expo abrechnet, solange es läuft. „Devices“ aktivieren und Hosts hinzufügen geschieht in T3 Code."
+			},
+			"preview": {
+				"hint": "Öffnet die Seite, die der Vorschaubereich des Threads zeigt, im Browser dieses Computers, sonst das neueste HTML-Rendering des Threads. Eine Seite auf localhost eines anderen Rechners öffnet sich nur dort, daher zeigt die Taste das an; öffne sie dort aus T3 Code."
+			},
+			"pr": {
+				"confirm": "Zum Senden",
+				"hold": "Halten",
+				"tap": "Tippen",
+				"fixHint": "Sendet die T3 Code-Aufgabe „Fix findings“ für den Pull Request des ausgewählten Threads an diesen Thread, eingereiht, falls er beschäftigt ist. Review-Kommentare und Check-Ausgaben kommen vom Host und werden als nicht vertrauenswürdige Daten angehängt.",
+				"dialHint": "Listet offene Pull Requests auf dem Rechner. Drücken führt Befunde beheben im verknüpften Thread oder in einem neuen Worktree-Thread aus; Tippen öffnet ihn im Browser; Berühren und Halten liest seine Befunde.",
+				"show": "Anzeigen",
+				"fix": "Befunde beheben",
+				"explain": "Erklären",
+				"ask": "Fragen",
+				"guide": "Review-Leitfaden"
+			},
+			"git": {
+				"action": "Aktion",
+				"commit": "Commit",
+				"commitPush": "Commit & Push",
+				"commitPushPr": "Commit, Push & PR erstellen",
+				"message": "Commit-Nachricht",
+				"messagePlaceholder": "Leer: von T3 Code geschrieben",
+				"confirm": "Zum Ausführen",
+				"confirmDefault": "Halten für Pushes, sonst tippen",
+				"tap": "Tippen",
+				"hold": "Halten",
+				"hint": "Wirkt auf den Worktree des ausgewählten Threads oder den Ordner seines Projekts. Ein Push auf den Standard-Branch braucht immer Halten; ein PR von dort wird abgelehnt, da T3 Code zuerst einen neuen Branch anbieten würde.",
+				"pullHint": "Pullt den Branch des ausgewählten Threads von seinem Upstream, wenn er dahinter liegt.",
+				"push": "Push",
+				"createPr": "PR erstellen",
+				"pull": "Pull"
+			},
+			"card": {
+				"machine": "Gerät",
+				"machines": "Geräte",
+				"getLink": "Kopplungslink holen",
+				"getLinkRow": "Link holen",
+				"pasteLink": "Link einfügen",
+				"looking": "Suche T3 Code auf diesem Rechner…",
+				"machineGroup": "Rechner für diese Aktion",
+				"addMachine": "Rechner hinzufügen",
+				"linkPlaceholder": "Kopplungslink aus „Settings → Sharing & access“ einfügen",
+				"connect": "Verbinden",
+				"connecting": "Verbinde…",
+				"accessHelp": "Turnkey möchte Threads lesen und steuern, im Rahmen dessen, was der Link erlaubt. Widerrufe das unter „Settings → Sharing & access“.",
+				"notRunning": "T3 Code läuft nicht auf diesem Rechner. Öffne es oder füge unten einen Kopplungslink von einem anderen Rechner ein.",
+				"howToPair": "Öffne in T3 Code „Settings → Sharing & access“, erstelle einen Kopplungslink und füge ihn unten ein.",
+				"allMachines": "Alle Rechner",
+				"noneYet": "Noch keine",
+				"connectedCount": "{ready} von {total} verbunden",
+				"connected": "Verbunden",
+				"readOnly": "Nur lesen",
+				"signOut": "Abmelden",
+				"tryAgain": "Erneut versuchen",
+				"needsPairing": "Kopplung nötig",
+				"remove": "Entfernen",
+				"pasteFromMachine": "Füge unten einen Kopplungslink von diesem Rechner ein.",
+				"pairing": "Verbinde mit dem Kopplungslink…",
+				"needsTitle": "Was diese Aktion braucht",
+				"needsNotMet": " · {count} nicht erfüllt",
+				"noMachines": "Noch keine Rechner",
+				"needsAllMet": " · alle erfüllt",
+				"needsMet": "Erfüllt",
+				"needsUnmet": "Nicht erfüllt",
+				"needsChecking": "Prüfe",
+				"optInTitle": "Zusätzlicher Zugriff",
+				"optInHeld": "Erteilt",
+				"optInPending": "Nächste Kopplung",
+				"optInDrop": "Nicht fragen",
+				"scopeProviders": "Anbieterkonten (Resets einlösen)",
+				"scopeMaintain": "Updates (T3 aktualisieren)",
+				"scopeTerminal": "Terminal: führt Befehle aus (Skript ausführen)",
+				"scopeTerminalRead": "Terminal-Status (Skript ausführen)",
+				"scopeShare": "Gastlinks (Thread teilen)",
+				"verboseUntil": "An bis {time}, dann zurück zur normalen Protokollierung.",
+				"verboseOff": "Protokolliert 24 Stunden lang mehr Details und schaltet sich dann selbst ab. Protokolliert nie Tokens.",
+				"diagnosticsFailed": "Das hat nicht geklappt. Öffne den Log-Ordner und sieh selbst nach."
+			},
+			"diagnostics": {
+				"title": "Diagnose",
+				"verbose": "Ausführliche Protokollierung",
+				"verboseLabel": "24 Stunden lang an",
+				"logs": "Logs",
+				"openLogs": "Log-Ordner öffnen",
+				"report": "Bericht",
+				"export": "Diagnose exportieren",
+				"exportHint": "Speichert Versionen, Rechner (nur Host, Zustand und Zugriff), Aktionszähler und letzte Fehler in eine Datei im Log-Ordner und zeigt sie an. Tokens, Kopplungslinks und vollständige Adressen werden weggelassen, sodass sie sicher an einen Fehlerbericht angehängt werden kann."
+			},
+			"settings": {
+				"open": "Turnkey-Einstellungen…",
+				"blocked": "Stream Deck hat das Fenster nicht geöffnet.",
+				"title": "Turnkey-Einstellungen",
+				"detached": "Öffne die Turnkey-Einstellungen über eine Turnkey-Aktion.",
+				"appearance": "Darstellung",
+				"behavior": "Verhalten",
+				"about": "Info",
+				"machinesLede": "Turnkey verbindet sich mit T3 Code auf jedem Rechner, den du hinzufügst. Jede Taste und jeder Regler kann einem Rechner folgen oder allen.",
+				"version": "Version",
+				"languages": "Sprachen",
+				"languagesHint": "Turnkey folgt der Sprache von Stream Deck.",
+				"readme": "Anleitung",
+				"openReadme": "README öffnen"
+			},
+			"advanced": {
+				"appLink": "App-Link",
+				"appLinkHint": "Mit t3code-dev werden Threads in einem Entwicklungs-Build geöffnet.",
+				"dialStrips": "Regler-Leisten",
+				"stateLine": "Statuslinie",
+				"stateLineLabel": "Farbige Linie unter jeder Leiste zeigen",
+				"stateHint": "Dunkel ist ein schlichtes Fast-Schwarz wie bei Stream Decks eigenen Leisten. Fluss zeichnet ein Bild über benachbarte Regler hinweg. Thread-Status färbt eine Leiste grün, wenn ein ungesehener Durchlauf fertig ist, rot bei Fehlern und bernsteinfarben, wenn er dich braucht. Jeder Regler kann das in seinen eigenen Einstellungen überschreiben.",
+				"stripStyle": "Leistenstil",
+				"styleHint": "Liste dreht die Einträge eines Reglers wie ein Rad, Karussell zeigt jeden als Kachel zwischen seinen Nachbarn. Standard je Regler nutzt Liste für den Thread-Regler und Klassisch für die anderen; Klassisch zeigt den Power-Regler als Schieberegler. Langer Text läuft, sobald der Regler ruht, zweimal durch und stoppt dann; berühre und halte die Leiste, um alles zu lesen, und drehe zum Scrollen.",
+				"motion": "Bewegung",
+				"maxEffort": "Farben",
+				"maxEffortHint": "Verlauf färbt jede Aufwandsstufe entlang einer Leiter in der Farbe des Modells, zur Spitze hin violett, und gibt jedem Modell und Schnell den Verlauf seines Anbieters. Einfarbig und Modellfarbe markieren nur die höchste Aufwandsstufe, in Violett oder der Farbe des Modells; Aus lässt sie schlicht. Ultrathink behält das Spektrum von T3 Code.",
+				"motionHint": "Voll lässt laufende Threads kreisen, lässt Threads, die auf dich warten, pulsieren und lässt Abschlüsse und Fehler aufblitzen. Reduziert kreist langsam und pulsiert nicht. Aus hält jede Ansicht still.",
+				"idlePet": "Leerlauf-Haustier",
+				"previewPet": "Haustier zeigen",
+				"idlePetHint": "Nach zwei Minuten ohne Drücken, Drehen oder Berühren läuft ein kleiner Roboter über deine längste Reihe benachbarter Regler-Leisten, bis zu dreimal, im Abstand von vier Minuten. Jedes Drücken, Drehen oder Berühren einer Turnkey-Aktion schickt ihn weg. Er folgt Bewegung: Reduziert läuft gemächlich, Aus hält ihn fern.",
+				"confirm": "Vor dem Senden bestätigen",
+				"confirmHint": "Gilt für Prompt senden, Lenken, Skill ausführen, den Prompt-Regler und den Skill-Regler; Modell, Aufwand, Tempo, Zugriff und der Power-Regler wirken immer sofort. Prüfen zeigt beim ersten Drücken, was wohin geht; drücke innerhalb von 10 Sekunden erneut, um zu senden. Halten sendet bei gehaltenem Druck, daher kann Halten nicht zugleich neu starten oder einen Thread starten. Jede Aktion kann das überschreiben."
+			},
+			"field": {
+				"strip": "Leiste",
+				"stripColor": "Leistenfarbe",
+				"style": "Stil",
+				"longText": "Langer Text",
+				"show": "Anzeigen",
+				"project": "Projekt",
+				"prompt": "Prompt",
+				"keyTitle": "Tastentitel",
+				"approvals": "Freigaben",
+				"toAnswer": "Zum Antworten",
+				"model": "Modell",
+				"effort": "Aufwand",
+				"access": "Zugriff",
+				"confirm": "Bestätigen",
+				"does": "Funktion"
+			},
+			"background": {
+				"global": "Global verwenden",
+				"t3": "Dunkel",
+				"flow": "Fluss",
+				"state": "Thread-Status",
+				"custom": "Eigene Farbe"
+			},
+			"style": {
+				"perDial": "Standard je Regler",
+				"classic": "Klassisch",
+				"list": "Liste",
+				"carousel": "Karussell"
+			},
+			"motion": {
+				"full": "Voll",
+				"reduced": "Reduziert",
+				"off": "Aus"
+			},
+			"idlePet": {
+				"off": "Aus",
+				"on": "An"
+			},
+			"maxEffort": {
+				"gradient": "Verlauf",
+				"solid": "Einfarbig",
+				"model": "Modellfarbe",
+				"off": "Aus"
+			},
+			"confirm": {
+				"review": "Prüfen, dann erneut drücken",
+				"hold": "Halten zum Senden",
+				"off": "Sofort senden"
+			},
+			"scroll": {
+				"horizontal": "Seitwärts scrollen",
+				"vertical": "Zeilenweise hochrollen",
+				"off": "Nicht scrollen"
+			},
+			"loading": {
+				"projects": "Lade Projekte…",
+				"models": "Lade Modelle…",
+				"efforts": "Lade Aufwandsstufen…",
+				"providers": "Lade Anbieter…",
+				"windows": "Lade Fenster…",
+				"threads": "Lade Threads…",
+				"tasks": "Lade Aufgaben…",
+				"skills": "Lade Skills…",
+				"scripts": "Lade Skripte…"
+			},
+			"filter": {
+				"all": "Alle Threads",
+				"attention": "Braucht dich: Freigabe, Frage, Fehler oder ungelesenes Ergebnis",
+				"active": "Aktiv oder eingereiht",
+				"unread": "Ungelesen"
+			},
+			"authority": {
+				"open": "In T3 Code öffnen",
+				"once": "Einmal erlauben",
+				"session": "Für die Sitzung erlauben",
+				"always": "Immer erlauben"
+			},
+			"slot": {
+				"label": "Platz",
+				"byPosition": "Nach Tastenposition",
+				"selected": "Ausgewählter Thread",
+				"first": "1 (dringendster)",
+				"hint": "Nach Tastenposition belegt Thread-Tasten von links nach rechts, von oben nach unten. Threads sind sortiert: braucht Freigabe, hat eine Frage, läuft, dann der Rest. Tippen öffnet, Halten wählt aus."
+			},
+			"activity": {
+				"hint": "Zeigt den dringendsten passenden Thread. Weitere Aktivität-Tasten mit denselben Einstellungen zeigen die nächsten, nach Tastenposition."
+			},
+			"answer": {
+				"hold": "Regler halten",
+				"press": "Regler drücken",
+				"hint": "Wechsle per Drehen zwischen dieser Option und Ablehnen. Eine Anfrage, die diese Option nicht bietet, öffnet sich stattdessen in T3 Code. Berühre und halte die Leiste, um eine lange Anfrage vollständig zu lesen."
+			},
+			"send": {
+				"titlePlaceholder": "Tests fixen",
+				"promptPlaceholder": "Führe die Tests aus und behebe, was fehlschlägt",
+				"hint": "Geht an den in T3 Code ausgewählten Thread: Er startet einen Durchlauf oder lenkt einen laufenden bzw. reiht sich dahinter ein. Halte die Taste, um zu unterbrechen und damit neu zu starten.",
+				"myText": "Eigener Text",
+				"text": "Text"
+			},
+			"steer": {
+				"titlePlaceholder": "Klein halten",
+				"promptPlaceholder": "Halte die Änderung klein und lass das Refactoring weg",
+				"hint": "Ergänzt den laufenden Durchlauf des ausgewählten Threads. Ist abgeblendet, solange der Thread inaktiv ist."
+			},
+			"quick": {
+				"continue": "Weiter",
+				"test": "Tests ausführen und Fehler beheben",
+				"fix": "Diagnostizieren und beheben",
+				"explain": "Aktuellen Stand erklären",
+				"commit": "Änderungen committen"
+			},
+			"new": {
+				"createIn": "Erstellen in",
+				"selected": "Projekt des ausgewählten Threads",
+				"scratch": "Kein Projekt",
+				"project": "Gewähltes Projekt",
+				"promptPlaceholder": "Optional: Prüfe den offenen Pull Request",
+				"title": "Thread-Titel",
+				"titlePlaceholder": "PR prüfen",
+				"hint": "Mit einem Prompt beginnt der Thread zu arbeiten und das Deck wählt ihn aus. Ohne öffnet er sich leer in T3 Code. Ist kein Thread ausgewählt, startet er ohne Projekt. Er nutzt das Standardmodell und den Standardzugriff von T3 Code.",
+				"startIn": "Starten in",
+				"folder": "Projektordner",
+				"worktree": "Neuer Worktree",
+				"worktreeHint": "Ein neuer Worktree startet vom Standard-Branch des Repositorys, wie im Composer von T3 Code, und leitet seinen Branch-Namen aus dem Prompt ab; er braucht einen Prompt und ein Projekt."
+			},
+			"model": {
+				"nameColor": "Namensfarbe",
+				"nameModel": "Modellfarbe",
+				"nameWhite": "Weiß",
+				"hint": "Durchschalten geht durch die Favoritenmodelle von T3 Code über alle Anbieter, oder durch die Modelle des Thread-Anbieters, wenn du keine hast. Ein Modell eines anderen Anbieters übergibt den Thread, wie die Modellauswahl von T3 Code."
+			},
+			"effort": {
+				"hint": "Durchschalten geht durch die Aufwandsstufen, die das Modell des ausgewählten Threads bietet. Ein fest eingestellter Aufwand, den sein Modell nicht bietet, blendet die Taste ab. Ultrathink ändert den Aufwand nicht: Wie in T3 Code wird es den Prompts vorangestellt, die das Deck an diesen Thread sendet, bis du einen anderen Aufwand wählst."
+			},
+			"permissions": {
+				"cycle": "Zugriffsmodi durchschalten",
+				"approvalRequired": "Überwacht",
+				"autoAcceptEdits": "Änderungen auto-annehmen",
+				"auto": "Auto",
+				"fullAccess": "Vollzugriff",
+				"hint": "Gilt für den ausgewählten Thread ab seinem nächsten Schritt. Nur die Modi, die sein Anbieter unterstützt, werden angeboten."
+			},
+			"approve": {
+				"hold": "Taste halten",
+				"tap": "Taste tippen",
+				"hint": "Beantwortet die Freigabe des ausgewählten Threads. Eine Anfrage, die diese Option nicht bietet oder die das Deck nicht beantworten kann, öffnet sich in T3 Code. Ablehnen hat eine eigene Taste."
+			},
+			"organize": {
+				"action": "Aktion",
+				"settle": "Erledigen",
+				"pin": "Anheften / Lösen",
+				"snooze": "Zurückstellen",
+				"archive": "Archivieren",
+				"markUnread": "Als ungelesen markieren",
+				"wake": "Zuletzt zurückgestellten wecken",
+				"snoozeFor": "Zurückstellen für",
+				"minutes15": "15 Minuten",
+				"minutes30": "30 Minuten",
+				"hour1": "1 Stunde",
+				"hours2": "2 Stunden",
+				"hours4": "4 Stunden",
+				"hours8": "8 Stunden",
+				"day1": "1 Tag",
+				"confirm": "Bestätigen",
+				"confirmReview": "Prüfen, dann erneut drücken",
+				"confirmHold": "Halten zum Bestätigen",
+				"confirmOff": "Sofort"
+			},
+			"prompts": {
+				"label": "Prompts",
+				"placeholder": "Ein Prompt pro Zeile",
+				"templates": "Vorlagen",
+				"templatesLabel": "Weiter, Tests fixen, Diagnose, Erklären und Commit hinzufügen",
+				"hint": "Drehen zum Wählen, Drücken sendet an den ausgewählten Thread, Halten startet einen neuen Thread."
+			},
+			"threads": {
+				"recency": "Aus den letzten",
+				"noLimit": "Keine Grenze",
+				"day": "24 Stunden",
+				"twoDays": "48 Stunden",
+				"threeDays": "3 Tage",
+				"week": "7 Tage",
+				"hint": "Drehen geht durch die passenden Threads, dringendste zuerst; der Thread, auf dem der Regler stehen bleibt, wird in T3 Code ausgewählt. Drücken oder Tippen öffnet ihn."
+			},
+			"power": {
+				"controls": "Dieser Regler steuert",
+				"bottomRow": "Modellansicht zeigt",
+				"showSpeed": "Tempo",
+				"showEffort": "Aufwand",
+				"hint": "Drehen zeigt eine Vorschau, Drücken wendet sie auf den ausgewählten Thread an. Modell geht durch die Favoritenmodelle von T3 Code über alle Anbieter. Drücken ohne etwas anzuwenden oder Tippen schaltet das Tempo um, wenn das Modell es bietet. Ultrathink wird, wo Claude es bietet, den nächsten Prompts des Decks an den Thread vorangestellt."
+			},
+			"limits": {
+				"provider": "Anbieter",
+				"window": "Fenster",
+				"show": "Anzeigen",
+				"left": "% übrig",
+				"used": "% genutzt",
+				"resetAction": "Halten zum",
+				"open": "„Usage“ in T3 Code öffnen",
+				"spend": "Angesparten Reset nutzen",
+				"hint": "Zusammengefasst über die Konten des Anbieters auf den gewählten Rechnern, wie die Limits in T3 Code. Tippen aktualisiert. Die Markierung auf dem Balken zeigt, wo gleichmäßiges Tempo wäre.",
+				"spendHint": "Halten löst ein Reset-Guthaben auf dem Konto ein, das T3 Code zuerst auffüllen würde. Braucht Anbieter-Zugriff: Fehlt er der Kopplung, fragt der nächste Kopplungslink des Rechners danach."
+			},
+			"usage": {
+				"period": "Zeitraum",
+				"provider": "Anbieter",
+				"allProviders": "Alle Anbieter",
+				"day": "Letzte 24 h",
+				"week": "7 Tage",
+				"month": "30 Tage",
+				"quarter": "90 Tage",
+				"hint": "Die API-Schätzung von T3 Code für den Zeitraum, über die gewählten Rechner; ein Ordner, den zwei Rechner teilen, zählt einmal. Tippen liest neu, Halten lädt zusätzlich die Modellpreise neu. Braucht Nutzungszugriff.",
+				"dialHint": "Drehen geht von der Summe des Zeitraums durch jedes Modell, nach Kosten. Drücken oder Tippen liest neu; langes Drücken lädt zusätzlich die Modellpreise neu. Braucht Nutzungszugriff."
+			},
+			"target": {
+				"label": "Ziel",
+				"selected": "Ausgewählter Thread",
+				"thread": "Dieser Thread",
+				"pick": "Thread",
+				"hint": "Die Taste wirkt auf diesen Thread, auch wenn ein anderer ausgewählt ist, und zeigt eine kleine Nadel. Archiviert oder gelöscht, wird er als nicht verfügbar angezeigt, bis du einen anderen wählst."
+			},
+			"queue": {
+				"hint": "Folgt der Warteschlange des ausgewählten Threads. Drücken sendet die angezeigte Nachricht sofort: in den laufenden Durchlauf, wenn der Anbieter Lenken unterstützt, oder als nächsten Durchlauf, wenn nichts läuft, was auch eine von Stopp angehaltene Warteschlange freigibt. Halten entfernt sie."
+			},
+			"task": {
+				"label": "Aufgabe",
+				"hint": "Drücken führt die Aufgabe jetzt aus, wie „Run now“ in T3 Code; ihr Zeitplan bleibt. Aufgaben kommen aus „Settings → Scheduled tasks“ in T3 Code.",
+				"dialHint": "Drehen geht durch die geplanten Aufgaben des Rechners. Drücken führt die angezeigte jetzt aus; Tippen schaltet sie aus, erneutes Tippen wieder ein."
+			},
+			"skill": {
+				"label": "Skill",
+				"extra": "Mit",
+				"extraPlaceholder": "Optional: was du ihm nach dem Skill sagen willst",
+				"titlePlaceholder": "Name des Skills",
+				"hint": "Sendet den Skill an den Thread wie der Composer von T3 Code ($name, dann dein Text). Skills kommen vom Anbieter des Threads für dessen Checkout: Codex, Claude und Antigravity listen sie auf.",
+				"dialHint": "Drehen geht durch die Anbieter-Skills des Threads für dessen Checkout. Drücken oder Tippen führt den angezeigten aus, Berühren und Halten liest seine Beschreibung."
+			},
+			"workflow": {
+				"hint": "Stoppt die Workflows, die der Thread ausführt, wie das Lineage-Panel von T3 Code. Nur Workflows von Claude lassen sich stoppen. Halte die Taste zum Stoppen; ein gestoppter Workflow kann nicht fortgesetzt werden."
+			},
+			"lineage": {
+				"forkHint": "Forkt den Thread ab seiner neuesten fertigen Antwort in einen neuen Thread, wie die Fork-Schaltfläche von T3 Code an dieser Antwort, und öffnet dann den Fork.",
+				"mergeHint": "Mergt einen geforkten Thread zurück in den Thread, aus dem er stammt, wie „Merge“ in T3 Code, und öffnet dann diesen Thread. Halte die Taste zum Mergen.",
+				"fork": "Forken",
+				"merge": "Zurückmergen"
+			},
+			"update": {
+				"hint": "Zeigt die T3 Code-Version auf dem unten gewählten Rechner (dieser Computer, wenn keiner gewählt ist). Halten aktualisiert auf die neueste Version seines Kanals; eine Desktop-App installiert ihr eigenes Update und startet neu. T3 Code meldet dem Deck keine Updates, daher kann die Taste nicht anzeigen, dass eines wartet.",
+				"access": "Braucht Update-Zugriff, mit dem dieses Deck T3 Code dort aktualisieren und neu starten kann. Der erste Druck auf die Taste fragt bei der nächsten Kopplung des Rechners danach."
+			},
+			"script": {
+				"label": "Skript",
+				"hint": "Drücken führt das Skript in einem eigenen Terminal des Threads aus, in seinem Worktree oder sonst im Projektordner, wie die Skript-Schaltfläche von T3 Code. Halten stoppt es. Die Taste zeigt, ob es läuft; T3 Code meldet nicht den Exit-Code eines Skripts, nur den seines Terminals.",
+				"access": "Shell-Zugriff: Dies braucht Terminal-Zugriff, mit dem dieses Deck beliebige Befehle in den Terminals von T3 Code auf diesem Rechner ausführen kann. Der erste Druck auf die Taste fragt bei der nächsten Kopplung des Rechners danach."
+			},
+			"share": {
+				"hint": "Drücken erstellt einen Gastlink für den Thread und kopiert ihn; wer ihn hat, kann den Thread 24 Stunden lang verfolgen und Nachrichten vorschlagen, die du sendest oder verwirfst. Halten beendet das Teilen. Braucht „Guest links“ („Settings → Labs“) und T3 Connect.",
+				"access": "Braucht Gastlink-Zugriff, mit dem dieses Deck Threads mit Externen teilen kann. Der erste Druck auf die Taste fragt bei der nächsten Kopplung des Rechners danach.",
+				"link": "Gastlink",
+				"linkHint": "Nur sichtbar, solange Turnkey läuft: T3 Code zeigt einen Link nur einmal, beim Erstellen."
+			},
+			"stop": {
+				"stops": "Stoppt",
+				"turn": "Den Durchlauf",
+				"workflow": "Den Workflow"
+			},
+			"open": {
+				"in": "Öffnen in",
+				"editor": "Editor",
+				"preview": "Vorschau"
+			}
+		},
+		"usage": {
+			"title": "Nutzung",
+			"period": {
+				"day": "Letzte 24 h",
+				"week": "7 Tage",
+				"month": "30 Tage",
+				"quarter": "90 Tage"
+			},
+			"allModels": "Alle Modelle",
+			"tokens": "{tokens} Tokens",
+			"sessions": "{count} Sitzungen",
+			"unpriced": "Ohne Preis",
+			"cacheHit": "{percent} Cache",
+			"perMillion": "{cost}/M",
+			"updateT3": "T3 Code aktualisieren für Nutzung",
+			"updateDeck": "Turnkey aktualisieren für Nutzung"
+		},
+		"limits": {
+			"title": "Limits",
+			"none": "Keine Limits",
+			"noneDetail": "Kein Anbieter meldet Limits",
+			"window": {
+				"hours": "{hours} Std.",
+				"session": "Sitzung",
+				"weekly": "Wöchentlich",
+				"monthly": "Monatlich"
+			},
+			"resetsNow": "Reset jetzt",
+			"resetsIn": "Reset {time}",
+			"resetOne": "1 Reset",
+			"resets": "{count} Resets",
+			"pooled": "{count} Konten",
+			"refreshing": "Aktualisiere…",
+			"pressToRefresh": "Drücken: aktualisieren",
+			"holdToReset": "Halten: Reset nutzen",
+			"noResets": "Keine Resets angespart",
+			"needsProviders": "Braucht Anbieter-Zugriff",
+			"outcome": {
+				"reset": "Reset angewendet",
+				"nothingToReset": "Nichts zurückzusetzen",
+				"noCredit": "Kein Reset übrig",
+				"alreadyRedeemed": "Schon eingelöst"
+			}
+		},
+		"tasks": {
+			"title": "Aufgaben",
+			"now": "Jetzt",
+			"in": "in {time}",
+			"running": "Läuft",
+			"off": "Aus",
+			"onWebhook": "Per Webhook",
+			"notScheduled": "Nicht geplant",
+			"lastFailed": "Letzter Lauf: Fehler · {when}",
+			"noTasks": "Keine geplanten Aufgaben",
+			"addInT3": "In T3 Code hinzufügen",
+			"updateT3": "T3 Code für Aufgaben aktualisieren",
+			"loading": "Lade Aufgaben…",
+			"pressToRun": "Drücken führt aus · Tippen schaltet aus",
+			"pressToRunOff": "Drücken führt aus · Tippen schaltet ein",
+			"pickTask": "Aufgabe wählen",
+			"gone": "Nicht verfügbar: {task}",
+			"chooseTask": "Aufgabe wählen…"
+		},
+		"skills": {
+			"title": "Skills",
+			"pickSkill": "Skill wählen",
+			"none": "Keine Skills",
+			"gone": "Nicht verfügbar: {skill}",
+			"chooseSkill": "Skill wählen…",
+			"aSkill": "Ein Skill vom Anbieter des Threads"
+		},
+		"workflow": {
+			"stop": "Workflow stoppen",
+			"none": "Kein Workflow aktiv",
+			"notClaude": "Nicht bei diesem Anbieter",
+			"option": "Workflows stoppen (Claude)",
+			"holdToStop": "Halten: stoppen",
+			"notRunning": "Läuft nicht mehr",
+			"unsupported": "Anbieter kann nicht stoppen",
+			"unavailable": "Keine aktive Aufgabe",
+			"stopFailed": "Stoppen fehlgeschlagen"
+		},
+		"lineage": {
+			"fork": "Fork",
+			"mergeBack": "Zurückmergen",
+			"into": "In {thread}",
+			"notFork": "Kein Fork",
+			"finishRunFirst": "Erst Durchlauf beenden",
+			"finishTurn": "Auf Durchlauf warten",
+			"nothingToFork": "Noch nichts zu forken",
+			"holdToMerge": "Halten: mergen",
+			"aFork": "Ein geforkter Thread",
+			"aFinishedTurn": "Eine fertige Antwort"
+		},
+		"worktree": {
+			"newThread": "Neuer Worktree",
+			"noProject": "Braucht ein Projekt",
+			"needsPrompt": "Braucht einen Prompt",
+			"notRepo": "Kein Git-Repository",
+			"noBranch": "Kein Start-Branch"
+		},
+		"update": {
+			"title": "T3 aktualisieren",
+			"version": "v{version}",
+			"noVersion": "Version unbekannt",
+			"holdToUpdate": "Halten: aktualisieren",
+			"checking": "Prüfe…",
+			"downloading": "Lade herunter…",
+			"installing": "Installiere…",
+			"restarting": "Starte neu…",
+			"toVersion": "Auf v{version}",
+			"upToDate": "Aktuell",
+			"inProgress": "Update läuft bereits",
+			"manual": "Manuell aktualisieren",
+			"desktopTooOld": "Desktop-App aktualisieren",
+			"failed": "Update-Fehler",
+			"noReturn": "Nicht zurückgekehrt",
+			"pickMachine": "Rechner wählen",
+			"needsAccess": "Braucht Update-Zugriff"
+		},
+		"script": {
+			"title": "Skript ausführen",
+			"pick": "Skript wählen",
+			"idle": "Drücken: ausführen",
+			"starting": "Startet…",
+			"running": "Läuft",
+			"finished": "Beendet",
+			"stopped": "Gestoppt",
+			"exited": "Beendet: {code}",
+			"ended": "Beendet",
+			"error": "Terminal-Fehler",
+			"holdToStop": "Halten: stoppen",
+			"needsAccess": "Braucht Terminal-Zugriff"
+		},
+		"share": {
+			"title": "Thread teilen",
+			"shared": "Geteilt",
+			"guest": "{name} ist dabei",
+			"unused": "Link noch ungenutzt",
+			"pending": "{count} Nachrichten warten",
+			"pendingOne": "1 Nachricht wartet",
+			"expired": "Link abgelaufen",
+			"holdToClear": "Halten: verwerfen",
+			"holdToStop": "Halten: Teilen beenden",
+			"disabled": "Gastlinks aktivieren",
+			"noConnect": "Braucht T3 Connect",
+			"unavailable": "Thread nicht teilbar",
+			"copyFailed": "Kopierfehler",
+			"needsAccess": "Braucht Zugriff zum Teilen"
+		}
+	}
+}

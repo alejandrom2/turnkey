@@ -1,10 +1,10 @@
 {
-	"name": "t3-deck",
+	"name": "turnkey",
 	"private": true,
 	"description": "Stream Deck plugin for T3 Code environments, over T3 Code's client API.",
 	"scripts": {
 		"build": "rollup -c",
-		"watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.alejandrom2.t3deck\"",
+		"watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.alejandrom2.turnkey\"",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"i18n:check": "vitest run src/core/i18n.test.ts",
@@ -28,5 +28,7 @@
 	"dependencies": {
 		"@elgato/streamdeck": "3.0.2",
 		"@elgato/utils": "0.6.1"
-	}
+	},
+	"license": "MIT",
+	"author": "Alejandro Martinez"
 }

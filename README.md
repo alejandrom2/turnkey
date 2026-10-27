@@ -1,4 +1,4 @@
-# T3 Deck
+# Turnkey for T3 Code
 
 A Stream Deck plugin for [T3 Code](https://github.com/pingdotgg/t3code). It shows your threads on keys and the Stream Deck + touch strip, and lets you stop turns, send prompts, start threads, adjust model options, and answer agent questions. It works with every provider T3 Code runs (Codex, Claude, Cursor, OpenCode, …), on local and remote environments.
 
@@ -6,21 +6,21 @@ It connects like T3 Code's own web and mobile clients: a pair link, then a live 
 
 ## Setup
 
-Open any T3 Deck action's settings in Stream Deck. Below the action's own fields, **Machine** picks the machine it follows, and **T3 Deck settings…** opens the **T3 Deck Settings** window, with a line saying how many machines are connected (amber when one needs pairing or failed). Until a machine is paired, the panel also has a pair link field of its own.
+Open any Turnkey action's settings in Stream Deck. Below the action's own fields, **Machine** picks the machine it follows, and **Turnkey settings…** opens the **Turnkey Settings** window, with a line saying how many machines are connected (amber when one needs pairing or failed). Until a machine is paired, the panel also has a pair link field of its own.
 
 - In T3 Code, open **Settings → Sharing & access** and create a pair link (`http://192.168.1.20:3773/pair#token=…`). Paste it under **Add a machine** in the window's **Machines** section (or the panel's field) and press **Connect**. This works the same for this machine and for others; **this machine** shows up by itself whenever T3 Code runs here, marked **Needs pairing** until you do.
 - Each action follows the machine you pick in its **Machine** field, or **All machines**. Machines are shared, so add each one once.
 
 The window has five sections: **Machines** (pairing, extra access, sign out and remove), **Appearance** (dial strips, strip style, long text, colors, motion and the idle pet), **Behavior** (confirm before sending, app link), **Diagnostics** and **About** (version and languages). It works through the panel that opened it: switch to another action and it asks you to open it again from that action.
 
-T3 Deck asks to read threads and act on them, for source control access (git and pull request keys) and to read usage. T3 Code grants what the pair link allows, so a link that only grants reading gives a read-only deck, and a key that needs access the pairing lacks says so; pair again with a new standard link to grant it. Actions that need broader access later ask for it on that machine's next pairing. Pairings last 30 days, then need a new link. T3 Deck appears under **Sharing & access** in T3 Code, which is where you revoke it. **Sign out** only forgets the pairing on this computer, and **Remove** forgets a machine you added.
+Turnkey asks to read threads and act on them, for source control access (git and pull request keys) and to read usage. T3 Code grants what the pair link allows, so a link that only grants reading gives a read-only deck, and a key that needs access the pairing lacks says so; pair again with a new standard link to grant it. Actions that need broader access later ask for it on that machine's next pairing. Pairings last 30 days, then need a new link. Turnkey appears under **Sharing & access** in T3 Code, which is where you revoke it. **Sign out** only forgets the pairing on this computer, and **Remove** forgets a machine you added.
 
 ## Profiles
 
-T3 Deck comes with ready-made profiles. Stream Deck offers them when the plugin is installed, and they stay in its profile list; none switches your deck by itself.
+Turnkey comes with ready-made profiles. Stream Deck offers them when the plugin is installed, and they stay in its profile list; none switches your deck by itself.
 
-- **T3 Deck** is one page of the everyday set. On Stream Deck +: Activity, Steer, Speed and Model over Send "Continue", New Thread, Stop and Effort, with the Threads, Usage, Power and Skills dials. On the 15-key Stream Deck: four thread keys, Activity, New Thread, Send "Continue", Steer, Stop, Approve, Deny, Model, Effort, Speed and Health. Stream Deck XL adds more threads and the git and usage keys; Stream Deck Mini keeps two threads, Activity, Send "Continue", Stop and Approve; Stream Deck Neo takes the Stream Deck + keys, with Activity on its info bar.
-- **T3 Deck (All actions)** has every action, a page per area: threads, controls, prompts, skills, git, pull requests, devices, tasks, admin and usage on Stream Deck + and Neo, and fewer, fuller pages on the 15-key Stream Deck and XL. Stream Deck + turns pages with a swipe on the touch strip and Neo with its page buttons; on the 15-key Stream Deck and XL, Stream Deck's own **Previous Page** and **Next Page** keys sit in the bottom corners. Mini has no All actions profile.
+- **Turnkey** is one page of the everyday set. On Stream Deck +: Activity, Steer, Speed and Model over Send "Continue", New Thread, Stop and Effort, with the Threads, Usage, Power and Skills dials. On the 15-key Stream Deck: four thread keys, Activity, New Thread, Send "Continue", Steer, Stop, Approve, Deny, Model, Effort, Speed and Health. Stream Deck XL adds more threads and the git and usage keys; Stream Deck Mini keeps two threads, Activity, Send "Continue", Stop and Approve; Stream Deck Neo takes the Stream Deck + keys, with Activity on its info bar.
+- **Turnkey (All actions)** has every action, a page per area: threads, controls, prompts, skills, git, pull requests, devices, tasks, admin and usage on Stream Deck + and Neo, and fewer, fuller pages on the 15-key Stream Deck and XL. Stream Deck + turns pages with a swipe on the touch strip and Neo with its page buttons; on the 15-key Stream Deck and XL, Stream Deck's own **Previous Page** and **Next Page** keys sit in the bottom corners. Mini has no All actions profile.
 
 On Stream Deck Neo, drag **Activity** or **Usage** onto the info bar. Activity shows the most urgent thread matching its filter, with its state, and dots counting threads that need an approval (amber), have a question (indigo) or are working (blue). Usage shows its period's cost, with tokens under it. The info bar only shows; press a key to act.
 
@@ -58,7 +58,7 @@ Stop, Send Prompt, Steer, Approve, Deny, Model, Effort, Speed, Permissions, Plan
 | Health | key | The connection to the action's machine (or all) and their providers, worst problem first, in T3 Code's words: offline, needs pairing, a provider not found, unavailable, not authenticated, on an unsupported or known broken version, or needing attention, then how many more. With nothing wrong it says connected or read only, and mentions a provider update available or a provider turned off. Tap reconnects. T3 Code doesn't tell clients when T3 Code itself has an update, so Health can't show that yet. |
 | Update T3 | key | T3 Code's version on the key's machine (this computer's when none is picked). Hold updates it to the newest release on its channel, as T3 Code's Update action does, showing each stage until the server is back on the new version; a desktop app installs its own update and relaunches. A machine T3 Code can't update from a client says **Update by hand**. Needs update access (see below). |
 | Run Script | key | One of the project's saved scripts (T3 Code's project actions), picked in its settings: its name and whether it runs. Press runs it in its own terminal on the thread, in the thread's worktree or else the project's folder, as T3 Code's script button does. While it runs, hold stops it (Ctrl-C). Needs terminal access (see below). |
-| Share Thread | key | Makes a guest link for the thread, as T3 Code's **Share with guest** does, and copies it; the link also shows in the key's settings while T3 Deck runs. A shared thread shows **Shared** and its guest, in amber while their messages wait for you. Hold stops sharing. Needs Guest links on (**Settings → Labs**), T3 Connect running, and guest link access (see below). |
+| Share Thread | key | Makes a guest link for the thread, as T3 Code's **Share with guest** does, and copies it; the link also shows in the key's settings while Turnkey runs. A shared thread shows **Shared** and its guest, in amber while their messages wait for you. Hold stops sharing. Needs Guest links on (**Settings → Labs**), T3 Connect running, and guest link access (see below). |
 | Threads Dial | dial | Like Activity: the threads matching a filter (all, needs you, working, unread), project and **From the last** (no limit, 24 hours … 7 days), most urgent first. Rotate selects one (it settles after a short pause), press or tap opens it. The strip shows its provider, title, status and timer or diff, how many messages wait in its queue, and how many subagents run. |
 | Power Dial | dial | Controls one setting of the selected thread, picked in its settings: the **model** (your favorites across providers, with each provider's mark), the **effort** (with Ultrathink) or **access** (with T3 Code's mode icons). Rotate previews, press applies; when T3 Code refuses, the strip shows why. Press with nothing to apply, or tap, switches Speed where the model has it. |
 | Prompts Dial | dial | Rotate through your prompts, then Send Prompt's templates (turn them off in settings). Press or tap sends to the selected thread, hold starts a new thread. |
@@ -75,25 +75,25 @@ Commit, Push, Create PR and Pull are now modes of **Git**; Fix Findings, Explain
 
 A key that can't act right now is dimmed, and pressing it says why. A press that works shows no confirmation: the key or strip just shows the new state. Each action's settings list **What this action needs**: every condition it checks (paired, can act, a selected thread, access, what the thread's model offers, a pull request…), met or not, with how to fix what isn't; a saved choice that no longer exists shows as **Not available**. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Effort shows where it sits on its model's ladder, Model where it sits among your favorites, and Permissions a track of the modes its provider offers, from Supervised to Full access, colored blue through violet to amber; the Power dial's access view uses the same colors. Models and favorites are read again whenever a key's settings open.
 
-**Confirm before sending** (T3 Deck Settings → **Behavior**, overridable per action) covers Send Prompt, Steer, Run Skill, the Prompts dial and the Skills dial. Model, Effort, Speed, Permissions and the Power dial always apply on the press:
+**Confirm before sending** (Turnkey Settings → **Behavior**, overridable per action) covers Send Prompt, Steer, Run Skill, the Prompts dial and the Skills dial. Model, Effort, Speed, Permissions and the Power dial always apply on the press:
 
 - **Review, then press again** (default): the first press shows what would be sent and to which thread; press again between ¾ of a second and 10 seconds later to go ahead. If anything changed in between, it shows the new review instead. Turning the dial drops a review.
 - **Hold to send**: a held press sends. Holding then can't also restart (Send Prompt) or start a thread (Prompts dial).
 - **Send right away**: a press acts at once.
 
-**Colors** (T3 Deck Settings → **Appearance**): Gradient (default) colors each effort level along a ladder in the model's own color, from a light tint up to the color and turning toward violet at the top (blue to violet for providers with a white mark), on the Effort key and the Power dial, and gives each model's slider and Fast its provider's own gradient. Solid and Model color mark only a model's top effort level, in violet or the model's color; Off leaves them plain. Ultrathink always shows T3 Code's spectrum.
+**Colors** (Turnkey Settings → **Appearance**): Gradient (default) colors each effort level along a ladder in the model's own color, from a light tint up to the color and turning toward violet at the top (blue to violet for providers with a white mark), on the Effort key and the Power dial, and gives each model's slider and Fast its provider's own gradient. Solid and Model color mark only a model's top effort level, in violet or the model's color; Off leaves them plain. Ultrathink always shows T3 Code's spectrum.
 
 **Motion** (**Appearance**): Full (default) spins running threads on keys and strips, pulses keys waiting on you and flashes a thread once when it finishes or fails. The upper half of an effort ladder sparkles on the Effort key and dial; the sparkles twinkle in Full, twinkle slowly in Reduced and stay still when Off. Reduced spins slowly without pulsing. Off keeps every face still.
 
-*The idle pet is turned off in this build (`FEATURES.idlePet` in `src/core/features.ts`); its setting is hidden until it returns.* **Idle pet** (**Appearance**, off by default): on a Stream Deck +, after two minutes without a press, turn or touch, a small robot walks across the longest row of neighboring T3 Deck dial strips, then rests four minutes and walks back, up to three times. Any press, turn or touch on a T3 Deck key or dial sends it away and starts the wait over; presses on other plugins' keys don't count. It follows **Motion**: Full walks with a small bounce, Reduced walks calmly at fewer frames, Off keeps it away. It never draws over keys, a press result, a review card or a strip you are reading. **Preview pet**, beside it, sends it across once now, even while it is off.
+*The idle pet is turned off in this build (`FEATURES.idlePet` in `src/core/features.ts`); its setting is hidden until it returns.* **Idle pet** (**Appearance**, off by default): on a Stream Deck +, after two minutes without a press, turn or touch, a small robot walks across the longest row of neighboring Turnkey dial strips, then rests four minutes and walks back, up to three times. Any press, turn or touch on a Turnkey key or dial sends it away and starts the wait over; presses on other plugins' keys don't count. It follows **Motion**: Full walks with a small bounce, Reduced walks calmly at fewer frames, Off keeps it away. It never draws over keys, a press result, a review card or a strip you are reading. **Preview pet**, beside it, sends it across once now, even while it is off.
 
-Each dial's strip has a style, set under **Appearance → Strip style** in T3 Deck Settings and overridable per dial. Classic is the default:
+Each dial's strip has a style, set under **Appearance → Strip style** in Turnkey Settings and overridable per dial. Classic is the default:
 
 - **Classic**: Elgato's layout, with an icon, the value and a detail line. The Threads dial shows the selected thread's title large, with the next two dimmed below and their status at the right. The Power dial shows effort and access as a slider: the thread's level filled, the one you turned to as a hollow thumb. Models aren't levels, so for models it shows one pill per favorite instead, like the Model key: the thread's filled in its color, the one you turned to outlined. Its bottom row shows Speed on the left and the thread's effort on the right, in its level's color; either can be turned off in the dial's settings, and with nothing left there the pills sit lower.
 - **List**: a wheel of the dial's items (threads, models, efforts or access modes, prompts, answers). The heading shows the dial and where you are (`3/12`), the selected item is bold with its glyph between the previous and the next ones, and the last row says what pressing does or why the dial can't act.
 - **Carousel**: the selected item as a tile between its dimmed neighbors, with its title below. Turning slides to the next tile. On the Power dial every tile has its short name on the bottom row, sliding with it, and the selected model's name (and its row in List) takes its provider's color: T3 Code's accent for the instance, else the brand color.
 
-Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Appearance → Dial strips** in T3 Deck Settings: Dark (default, a plain near-black), Flow (one picture across neighboring dials), the thread's state (green unseen done, red failed, amber approval, indigo question) or a color of your own, with or without the colored state line. Each dial can override it.
+Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Appearance → Dial strips** in Turnkey Settings: Dark (default, a plain near-black), Flow (one picture across neighboring dials), the thread's state (green unseen done, red failed, amber approval, indigo question) or a color of your own, with or without the colored state line. Each dial can override it.
 
 ### Usage and limits
 
@@ -117,13 +117,13 @@ Some actions need access a standard pairing doesn't ask for. The deck asks for i
 | Terminal access | Run Script | Run any command in T3 Code's terminals: shell access to that machine. Terminal status access comes with it, so the key can show whether the script runs. |
 | Guest link access | Share Thread | Create guest links, which let someone outside watch a thread for a day and propose messages. |
 
-**Machines** in T3 Deck Settings lists, per machine, the extra access its pairing holds (**Granted**) and what its next pairing will ask for (**Next pairing**). **Don't ask** takes back a pending request. To give up access the pairing already holds, sign out and pair again, or revoke the session in T3 Code under **Sharing & access**.
+**Machines** in Turnkey Settings lists, per machine, the extra access its pairing holds (**Granted**) and what its next pairing will ask for (**Next pairing**). **Don't ask** takes back a pending request. To give up access the pairing already holds, sign out and pair again, or revoke the session in T3 Code under **Sharing & access**.
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
 ### Diagnostics
 
-Under **Diagnostics** in T3 Deck Settings:
+Under **Diagnostics** in Turnkey Settings:
 
 - **Verbose logging** writes more detail to the plugin's log for 24 hours, then turns itself off, across restarts too. It never logs tokens.
 - **Open logs folder** shows the plugin's logs.
@@ -154,28 +154,42 @@ Requires Node 24+ and the Stream Deck app 7.6+ (the first with plugin info bar a
 
 ```sh
 npm install
-npm run build        # bundle to com.alejandrom2.t3deck.sdPlugin/bin
+npm run build        # bundle to com.alejandrom2.turnkey.sdPlugin/bin
 npm test             # core logic, no Stream Deck needed
-npx streamdeck link com.alejandrom2.t3deck.sdPlugin
+npx streamdeck link com.alejandrom2.turnkey.sdPlugin
 npm run watch        # rebuild + restart the plugin on change
-npx streamdeck validate com.alejandrom2.t3deck.sdPlugin
-npx streamdeck pack com.alejandrom2.t3deck.sdPlugin
+npx streamdeck validate com.alejandrom2.turnkey.sdPlugin
+npx streamdeck pack com.alejandrom2.turnkey.sdPlugin
 ```
 
 - `src/core/` has no Stream Deck dependency: the client API in `t3/` (pairing, RPC socket, shell reducer, `Machine`), the thread board, commands, and SVG rendering.
 - `src/actions/` maps SDK events onto it.
 - `node scripts/icons.ts` and `node scripts/ui.ts` regenerate the manifest images and property inspectors.
 - The marketplace icon is a PNG rendered from `imgs/plugin/marketplace.svg`.
-- Logs are in `com.alejandrom2.t3deck.sdPlugin/logs/`. Keep the log level below `trace`, because trace would log access tokens.
+- Logs are in `com.alejandrom2.turnkey.sdPlugin/logs/`. Keep the log level below `trace`, because trace would log access tokens.
 
 The visual style follows Stream Deck's native agent plugins: flat near-black keys, one white line glyph, a single status accent, and a gradient touch strip. The glyphs and art are drawn for this plugin.
 
 ## Languages
 
-T3 Deck shows keys, strips, settings pages and its action list in Stream Deck's language: English, German, Spanish, French, Japanese, Korean, Simplified Chinese and Traditional Chinese. Labels from T3 Code itself, such as **Settings → Sharing & access**, stay in English because T3 Code is in English. Thread titles, project and branch names, models, providers and T3 Code's own messages show as T3 Code sends them, and prompts the deck sends to agents stay in English.
+Turnkey shows keys, strips, settings pages and its action list in Stream Deck's language: English, German, Spanish, French, Japanese, Korean, Simplified Chinese and Traditional Chinese. Labels from T3 Code itself, such as **Settings → Sharing & access**, stay in English because T3 Code is in English. Thread titles, project and branch names, models, providers and T3 Code's own messages show as T3 Code sends them, and prompts the deck sends to agents stay in English.
 
 The translations are machine-translated. Corrections are welcome: open an issue or a pull request against the language's file.
 
-Every string lives in `com.alejandrom2.t3deck.sdPlugin/en.json`, with one file per language beside it (`de.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh_CN.json`, `zh_TW.json`). The top-level `Name`, `Description`, `Category` and per-action entries translate the manifest for the Stream Deck app, and `Localization` holds everything drawn on keys, strips and settings pages. Keep keys and `{placeholders}` as they are.
+Every string lives in `com.alejandrom2.turnkey.sdPlugin/en.json`, with one file per language beside it (`de.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh_CN.json`, `zh_TW.json`). The top-level `Name`, `Description`, `Category` and per-action entries translate the manifest for the Stream Deck app, and `Localization` holds everything drawn on keys, strips and settings pages. Keep keys and `{placeholders}` as they are.
 
 `npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and every language file has exactly English's keys, the same placeholders per key and no empty strings. After changing settings-page copy, run `node scripts/ui.ts`.
+
+## License
+
+MIT © 2026 Alejandro Martinez. See [LICENSE](LICENSE). Bundled third-party code and assets keep their own licenses: T3 Code (MIT) and Lucide (ISC), in [LICENSES](LICENSES).
+
+## Disclaimer
+
+Turnkey is an independent project. It is not affiliated with, endorsed by, or sponsored by T3 Code or its creators, or by any of the companies below.
+
+T3 Code is a product of T3 Tools Inc. Claude and Claude Code are trademarks of Anthropic, PBC. OpenAI, ChatGPT and Codex are trademarks of OpenAI. Cursor is a trademark of Anysphere, Inc. Grok is a trademark of xAI. Antigravity and Gemini are trademarks of Google LLC. OpenCode, Pi, Muse and any other agent or provider names belong to their respective owners. GitHub is a trademark of GitHub, Inc. Elgato and Stream Deck are trademarks of Corsair Memory, Inc. All other names, logos and brands are the property of their respective owners and are used only to identify the services Turnkey works with.
+
+Provider marks are shown as T3 Code shows them, to identify the agent a thread runs on. Portions of Turnkey (usage and limits math, prompt texts, provider marks) are adapted from T3 Code under the MIT license; see LICENSES/t3code.txt. Icons are from Lucide under the ISC license; see LICENSES/lucide.txt.
+
+Turnkey talks only to the T3 Code servers you pair it with. It sends nothing to its maker, and it doesn't run or bill any AI model itself: your agents' usage stays with your own provider accounts in T3 Code.

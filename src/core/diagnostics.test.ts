@@ -36,7 +36,7 @@ describe("redact", () => {
 		expect(redact(`{"token":"${TOKEN}","label":"Studio"}`)).toBe('{"token":[redacted],"label":"Studio"}');
 		expect(redact(`ws ticket=${CODE}&x=1`)).not.toContain(CODE);
 		expect(redact(`opaque ${SIGNED} here`)).toBe("opaque [redacted] here");
-		expect(redact("com.alejandrom2.t3deck.dial.threads failed")).toBe("com.alejandrom2.t3deck.dial.threads failed");
+		expect(redact("com.alejandrom2.turnkey.dial.threads failed")).toBe("com.alejandrom2.turnkey.dial.threads failed");
 	});
 
 	it("reads hosts without throwing on junk", () => {
@@ -49,7 +49,7 @@ describe("recentProblems", () => {
 	it("keeps the last warnings and errors with their stack lines, redacted", () => {
 		const log = [
 			"2026-10-27T11:00:00.000Z INFO  deck: ready",
-			`2026-10-27T11:00:01.000Z WARN  actions: com.alejandrom2.t3deck.send failed: denied at https://host:3773/x?token=${TOKEN}`,
+			`2026-10-27T11:00:01.000Z WARN  actions: com.alejandrom2.turnkey.send failed: denied at https://host:3773/x?token=${TOKEN}`,
 			"2026-10-27T11:00:02.000Z ERROR Process encountered uncaught exception",
 			"Error: boom",
 			"    at main (plugin.js:1:1)",
@@ -57,7 +57,7 @@ describe("recentProblems", () => {
 			"    not part of anything",
 		].join("\n");
 		expect(recentProblems(log)).toEqual([
-			"2026-10-27T11:00:01.000Z WARN  actions: com.alejandrom2.t3deck.send failed: denied at https://host:3773",
+			"2026-10-27T11:00:01.000Z WARN  actions: com.alejandrom2.turnkey.send failed: denied at https://host:3773",
 			"2026-10-27T11:00:02.000Z ERROR Process encountered uncaught exception\nError: boom\n    at main (plugin.js:1:1)",
 		]);
 		expect(recentProblems(log, 1)).toHaveLength(1);
@@ -87,7 +87,7 @@ describe("diagnosticsReport", () => {
 				verboseUntil: NOW + 1000,
 				settings,
 				machines: [machine],
-				actions: { "com.alejandrom2.t3deck.health": 2, "com.alejandrom2.t3deck.stop": 0 },
+				actions: { "com.alejandrom2.turnkey.health": 2, "com.alejandrom2.turnkey.stop": 0 },
 				log: `2026-10-27T11:00:01.000Z WARN  deck: Pairing with https://host/pair#token=${CODE} failed: Bearer ${TOKEN}\n2026-10-27T11:00:02.000Z ERROR rpc: {"access_token":"${TOKEN}"} link ${SIGNED}`,
 			}),
 		);
@@ -97,7 +97,7 @@ describe("diagnosticsReport", () => {
 		expect(report.machines).toEqual([
 			{ host: "studio.tail1.ts.net:3773", state: "error", message: "Unreachable: wss://studio.tail1.ts.net:3773", scopes: ["orchestration:read", "orchestration:operate"], environmentId: "env-2" },
 		]);
-		expect(report.actions).toEqual({ "com.alejandrom2.t3deck.health": 2 });
+		expect(report.actions).toEqual({ "com.alejandrom2.turnkey.health": 2 });
 		expect(report.verboseLoggingUntil).toBe("2026-10-27T12:00:01.000Z");
 		expect(report.recentProblems).toHaveLength(2);
 	});
