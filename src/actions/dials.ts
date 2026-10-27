@@ -5,7 +5,7 @@ import { type ActionKind, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
-import { findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
+import { bareModelName, findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
 import { dialControl, type DialControl, effortChange, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
@@ -218,7 +218,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			items: choices.map((choice) => ({
 				key: choice.key,
 				label: choice.label,
-				caption: choice.kind === "model" ? choice.model.name : choice.label,
+				caption: choice.kind === "model" ? bareModelName(choice.model) : choice.label,
 				art: powerArt(choice.icon, { acpIcons: deck.acpIcons }),
 				color: choice.kind === "model" ? modelColor(choice.model) : choice.key === pending?.key ? COLORS.attention : undefined,
 				detail: choice.key === shown.key ? detail : undefined,
@@ -255,7 +255,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
 		return {
 			// The badge and the end label already name the provider.
-			label: shown?.kind === "model" ? shown.model.name : (shown?.label ?? thread.model.model),
+			label: shown?.kind === "model" ? bareModelName(shown.model) : (shown?.label ?? thread.model.model),
 			labelColor: shown?.kind === "model" ? modelColor(shown.model) : pending || fullAccess ? COLORS.attention : undefined,
 			stops: state.choices.length,
 			current: at(state.current),
