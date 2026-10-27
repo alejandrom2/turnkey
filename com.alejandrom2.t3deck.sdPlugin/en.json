@@ -633,6 +633,7 @@
 			"starting": "Starting…",
 			"stopped": "Stopped",
 			"loading": "Looking for devices…",
+			"unreadable": "Can't read devices",
 			"off": "Devices are off",
 			"turnOn": "Turn on in T3 Code",
 			"hubStarting": "Starting device hub…",
