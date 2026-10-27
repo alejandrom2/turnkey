@@ -13,6 +13,7 @@ import {
 	findModel,
 	modeLabel,
 	modelCatalog,
+	modelColor,
 	nextModel,
 	parseModelKey,
 	providerMark,
@@ -583,10 +584,13 @@ export function applyEffort(thread: DeckThread, change: NonNullable<ReturnType<t
 export class SpeedKey extends SettingKey<JsonObject> {
 	protected state(action: Action<JsonObject>) {
 		const { thread, config } = selection(this.machineOf(action));
-		const toggle = thread && speedToggle(findModel(config, thread.model), thread.model);
+		const model = thread && findModel(config, thread.model);
+		const toggle = thread && speedToggle(model, thread.model);
 		const check = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
 		const fast = toggle?.fast === true;
-		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", glyphColor: fast ? COLORS.accent : undefined, label: toggle?.label ?? t("face.speed"), available: check.available, active: fast });
+		// Just the bolt: outlined at Standard, filled in the model's color at Fast.
+		const color = fast ? ((model && modelColor(model)) ?? COLORS.accent) : undefined;
+		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", glyphColor: color, available: check.available });
 		if (thread === undefined || toggle === undefined) return { face, check };
 		return {
 			face,

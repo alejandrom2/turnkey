@@ -3,11 +3,13 @@
  * a stepped track with the current value filled and a previewed one as a hollow thumb, and what the ends mean (or
  * what pressing does) along the bottom.
  */
-import { COLORS, type MarkPainter, spectrumStops, svgDataUrl, svgText, textWidth } from "./render.js";
+import { COLORS, escapeXml, FONT_FAMILY, type MarkPainter, spectrumStops, svgDataUrl, svgText, textWidth } from "./render.js";
 
 export type SliderInput = {
 	label: string;
 	labelColor?: string;
+	/** After the label, dimmed unless colored: the model's effort, in the spectrum while Ultrathink is armed. */
+	suffix?: { text: string; color?: string; spectrum?: boolean };
 	/** How many stops the track has, at least two. */
 	stops: number;
 	/** The thread's value, filled up to; -1 when it isn't on the track. */
@@ -46,6 +48,9 @@ function fit(text: string, width: number, size: number): string {
 	return `${chars.join("").trimEnd()}…`;
 }
 
+/** The label line as the marquee measures it. */
+export const sliderLabelText = (input: Pick<SliderInput, "label" | "suffix">): string => (input.suffix ? `${input.label} ${input.suffix.text}` : input.label);
+
 /** The room the label has beside the badges, as a text slot the marquee can scroll. */
 export const sliderLabelSlot = (input: Pick<SliderInput, "badges">) => ({
 	width: SLIDER.width - Math.min(2, input.badges?.length ?? 0) * (BADGE + 6) - 4,
@@ -64,7 +69,16 @@ export function sliderArt(input: SliderInput): string {
 
 	const labelRoom = sliderLabelSlot(input).width;
 	const labelColor = input.labelColor ?? COLORS.text;
-	const overflow = textWidth(input.label, 16) - labelRoom;
+	const overflow = textWidth(sliderLabelText(input), 16) - labelRoom;
+	const suffix = input.suffix;
+	const suffixFill = suffix?.spectrum ? `fill="url(#slider-suffix)"` : suffix?.color ? `fill="${suffix.color}"` : `fill="#FFFFFF" fill-opacity=".5"`;
+	if (suffix?.spectrum) parts.push(`<defs><linearGradient id="slider-suffix" gradientUnits="userSpaceOnUse" x1="${SLIDER.x}" y1="0" x2="${SLIDER.x + labelRoom}" y2="0">${spectrumStops()}</linearGradient></defs>`);
+	const label = (x: number, extra = "") => {
+		const name = svgText(input.label, x, 26, 16, 650, labelColor);
+		if (suffix === undefined) return `<g${extra}>${name}</g>`;
+		const after = +(x + textWidth(input.label, 16) + 5).toFixed(1);
+		return `<g${extra}>${name}<text x="${after}" y="26" font-family="${FONT_FAMILY}" font-size="16" font-weight="650" ${suffixFill}>${escapeXml(suffix.text)}</text></g>`;
+	};
 	if (overflow > 0) {
 		const end = SLIDER.x + labelRoom;
 		const offset = Math.min(Math.max(0, input.labelOffset ?? 0), overflow + 4);
@@ -73,8 +87,8 @@ export function sliderArt(input: SliderInput): string {
 			offset === 0
 				? `<linearGradient id="slider-label-fade" gradientUnits="userSpaceOnUse" x1="${end - 22}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="slider-label" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="34"><rect width="200" height="34" fill="url(#slider-label-fade)"/></mask>`
 				: `<clipPath id="slider-label"><rect x="${SLIDER.x}" y="0" width="${labelRoom}" height="34"/></clipPath>`;
-		parts.push(`<defs>${shape}</defs>`, svgText(input.label, +(SLIDER.x - offset).toFixed(1), 26, 16, 650, labelColor, offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
-	} else parts.push(svgText(input.label, SLIDER.x, 26, 16, 650, labelColor));
+		parts.push(`<defs>${shape}</defs>`, label(+(SLIDER.x - offset).toFixed(1), offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
+	} else parts.push(label(SLIDER.x));
 
 	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
