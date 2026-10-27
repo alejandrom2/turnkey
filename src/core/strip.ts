@@ -14,7 +14,7 @@ export type StripContent = {
 	header: string;
 	/** Drawn in the 38×38 icon slot: a glyph or a provider mark. */
 	icon: MarkPainter;
-	/** Hairline colour. */
+	/** Hairline color. */
 	accent: string;
 	value: string;
 	detail?: string;

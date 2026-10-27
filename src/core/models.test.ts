@@ -238,7 +238,7 @@ describe("ACP registry icons", () => {
 		}
 	});
 
-	it("strips scripts, handlers, styles and outside references, and paints everything one colour", () => {
+	it("strips scripts, handlers, styles and outside references, and paints everything one color", () => {
 		const art = sanitizeIconSvg(
 			`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" onload="x()"><script>alert(1)</script><style>.a{fill:red}</style>` +
 				`<path d="M1 1" fill="#ff0000" onclick="y()"/><circle style="stroke: blue; opacity: .5" fill="none"/><rect style="fill: none; stroke: #000" fill="transparent"/>` +

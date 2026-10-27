@@ -64,7 +64,7 @@ describe("strip appearance", () => {
 		expect(resolveAppearance({ stripBackground: "gradient" }, { background: "" }).background).toBe("gradient");
 	});
 
-	it("accepts only #rrggbb custom colours, the dial's own when it overrides", () => {
+	it("accepts only #rrggbb custom colors, the dial's own when it overrides", () => {
 		expect(resolveAppearance({ stripBackground: "custom", stripColor: "#336699" })).toMatchObject({ background: "custom", color: "#336699" });
 		expect(resolveAppearance({ stripBackground: "custom", stripColor: "red\"/><script" }).background).toBe("t3");
 		expect(resolveAppearance({ stripColor: "#336699" }, { background: "custom", backgroundColor: "#112233" }).color).toBe("#112233");
