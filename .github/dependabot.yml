@@ -10,10 +10,8 @@ updates:
         patterns: ["*"]
         update-types: [minor, patch]
     ignore:
-      # The plugin runs on Stream Deck's Node 24, and the Rollup TypeScript plugin doesn't support TypeScript 7 yet.
+      # The plugin runs on Stream Deck's Node 24.
       - dependency-name: "@types/node"
-        update-types: [version-update:semver-major]
-      - dependency-name: typescript
         update-types: [version-update:semver-major]
     commit-message:
       prefix: build
