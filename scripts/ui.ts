@@ -658,7 +658,15 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<sdpi-item ${attr("label", "inspector.organize.snoozeMinutes")}>
 				<sdpi-textfield setting="snoozeMinutes" pattern="\\d+" placeholder="60"></sdpi-textfield>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.organize.confirmSettle")} id="confirm-settle">
+				<sdpi-select setting="confirmSettle" default="review">
+					<option value="review"${text("inspector.organize.settleReview")}</option>
+					<option value="hold"${text("inspector.organize.settleHold")}</option>
+					<option value="off"${text("inspector.organize.settleOff")}</option>
+				</sdpi-select>
 			</sdpi-item>`,
+		showWhen("organize", "confirm-settle", `value === "" || value === "settle"`),
 	),
 	"prompts.html": page(
 		"Prompts Dial",
