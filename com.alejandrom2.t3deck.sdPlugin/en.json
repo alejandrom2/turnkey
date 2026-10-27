@@ -164,6 +164,7 @@
 			"holdToAnswer": "Hold to answer",
 			"holdToSend": "Hold to send",
 			"holdToSettle": "Hold to settle",
+			"holdToSnooze": "Hold to snooze",
 			"resumed": "Resumed",
 			"notWebLink": "Not a web link"
 		},
@@ -188,6 +189,7 @@
 			"steer": "Steer?",
 			"newThread": "New thread?",
 			"settle": "Settle?",
+			"snooze": "Snooze {duration}?",
 			"pressAgain": "Press again",
 			"pressToSend": "Press again to send",
 			"to": "To {thread}"
@@ -197,6 +199,7 @@
 			"pin": "Pin",
 			"unpin": "Unpin",
 			"snooze": "Snooze",
+			"snoozeFor": "Snooze {duration}",
 			"archive": "Archive",
 			"markUnread": "Unread"
 		},
@@ -716,11 +719,18 @@
 				"snooze": "Snooze",
 				"archive": "Archive",
 				"markUnread": "Mark unread",
-				"snoozeMinutes": "Snooze minutes",
-				"confirmSettle": "Confirm settle",
-				"settleReview": "Review, then press again",
-				"settleHold": "Hold to settle",
-				"settleOff": "Settle right away"
+				"snoozeFor": "Snooze for",
+				"minutes15": "15 minutes",
+				"minutes30": "30 minutes",
+				"hour1": "1 hour",
+				"hours2": "2 hours",
+				"hours4": "4 hours",
+				"hours8": "8 hours",
+				"day1": "1 day",
+				"confirm": "Confirm",
+				"confirmReview": "Review, then press again",
+				"confirmHold": "Hold to confirm",
+				"confirmOff": "Right away"
 			},
 			"prompts": {
 				"label": "Prompts",
