@@ -156,6 +156,11 @@ class Deck implements CredentialStore {
 		await this.#apply(await streamDeck.settings.getGlobalSettings<GlobalSettings>());
 	}
 
+	/** Global settings, and so the paired machines, have been read once. */
+	get loaded(): boolean {
+		return this.#authLoaded;
+	}
+
 	get machines(): Machine[] {
 		return [...this.#machines.values()];
 	}

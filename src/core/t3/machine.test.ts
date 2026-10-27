@@ -905,3 +905,22 @@ describe("Machine opt-in actions", () => {
 		expect(await dispatched(socket, () => h.machine.closeGuestLink({ threadId: "thr_123" }))).toMatchObject({ type: "thread.guest-share.close", threadId: "thr_123" });
 	});
 });
+
+describe("Machine first connection", () => {
+	it("is unsettled while it first connects, and stays settled through later reconnects", async () => {
+		const h = setup();
+		expect(h.machine.settled).toBe(false);
+		h.machine.start();
+		await flush();
+		expect(h.machine.state.kind).toBe("connecting");
+		expect(h.machine.settled).toBe(false);
+		h.machine.stop();
+		await connect(h);
+		expect(h.machine.state.kind).toBe("ready");
+		expect(h.machine.settled).toBe(true);
+		h.machine.stop();
+		h.machine.start();
+		await flush();
+		expect(h.machine.settled).toBe(true);
+	});
+});
