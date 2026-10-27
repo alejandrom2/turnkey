@@ -81,19 +81,19 @@ for (const [name, mark] of Object.entries(ACTIONS)) {
  * as Elgato's guidelines ask, with the prompt and spark cut through the front key.
  */
 const T3_BLUE = "#4a68f0";
+// Flat SVG only: Stream Deck's renderer draws a nested <svg> or a mask as nothing.
 const logo = (size: number, tile: boolean) => {
-	const ink = tile ? "#000000" : "#ffffff";
 	const back = (x: number, y: number, opacity: number) => `<rect x="${x}" y="${y}" width="104" height="104" rx="22" fill="#ffffff" fill-opacity="${opacity}"/>`;
-	const prompt = `<path d="M142 104 L160 120 L142 136" fill="none" stroke="${ink}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
-	const spark = `<path d="M190 100 Q192.5 117.5 210 120 Q192.5 122.5 190 140 Q187.5 122.5 170 120 Q187.5 117.5 190 100Z" fill="${tile ? T3_BLUE : ink}"/>`;
-	// Without a tile, the front key's marks are cut out of it rather than drawn on it.
+	const spark = "M190 100 Q192.5 117.5 210 120 Q192.5 122.5 190 140 Q187.5 122.5 170 120 Q187.5 117.5 190 100Z";
 	const front = tile
-		? `<rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff"/>${prompt}${spark}`
-		: `<mask id="cut"><rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff"/><path d="M142 104 L160 120 L142 136" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/><path d="M190 98 Q192.8 117.2 212 120 Q192.8 122.8 190 142 Q187.2 122.8 168 120 Q187.2 117.2 190 98Z" fill="#000000"/></mask><rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff" mask="url(#cut)"/>`;
-	// The category icon has no room for a margin: the art is scaled up to fill it.
+		? `<rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff"/><path d="M142 104 L160 120 L142 136" fill="none" stroke="#000000" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="${spark}" fill="${T3_BLUE}"/>`
+		: // The key's outline with the prompt and spark as holes (even-odd), so the plain white mark shows them cut through.
+			`<path fill-rule="evenodd" fill="#ffffff" d="M142 68 H202 A22 22 0 0 1 224 90 V150 A22 22 0 0 1 202 172 H142 A22 22 0 0 1 120 150 V90 A22 22 0 0 1 142 68 Z M135 109 L146 98 L168 120 L146 142 L135 131 L146 120 Z ${spark}"/>`;
 	const art = `${back(64, 116, tile ? 0.22 : 0.4)}${back(92, 92, tile ? 0.45 : 0.65)}<g transform="rotate(14 172 120)">${front}</g>`;
-	const fit = tile ? art : `<g transform="translate(-44 -44) scale(1.31)">${art}</g>`;
-	return svg(size, `<svg viewBox="0 0 288 288" width="${size}" height="${size}">${tile ? '<rect width="288" height="288" rx="23" fill="#000000"/>' : ""}${fit}</svg>`);
+	// Scaled into `size` with one transform; the category icon drops the tile and fills its box.
+	const scale = size / 288;
+	const body = tile ? `<rect width="288" height="288" rx="23" fill="#000000"/>${art}` : `<g transform="translate(-44 -44) scale(1.31)">${art}</g>`;
+	return svg(size, `<g transform="scale(${+scale.toFixed(5)})">${body}</g>`);
 };
 write("plugin/category-icon.svg", logo(56, false));
 write("plugin/marketplace.svg", logo(288, true));
