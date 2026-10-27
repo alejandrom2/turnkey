@@ -83,6 +83,7 @@ function threadFace(thread: DeckThread | undefined, emptyLabel: string, selected
 		selected: selected === undefined ? undefined : thread.key === selected.key,
 		motion,
 		queued: queuedCount(thread),
+		subagents: thread.subagents,
 	});
 	return { face, moving };
 }

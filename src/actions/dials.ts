@@ -38,11 +38,16 @@ import { type DialSettings, disconnectedStrip, markArt, StripDial } from "./stri
 
 const ID = "com.alejandrom2.t3deck";
 
-/** A thread's state in a line, with its queue when messages wait there. */
+/** A thread's state in a line, with its queue when messages wait there and the subagents it has out. */
 function statusLine(thread: DeckThread): string {
 	const queued = queuedCount(thread);
-	const line = stateLine(thread);
-	return queued > 0 ? `${line} · ${t("status.queuedCount", { count: queued })}` : line;
+	return [
+		stateLine(thread),
+		queued > 0 ? t("status.queuedCount", { count: queued }) : undefined,
+		thread.subagents > 0 ? t(thread.subagents === 1 ? "status.subagent" : "status.subagents", { count: thread.subagents }) : undefined,
+	]
+		.filter(Boolean)
+		.join(" · ");
 }
 
 function stateLine(thread: DeckThread): string {
@@ -148,7 +153,7 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 		return threadRowsArt(
 			threads.slice(at, at + 3).map((row) => {
 				const color = threadTint(row.deck, row.unseen) ?? COLORS.text;
-				return { title: row.title, art: glyphArt(THREAD_GLYPH[row.deck], color), queued: row === thread ? queuedCount(row) : undefined };
+				return { title: row.title, art: glyphArt(THREAD_GLYPH[row.deck], color), queued: row === thread ? queuedCount(row) : undefined, subagents: row === thread ? row.subagents : undefined };
 			}),
 		);
 	}

@@ -4,6 +4,7 @@ import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type 
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
 import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
+import { type ProjectedSubagent, type RunningWorkflow, runningWorkflows, stopWorkflowFailure } from "../workflows.js";
 import { type QueueProjection, type ThreadQueue, threadQueue } from "./queue.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
@@ -926,6 +927,24 @@ export class Machine {
 		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		return threadQueue(projection as QueueProjection);
+	}
+
+	/** The thread's running workflows, from one bounded snapshot: the shell doesn't carry them. */
+	async workflows(thread: ThreadRef): Promise<RunningWorkflow[]> {
+		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		return runningWorkflows(projection as { subagents?: ProjectedSubagent[] });
+	}
+
+	/** Stops one workflow the thread runs, as T3 Code's Lineage panel does; its refusal reads as T3 Code words it. */
+	async stopWorkflow(thread: ThreadRef, subagentId: string): Promise<void> {
+		try {
+			await this.call("orchestration.stopWorkflow", { threadId: thread.threadId, subagentId }, OPERATE_SCOPE);
+		} catch (error) {
+			const reason = error instanceof RpcError ? stopWorkflowFailure(error.code) : undefined;
+			if (reason === undefined) throw error;
+			throw new RpcError((error as RpcError).tag, (error as RpcError).message, reason);
+		}
 	}
 
 	/** Steers the running turn with a queued message (T3 Code's "Steer now"). */

@@ -768,6 +768,12 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.skill.dialHint")}</p>${confirmField}${dialAppearance}`,
 		targetScript + dialAppearanceScript,
 	),
+	"workflow.html": page(
+		"Stop Workflow",
+		`${targetField}
+			<p class="hint"${text("inspector.workflow.hint")}</p>`,
+		targetScript,
+	),
 	"tasks-dial.html": page(
 		"Tasks Dial",
 		`

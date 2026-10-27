@@ -28,6 +28,7 @@ function row(threadId: string, patch: Partial<ShellRow> = {}): ShellRow {
 		openedAt: undefined,
 		runStamp: "",
 		mayQueue: false,
+		subagents: 0,
 		...patch,
 	};
 }
