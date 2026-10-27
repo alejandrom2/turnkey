@@ -186,7 +186,7 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org): `fea
 
 On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it lets the release workflow tag that version (`vX.Y.Z`); every `v*` tag, from the workflow or pushed by hand, runs the publish workflow, which checks the tag matches `package.json`, packs `com.alejandrom2.turnkey.streamDeckPlugin` with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`) and creates the GitHub Release with that version's changelog section. `npm run assets` keeps the manifest's version in step with `package.json`.
 
-If Turnkey saves you some clicks, you can [buy me a coffee](https://github.com/sponsors/alejandrom2). ☕
+If Turnkey saves you some clicks, you can [buy me an energy drink](https://github.com/sponsors/alejandrom2). ⚡
 
 ## License
 
