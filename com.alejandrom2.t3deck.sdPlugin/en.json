@@ -540,7 +540,9 @@
 			"holdOnDefault": "Hold to push to {branch}",
 			"starting": "Starting…",
 			"pulled": "Pulled",
-			"upToDate": "Up to date"
+			"upToDate": "Up to date",
+			"files": "{count} files",
+			"fileOne": "1 file"
 		},
 		"needs": {
 			"paired": "Paired with T3 Code",
@@ -795,7 +797,11 @@
 				"promptPlaceholder": "Optional: Review the open pull request",
 				"title": "Thread title",
 				"titlePlaceholder": "Review PR",
-				"hint": "With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access."
+				"hint": "With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access.",
+				"startIn": "Start in",
+				"folder": "Project folder",
+				"worktree": "New worktree",
+				"worktreeHint": "A new worktree starts from the repository's default branch, as T3 Code's composer does, and takes its branch name from the prompt; it needs a prompt and a project."
 			},
 			"model": {
 				"hint": "Cycling steps through T3 Code's favorite models, across providers, or the thread's provider's models when you have none. Picking another provider's model hands the thread over, as T3 Code's model picker does."
@@ -1004,6 +1010,13 @@
 			"holdToMerge": "Hold to merge",
 			"aFork": "A forked thread",
 			"aFinishedTurn": "A finished turn"
+		},
+		"worktree": {
+			"newThread": "New worktree",
+			"noProject": "Needs a project",
+			"needsPrompt": "Needs a prompt",
+			"notRepo": "Not a git repository",
+			"noBranch": "No branch to start from"
 		}
 	}
 }
