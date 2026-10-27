@@ -119,12 +119,18 @@ export class RunTaskKey extends TaskAction<RunTaskSettings> {
 
 	#state(action: Action<RunTaskSettings>) {
 		const settings = this.settingsOf(action);
-		const { tasks, loading, error } = machineTasks(this.machineOf(action));
-		const entry = tasks.find((candidate) => candidate.key === settings.task);
-		const name = settings.taskTitle?.trim() || settings.task?.slice(settings.task.indexOf("/") + 1) || "";
-		const missing = !settings.task ? t("tasks.pickTask") : entry === undefined && !loading ? (error !== undefined ? t("tasks.updateT3") : t("tasks.gone", { task: name })) : undefined;
+		const url = this.machineOf(action);
+		const key = settings.task ?? "";
+		const environmentId = key.slice(0, key.indexOf("/"));
+		// The task's own machine decides: offline or still listing, it may well be there.
+		const owner = deck.machines.find((machine) => machine.environmentId === environmentId && (url === undefined || machine.url === url));
+		const listed = owner?.state.kind === "ready" ? owner.tasks : undefined;
+		const entry = listed?.map((task): MachineTask => ({ key: `${environmentId}/${task.id}`, task, machine: owner! })).find((candidate) => candidate.key === key);
+		const loading = key !== "" && entry === undefined && owner !== undefined && listed === undefined && owner.tasksError === undefined;
+		const name = settings.taskTitle?.trim() || key.slice(key.indexOf("/") + 1);
+		const missing = !key ? t("tasks.pickTask") : entry === undefined && !loading ? (owner?.tasksError !== undefined ? t("tasks.updateT3") : t("tasks.gone", { task: name })) : undefined;
 		if (entry !== undefined && entry.task.title !== settings.taskTitle) this.remember(action, { taskTitle: entry.task.title });
-		return { entry, loading: entry === undefined && loading, missing };
+		return { entry, loading, missing };
 	}
 
 	override needs(action: Action<RunTaskSettings>): Need[] {
