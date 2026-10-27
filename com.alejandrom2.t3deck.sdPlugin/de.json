@@ -76,7 +76,7 @@
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull Request",
-		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status. Tippen öffnet ihn."
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Branch",
@@ -103,20 +103,20 @@
 		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "Befunde beheben",
-		"Tooltip": "Sendet die T3 Code-Aufgabe „Fix findings“ für den Pull Request des ausgewählten Threads: offene Reviews und fehlschlagende Checks. Zum Senden halten."
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
 	},
 	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "PR erklären",
-		"Tooltip": "Lässt den ausgewählten Thread seinen Pull Request durchgehen, wie „Explain“ in T3 Code."
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
 	},
 	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Zum PR fragen",
-		"Tooltip": "Öffnet den Thread mit dem Pull Request in T3 Code, um dort danach zu fragen."
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
 	},
 	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Review-Leitfaden",
-		"Tooltip": "Schreibt den Review-Leitfaden von T3 Code für den Pull Request des ausgewählten Threads und öffnet dann den Thread."
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
 	},
 	"com.alejandrom2.t3deck.editor": {
 		"Name": "Öffnen",
@@ -707,7 +707,12 @@
 				"hold": "Halten",
 				"tap": "Tippen",
 				"fixHint": "Sendet die T3 Code-Aufgabe „Fix findings“ für den Pull Request des ausgewählten Threads an diesen Thread, eingereiht, falls er beschäftigt ist. Review-Kommentare und Check-Ausgaben kommen vom Host und werden als nicht vertrauenswürdige Daten angehängt.",
-				"dialHint": "Listet offene Pull Requests auf dem Rechner. Drücken führt Befunde beheben im verknüpften Thread oder in einem neuen Worktree-Thread aus; Tippen öffnet ihn im Browser; Berühren und Halten liest seine Befunde."
+				"dialHint": "Listet offene Pull Requests auf dem Rechner. Drücken führt Befunde beheben im verknüpften Thread oder in einem neuen Worktree-Thread aus; Tippen öffnet ihn im Browser; Berühren und Halten liest seine Befunde.",
+				"show": "Anzeigen",
+				"fix": "Befunde beheben",
+				"explain": "Erklären",
+				"ask": "Fragen",
+				"guide": "Review-Leitfaden"
 			},
 			"git": {
 				"action": "Aktion",

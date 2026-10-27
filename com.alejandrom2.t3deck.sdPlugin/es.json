@@ -76,7 +76,7 @@
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull request",
-		"Tooltip": "El pull request del hilo seleccionado y su estado. Pulsar lo abre."
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Rama",
@@ -103,20 +103,20 @@
 		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "Corregir hallazgos",
-		"Tooltip": "Envía la tarea Fix findings de T3 Code para el pull request del hilo seleccionado: revisiones sin resolver y checks fallidos. Mantén para enviar."
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
 	},
 	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "Explicar PR",
-		"Tooltip": "Pide al hilo seleccionado que recorra su pull request, como hace Explain en T3 Code."
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
 	},
 	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Preguntar por PR",
-		"Tooltip": "Abre en T3 Code el hilo que contiene el pull request, para preguntar por él allí."
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
 	},
 	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Guía de revisión",
-		"Tooltip": "Escribe la guía de revisión de T3 Code para el pull request del hilo seleccionado y luego abre el hilo."
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
 	},
 	"com.alejandrom2.t3deck.editor": {
 		"Name": "Abrir",
@@ -707,7 +707,12 @@
 				"hold": "Mantener",
 				"tap": "Pulsar",
 				"fixHint": "Envía la tarea Fix findings de T3 Code para el pull request del hilo seleccionado a ese hilo, en cola si está ocupado. Los comentarios de revisión y la salida de los checks vienen del host y se adjuntan como datos no fiables.",
-				"dialHint": "Lista los pull requests abiertos en la máquina. Pulsar ejecuta Corregir hallazgos en el hilo vinculado, o en un hilo nuevo con worktree; tocar lo abre en el navegador; mantener tocado lee sus hallazgos."
+				"dialHint": "Lista los pull requests abiertos en la máquina. Pulsar ejecuta Corregir hallazgos en el hilo vinculado, o en un hilo nuevo con worktree; tocar lo abre en el navegador; mantener tocado lee sus hallazgos.",
+				"show": "Mostrar",
+				"fix": "Corregir hallazgos",
+				"explain": "Explicar",
+				"ask": "Preguntar",
+				"guide": "Guía de revisión"
 			},
 			"git": {
 				"action": "Acción",

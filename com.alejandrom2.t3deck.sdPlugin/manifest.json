@@ -197,8 +197,8 @@
 			"Name": "Pull Request",
 			"UUID": "com.alejandrom2.t3deck.pr",
 			"Icon": "imgs/actions/pr/icon",
-			"Tooltip": "The selected thread's pull request and its state. Tap opens it.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/pr/key", "ShowTitle": false }]
 		},
@@ -261,40 +261,44 @@
 			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Fix Findings",
+			"Name": "Pull Request",
 			"UUID": "com.alejandrom2.t3deck.pr.fix",
 			"Icon": "imgs/actions/pr-fix/icon",
-			"Tooltip": "Sends T3 Code's Fix findings task for the selected thread's pull request: unresolved reviews and failing checks. Hold to send.",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
 			"PropertyInspectorPath": "ui/pr-fix.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-fix/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/pr-fix/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Explain PR",
+			"Name": "Pull Request",
 			"UUID": "com.alejandrom2.t3deck.pr.explain",
 			"Icon": "imgs/actions/pr-explain/icon",
-			"Tooltip": "Asks the selected thread to walk through its pull request, as T3 Code's Explain does.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr-explain.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-explain/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/pr-explain/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Ask about PR",
+			"Name": "Pull Request",
 			"UUID": "com.alejandrom2.t3deck.pr.ask",
 			"Icon": "imgs/actions/pr-ask/icon",
-			"Tooltip": "Opens the thread that holds the pull request in T3 Code, to ask about it there.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr-ask.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-ask/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/pr-ask/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Review Guide",
+			"Name": "Pull Request",
 			"UUID": "com.alejandrom2.t3deck.pr.guide",
 			"Icon": "imgs/actions/pr-guide/icon",
-			"Tooltip": "Writes T3 Code's review guide for the selected thread's pull request, then opens the thread.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr-guide.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-guide/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/pr-guide/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
 			"Name": "Open",

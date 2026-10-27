@@ -76,7 +76,7 @@
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull Request",
-		"Tooltip": "The selected thread's pull request and its state. Tap opens it."
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Branch",
@@ -103,20 +103,20 @@
 		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "Fix Findings",
-		"Tooltip": "Sends T3 Code's Fix findings task for the selected thread's pull request: unresolved reviews and failing checks. Hold to send."
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
 	},
 	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "Explain PR",
-		"Tooltip": "Asks the selected thread to walk through its pull request, as T3 Code's Explain does."
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
 	},
 	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Ask about PR",
-		"Tooltip": "Opens the thread that holds the pull request in T3 Code, to ask about it there."
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
 	},
 	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Review Guide",
-		"Tooltip": "Writes T3 Code's review guide for the selected thread's pull request, then opens the thread."
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
 	},
 	"com.alejandrom2.t3deck.editor": {
 		"Name": "Open",
@@ -707,7 +707,12 @@
 				"hold": "Hold",
 				"tap": "Tap",
 				"fixHint": "Sends T3 Code's Fix findings task for the selected thread's pull request to that thread, queued if it is busy. Review comments and check output come from the host and are attached as untrusted data.",
-				"dialHint": "Lists open pull requests on the machine. Press runs Fix findings in the thread linked to it, or in a new worktree thread; tap opens it in the browser; touch and hold reads its findings."
+				"dialHint": "Lists open pull requests on the machine. Press runs Fix findings in the thread linked to it, or in a new worktree thread; tap opens it in the browser; touch and hold reads its findings.",
+				"show": "Show",
+				"fix": "Fix findings",
+				"explain": "Explain",
+				"ask": "Ask",
+				"guide": "Review guide"
 			},
 			"git": {
 				"action": "Action",

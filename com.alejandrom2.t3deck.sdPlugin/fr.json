@@ -76,7 +76,7 @@
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull Request",
-		"Tooltip": "La pull request du fil sélectionné et son état. Un appui l'ouvre."
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Branche",
@@ -103,20 +103,20 @@
 		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "Corriger retours",
-		"Tooltip": "Envoie la tâche Fix findings de T3 Code pour la pull request du fil sélectionné : revues non résolues et checks en échec. Maintenir pour envoyer."
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
 	},
 	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "Expliquer PR",
-		"Tooltip": "Demande au fil sélectionné de présenter sa pull request, comme le fait Explain dans T3 Code."
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
 	},
 	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Question PR",
-		"Tooltip": "Ouvre dans T3 Code le fil qui porte la pull request, pour poser vos questions là-bas."
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
 	},
 	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Guide de revue",
-		"Tooltip": "Rédige le guide de revue de T3 Code pour la pull request du fil sélectionné, puis ouvre le fil."
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
 	},
 	"com.alejandrom2.t3deck.editor": {
 		"Name": "Ouvrir",
@@ -707,7 +707,12 @@
 				"hold": "Maintenir",
 				"tap": "Appuyer",
 				"fixHint": "Envoie la tâche Fix findings de T3 Code pour la pull request du fil sélectionné à ce fil, en attente s'il est occupé. Les commentaires de revue et la sortie des checks viennent de l'hébergeur et sont joints comme données non fiables.",
-				"dialHint": "Liste les pull requests ouvertes sur la machine. Un appui lance Fix findings dans le fil qui y est lié, ou dans un nouveau fil worktree ; toucher l'ouvre dans le navigateur ; un toucher maintenu lit ses retours."
+				"dialHint": "Liste les pull requests ouvertes sur la machine. Un appui lance Fix findings dans le fil qui y est lié, ou dans un nouveau fil worktree ; toucher l'ouvre dans le navigateur ; un toucher maintenu lit ses retours.",
+				"show": "Afficher",
+				"fix": "Corriger les retours",
+				"explain": "Expliquer",
+				"ask": "Poser une question",
+				"guide": "Guide de revue"
 			},
 			"git": {
 				"action": "Action",
