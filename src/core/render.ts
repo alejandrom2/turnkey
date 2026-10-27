@@ -11,7 +11,9 @@ export const COLORS = {
 	muted: "#8A8F98",
 	done: "#40C977",
 	error: "#FF6764",
-	attention: "#FF8549",
+	/** T3 Code's Pending Approval amber and Awaiting Input indigo (Tailwind amber-300, indigo-300). */
+	attention: "#FCD34D",
+	question: "#A5B4FC",
 	accent: "#5B8CFF",
 	unread: "#007BE5",
 	dim: "#3A3D44",
@@ -19,7 +21,7 @@ export const COLORS = {
 
 export const STATE_COLOR: Record<DeckState, string> = {
 	approval: COLORS.attention,
-	question: COLORS.attention,
+	question: COLORS.question,
 	running: COLORS.accent,
 	queued: COLORS.muted,
 	done: COLORS.done,
@@ -304,16 +306,17 @@ export type ThreadKeyInput = {
 	motion?: KeyMotion;
 };
 
-/** The wash and glyph color of a state that wants attention: amber waiting on you, red failed, green unseen done. */
+/** The wash and glyph color of a state that wants attention: amber approval, indigo question, red failed, green unseen done. */
 export function threadTint(state: DeckState, unseen = false): string | undefined {
-	if (state === "approval" || state === "question") return COLORS.attention;
+	if (state === "approval") return COLORS.attention;
+	if (state === "question") return COLORS.question;
 	if (state === "failed") return COLORS.error;
 	if (state === "done" && unseen) return COLORS.done;
 	return undefined;
 }
 
-/** A thread key's tile: gray, or a deep shade of what it needs (amber waiting on you, red failed, green unseen done). */
-const THREAD_TILE = { base: "#363636", [COLORS.attention]: "#5B3322", [COLORS.error]: "#5C2328", [COLORS.done]: "#1E4A32" } as Record<string, string>;
+/** A thread key's tile: gray, or a deep shade of what it needs (amber approval, indigo question, red failed, green unseen done). */
+const THREAD_TILE = { base: "#363636", [COLORS.attention]: "#4E4114", [COLORS.question]: "#2F3360", [COLORS.error]: "#5C2328", [COLORS.done]: "#1E4A32" } as Record<string, string>;
 
 /** Wash opacities over the tile: a selected key's white, and how far a pulse or flash brightens it. */
 export const WASH = { selected: 0.15, selectedTint: 0.1 } as const;
