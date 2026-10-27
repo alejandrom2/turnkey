@@ -1,4 +1,4 @@
-import streamDeck, { type Action, action, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import { type Action, action, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confirmed } from "../core/approvals.js";
@@ -28,7 +28,8 @@ import {
 import { activityBar, renderActivityBar, renderNoticeBar } from "../core/infobar.js";
 import { currentEffort, effortChange, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
 import { threadMotion, twinkleStep } from "../core/motion.js";
-import { migratePromptSettings, QUICK_PROMPTS, quickPrompt } from "../core/prompts.js";
+import { modeOf } from "../core/modes.js";
+import { migratePromptSettings, templatePrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
 import {
 	COLORS,
@@ -49,14 +50,14 @@ import {
 	renderThreadKey,
 } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
+import { pinnedName } from "../core/target.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import { latestSnoozed, type RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
 import { gitTarget, statuses } from "./git.js";
 import { connectionNotice, InfobarWriter } from "./infobar.js";
-import { connectionOf } from "./needs.js";
-import { pullRequestKeyFace } from "./pr.js";
+import { connectionOf, threadNeeds } from "./needs.js";
 import {
 	canOperate,
 	connectionFace,
@@ -189,80 +190,7 @@ export class Activity extends DeckAction<ActivitySettings> {
 	}
 }
 
-/** How long Stop offers to resume the thread it just stopped. */
-export const RESUME_MS = 30_000;
-
-/** Stops the selected thread's turn. For a while after the deck stops one, it offers to resume it by sending "Continue". */
-@action({ UUID: `${ID}.stop` })
-export class Stop extends DeckAction {
-	/** The thread each key stopped; `idle` once the deck has seen its turn end, since the stop lands a moment after it resolves. */
-	readonly #resume = new Map<string, { key: string; idle: boolean; timer: ReturnType<typeof setTimeout> }>();
-
-	#check(action: Action<JsonObject>) {
-		const { thread, gone, pinned } = this.target(action);
-		return { thread, pinned, check: availability("stop", { thread, gone, canOperate: canOperate(thread) }) };
-	}
-
-	/** The stopped thread this key may resume: still selected and not running again. */
-	#resumable(action: Action<JsonObject>): DeckThread | undefined {
-		const resume = this.#resume.get(action.id);
-		if (resume === undefined) return undefined;
-		const thread = this.target(action).thread;
-		if (thread?.key === resume.key && thread.active && !resume.idle) return undefined;
-		if (thread?.key === resume.key && !thread.active && canOperate(thread)) {
-			resume.idle = true;
-			return thread;
-		}
-		this.#endResume(action.id);
-		return undefined;
-	}
-
-	#endResume(id: string): void {
-		clearTimeout(this.#resume.get(id)?.timer);
-		this.#resume.delete(id);
-	}
-
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
-		if (!action.isKey()) return;
-		const { check, pinned } = this.#check(action);
-		if (this.#resumable(action)) return void (await this.setImage(action, renderControlKey({ glyph: "play", primary: true, pinned })));
-		await this.setImage(action, renderControlKey({ glyph: "stop", primary: true, available: check.available, pinned }));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const resumable = this.#resumable(ev.action);
-		if (resumable !== undefined) {
-			this.#endResume(ev.action.id);
-			return void (await this.run(ev.action, () => sendToThread(resumable, QUICK_PROMPTS.continue.text, "auto")));
-		}
-		const { thread, check } = this.#check(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		await this.run(
-			ev.action,
-			async () => {
-				await thread!.machine.stopRun(thread!);
-				this.#endResume(ev.action.id);
-				const id = ev.action.id;
-				this.#resume.set(id, {
-					key: thread!.key,
-					idle: false,
-					timer: setTimeout(() => {
-						this.#resume.delete(id);
-						void this.paint(ev.action);
-					}, RESUME_MS),
-				});
-			},
-		);
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<JsonObject>): void {
-		this.#endResume(ev.action.id);
-		super.onWillDisappear(ev);
-	}
-}
-
-type PromptSettings = { title?: string; prompt?: string; machine?: string };
+type PromptSettings = { title?: string; prompt?: string; machine?: string; target?: string; thread?: string; threadTitle?: string };
 
 /**
  * A key that sends a prompt to the selected thread. Tap starts, steers or queues it as T3 Code decides; hold
@@ -271,7 +199,7 @@ type PromptSettings = { title?: string; prompt?: string; machine?: string };
 abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckAction<T> {
 	protected abstract prompt(settings: T): { text: string; label: string | undefined };
 
-	protected get glyphName(): GlyphName {
+	protected glyphName(_settings: T): GlyphName {
 		return "send";
 	}
 
@@ -285,6 +213,15 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 		return { text, label, thread, pinned, check: availability(this.steers ? "steer" : "send", { thread, gone, canOperate: canOperate(thread), hasPrompt: text !== "" }) };
 	}
 
+	override needs(action: Action<T>): Need[] {
+		const { text, thread, pinned } = this.#check(action);
+		return [
+			...threadNeeds(this.machineOf(action), thread, true, pinned ? pinnedName(this.settingsOf(action)) : undefined),
+			...(this.steers ? [{ kind: "running", ok: thread?.active === true } satisfies Need] : []),
+			{ kind: "prompt", ok: text !== "" },
+		];
+	}
+
 	protected override reviewScope(action: Action<T>): string | undefined {
 		const { text, thread } = this.#check(action);
 		return thread && JSON.stringify([thread.key, text]);
@@ -293,7 +230,8 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
 		const { label, check, thread, pinned } = this.#check(action);
-		await this.setImage(action, renderControlKey({ glyph: this.glyphName, primary: !this.steers, label, available: check.available, ultrathink: ultrathinkArmed(thread), pinned }));
+		const glyph = this.glyphName(this.settingsOf(action));
+		await this.setImage(action, renderControlKey({ glyph, primary: !this.steers, label, available: check.available, ultrathink: ultrathinkArmed(thread), pinned }));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<T>): void {
@@ -308,12 +246,13 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 		// Under Hold, the hold confirms the send itself, so it can't also mean restart.
 		const restart = !this.steers && this.confirmModeOf(ev.action) !== "hold" && held >= LONG_PRESS_MS;
 		const asked: SendMode = this.steers ? "steer" : restart ? "restart" : "auto";
+		const glyph = this.glyphName(this.settingsOf(ev.action));
 		const mode = await this.guard(ev.action, {
 			scope: JSON.stringify([thread!.key, text]),
 			detail: asked,
 			held,
 			holdHint: t("result.holdToSend"),
-			card: () => ({ glyph: this.glyphName, verb: t(asked === "steer" ? "review.steer" : asked === "restart" ? "review.restart" : "review.send"), target: thread!.title, body: text, footer: t("review.pressToSend") }),
+			card: () => ({ glyph, verb: t(asked === "steer" ? "review.steer" : asked === "restart" ? "review.restart" : "review.send"), target: thread!.title, body: text, footer: t("review.pressToSend") }),
 		});
 		if (mode === undefined) return;
 		const sent = mode as SendMode;
@@ -321,24 +260,35 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 	}
 }
 
-type SendSettings = PromptSettings & { label?: string };
+type SendSettings = PromptSettings & { label?: string; template?: string };
 
-/** Sends a saved prompt to the selected thread. */
-@action({ UUID: `${ID}.send` })
-export class SendPrompt extends PromptKey<SendSettings> {
+/** Sends the key's own prompt, or one of a few everyday ones (continue, fix tests, …), to the selected thread. */
+abstract class SendAction extends PromptKey<SendSettings> {
 	protected override migrateSettings(settings: SendSettings): SendSettings | undefined {
 		return migratePromptSettings(settings);
 	}
 
+	protected override glyphName(settings: SendSettings): GlyphName {
+		return modeOf("send", this.manifestId, settings) === "custom" ? "send" : "spark";
+	}
+
 	protected prompt(settings: SendSettings) {
-		return { text: settings.prompt?.trim() ?? "", label: settings.title || settings.label || undefined };
+		const { text, label } = templatePrompt(modeOf("send", this.manifestId, settings), settings.prompt);
+		return { text, label: settings.title || settings.label || label };
 	}
 }
+
+@action({ UUID: `${ID}.send` })
+export class SendPrompt extends SendAction {}
+
+/** Quick Prompt, which Send Prompt's templates replaced: hidden from the actions list, still on decks and in older profiles. */
+@action({ UUID: `${ID}.quick` })
+export class QuickPrompt extends SendAction {}
 
 /** Adds a saved instruction to the selected thread's running turn. */
 @action({ UUID: `${ID}.steer` })
 export class Steer extends PromptKey<PromptSettings> {
-	protected override get glyphName(): GlyphName {
+	protected override glyphName(): GlyphName {
 		return "steer";
 	}
 
@@ -348,21 +298,6 @@ export class Steer extends PromptKey<PromptSettings> {
 
 	protected prompt(settings: PromptSettings) {
 		return { text: settings.prompt?.trim() ?? "", label: settings.title || undefined };
-	}
-}
-
-type QuickSettings = PromptSettings & { template?: string };
-
-/** One of a few everyday prompts (continue, fix tests, …) or a custom one, sent to the selected thread. */
-@action({ UUID: `${ID}.quick` })
-export class QuickPrompt extends PromptKey<QuickSettings> {
-	protected override get glyphName(): GlyphName {
-		return "spark";
-	}
-
-	protected prompt(settings: QuickSettings) {
-		const { text, label } = quickPrompt(settings);
-		return { text, label: settings.title || label };
 	}
 }
 
@@ -941,33 +876,6 @@ export class Health extends DeckAction {
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		await deck.retry(this.machineOf(ev.action));
-	}
-}
-
-/** The selected thread's pull request: number and state, with live checks, review and findings. Tap opens it in the browser. */
-@action({ UUID: `${ID}.pr` })
-export class PullRequest extends DeckAction {
-	#state(action: Action<JsonObject>) {
-		const thread = selectedThread(this.machineOf(action));
-		const pr = thread?.pullRequests.find((link) => link.state === "open") ?? thread?.pullRequests[0];
-		return { thread, pr, check: availability("pr", { thread, canOperate: true }) };
-	}
-
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
-		if (!action.isKey()) return;
-		const face = connectionFace(this.machineOf(action));
-		if (face) return void (await this.setImage(action, face));
-		const { thread, pr, check } = this.#state(action);
-		if (pr === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "pullRequest", title: t("face.pullRequest"), detail: check.available ? undefined : check.reason, available: false })));
-		await this.setImage(action, pullRequestKeyFace(thread!, pr));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { pr, check } = this.#state(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		if (!URL.canParse(pr!.url) || new URL(pr!.url).protocol !== "https:") return void (await this.flash(ev.action, false, t("result.notWebLink")));
-		await this.run(ev.action, () => streamDeck.system.openUrl(pr!.url));
 	}
 }
 

@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>Commit</title>
+		<title>Git</title>
 		<script src="sdpi-components.js"></script>
 		<style>
 			:root { color-scheme: dark; --t3-warning: #fcd34d; }
@@ -49,13 +49,16 @@
 	<body>
 		<main>
 			<sdpi-item label="Action" data-i18n-label="inspector.git.action">
-				<sdpi-select setting="gitAction" default="commit">
+				<sdpi-select setting="gitAction" default="create_pr">
 					<option value="commit" data-i18n="inspector.git.commit">Commit</option>
 					<option value="commit_push" data-i18n="inspector.git.commitPush">Commit &amp; push</option>
 					<option value="commit_push_pr" data-i18n="inspector.git.commitPushPr">Commit, push &amp; create PR</option>
+					<option value="push" data-i18n="inspector.git.push">Push</option>
+					<option value="create_pr" data-i18n="inspector.git.createPr">Create PR</option>
+					<option value="pull" data-i18n="inspector.git.pull">Pull</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Commit message" data-i18n-label="inspector.git.message">
+			<sdpi-item label="Commit message" data-i18n-label="inspector.git.message" id="git-message" hidden>
 				<sdpi-textfield setting="commitMessage" placeholder="Written by T3 Code when empty" data-i18n-placeholder="inspector.git.messagePlaceholder"></sdpi-textfield>
 			</sdpi-item>
 			<sdpi-item label="Key title" data-i18n-label="inspector.field.keyTitle">
@@ -68,7 +71,8 @@
 					<option value="hold" data-i18n="inspector.git.hold">Hold</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint" data-i18n="inspector.git.hint">Acts on the selected thread's worktree, or its project's folder. Pushing to the default branch always needs a hold; a PR from it is refused, as T3 Code would offer a new branch first.</p>
+			<p class="hint" id="git-hint" hidden data-i18n="inspector.git.hint">Acts on the selected thread's worktree, or its project's folder. Pushing to the default branch always needs a hold; a PR from it is refused, as T3 Code would offer a new branch first.</p>
+			<p class="hint" id="git-pull-hint" hidden data-i18n="inspector.git.pullHint">Pulls the selected thread's branch from its upstream when it is behind.</p>
 			<sdpi-item label="Machine" data-i18n-label="inspector.card.machine">
 				<select class="native" id="t3-machine" aria-label="Machine for this action" data-i18n-aria-label="inspector.card.machineGroup"></select>
 			</sdpi-item>
@@ -298,6 +302,27 @@ function mergeGlobalSettings(current , patch ) {
 			wirePairing(send);
 			send("strings");
 			send("status");
+			{
+				const field = document.querySelector('[setting="gitAction"]');
+				const apply = (value) => { $("git-message").hidden = !((value) => ["commit","commit_push","commit_push_pr"].includes(value === "" ? "create_pr" : value))(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["gitAction"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["gitAction"]));
+			}
+			{
+				const field = document.querySelector('[setting="gitAction"]');
+				const apply = (value) => { $("git-hint").hidden = !((value) => ["commit","commit_push","commit_push_pr","push","create_pr"].includes(value === "" ? "create_pr" : value))(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["gitAction"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["gitAction"]));
+			}
+			{
+				const field = document.querySelector('[setting="gitAction"]');
+				const apply = (value) => { $("git-pull-hint").hidden = !((value) => ["pull"].includes(value === "" ? "create_pr" : value))(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["gitAction"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["gitAction"]));
+			}
 		</script>
 	</body>
 </html>

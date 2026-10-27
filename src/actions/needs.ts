@@ -5,7 +5,7 @@ import type { DeckThread } from "../core/board.js";
 import { t } from "../core/i18n.js";
 import { findModel, modelKey, parseModelKey, pickableModels, RUNTIME_MODES, runtimeModes, speedToggle } from "../core/models.js";
 import { effortChoices } from "../core/power.js";
-import { dialPrompts, quickPrompt } from "../core/prompts.js";
+import { dialPrompts } from "../core/prompts.js";
 import { type Connection, type Need, requirements } from "../core/requirements.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
@@ -61,15 +61,8 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 				...(settings.destination === "project" ? projectNeed : []),
 				...(settings.startIn === "worktree" ? [{ kind: "prompt", ok: text(settings.prompt) !== "" } satisfies Need] : []),
 			];
-		case "send":
-		case "steer":
-			return [...needsFor(machine, thread), ...(kind === "steer" ? [{ kind: "running", ok: thread?.active === true } satisfies Need] : []), { kind: "prompt", ok: text(settings.prompt) !== "" }];
-		case "quick":
-			return [...needsFor(machine, thread), { kind: "prompt", ok: quickPrompt(settings).text !== "" }];
 		case "dial.prompts":
 			return [...needsFor(machine, thread), { kind: "prompt", ok: dialPrompts(settings).length > 0 }];
-		case "stop":
-			return [...needsFor(machine, thread), { kind: "running", ok: thread?.active === true }];
 		case "model": {
 			const fixed = parseModelKey(settings.model);
 			const known = fixed && deck.machines.some((candidate) => pickableModels(candidate.modelConfig).some((model) => model.key === modelKey(fixed.instanceId, fixed.model)));
@@ -106,8 +99,6 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 			const queue = thread && queueOf(thread);
 			return [...needsFor(machine, thread), { kind: "queued", ok: queue === undefined ? (thread === undefined ? false : undefined) : queue.items.length > 0 }];
 		}
-		case "pr":
-			return [...needsFor(machine, thread, false), { kind: "pr", ok: (thread?.pullRequests.length ?? 0) > 0 }];
 		case "branch":
 			return [...needsFor(machine, thread, false), { kind: "branch", ok: thread?.branch !== undefined }];
 		default:

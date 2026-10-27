@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "Stream Deck에서 T3 Code 스레드를 확인하고 조작하세요. 스레드 상태, 중지, 프롬프트, 모델 옵션과 응답까지 모든 프로바이더에서 사용할 수 있습니다.",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "스레드",
+		"Tooltip": "키 위치에 따라 채워지는 보드의 스레드 하나: 상태, 제목, 타이머. 탭하면 T3 Code에서 열고, 길게 누르면 선택합니다."
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "활동",
 		"Tooltip": "필터와 일치하는 가장 급한 스레드입니다. 탭하면 T3 Code에서 엽니다."
@@ -12,31 +16,19 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "프롬프트 보내기",
-		"Tooltip": "선택한 스레드에 저장된 프롬프트를 보냅니다. 길게 누르면 중단하고 이 프롬프트로 다시 시작합니다."
+		"Tooltip": "직접 쓴 프롬프트나 자주 쓰는 프롬프트(계속, 테스트 수정, 설명, 커밋 등)를 선택한 스레드에 보냅니다. 길게 누르면 중단하고 이 프롬프트로 다시 시작합니다."
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "조정",
 		"Tooltip": "선택한 스레드의 실행 중인 턴에 저장된 지시를 추가합니다."
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "빠른 프롬프트",
-		"Tooltip": "선택한 스레드에 자주 쓰는 프롬프트를 보냅니다: 계속, 테스트 수정, 진단, 설명, 커밋 또는 직접 입력."
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "스킬 실행",
+		"Tooltip": "T3 Code의 작성창에서 선택해 보내는 것처럼 스레드 프로바이더의 스킬 하나를 실행합니다."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "중지",
-		"Tooltip": "T3 Code에서 선택한 스레드의 실행 중인 턴을 중지합니다."
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "워크플로 중지",
-		"Tooltip": "스레드가 실행하는 워크플로를 중지합니다(Claude). 길게 눌러 중지합니다."
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "포크",
-		"Tooltip": "가장 최근에 완료된 답변에서 스레드를 포크하고 포크를 엽니다."
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "다시 병합",
-		"Tooltip": "포크한 스레드를 원래 스레드로 다시 병합합니다. 길게 눌러 병합합니다."
+		"Tooltip": "선택한 스레드의 실행 중인 턴이나, 설정에 따라 스레드가 실행하는 워크플로(Claude)를 중지합니다. 워크플로는 길게 눌러 중지합니다."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "모델",
@@ -66,73 +58,57 @@
 		"Name": "거부",
 		"Tooltip": "선택한 스레드의 승인 요청을 거부합니다."
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "스레드",
-		"Tooltip": "키 위치에 따라 채워지는 보드의 스레드 하나: 상태, 제목, 타이머. 탭하면 T3 Code에서 열고, 길게 누르면 선택합니다."
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "정리",
 		"Tooltip": "선택한 스레드를 처리, 고정, 미루기, 보관 또는 읽지 않음으로 표시하거나, 마지막으로 미룬 스레드를 깨웁니다."
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "풀 리퀘스트",
-		"Tooltip": "선택한 스레드의 풀 리퀘스트와 그 상태입니다. 탭하면 엽니다."
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "포크",
+		"Tooltip": "가장 최근에 완료된 답변에서 스레드를 포크해 열거나, 포크를 원래 스레드로 다시 병합합니다(길게 누르기)."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "브랜치",
 		"Tooltip": "선택한 스레드의 브랜치입니다. 탭하면 T3 Code에서 스레드를 엽니다."
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "커밋",
-		"Tooltip": "선택한 스레드의 변경 사항을 커밋하거나, 푸시 또는 PR 생성까지 합니다. 직접 지정하지 않으면 T3 Code의 커밋 메시지를 사용합니다."
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "선택한 스레드의 브랜치를 커밋, 푸시, PR 생성 또는 풀합니다. 무엇을 할지는 액션 설정에서 고릅니다. 길게 눌러 푸시합니다."
 	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "푸시",
-		"Tooltip": "선택한 스레드의 브랜치를 푸시합니다. 길게 눌러 푸시합니다."
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "PR 생성",
-		"Tooltip": "선택한 스레드의 브랜치를 푸시하고 풀 리퀘스트를 엽니다. 길게 눌러 생성합니다."
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "풀",
-		"Tooltip": "선택한 스레드의 브랜치가 업스트림보다 뒤처졌을 때 풀합니다."
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "지적 사항 수정",
-		"Tooltip": "선택한 스레드의 풀 리퀘스트에 대해 T3 Code의 ‘Fix findings’ 작업을 보냅니다: 해결되지 않은 리뷰와 실패한 검사. 길게 눌러 보냅니다."
-	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "PR 설명",
-		"Tooltip": "T3 Code의 ‘Explain’처럼, 선택한 스레드에 풀 리퀘스트를 차근차근 설명하도록 요청합니다."
-	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "PR 질문",
-		"Tooltip": "풀 리퀘스트가 있는 스레드를 T3 Code에서 열어 그곳에서 질문할 수 있게 합니다."
-	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "리뷰 가이드",
-		"Tooltip": "선택한 스레드의 풀 리퀘스트에 대한 T3 Code의 리뷰 가이드를 작성한 뒤 스레드를 엽니다."
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "에디터에서 열기",
-		"Tooltip": "T3 Code가 실행 중인 머신에서 선택한 스레드의 워크트리나 프로젝트를 에디터로 엽니다."
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "미리보기 열기",
-		"Tooltip": "스레드의 미리보기 페이지나 가장 최근 HTML 렌더를 이 컴퓨터의 브라우저에서 엽니다."
-	},
-	"com.alejandrom2.t3deck.health": {
-		"Name": "상태",
-		"Tooltip": "T3 Code와 프로바이더 연결 상태: 가장 심각한 문제를 먼저 표시합니다(오프라인, 페어링 필요, 인증 안 됨, 지원되지 않는 버전, 사용할 수 없음). 탭하면 다시 연결합니다."
+	"com.alejandrom2.t3deck.pr": {
+		"Name": "풀 리퀘스트",
+		"Tooltip": "선택한 스레드의 풀 리퀘스트와 그 상태입니다. 탭하면 엽니다. 또는 에이전트에게 넘깁니다: 지적 사항 수정(길게 누르기), 설명, 질문, 리뷰 가이드."
 	},
 	"com.alejandrom2.t3deck.task": {
 		"Name": "작업 실행",
 		"Tooltip": "T3 Code의 예약된 작업 하나: 이름과 다음 실행 시각. 누르면 지금 실행합니다."
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "스킬 실행",
-		"Tooltip": "T3 Code의 작성창에서 선택해 보내는 것처럼 스레드 프로바이더의 스킬 하나를 실행합니다."
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "사용량",
+		"Tooltip": "T3 Code의 Usage처럼 한 기간의 API 추정 비용, 토큰, 세션을 한 머신 또는 전체 머신에 대해 표시합니다. 탭하면 새로 고치고, 길게 누르면 모델 가격도 다시 불러옵니다."
+	},
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "한도",
+		"Tooltip": "T3 Code의 ‘Limits’처럼 합산한 프로바이더의 구독 한도: 남은 %, 다음 초기화, 적립된 초기화. 탭하면 새로 고치고, 길게 누르면 T3 Code의 Usage를 열거나 초기화를 사용합니다."
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "열기",
+		"Tooltip": "선택한 스레드의 워크트리를 에디터에서 열거나, 설정에 따라 미리보기 페이지를 이 컴퓨터의 브라우저에서 엽니다."
+	},
+	"com.alejandrom2.t3deck.health": {
+		"Name": "상태",
+		"Tooltip": "T3 Code와 프로바이더 연결 상태: 가장 심각한 문제를 먼저 표시합니다(오프라인, 페어링 필요, 인증 안 됨, 지원되지 않는 버전, 사용할 수 없음). 탭하면 다시 연결합니다."
+	},
+	"com.alejandrom2.t3deck.update": {
+		"Name": "T3 업데이트",
+		"Tooltip": "머신의 T3 Code 버전입니다. 길게 누르면 최신 릴리스로 업데이트합니다. 업데이트 권한이 필요하며, 해당 머신의 다음 페어링 때 요청합니다."
+	},
+	"com.alejandrom2.t3deck.script": {
+		"Name": "스크립트 실행",
+		"Tooltip": "프로젝트에 저장된 스크립트 하나를 스레드의 터미널에서 실행합니다. 길게 누르면 중지합니다. 터미널 권한(셸)이 필요하며, 해당 머신의 다음 페어링 때 요청합니다."
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "스레드 공유",
+		"Tooltip": "스레드의 게스트 링크를 만들어 복사하고, 공유됨과 게스트를 표시합니다. 길게 누르면 공유를 중지합니다. 게스트 링크 권한이 필요하며, 해당 머신의 다음 페어링 때 요청합니다."
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "스레드 다이얼",
@@ -190,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "풀 리퀘스트 선택", "Push": "지적 사항 수정 (길게)", "Touch": "브라우저에서 열기", "LongTouch": "지적 사항 읽기" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "T3 업데이트",
-		"Tooltip": "머신의 T3 Code 버전입니다. 길게 누르면 최신 릴리스로 업데이트합니다. 업데이트 권한이 필요하며, 해당 머신의 다음 페어링 때 요청합니다."
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "스크립트 실행",
-		"Tooltip": "프로젝트에 저장된 스크립트 하나를 스레드의 터미널에서 실행합니다. 길게 누르면 중지합니다. 터미널 권한(셸)이 필요하며, 해당 머신의 다음 페어링 때 요청합니다."
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "스레드 공유",
-		"Tooltip": "스레드의 게스트 링크를 만들어 복사하고, 공유됨과 게스트를 표시합니다. 길게 누르면 공유를 중지합니다. 게스트 링크 권한이 필요하며, 해당 머신의 다음 페어링 때 요청합니다."
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "한도",
-		"Tooltip": "T3 Code의 ‘Limits’처럼 합산한 프로바이더의 구독 한도: 남은 %, 다음 초기화, 적립된 초기화. 탭하면 새로 고치고, 길게 누르면 T3 Code의 Usage를 열거나 초기화를 사용합니다."
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "한도 다이얼",
 		"Tooltip": "모든 프로바이더의 한도 기간을 돌려 가며 봅니다. 누르거나 탭하면 새로 고치고, 길게 누르면 T3 Code의 Usage를 열거나 초기화를 사용합니다.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "프로바이더와 기간 선택", "Push": "새로 고침 (길게: 초기화)", "Touch": "새로 고침", "LongTouch": "세부 정보 읽기" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "사용량",
-		"Tooltip": "T3 Code의 Usage처럼 한 기간의 API 추정 비용, 토큰, 세션을 한 머신 또는 전체 머신에 대해 표시합니다. 탭하면 새로 고치고, 길게 누르면 모델 가격도 다시 불러옵니다."
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "기기 다이얼",
-		"Tooltip": "T3 Code의 시뮬레이터와 에뮬레이터를 돌려 가며 봅니다. 누르면 표시된 기기를 스레드의 Device panel에서 시작하거나 엽니다. 길게 누르면 전원을 끕니다. 터치하면 기기를 다시 찾습니다.",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "기기 선택", "Push": "시작/열기 (길게: 전원 끄기)", "Touch": "다시 찾기" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -230,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "모델 선택", "Push": "새로 고침 (길게: 가격도)", "Touch": "새로 고침", "LongTouch": "세부 정보 읽기" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "기기 다이얼",
+		"Tooltip": "T3 Code의 시뮬레이터와 에뮬레이터를 돌려 가며 봅니다. 누르면 표시된 기기를 스레드의 Device panel에서 시작하거나 엽니다. 길게 누르면 전원을 끕니다. 터치하면 기기를 다시 찾습니다.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "기기 선택", "Push": "시작/열기 (길게: 전원 끄기)", "Touch": "다시 찾기" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "선택한 스레드의 브랜치를 커밋, 푸시, PR 생성 또는 풀합니다. 무엇을 할지는 액션 설정에서 고릅니다. 길게 눌러 푸시합니다."
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "선택한 스레드의 브랜치를 커밋, 푸시, PR 생성 또는 풀합니다. 무엇을 할지는 액션 설정에서 고릅니다. 길게 눌러 푸시합니다."
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "선택한 스레드의 브랜치를 커밋, 푸시, PR 생성 또는 풀합니다. 무엇을 할지는 액션 설정에서 고릅니다. 길게 눌러 푸시합니다."
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "선택한 스레드의 브랜치를 커밋, 푸시, PR 생성 또는 풀합니다. 무엇을 할지는 액션 설정에서 고릅니다. 길게 눌러 푸시합니다."
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "풀 리퀘스트",
+		"Tooltip": "선택한 스레드의 풀 리퀘스트와 그 상태입니다. 탭하면 엽니다. 또는 에이전트에게 넘깁니다: 지적 사항 수정(길게 누르기), 설명, 질문, 리뷰 가이드."
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "풀 리퀘스트",
+		"Tooltip": "선택한 스레드의 풀 리퀘스트와 그 상태입니다. 탭하면 엽니다. 또는 에이전트에게 넘깁니다: 지적 사항 수정(길게 누르기), 설명, 질문, 리뷰 가이드."
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "풀 리퀘스트",
+		"Tooltip": "선택한 스레드의 풀 리퀘스트와 그 상태입니다. 탭하면 엽니다. 또는 에이전트에게 넘깁니다: 지적 사항 수정(길게 누르기), 설명, 질문, 리뷰 가이드."
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "풀 리퀘스트",
+		"Tooltip": "선택한 스레드의 풀 리퀘스트와 그 상태입니다. 탭하면 엽니다. 또는 에이전트에게 넘깁니다: 지적 사항 수정(길게 누르기), 설명, 질문, 리뷰 가이드."
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "프롬프트 보내기",
+		"Tooltip": "직접 쓴 프롬프트나 자주 쓰는 프롬프트(계속, 테스트 수정, 설명, 커밋 등)를 선택한 스레드에 보냅니다. 길게 누르면 중단하고 이 프롬프트로 다시 시작합니다."
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "중지",
+		"Tooltip": "선택한 스레드의 실행 중인 턴이나, 설정에 따라 스레드가 실행하는 워크플로(Claude)를 중지합니다. 워크플로는 길게 눌러 중지합니다."
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "포크",
+		"Tooltip": "가장 최근에 완료된 답변에서 스레드를 포크해 열거나, 포크를 원래 스레드로 다시 병합합니다(길게 누르기)."
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "열기",
+		"Tooltip": "선택한 스레드의 워크트리를 에디터에서 열거나, 설정에 따라 미리보기 페이지를 이 컴퓨터의 브라우저에서 엽니다."
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "열기",
+		"Tooltip": "선택한 스레드의 워크트리를 에디터에서 열거나, 설정에 따라 미리보기 페이지를 이 컴퓨터의 브라우저에서 엽니다."
 	},
 	"Localization": {
 		"result": {
@@ -699,7 +707,12 @@
 				"hold": "길게 누르기",
 				"tap": "탭",
 				"fixHint": "선택한 스레드의 풀 리퀘스트에 대한 T3 Code의 ‘Fix findings’ 작업을 그 스레드로 보내며, 스레드가 바쁘면 대기열에 넣습니다. 리뷰 코멘트와 검사 출력은 호스트에서 가져오며 신뢰할 수 없는 데이터로 첨부됩니다.",
-				"dialHint": "머신의 열린 풀 리퀘스트를 나열합니다. 누르면 연결된 스레드나 새 워크트리 스레드에서 지적 사항 수정을 실행하고, 탭하면 브라우저에서 열며, 길게 터치하면 지적 사항을 읽습니다."
+				"dialHint": "머신의 열린 풀 리퀘스트를 나열합니다. 누르면 연결된 스레드나 새 워크트리 스레드에서 지적 사항 수정을 실행하고, 탭하면 브라우저에서 열며, 길게 터치하면 지적 사항을 읽습니다.",
+				"show": "표시",
+				"fix": "지적 사항 수정",
+				"explain": "설명",
+				"ask": "질문",
+				"guide": "리뷰 가이드"
 			},
 			"git": {
 				"action": "액션",
@@ -713,7 +726,10 @@
 				"tap": "탭",
 				"hold": "길게 누르기",
 				"hint": "선택한 스레드의 워크트리 또는 프로젝트 폴더에서 작업합니다. 기본 브랜치에 푸시할 때는 항상 길게 눌러야 하며, 기본 브랜치에서의 PR은 거부됩니다. T3 Code라면 먼저 새 브랜치를 제안하기 때문입니다.",
-				"pullHint": "선택한 스레드의 브랜치가 업스트림보다 뒤처졌을 때 업스트림에서 풀합니다."
+				"pullHint": "선택한 스레드의 브랜치가 업스트림보다 뒤처졌을 때 업스트림에서 풀합니다.",
+				"push": "푸시",
+				"createPr": "PR 생성",
+				"pull": "풀"
 			},
 			"card": {
 				"machine": "기기",
@@ -803,7 +819,7 @@
 				"previewPet": "펫 미리 보기",
 				"idlePetHint": "2분 동안 누르기, 돌리기, 터치가 없으면 작은 로봇이 이웃한 다이얼 스트립 중 가장 긴 줄을 가로질러 걸어갑니다. 4분 간격으로 최대 세 번입니다. T3 Deck 액션을 누르거나 돌리거나 터치하면 사라집니다. 모션 설정을 따릅니다: 줄임이면 차분히 걷고, 끔이면 나타나지 않습니다.",
 				"confirm": "보내기 전 확인",
-				"confirmHint": "프롬프트 보내기, 조정, 빠른 프롬프트, 스킬 실행, 프롬프트 다이얼, 스킬 다이얼에 적용됩니다. 모델, 강도, 속도, 권한, 파워 다이얼은 항상 즉시 적용됩니다. 검토는 첫 번째 누르기에서 무엇이 어디로 가는지 보여 주며, 10초 안에 다시 누르면 보냅니다. 길게 누르기는 길게 누를 때 보내므로, 길게 눌러 다시 시작하거나 스레드를 시작할 수는 없습니다. 각 액션에서 재정의할 수 있습니다."
+				"confirmHint": "프롬프트 보내기, 조정, 스킬 실행, 프롬프트 다이얼, 스킬 다이얼에 적용됩니다. 모델, 강도, 속도, 권한, 파워 다이얼은 항상 즉시 적용됩니다. 검토는 첫 번째 누르기에서 무엇이 어디로 가는지 보여 주며, 10초 안에 다시 누르면 보냅니다. 길게 누르기는 길게 누를 때 보내므로, 길게 눌러 다시 시작하거나 스레드를 시작할 수는 없습니다. 각 액션에서 재정의할 수 있습니다."
 			},
 			"field": {
 				"strip": "스트립",
@@ -819,7 +835,8 @@
 				"model": "모델",
 				"effort": "강도",
 				"access": "권한",
-				"confirm": "확인"
+				"confirm": "확인",
+				"does": "동작"
 			},
 			"background": {
 				"global": "전역 설정 사용",
@@ -900,7 +917,9 @@
 			"send": {
 				"titlePlaceholder": "테스트 수정",
 				"promptPlaceholder": "테스트를 실행하고 실패한 부분을 수정해",
-				"hint": "T3 Code에서 선택한 스레드로 보냅니다. 턴을 시작하거나, 실행 중인 턴을 조정하거나 그 뒤에 대기합니다. 키를 길게 누르면 중단하고 이 프롬프트로 다시 시작합니다."
+				"hint": "T3 Code에서 선택한 스레드로 보냅니다. 턴을 시작하거나, 실행 중인 턴을 조정하거나 그 뒤에 대기합니다. 키를 길게 누르면 중단하고 이 프롬프트로 다시 시작합니다.",
+				"myText": "직접 입력",
+				"text": "텍스트"
 			},
 			"steer": {
 				"titlePlaceholder": "작게 유지",
@@ -908,16 +927,11 @@
 				"hint": "선택한 스레드의 실행 중인 턴에 추가합니다. 스레드가 유휴 상태일 때는 흐리게 표시됩니다."
 			},
 			"quick": {
-				"titlePlaceholder": "이 키의 레이블(선택 사항)",
-				"type": "프롬프트 종류",
 				"continue": "계속",
 				"test": "테스트 실행 후 실패 수정",
 				"fix": "진단 후 수정",
 				"explain": "현재 상태 설명",
-				"commit": "변경 사항 커밋",
-				"custom": "사용자 지정 프롬프트",
-				"customPlaceholder": "이 키가 보낼 프롬프트 입력",
-				"hint": "T3 Code에서 선택한 스레드로 보냅니다. 키를 길게 누르면 중단하고 이 프롬프트로 다시 시작합니다."
+				"commit": "변경 사항 커밋"
 			},
 			"new": {
 				"createIn": "생성 위치",
@@ -1050,7 +1064,9 @@
 			},
 			"lineage": {
 				"forkHint": "T3 Code에서 답변의 포크 버튼처럼, 가장 최근에 완료된 답변에서 스레드를 새 스레드로 포크한 뒤 포크를 엽니다.",
-				"mergeHint": "T3 Code의 ‘Merge’처럼 포크한 스레드를 원래 스레드로 다시 병합한 뒤 그 스레드를 엽니다. 키를 길게 눌러 병합합니다."
+				"mergeHint": "T3 Code의 ‘Merge’처럼 포크한 스레드를 원래 스레드로 다시 병합한 뒤 그 스레드를 엽니다. 키를 길게 눌러 병합합니다.",
+				"fork": "포크",
+				"merge": "다시 병합"
 			},
 			"update": {
 				"hint": "아래에서 선택한 머신(선택하지 않으면 이 컴퓨터)의 T3 Code 버전을 표시합니다. 길게 누르면 해당 채널의 최신 릴리스로 업데이트합니다. 데스크톱 앱은 자체 업데이트를 설치하고 다시 실행됩니다. T3 Code는 덱에 업데이트를 알리지 않으므로 키에 대기 중인 업데이트를 표시할 수 없습니다.",
@@ -1066,6 +1082,16 @@
 				"access": "게스트 링크 권한이 필요하며, 이 권한으로 덱이 외부 사람과 스레드를 공유할 수 있습니다. 키를 처음 누르면 해당 머신의 다음 페어링에서 요청합니다.",
 				"link": "게스트 링크",
 				"linkHint": "T3 Deck이 실행 중일 때만 표시됩니다. T3 Code는 링크를 만들 때 한 번만 보여 줍니다."
+			},
+			"stop": {
+				"stops": "중지 대상",
+				"turn": "턴",
+				"workflow": "워크플로"
+			},
+			"open": {
+				"in": "열 위치",
+				"editor": "에디터",
+				"preview": "미리보기"
 			}
 		},
 		"usage": {

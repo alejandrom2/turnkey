@@ -137,6 +137,21 @@ const showWhen = (setting: string, id: string, test: string) => `
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["${setting}"]));
 			}`;
 
+/**
+ * A merged action's mode, first in its panel. `fallback` is the mode this page's UUID starts in: an older
+ * single-purpose key opens the merged panel with its own mode selected, with nothing written to its settings.
+ */
+const modeField = (setting: string, label: string, fallback: string, options: [string, string][]) => `
+			<sdpi-item ${attr("label", label)}>
+				<sdpi-select setting="${setting}" default="${fallback}">
+					${options.map(([value, key]) => `<option value="${value}"${text(key)}</option>`).join("\n\t\t\t\t\t")}
+				</sdpi-select>
+			</sdpi-item>`;
+
+/** Shows `id` only in `modes`; an unsaved mode is the page's `fallback`. */
+const inModes = (setting: string, id: string, fallback: string, modes: string[]) =>
+	showWhen(setting, id, `${JSON.stringify(modes)}.includes(value === "" ? "${fallback}" : value)`);
+
 /** A dial's own strip background, style and text scroll, over the global ones in T3 Deck Settings. */
 const dialAppearance = `
 			<sdpi-item ${attr("label", "inspector.field.strip")}>
@@ -764,6 +779,121 @@ const gitConfirm = `
 				</sdpi-select>
 			</sdpi-item>`;
 
+/** Send Prompt's panel, starting in `fallback`: the key's own text only for My text. */
+const sendPage = (fallback: string) =>
+	page(
+		"Send Prompt",
+		`${targetField}${modeField("template", "inspector.field.prompt", fallback, [
+			["custom", "inspector.send.myText"],
+			["continue", "inspector.quick.continue"],
+			["test", "inspector.quick.test"],
+			["fix", "inspector.quick.fix"],
+			["explain", "inspector.quick.explain"],
+			["commit", "inspector.quick.commit"],
+		])}
+			<sdpi-item ${attr("label", "inspector.send.text")} id="send-text" hidden>
+				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.send.promptPlaceholder")}></sdpi-textarea>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.send.titlePlaceholder")}></sdpi-textfield>
+			</sdpi-item>
+			<p class="hint"${text("inspector.send.hint")}</p>${confirmField}`,
+		inModes("template", "send-text", fallback, ["custom"]) + targetScript,
+	);
+
+/** Stop's panel, starting in `fallback`. */
+const stopPage = (fallback: string) =>
+	page(
+		"Stop",
+		`${targetField}${modeField("mode", "inspector.stop.stops", fallback, [
+			["turn", "inspector.stop.turn"],
+			["workflow", "inspector.stop.workflow"],
+		])}
+			<p class="hint" id="workflow-hint" hidden${text("inspector.workflow.hint")}</p>`,
+		targetScript + inModes("mode", "workflow-hint", fallback, ["workflow"]),
+	);
+
+/** Fork's panel, starting in `fallback`, with each mode's hint. */
+const forkPage = (fallback: string) =>
+	page(
+		"Fork",
+		`${targetField}${modeField("mode", "inspector.field.does", fallback, [
+			["fork", "inspector.lineage.fork"],
+			["merge", "inspector.lineage.merge"],
+		])}
+			<p class="hint" id="fork-hint" hidden${text("inspector.lineage.forkHint")}</p>
+			<p class="hint" id="merge-hint" hidden${text("inspector.lineage.mergeHint")}</p>`,
+		targetScript + inModes("mode", "fork-hint", fallback, ["fork"]) + inModes("mode", "merge-hint", fallback, ["merge"]),
+	);
+
+/** Open's panel, starting in `fallback`: the editor picker for Editor, the Target for Preview. */
+const openPage = (fallback: string) =>
+	page(
+		"Open",
+		`${modeField("mode", "inspector.open.in", fallback, [
+			["editor", "inspector.open.editor"],
+			["preview", "inspector.open.preview"],
+		])}
+			<div id="open-editor" hidden>
+				<sdpi-item ${attr("label", "inspector.editor.label")}>
+					<sdpi-select setting="editor" datasource="getEditors" hot-reload ${attr("loading", "inspector.editor.loading")} default=""></sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.editor.hint")}</p>
+			</div>
+			<div id="open-preview" hidden>${targetField}
+				<p class="hint"${text("inspector.preview.hint")}</p>
+			</div>`,
+		inModes("mode", "open-editor", fallback, ["editor"]) + inModes("mode", "open-preview", fallback, ["preview"]) + targetScript,
+	);
+
+/** Pull Request's panel, starting in `fallback`: Fix findings' hold and hint only for it. */
+const prPage = (fallback: string) =>
+	page(
+		"Pull Request",
+		`${modeField("mode", "inspector.field.does", fallback, [
+			["show", "inspector.pr.show"],
+			["fix", "inspector.pr.fix"],
+			["explain", "inspector.pr.explain"],
+			["ask", "inspector.pr.ask"],
+			["guide", "inspector.pr.guide"],
+		])}
+			<div id="pr-fix" hidden>
+				<sdpi-item ${attr("label", "inspector.pr.confirm")}>
+					<sdpi-select setting="confirm" default="hold">
+						<option value="hold"${text("inspector.pr.hold")}</option>
+						<option value="tap"${text("inspector.pr.tap")}</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.pr.fixHint")}</p>
+			</div>`,
+		inModes("mode", "pr-fix", fallback, ["fix"]),
+	);
+
+/** Git's panel, starting in `fallback`: the message only for commits, and Pull's own hint. */
+const gitPage = (fallback: string) =>
+	page(
+		"Git",
+		`${modeField("gitAction", "inspector.git.action", fallback, [
+			["commit", "inspector.git.commit"],
+			["commit_push", "inspector.git.commitPush"],
+			["commit_push_pr", "inspector.git.commitPushPr"],
+			["push", "inspector.git.push"],
+			["create_pr", "inspector.git.createPr"],
+			["pull", "inspector.git.pull"],
+		])}
+			<sdpi-item ${attr("label", "inspector.git.message")} id="git-message" hidden>
+				<sdpi-textfield setting="commitMessage" ${attr("placeholder", "inspector.git.messagePlaceholder")}></sdpi-textfield>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title"></sdpi-textfield>
+			</sdpi-item>${gitConfirm}
+			<p class="hint" id="git-hint" hidden${text("inspector.git.hint")}</p>
+			<p class="hint" id="git-pull-hint" hidden${text("inspector.git.pullHint")}</p>`,
+		inModes("gitAction", "git-message", fallback, ["commit", "commit_push", "commit_push_pr"]) +
+			inModes("gitAction", "git-hint", fallback, ["commit", "commit_push", "commit_push_pr", "push", "create_pr"]) +
+			inModes("gitAction", "git-pull-hint", fallback, ["pull"]),
+	);
+
 /** What the Limits key and dial show, and what holding them does. */
 const limitsFields = `
 			<sdpi-item ${attr("label", "inspector.limits.show")}>
@@ -849,18 +979,8 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.answer.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
-	"send.html": page(
-		"Send Prompt",
-		`${targetField}
-			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
-				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.send.titlePlaceholder")}></sdpi-textfield>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.field.prompt")}>
-				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.send.promptPlaceholder")}></sdpi-textarea>
-			</sdpi-item>
-			<p class="hint"${text("inspector.send.hint")}</p>${confirmField}`,
-		targetScript,
-	),
+	"send.html": sendPage("custom"),
+	"quick.html": sendPage("continue"),
 	"steer.html": page(
 		"Steer",
 		`${targetField}
@@ -872,28 +992,6 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<p class="hint"${text("inspector.steer.hint")}</p>${confirmField}`,
 		targetScript,
-	),
-	"quick.html": page(
-		"Quick Prompt",
-		`${targetField}
-			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
-				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.quick.titlePlaceholder")}></sdpi-textfield>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.quick.type")}>
-				<sdpi-select setting="template" default="continue">
-					<option value="continue"${text("inspector.quick.continue")}</option>
-					<option value="test"${text("inspector.quick.test")}</option>
-					<option value="fix"${text("inspector.quick.fix")}</option>
-					<option value="explain"${text("inspector.quick.explain")}</option>
-					<option value="commit"${text("inspector.quick.commit")}</option>
-					<option value="custom"${text("inspector.quick.custom")}</option>
-				</sdpi-select>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.quick.custom")} id="custom" hidden>
-				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.quick.customPlaceholder")}></sdpi-textarea>
-			</sdpi-item>
-			<p class="hint"${text("inspector.quick.hint")}</p>${confirmField}`,
-		showWhen("template", "custom", `value === "custom"`) + targetScript,
 	),
 	"new.html": page(
 		"New Thread",
@@ -1045,24 +1143,10 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.skill.dialHint")}</p>${confirmField}${dialAppearance}`,
 		targetScript + dialAppearanceScript,
 	),
-	"workflow.html": page(
-		"Stop Workflow",
-		`${targetField}
-			<p class="hint"${text("inspector.workflow.hint")}</p>`,
-		targetScript,
-	),
-	"fork.html": page(
-		"Fork",
-		`${targetField}
-			<p class="hint"${text("inspector.lineage.forkHint")}</p>`,
-		targetScript,
-	),
-	"merge.html": page(
-		"Merge Back",
-		`${targetField}
-			<p class="hint"${text("inspector.lineage.mergeHint")}</p>`,
-		targetScript,
-	),
+	"stop.html": stopPage("turn"),
+	"workflow.html": stopPage("workflow"),
+	"fork.html": forkPage("fork"),
+	"merge.html": forkPage("merge"),
 	"tasks-dial.html": page(
 		"Tasks Dial",
 		`
@@ -1124,45 +1208,15 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.power.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript + showWhen("dialControls", "model-row", `value === "" || value === "model"`),
 	),
-	"git-commit.html": page(
-		"Commit",
-		`
-			<sdpi-item ${attr("label", "inspector.git.action")}>
-				<sdpi-select setting="gitAction" default="commit">
-					<option value="commit"${text("inspector.git.commit")}</option>
-					<option value="commit_push"${text("inspector.git.commitPush")}</option>
-					<option value="commit_push_pr"${text("inspector.git.commitPushPr")}</option>
-				</sdpi-select>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.git.message")}>
-				<sdpi-textfield setting="commitMessage" ${attr("placeholder", "inspector.git.messagePlaceholder")}></sdpi-textfield>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
-				<sdpi-textfield setting="title"></sdpi-textfield>
-			</sdpi-item>${gitConfirm}
-			<p class="hint"${text("inspector.git.hint")}</p>`,
-	),
-	"git.html": page(
-		"Git",
-		`${gitConfirm}
-			<p class="hint"${text("inspector.git.hint")}</p>`,
-	),
-	"git-pull.html": page(
-		"Pull",
-		`${gitConfirm}
-			<p class="hint"${text("inspector.git.pullHint")}</p>`,
-	),
-	"pr-fix.html": page(
-		"Fix Findings",
-		`
-			<sdpi-item ${attr("label", "inspector.pr.confirm")}>
-				<sdpi-select setting="confirm" default="hold">
-					<option value="hold"${text("inspector.pr.hold")}</option>
-					<option value="tap"${text("inspector.pr.tap")}</option>
-				</sdpi-select>
-			</sdpi-item>
-			<p class="hint"${text("inspector.pr.fixHint")}</p>`,
-	),
+	"git.html": gitPage("commit"),
+	"git-push.html": gitPage("push"),
+	"git-pr.html": gitPage("create_pr"),
+	"git-pull.html": gitPage("pull"),
+	"pr.html": prPage("show"),
+	"pr-fix.html": prPage("fix"),
+	"pr-explain.html": prPage("explain"),
+	"pr-ask.html": prPage("ask"),
+	"pr-guide.html": prPage("guide"),
 	"pr-dial.html": page(
 		"PR Dial",
 		`
@@ -1210,12 +1264,8 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.devices.hint")}</p>${dialAppearance}`,
 		targetScript + dialAppearanceScript,
 	),
-	"preview.html": page(
-		"Open Preview",
-		`${targetField}
-			<p class="hint"${text("inspector.preview.hint")}</p>`,
-		targetScript,
-	),
+	"open.html": openPage("editor"),
+	"preview.html": openPage("preview"),
 	"update.html": page(
 		"Update T3",
 		`
@@ -1256,14 +1306,6 @@ const pages: Record<string, string> = {
 				client.didReceiveSettings.subscribe(() => send("getShareLink"));
 				send("getShareLink");
 			}`,
-	),
-	"editor.html": page(
-		"Open in Editor",
-		`
-			<sdpi-item ${attr("label", "inspector.editor.label")}>
-				<sdpi-select setting="editor" datasource="getEditors" hot-reload ${attr("loading", "inspector.editor.loading")} default=""></sdpi-select>
-			</sdpi-item>
-			<p class="hint"${text("inspector.editor.hint")}</p>`,
 	),
 };
 

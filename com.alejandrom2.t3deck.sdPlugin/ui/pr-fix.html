@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>Fix Findings</title>
+		<title>Pull Request</title>
 		<script src="sdpi-components.js"></script>
 		<style>
 			:root { color-scheme: dark; --t3-warning: #fcd34d; }
@@ -48,13 +48,24 @@
 	</head>
 	<body>
 		<main>
-			<sdpi-item label="To send" data-i18n-label="inspector.pr.confirm">
-				<sdpi-select setting="confirm" default="hold">
-					<option value="hold" data-i18n="inspector.pr.hold">Hold</option>
-					<option value="tap" data-i18n="inspector.pr.tap">Tap</option>
+			<sdpi-item label="Does" data-i18n-label="inspector.field.does">
+				<sdpi-select setting="mode" default="fix">
+					<option value="show" data-i18n="inspector.pr.show">Show</option>
+					<option value="fix" data-i18n="inspector.pr.fix">Fix findings</option>
+					<option value="explain" data-i18n="inspector.pr.explain">Explain</option>
+					<option value="ask" data-i18n="inspector.pr.ask">Ask</option>
+					<option value="guide" data-i18n="inspector.pr.guide">Review guide</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint" data-i18n="inspector.pr.fixHint">Sends T3 Code's Fix findings task for the selected thread's pull request to that thread, queued if it is busy. Review comments and check output come from the host and are attached as untrusted data.</p>
+			<div id="pr-fix" hidden>
+				<sdpi-item label="To send" data-i18n-label="inspector.pr.confirm">
+					<sdpi-select setting="confirm" default="hold">
+						<option value="hold" data-i18n="inspector.pr.hold">Hold</option>
+						<option value="tap" data-i18n="inspector.pr.tap">Tap</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.pr.fixHint">Sends T3 Code's Fix findings task for the selected thread's pull request to that thread, queued if it is busy. Review comments and check output come from the host and are attached as untrusted data.</p>
+			</div>
 			<sdpi-item label="Machine" data-i18n-label="inspector.card.machine">
 				<select class="native" id="t3-machine" aria-label="Machine for this action" data-i18n-aria-label="inspector.card.machineGroup"></select>
 			</sdpi-item>
@@ -284,6 +295,13 @@ function mergeGlobalSettings(current , patch ) {
 			wirePairing(send);
 			send("strings");
 			send("status");
+			{
+				const field = document.querySelector('[setting="mode"]');
+				const apply = (value) => { $("pr-fix").hidden = !((value) => ["fix"].includes(value === "" ? "fix" : value))(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["mode"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["mode"]));
+			}
 		</script>
 	</body>
 </html>
