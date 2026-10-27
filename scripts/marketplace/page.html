@@ -1,0 +1,283 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Turnkey marketplace art</title>
+<style>
+	* { box-sizing: border-box; margin: 0; }
+	html, body { background: #fff; overflow: hidden; }
+	body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; -webkit-font-smoothing: antialiased; }
+	#stage { position: relative; width: 1920px; height: 960px; overflow: hidden; background: #fff; }
+	.wash { position: absolute; inset: 0; }
+	.scene { position: absolute; inset: 0; }
+	.headline { position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-size: 92px; font-weight: 600; letter-spacing: -2.2px; color: #0b0b0c; }
+	.el { position: absolute; will-change: transform, opacity; }
+	/* The video frame is 120px taller than a gallery image: its pieces sit 60px lower. */
+	.video .el, .video .headline { margin-top: 60px; }
+
+	/* A key: a glossy black bezel around the 144px face. */
+	.key { width: 280px; height: 280px; border-radius: 62px; padding: 17px;
+		background: linear-gradient(155deg, #3a3a3c 0%, #0d0d0e 38%, #000 70%, #1d1d1f 100%);
+		box-shadow: inset 0 2px 1px rgba(255,255,255,.28), inset 0 -3px 6px rgba(0,0,0,.9), inset 0 0 0 2px #000, 0 30px 50px -18px rgba(40,20,60,.45), 0 8px 16px -6px rgba(0,0,0,.35); }
+	.key img { display: block; width: 246px; height: 246px; border-radius: 46px; box-shadow: 0 0 0 3px #000, inset 0 0 0 1px rgba(255,255,255,.05); }
+	.key .gloss { position: absolute; inset: 17px; border-radius: 46px; pointer-events: none;
+		background: linear-gradient(160deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 32%); }
+
+	/* The Stream Deck + touch strip: an LCD behind glass, with glare. */
+	.lcd { background: #000; border-radius: 22px; padding: 46px 52px; display: flex; gap: 0;
+		box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 40px 70px -24px rgba(40,20,60,.5), 0 10px 20px -8px rgba(0,0,0,.4); }
+	.lcd::after { content: ""; position: absolute; inset: 0; border-radius: 22px; pointer-events: none;
+		background: linear-gradient(115deg, rgba(255,255,255,0) 55%, rgba(255,255,255,.10) 72%, rgba(255,255,255,0) 86%); }
+	.strip { position: relative; width: 200px; height: 100px; overflow: hidden; transform-origin: 0 0; flex: none; }
+	.strip img { position: absolute; display: block; }
+	.strip .t { position: absolute; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.strip .t span { overflow: hidden; text-overflow: ellipsis; display: block; width: 100%; }
+	.sep { width: 2px; background: #000; flex: none; }
+
+	/* A dial: knurled metal, seen from above. */
+	.knob { width: 330px; height: 330px; border-radius: 50%;
+		background:
+			radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 58%, rgba(0,0,0,.25) 59% 60%, rgba(0,0,0,0) 61%),
+			radial-gradient(circle at 50% 50%, #8d8f95 0 57%, rgba(0,0,0,0) 58%),
+			repeating-conic-gradient(from 0deg, #3c3d42 0deg 2.2deg, #a3a5ab 2.2deg 4.5deg);
+		box-shadow: 0 30px 50px -16px rgba(40,20,60,.5), inset 0 0 0 3px rgba(0,0,0,.35); }
+	.knob::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+		background: radial-gradient(circle at 38% 30%, rgba(255,255,255,.55), rgba(255,255,255,0) 45%), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0 6px, rgba(255,255,255,.06) 6px 7px); }
+
+	/* Thumbnail and video title card. */
+	.brand { position: absolute; display: flex; flex-direction: column; }
+	.brand .icon { width: 168px; height: 168px; border-radius: 38px; box-shadow: 0 24px 40px -14px rgba(40,20,60,.45); }
+	.brand h1 { font-size: 132px; font-weight: 700; letter-spacing: -4px; color: #0b0b0c; line-height: 1; margin-top: 46px; }
+	.brand h2 { font-size: 64px; font-weight: 600; letter-spacing: -1.5px; color: #0b0b0c; opacity: .55; line-height: 1.05; margin-top: 10px; }
+	.brand p { font-size: 40px; font-weight: 500; letter-spacing: -.5px; color: #2b2b30; margin-top: 34px; line-height: 1.25; }
+
+	/* A Stream Deck +, front on. */
+	.deck { width: 1010px; height: 900px; border-radius: 60px; padding: 52px 56px;
+		background: linear-gradient(170deg, #2b2b2e, #0c0c0d 45%, #050505);
+		box-shadow: inset 0 2px 1px rgba(255,255,255,.18), inset 0 -4px 8px rgba(0,0,0,.8), 0 60px 90px -30px rgba(40,20,60,.55), 0 14px 30px -10px rgba(0,0,0,.4); }
+	.deck .keys { display: grid; grid-template-columns: repeat(4, 206px); gap: 26px; }
+	.deck .key { width: 206px; height: 206px; border-radius: 44px; padding: 12px; }
+	.deck .key img { width: 182px; height: 182px; border-radius: 34px; }
+	.deck .key .gloss { inset: 12px; border-radius: 34px; }
+	.deck .bar { margin-top: 34px; height: 194px; background: #000; border-radius: 16px; padding: 5px 7px; display: flex; gap: 4px; position: relative; box-shadow: inset 0 0 0 2px #1a1a1b; }
+	.deck .bar .strip { transform: scale(2.12); }
+	.deck .bar .cell { width: 223px; height: 184px; overflow: hidden; border-radius: 6px; flex: none; }
+	.deck .knobs { display: flex; justify-content: space-around; margin-top: 30px; }
+	.deck .knobs .knob { position: relative; width: 150px; height: 150px; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="faces.js"></script>
+<script>
+const F = window.FACES;
+const params = new URLSearchParams(location.search);
+const stage = document.getElementById("stage");
+
+/* Layout rects from com.alejandrom2.turnkey.sdPlugin/layouts: [x, y, w, h, size, weight, color, align]. */
+const LAYOUTS = {
+	strip: {
+		header: [8, 2, 184, 26, 16, 700, "#F5F7FB"], value: [56, 30, 136, 22, 16, 650, "#FFFFFF"], detail: [56, 52, 136, 23, 14, 600, "#B8BCC6"],
+		pix: { glyph: [10, 34, 38, 38], valueArt: [56, 30, 136, 22], detailArt: [56, 52, 136, 23] },
+	},
+	list: {
+		heading: [8, 1, 144, 19, 14, 650, "#F5F7FB"], counter: [152, 1, 40, 19, 13, 500, "#8A8F98", "right"],
+		previous: [30, 22, 162, 17, 13, 300, "#9A9FA8"], selected: [30, 40, 162, 20, 15, 600, "#FFFFFF"],
+		next: [30, 61, 162, 17, 14, 300, "#B8BCC6"], after: [30, 79, 162, 16, 13, 300, "#73787F"],
+		pix: { glyph: [8, 41, 18, 18] },
+	},
+};
+
+function stripEl(face, scale) {
+	const box = document.createElement("div");
+	box.className = "strip";
+	box.style.transform = `scale(${scale})`;
+	const layout = LAYOUTS[face.layout];
+	const img = (src, [x, y, w, h]) => {
+		if (!src) return;
+		const i = new Image();
+		i.src = src;
+		Object.assign(i.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
+		box.appendChild(i);
+	};
+	img(face.canvas, [0, 0, 200, 100]);
+	for (const [key, spec] of Object.entries(layout)) {
+		if (key === "pix") continue;
+		const raw = face[key];
+		if (!raw) continue;
+		const value = typeof raw === "string" ? raw : raw.value;
+		if (!value) continue;
+		const [x, y, w, h, size, weight, color, align] = spec;
+		const t = document.createElement("div");
+		t.className = "t";
+		Object.assign(t.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px", fontSize: size + "px", fontWeight: weight, color: (typeof raw === "object" && raw.color) || color, textAlign: align || "left" });
+		t.innerHTML = `<span></span>`;
+		t.firstChild.textContent = value;
+		box.appendChild(t);
+	}
+	for (const [key, rect] of Object.entries(layout.pix)) {
+		const src = face[key];
+		if (src && !src.startsWith("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz4")) img(src, rect);
+	}
+	return box;
+}
+
+/* Builders: each returns an element placed at (x, y) in stage pixels, with an entrance order. */
+const place = (el, x, y, rotate = 0) => { el.classList.add("el"); el.style.left = x + "px"; el.style.top = y + "px"; el.dataset.rotate = rotate; return el; };
+function key(src, x, y, rotate = 0) {
+	const el = document.createElement("div");
+	el.className = "key";
+	el.innerHTML = `<img><div class="gloss"></div>`;
+	el.firstChild.src = src;
+	return place(el, x, y, rotate);
+}
+function lcd(faces, x, y, scale = 2.4) {
+	const el = document.createElement("div");
+	el.className = "lcd";
+	faces.forEach((face, i) => {
+		if (i) { const s = document.createElement("div"); s.className = "sep"; s.style.height = 100 * scale + "px"; el.appendChild(s); }
+		const cell = document.createElement("div");
+		cell.style.cssText = `width:${200 * scale}px;height:${100 * scale}px;flex:none;overflow:hidden;border-radius:4px`;
+		cell.appendChild(stripEl(face, scale));
+		el.appendChild(cell);
+	});
+	return place(el, x, y);
+}
+function knob(x, y, size = 330) {
+	const el = document.createElement("div");
+	el.className = "knob";
+	el.style.width = el.style.height = size + "px";
+	return place(el, x, y);
+}
+function headline(text) {
+	const el = document.createElement("div");
+	el.className = "headline";
+	el.textContent = text;
+	el.dataset.headline = "1";
+	return el;
+}
+/* White at the top, pastel light pooling at the bottom. */
+function wash(blobs) {
+	const el = document.createElement("div");
+	el.className = "wash";
+	el.style.background = blobs.map(([x, y, color, r = 900]) => `radial-gradient(${r}px ${r * 0.62}px at ${x}% ${y}%, ${color}, rgba(255,255,255,0))`).join(",") + ", #fff";
+	return el;
+}
+const PEACH = "rgba(255,196,170,.75)", LILAC = "rgba(214,186,240,.85)", BLUE = "rgba(178,214,250,.85)", MINT = "rgba(186,236,214,.8)", AMBER = "rgba(253,222,150,.75)";
+
+function deck() {
+	const el = document.createElement("div");
+	el.className = "deck";
+	const keys = document.createElement("div");
+	keys.className = "keys";
+	for (const name of ["running", "approval", "done", "question", "send", "stop", "model", "effort"]) {
+		const k = key(F.keys[name], 0, 0);
+		k.classList.remove("el");
+		k.style.position = "relative";
+		keys.appendChild(k);
+	}
+	el.appendChild(keys);
+	const bar = document.createElement("div");
+	bar.className = "bar";
+	for (const name of ["threads", "power", "usage", "pr"]) {
+		const cell = document.createElement("div");
+		cell.className = "cell";
+		cell.appendChild(stripEl(F.strips[name], 1.84));
+		bar.appendChild(cell);
+	}
+	el.appendChild(bar);
+	const knobs = document.createElement("div");
+	knobs.className = "knobs";
+	for (let i = 0; i < 4; i++) { const k = document.createElement("div"); k.className = "knob"; knobs.appendChild(k); }
+	el.appendChild(knobs);
+	return el;
+}
+
+function brand(x, y, lines) {
+	const el = document.createElement("div");
+	el.className = "brand";
+	el.innerHTML = `<img class="icon" src="icon.svg"><h1>Turnkey</h1><h2>for T3 Code</h2>` + (lines ? `<p>${lines}</p>` : "");
+	return place(el, x, y);
+}
+
+/* Each scene: a wash, a headline, and its pieces in entrance order. */
+const SCENES = {
+	threads: () => [wash([[18, 108, PEACH], [80, 110, LILAC]]), headline("See every agent thread at a glance"),
+		key(F.keys.running, 110, 330), key(F.keys.approval, 430, 330), key(F.keys.done, 750, 330),
+		lcd([F.strips.threads], 1150, 340), knob(1430, 790)],
+	answer: () => [wash([[25, 110, AMBER], [85, 105, PEACH]]), headline("Approve and answer from a key"),
+		key(F.keys.approval, 150, 330, -6), key(F.keys.approve, 470, 360), key(F.keys.deny, 790, 330, 6),
+		lcd([F.strips.answer], 1180, 340), knob(1460, 790)],
+	model: () => [wash([[15, 105, BLUE], [70, 112, LILAC], [100, 90, PEACH, 600]]), headline("Switch model, effort and speed"),
+		key(F.keys.model, 110, 330), key(F.keys.effort, 430, 330), key(F.keys.speed, 750, 330),
+		lcd([F.strips.power], 1150, 340), knob(1430, 790)],
+	prompts: () => [wash([[30, 112, LILAC], [75, 108, BLUE]]), headline("Start, prompt, steer and stop"),
+		key(F.keys.newThread, 300, 480, -16), key(F.keys.send, 660, 360, -6), key(F.keys.steer, 990, 360, 6), key(F.keys.stop, 1340, 480, 16)],
+	git: () => [wash([[20, 110, MINT], [80, 108, BLUE]]), headline("Commit, push and fix pull requests"),
+		lcd([F.strips.pr], -60, 340), knob(250, 790),
+		key(F.keys.branch, 830, 330), key(F.keys.git, 1150, 330), key(F.keys.prFix, 1470, 330)],
+	usage: () => [wash([[25, 110, PEACH], [78, 110, MINT]]), headline("Keep an eye on usage and limits"),
+		lcd([F.strips.usage, F.strips.limits], -260, 340), knob(80, 790), knob(620, 790),
+		key(F.keys.usage, 1150, 330), key(F.keys.limits, 1470, 330)],
+	thumbnail: () => [wash([[12, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]]),
+		brand(130, 150, "Your agents, on Stream Deck."), (() => { const d = place(deck(), 900, 150); d.style.transform = "scale(.86)"; d.style.transformOrigin = "0 0"; return d; })()],
+	intro: () => [wash([[15, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]]),
+		brand(150, 210, "Watch and steer every T3 Code thread<br>from Stream Deck.")],
+	outro: () => [wash([[15, 108, PEACH, 1100], [70, 112, LILAC, 1200], [100, 40, BLUE, 700]]),
+		brand(150, 210, "Every provider. Every machine.<br>Get it on the Stream Deck Marketplace."), (() => { const d = place(deck(), 900, 150); d.style.transform = "scale(.86)"; d.style.transformOrigin = "0 0"; return d; })()],
+};
+
+function mount(name) {
+	stage.innerHTML = "";
+	const scene = document.createElement("div");
+	scene.className = "scene";
+	for (const el of SCENES[name]()) scene.appendChild(el);
+	stage.appendChild(scene);
+	return scene;
+}
+
+/* Entrance: each piece rises and fades in, staggered; `t` is seconds since the scene started (Infinity for stills). */
+const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+function pose(scene, t, out = 0) {
+	let order = 0;
+	for (const el of scene.querySelectorAll(".el, .headline")) {
+		const p = ease((t - 0.12 * order++) / 0.6);
+		const rotate = +(el.dataset.rotate || 0);
+		const base = el.style.transform.replace(/translateY\([^)]*\)|rotate\([^)]*\)/g, "").trim();
+		el.style.opacity = p * (1 - out);
+		el.style.transform = `${base} translateY(${(1 - p) * 60 - out * 30}px) rotate(${rotate}deg)`.trim();
+	}
+}
+
+/* Video: the scenes in turn, ~3.6s each, with the thread key's spinner turning. */
+const TIMELINE = [["intro", 3.2], ["threads", 4], ["answer", 3.6], ["model", 3.6], ["prompts", 3.6], ["git", 3.6], ["usage", 3.6], ["outro", 4.4]];
+const VIDEO_LENGTH = TIMELINE.reduce((sum, [, d]) => sum + d, 0);
+let mounted;
+window.render = (t) => {
+	let start = 0;
+	for (const [name, length] of TIMELINE) {
+		if (t < start + length || name === "outro") {
+			if (!mounted || mounted.name !== name) mounted = { name, scene: mount(name) };
+			const local = t - start;
+			pose(mounted.scene, local, Math.max(0, (local - (length - 0.35)) / 0.35) * (name === "outro" ? 0 : 1));
+			const spin = F.keys.runningSpin[Math.floor(t * 30) % F.keys.runningSpin.length];
+			for (const img of mounted.scene.querySelectorAll("img")) if (img.dataset.spin || img.src === F.keys.running) { img.dataset.spin = 1; img.src = spin; }
+			return;
+		}
+		start += length;
+	}
+};
+window.VIDEO_LENGTH = VIDEO_LENGTH;
+window.ready = () => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))).then(() => document.fonts.ready);
+
+const scene = params.get("scene");
+if (params.get("video")) {
+	stage.style.height = "1080px";
+	document.body.classList.add("video");
+	render(0);
+} else if (scene) {
+	pose(mount(scene), Infinity);
+}
+</script>
+</body>
+</html>
