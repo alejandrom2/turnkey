@@ -197,6 +197,13 @@
 					</sdpi-select>
 				</sdpi-item>
 				<p class="hint" data-i18n="inspector.advanced.motionHint">Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.</p>
+				<sdpi-item label="Idle pet" data-i18n-label="inspector.advanced.idlePet">
+					<sdpi-select setting="idlePet" global default="off">
+						<option value="off" data-i18n="inspector.idlePet.off">Off</option>
+						<option value="on" data-i18n="inspector.idlePet.on">On</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.idlePetHint">After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a T3 Deck action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.</p>
 				<sdpi-item label="Colors" data-i18n-label="inspector.advanced.maxEffort">
 					<sdpi-select setting="maxEffort" global default="gradient">
 						<option value="gradient" data-i18n="inspector.maxEffort.gradient">Gradient</option>
