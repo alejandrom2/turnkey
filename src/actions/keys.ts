@@ -37,6 +37,7 @@ import {
 	ladderCue,
 	type MarkPainter,
 	maxEffortStyle,
+	modelFill,
 	MODE_GLYPH,
 	paintedGlyphArt,
 	pillCue,
@@ -607,7 +608,8 @@ export class ModelKey extends SettingKey<ModelSettings> {
 		const shown = fixed ? target : current;
 		const label = shown?.name ?? (fixed ? fixed.model : (thread?.model.model ?? t("face.model")));
 		const position = shown === undefined ? -1 : catalog.findIndex((model) => model.key === shown.key);
-		const cue = catalog.length > 1 && position >= 0 ? dotsCue(catalog.length, position) : undefined;
+		// The shown model's pill takes its color, as on the Power dial.
+		const cue = catalog.length > 1 && position >= 0 ? dotsCue(catalog.length, position, modelFill(maxEffortStyle(deck.appearance.maxEffort), shown && modelColor(shown))) : undefined;
 		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue, pinned });
 		if (thread === undefined || target === undefined) return { face, check };
 		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;

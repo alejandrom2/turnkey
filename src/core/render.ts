@@ -522,16 +522,19 @@ export function ladderCue(count: number, index: number, spectrum = false, paint?
 }
 
 /** One pill per item, the current one bright: where a value sits among a few (favorite models). */
-export function dotsCue(count: number, index: number): string {
+export function dotsCue(count: number, index: number, paint: Paint = "#FFFFFF"): string {
 	const shown = Math.min(count, 8);
 	// The pills share the key's width evenly, however many there are.
 	const gap = shown <= 5 ? 8 : 5;
 	const width = (112 - gap * (shown - 1)) / shown;
 	const at = count > shown ? Math.round((index * (shown - 1)) / (count - 1)) : index;
-	return Array.from(
-		{ length: shown },
-		(_, i) => `<rect x="${+(16 + i * (width + gap)).toFixed(2)}" y="118" width="${+width.toFixed(2)}" height="8" rx="4" fill="#FFFFFF"${i === at ? "" : ` fill-opacity=".14"`}/>`,
-	).join("");
+	const parts: string[] = [];
+	for (let i = 0; i < shown; i++) {
+		const x = +(16 + i * (width + gap)).toFixed(2);
+		const fill = i === at ? paintFill(paint, "cue-page", x, x + width, parts) : "#FFFFFF";
+		parts.push(`<rect x="${x}" y="118" width="${+width.toFixed(2)}" height="8" rx="4" fill="${fill}"${i === at ? "" : ` fill-opacity=".14"`}/>`);
+	}
+	return parts.join("");
 }
 
 /** A small mode pill: filled when the key's mode is the thread's, outlined when it only applies it. */
