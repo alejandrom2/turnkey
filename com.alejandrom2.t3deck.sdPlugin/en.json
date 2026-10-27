@@ -778,7 +778,7 @@
 				"dialStrips": "Dial strips",
 				"stateLine": "State line",
 				"stateLineLabel": "Show the colored line under each strip",
-				"stateHint": "Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.",
+				"stateHint": "Dark is a plain near-black, like Stream Deck's own strips. Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.",
 				"stripStyle": "Strip style",
 				"styleHint": "List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Per dial default uses List for the Threads dial, Classic for the others; Classic shows the Power dial as a slider. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.",
 				"motion": "Motion",
@@ -809,7 +809,7 @@
 			},
 			"background": {
 				"global": "Use global",
-				"t3": "T3 Code",
+				"t3": "Dark",
 				"flow": "Flow",
 				"state": "Thread state",
 				"custom": "Custom color"
