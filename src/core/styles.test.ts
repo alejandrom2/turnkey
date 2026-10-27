@@ -36,6 +36,13 @@ describe("resolveStripStyle", () => {
 		expect(resolveStripStyle({ stripStyle: "carousel" }, { stripStyle: "", textScroll: "" })).toEqual({ style: "carousel", scroll: "horizontal" });
 		expect(resolveStripStyle({ stripStyle: "wheel", textScroll: 3 }, { stripStyle: "nope" })).toEqual({ style: "classic", scroll: "horizontal" });
 	});
+
+	it("falls back to the dial's own default (List for the Threads dial) only when neither it nor the global setting picks", () => {
+		expect(resolveStripStyle({}, {}, "list").style).toBe("list");
+		expect(resolveStripStyle({ stripStyle: "" }, { stripStyle: "" }, "list").style).toBe("list");
+		expect(resolveStripStyle({ stripStyle: "classic" }, {}, "list").style).toBe("classic");
+		expect(resolveStripStyle({}, { stripStyle: "carousel" }, "list").style).toBe("carousel");
+	});
 });
 
 describe("listRows", () => {

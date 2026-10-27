@@ -9,24 +9,41 @@ import streamDeck, {
 } from "@elgato/streamdeck";
 import type { JsonObject, JsonValue } from "@elgato/utils";
 
+import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { messageTable, t } from "../core/i18n.js";
 import { effortValues, favoriteModels, findModel, pickableModels } from "../core/models.js";
-import { COLORS, renderNoticeKey, renderResultKey, stripCanvas, stripIcon } from "../core/render.js";
+import { COLORS, type GlyphName, renderNoticeKey, renderResultKey, renderReviewKey, stripCanvas, stripIcon } from "../core/render.js";
+import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
 import type { SendMode } from "../core/t3/machine.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 
 export const LONG_PRESS_MS = 500;
+/** At most one animation write per instance in this long. */
+export const FRAME_GAP_MS = 100;
 const logger = streamDeck.logger.createScope("actions");
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 type Placement = { device: string; position?: { row: number; column: number } };
+
+/** Repaints an instance whose review card expired or gave way to another's. */
+const reviewEnded = new Map<string, () => void>();
+const reviews = new Reviews((owner) => reviewEnded.get(owner)?.());
+
+/** What a review card shows: what would happen, to which thread, with what, and how to go ahead. */
+export type ReviewCard = { glyph: GlyphName; verb: string; target: string; body?: string; footer: string };
+
+/**
+ * A press that sends or changes something, for the Confirm setting: `scope` names the target and content (any
+ * change reviews again), `detail` how this press would send (a mode); `held` is how long the press was held.
+ */
+export type Guard = { scope: string; detail?: string; held: number; card: () => ReviewCard; holdHint: string };
 
 /** Shared lifecycle: visibility drives the clock, every board change repaints visible instances. */
 export abstract class DeckAction<T extends JsonObject = JsonObject> extends SingletonAction<T> {
@@ -39,6 +56,12 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	readonly #fed = new Map<string, Map<string, string>>();
 	/** Instances showing a press result; live repaints wait until it clears. */
 	readonly #flashing = new Map<string, ReturnType<typeof setTimeout>>();
+	/** When each instance last had an event-driven write, so an animation frame doesn't follow it too closely. */
+	readonly #wroteAt = new Map<string, number>();
+	/** Set while the animator paints a frame: such a paint is dropped when the instance was written too recently. */
+	#frame = false;
+	/** Instances showing a review card; live repaints wait until it is confirmed, expires or goes stale. */
+	readonly #reviewing = new Set<string>();
 
 	constructor() {
 		super();
@@ -87,24 +110,75 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		return assignSlots(keys).get(action.id) ?? 0;
 	}
 
+	/**
+	 * An animation frame landing within `FRAME_GAP_MS` of an event-driven write (a board change, a turn, the marquee)
+	 * is skipped, since that write already drew the current frame; the animator spaces frames themselves.
+	 */
+	#throttled(id: string): boolean {
+		const now = Date.now();
+		if (!this.#frame) this.#wroteAt.set(id, now);
+		else if (now - (this.#wroteAt.get(id) ?? -Infinity) < FRAME_GAP_MS) return true;
+		return false;
+	}
+
+	/** What a review on this instance covers right now; a card whose scope no longer matches gives way to the live face. */
+	protected reviewScope(_action: Action<T>): string | undefined {
+		return undefined;
+	}
+
+	/** Whether a press result or a review card holds the face. */
+	#held(action: Action<T>): boolean {
+		if (this.#flashing.has(action.id)) return true;
+		if (!this.#reviewing.has(action.id)) return false;
+		const scope = reviews.scope(action.id);
+		if (scope !== undefined && scope === this.reviewScope(action)) return true;
+		reviews.cancel(action.id);
+		this.#endReview(action.id);
+		return false;
+	}
+
+	#endReview(id: string): void {
+		this.#reviewing.delete(id);
+		reviewEnded.delete(id);
+		this.forgetSent(id);
+	}
+
 	protected async setImage(action: Action<T>, image: string): Promise<void> {
-		if (!action.isKey() || this.#flashing.has(action.id) || this.#sent.get(action.id) === image) return;
+		if (!action.isKey() || this.#held(action) || this.#sent.get(action.id) === image || this.#throttled(action.id)) return;
 		this.#sent.set(action.id, image);
 		await action.setImage(image);
 	}
 
+	/** Asks for frames while the face moves (a spinner, a pulse, a flash), and stops asking once it is still. */
+	protected animate(action: Action<T>, moving: boolean): void {
+		deck.animator.set(
+			action.id,
+			moving
+				? () => {
+						if (!this.#placed.has(action.id)) return deck.animator.set(action.id, undefined);
+						this.#frame = true;
+						try {
+							void this.paint(action);
+						} finally {
+							this.#frame = false;
+						}
+					}
+				: undefined,
+		);
+	}
+
 	protected async setFeedback(action: Action<T>, feedback: FeedbackPayload): Promise<void> {
-		if (!action.isDial() || this.#flashing.has(action.id)) return;
+		if (!action.isDial() || this.#held(action)) return;
 		const sent = this.#fed.get(action.id) ?? new Map<string, string>();
 		const changed: FeedbackPayload = {};
 		for (const [key, item] of Object.entries(feedback)) {
-			const signature = JSON.stringify(item);
-			if (sent.get(key) === signature) continue;
-			sent.set(key, signature);
+			if (sent.get(key) === JSON.stringify(item)) continue;
 			changed[key] = item;
 		}
+		if (Object.keys(changed).length === 0 || this.#throttled(action.id)) return;
+		for (const [key, item] of Object.entries(changed)) sent.set(key, JSON.stringify(item));
 		this.#fed.set(action.id, sent);
-		if (Object.keys(changed).length > 0) await action.setFeedback(changed);
+		await action.setFeedback(changed);
 	}
 
 	/** Forgets what was sent, so the next paint sends every item: after a face drawn outside `setFeedback`. */
@@ -127,6 +201,10 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		this.forgetSent(ev.action.id);
 		clearTimeout(this.#flashing.get(ev.action.id));
 		this.#flashing.delete(ev.action.id);
+		this.#wroteAt.delete(ev.action.id);
+		deck.animator.set(ev.action.id, undefined);
+		reviews.cancel(ev.action.id);
+		this.#endReview(ev.action.id);
 		deck.setVisible(ev.action.id, false);
 		this.#repaintAll();
 	}
@@ -239,6 +317,8 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 
 	/** Shows a press result on the key or strip for a moment, then the live face again. */
 	protected async flash(action: Action<T>, ok: boolean, label: string): Promise<void> {
+		// A result ends any review this instance showed, so the live face comes back after it.
+		this.#dropReview(action.id);
 		clearTimeout(this.#flashing.get(action.id));
 		this.#flashing.set(
 			action.id,
@@ -256,6 +336,68 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	protected flashFeedback(_action: Action<T>, ok: boolean, label: string): FeedbackPayload {
 		const color = ok ? COLORS.done : COLORS.error;
 		return { canvas: stripCanvas(color), header: ok ? t("strip.done") : t("strip.notNow"), glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" };
+	}
+
+	/** The action's Confirm before sending setting, else the global one. */
+	protected confirmModeOf(action: Action<T>): ConfirmMode {
+		return confirmMode(this.settingsOf(action).confirmSend, deck.appearance.confirmSend);
+	}
+
+	/**
+	 * Whether a press may go ahead under the Confirm setting, with the detail it was reviewed with; undefined holds
+	 * it back. Under Review the first press shows `card` instead, and only a second press (750 ms to 10 s later,
+	 * nothing changed) goes ahead; under Hold a press must be held.
+	 */
+	protected async guard(action: Action<T>, guard: Guard): Promise<string | undefined> {
+		const detail = guard.detail ?? "";
+		const mode = this.confirmModeOf(action);
+		if (mode !== "review") this.#dropReview(action.id);
+		switch (mode) {
+			case "off":
+				return detail;
+			case "hold":
+				if (guard.held >= HOLD_CONFIRM_MS) return detail;
+				await this.flash(action, false, guard.holdHint);
+				return undefined;
+		}
+		const press = reviews.press(action.id, guard.scope, detail);
+		if (press.kind === "wait") return undefined;
+		if (press.kind === "confirm") {
+			this.#endReview(action.id);
+			return press.detail;
+		}
+		clearTimeout(this.#flashing.get(action.id));
+		this.#flashing.delete(action.id);
+		this.#reviewing.add(action.id);
+		reviewEnded.set(action.id, () => {
+			this.#endReview(action.id);
+			if (this.#placed.has(action.id)) void this.paint(action);
+		});
+		const card = guard.card();
+		// A key has room for a short footer only; the verb already says what goes.
+		if (action.isKey()) await action.setImage(renderReviewKey({ ...card, footer: t("review.pressAgain") }));
+		else if (action.isDial()) await action.setFeedback(this.reviewFeedback(action, card));
+		return undefined;
+	}
+
+	/** Drops this instance's review card, if it shows one: the dial turned. */
+	protected cancelReview(action: Action<T>): void {
+		this.#dropReview(action.id);
+	}
+
+	#dropReview(id: string): void {
+		reviews.cancel(id);
+		if (this.#reviewing.has(id)) this.#endReview(id);
+	}
+
+	/** What this instance's pending review of `scope` would do, if one is showing: a second press acts on that. */
+	protected reviewed(action: Action<T>, scope: string | undefined): string | undefined {
+		return scope === undefined ? undefined : reviews.detail(action.id, scope);
+	}
+
+	/** A dial's review card. */
+	protected reviewFeedback(_action: Action<T>, card: ReviewCard): FeedbackPayload {
+		return { canvas: stripCanvas(COLORS.accent), header: card.verb, glyph: stripIcon(card.glyph, COLORS.accent), value: card.body ?? card.target, detail: card.footer };
 	}
 
 	/** Flashes why the action can't act when `check` says so; true when it may go ahead. */

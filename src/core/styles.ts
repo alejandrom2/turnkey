@@ -15,13 +15,14 @@ export const STRIP_LAYOUTS: Record<StripStyle, string> = { classic: "layouts/str
 const stripStyle = (value: unknown): StripStyle | undefined => (value === "classic" || value === "list" || value === "carousel" ? value : undefined);
 const textScroll = (value: unknown): TextScroll | undefined => (value === "horizontal" || value === "vertical" || value === "off" ? value : undefined);
 
-/** A dial's own style and text scroll when it sets them, else the global ones, else the Classic layout scrolling sideways. */
+/** A dial's own style and text scroll when it sets them, else the global ones, else the dial's default scrolling sideways. */
 export function resolveStripStyle(
 	global: { stripStyle?: unknown; textScroll?: unknown },
 	dial: { stripStyle?: unknown; textScroll?: unknown } = {},
+	fallback: StripStyle = "classic",
 ): { style: StripStyle; scroll: TextScroll } {
 	return {
-		style: stripStyle(dial.stripStyle) ?? stripStyle(global.stripStyle) ?? "classic",
+		style: stripStyle(dial.stripStyle) ?? stripStyle(global.stripStyle) ?? fallback,
 		scroll: textScroll(dial.textScroll) ?? textScroll(global.textScroll) ?? "horizontal",
 	};
 }
@@ -109,6 +110,8 @@ const svg = (body: string) => svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg
 
 const DIVIDER = `<rect x="8" y="20" width="184" height="1" fill="#FFFFFF" fill-opacity=".12"/>`;
 const LIST_ART = svg(DIVIDER);
+/** The list's last row as a placeholder bar while it loads. */
+const LIST_LOADING_ART = svg(`${DIVIDER}<rect x="30" y="81" width="96" height="12" rx="6" fill="#FFFFFF" fill-opacity=".12"/>`);
 
 const ROW_COLORS = { previous: "#9A9FA8", next: "#B8BCC6", after: "#73787F" } as const;
 
@@ -173,8 +176,8 @@ export function listFeedback(content: StripContent, list: StripList, options: St
 		selected: selected.text,
 		selectedArt: selected.art,
 		next: label(rows.next, ROW_COLORS.next),
-		after: list.note ? { value: list.note.text, color: list.note.color ?? COLORS.muted } : label(rows.after, ROW_COLORS.after),
-		art: LIST_ART,
+		after: content.loading ? blankRow : list.note ? { value: list.note.text, color: list.note.color ?? COLORS.muted } : label(rows.after, ROW_COLORS.after),
+		art: content.loading ? LIST_LOADING_ART : LIST_ART,
 	};
 }
 
