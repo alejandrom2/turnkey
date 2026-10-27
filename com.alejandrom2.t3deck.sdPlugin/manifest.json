@@ -271,6 +271,15 @@
 			"States": [{ "Image": "imgs/actions/limits/key", "ShowTitle": false }]
 		},
 		{
+			"Name": "Usage",
+			"UUID": "com.alejandrom2.t3deck.usage",
+			"Icon": "imgs/actions/usage/icon",
+			"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices.",
+			"PropertyInspectorPath": "ui/usage.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/usage/key", "ShowTitle": false }]
+		},
+		{
 			"Name": "Threads Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.threads",
 			"Icon": "imgs/actions/dial-threads/icon",
@@ -353,6 +362,20 @@
 				"TriggerDescription": { "Rotate": "Choose provider and window", "Push": "Refresh (hold: reset)", "Touch": "Refresh", "LongTouch": "Read details" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-limits/key" }]
+		},
+		{
+			"Name": "Usage Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.usage",
+			"Icon": "imgs/actions/dial-usage/icon",
+			"Tooltip": "Rotate through a period's total and each model's cost, tokens, cache hit rate and cost per million tokens. Press or tap refreshes; a long press reloads model prices.",
+			"PropertyInspectorPath": "ui/usage-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-usage/icon",
+				"TriggerDescription": { "Rotate": "Choose model", "Push": "Refresh (hold: prices too)", "Touch": "Refresh", "LongTouch": "Read details" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-usage/key" }]
 		}
 	]
 }
