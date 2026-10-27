@@ -716,7 +716,11 @@
 				"pullHint": "Pullt den Branch des ausgewählten Threads von seinem Upstream, wenn er dahinter liegt."
 			},
 			"card": {
-				"choose": "Rechner wählen",
+				"machine": "Gerät",
+				"machines": "Geräte",
+				"getLink": "Kopplungslink holen",
+				"getLinkRow": "Link holen",
+				"pasteLink": "Link einfügen",
 				"looking": "Suche T3 Code auf diesem Rechner…",
 				"machineGroup": "Rechner für diese Aktion",
 				"addMachine": "Rechner hinzufügen",
@@ -725,8 +729,6 @@
 				"connecting": "Verbinde…",
 				"accessHelp": "T3 Deck möchte Threads lesen und steuern, im Rahmen dessen, was der Link erlaubt. Widerrufe das unter „Settings → Sharing & access“.",
 				"shared": "Jeder hinzugefügte Rechner wird von allen T3 Deck-Aktionen geteilt. Jede Aktion folgt dem oben gewählten Rechner.",
-				"connectTitle": "T3 Deck verbinden",
-				"pairTitle": "T3 Deck koppeln",
 				"notRunning": "T3 Code läuft nicht auf diesem Rechner. Öffne es oder füge unten einen Kopplungslink von einem anderen Rechner ein.",
 				"howToPair": "Öffne in T3 Code „Settings → Sharing & access“, erstelle einen Kopplungslink und füge ihn unten ein.",
 				"picked": "Diese Aktion zeigt und steuert Threads des gewählten Rechners.",

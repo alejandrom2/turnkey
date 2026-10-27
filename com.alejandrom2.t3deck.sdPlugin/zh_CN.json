@@ -716,7 +716,11 @@
 				"pullHint": "当所选对话的分支落后时，从其上游拉取。"
 			},
 			"card": {
-				"choose": "选择机器",
+				"machine": "设备",
+				"machines": "设备列表",
+				"getLink": "获取配对链接",
+				"getLinkRow": "获取链接",
+				"pasteLink": "粘贴链接",
 				"looking": "正在本机上查找 T3 Code…",
 				"machineGroup": "此操作使用的机器",
 				"addMachine": "添加机器",
@@ -725,8 +729,6 @@
 				"connecting": "连接中…",
 				"accessHelp": "T3 Deck 会在链接允许的范围内请求读取和操作对话。可在 Settings → Sharing & access 中撤销。",
 				"shared": "你添加的每台机器由所有 T3 Deck 操作共享。每个操作使用上方选择的机器。",
-				"connectTitle": "连接 T3 Deck",
-				"pairTitle": "配对 T3 Deck",
 				"notRunning": "本机未运行 T3 Code。请打开它，或在下方粘贴来自其他机器的配对链接。",
 				"howToPair": "在 T3 Code 中打开 Settings → Sharing & access，创建配对链接，并粘贴到下方。",
 				"picked": "此操作显示并操作你所选机器上的对话。",

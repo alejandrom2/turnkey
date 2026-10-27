@@ -716,7 +716,11 @@
 				"pullHint": "Pulls the selected thread's branch from its upstream when it is behind."
 			},
 			"card": {
-				"choose": "Choose a machine",
+				"machine": "Machine",
+				"machines": "Machines",
+				"getLink": "Get a pair link",
+				"getLinkRow": "Get link",
+				"pasteLink": "Paste link",
 				"looking": "Looking for T3 Code on this machine…",
 				"machineGroup": "Machine for this action",
 				"addMachine": "Add a machine",
@@ -725,8 +729,6 @@
 				"connecting": "Connecting…",
 				"accessHelp": "T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.",
 				"shared": "Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.",
-				"connectTitle": "Connect T3 Deck",
-				"pairTitle": "Pair T3 Deck",
 				"notRunning": "T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.",
 				"howToPair": "In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.",
 				"picked": "This action shows and acts on threads from the machine you pick.",

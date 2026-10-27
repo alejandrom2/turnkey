@@ -2,6 +2,7 @@ import streamDeck, { type Action } from "@elgato/streamdeck";
 import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
+import { openExternal } from "./core/commands.js";
 import { QueueStore } from "./core/queues.js";
 import { dropScopeRequest, optInStatus, type OptInStatus, readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
 import { VERBOSE_MS, verboseOn } from "./core/diagnostics.js";
@@ -157,6 +158,15 @@ class Deck implements CredentialStore {
 			this.repaint();
 		});
 		await this.#apply(await streamDeck.settings.getGlobalSettings<GlobalSettings>());
+	}
+
+	/**
+	 * Where to create a pair link for `url` (else this computer): this computer's T3 Code app, which comes to the front
+	 * (its deep links don't reach settings yet), or another machine's Sharing & access page in the browser.
+	 */
+	async openPairPage(url?: string): Promise<void> {
+		if (url === undefined || url === "" || isLoopbackUrl(url)) return openExternal(`${this.scheme}://settings/access`);
+		await streamDeck.system.openUrl(new URL("/settings/access", url).toString());
 	}
 
 	/** Walks the idle pet once now; set by the dial strips, which own it. */

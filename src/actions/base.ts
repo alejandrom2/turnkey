@@ -270,6 +270,8 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				return this.#diagnostics(() => openLogsFolder());
 			case "previewPet":
 				return deck.previewPet();
+			case "getPairLink":
+				return deck.openPairPage(payload.url).catch((error: unknown) => void logger.warn(`Couldn't open the pair page: ${message(error)}`));
 			case "exportDiagnostics":
 				return this.#diagnostics(() => exportDiagnostics(visibleActions()));
 			case "retry":
