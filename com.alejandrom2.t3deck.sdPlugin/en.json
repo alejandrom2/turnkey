@@ -794,6 +794,8 @@
 			},
 			"usage": {
 				"period": "Period",
+				"provider": "Provider",
+				"allProviders": "All providers",
 				"day": "Past 24h",
 				"week": "7 days",
 				"month": "30 days",
