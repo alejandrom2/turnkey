@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { mergeUsage } from "./merge.js";
 import type { UsageBucket } from "./types.js";
-import { periodLabel, usageDriver, usageItems } from "./usageView.js";
+import { periodLabel, usageDriver, usageItems, usageProvider } from "./usageView.js";
 
 const bucket = (overrides: Partial<UsageBucket>): UsageBucket => ({
 	day: "2026-10-26",
@@ -51,6 +51,38 @@ describe("usage items", () => {
 		expect(opus).toMatchObject({ label: "claude-opus", provider: "claude", cost: "$46.88", share: 1, tokens: "51.1M tokens", detail: "95.1% cache · $0.92/M" });
 		expect(preview).toMatchObject({ cost: "Unpriced", detail: "0.0% cache" });
 		expect(preview!.share).toBeUndefined();
+	});
+
+	it("narrows to one provider: its totals, its models, and each model's share of it", () => {
+		const merged = mergeUsage(
+			[
+				{
+					environmentId: "env",
+					label: "Studio",
+					summary: {
+						contractVersion: 6,
+						readAt: "2026-10-27T10:00:00.000Z",
+						timeZone: "UTC",
+						sinceDay: "2026-10-21",
+						untilDay: "2026-10-27",
+						buckets: [bucket({}), bucket({ provider: "codex", model: "gpt-5.5", sourcePath: "/codex", costUsd: 10 }), bucket({ provider: "codex", model: "gpt-6", sourcePath: "/codex", costUsd: 30 })],
+						sources: [
+							{ fingerprint: { hostId: "mac", provider: "claude", resolvedHomePath: "/claude", volumeId: "v" }, status: "ok", scannedFiles: 1, skippedFiles: 0, malformedRecords: 0, distinctSessions: 5, message: null },
+							{ fingerprint: { hostId: "mac", provider: "codex", resolvedHomePath: "/codex", volumeId: "v" }, status: "ok", scannedFiles: 1, skippedFiles: 0, malformedRecords: 0, distinctSessions: 3, message: null },
+						],
+					},
+				},
+			],
+			6,
+		);
+		const [total, ...models] = usageItems(merged, "codex");
+		expect(total).toMatchObject({ provider: "codex", cost: "$40.00" });
+		expect(models.map((model) => [model.label, model.share])).toEqual([
+			["gpt-6", 0.75],
+			["gpt-5.5", 0.25],
+		]);
+		expect(usageItems(merged, "grok")[0]).toMatchObject({ cost: "$0.00", detail: "0 sessions" });
+		expect([usageProvider("codex"), usageProvider(""), usageProvider("nope")]).toEqual(["codex", undefined, undefined]);
 	});
 
 	it("names periods and drivers as T3 Code does", () => {
