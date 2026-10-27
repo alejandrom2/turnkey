@@ -41,8 +41,9 @@ export function gitTarget(machine?: string): GitTarget | undefined {
 }
 
 /**
- * Each checkout's last `vcs.refreshStatus`, shared by every git key. Read from git's local state when a key first
- * shows a checkout and again when its thread's turn starts or ends; a press reads the remote too. No polling.
+ * Each checkout's last `vcs.refreshStatus`, shared by every git key: read when a key first shows a checkout, again
+ * when its thread's turn starts or ends, and on every press. No polling. Always with the remote part: a local-only
+ * read zero-fills upstream, ahead and behind until something fetched them, which would dim Push and Pull wrongly.
  */
 class StatusCache {
 	readonly #entries = new Map<string, { status?: VcsStatus; stamp: string; loading: boolean }>();
@@ -54,16 +55,16 @@ class StatusCache {
 		const entry = this.#entries.get(key);
 		if (entry === undefined || (entry.stamp !== stamp && !entry.loading)) {
 			this.#entries.set(key, { status: entry?.status, stamp, loading: true });
-			void this.refresh(target, false).catch(() => undefined);
+			void this.refresh(target).catch(() => undefined);
 		}
 		return entry?.status;
 	}
 
-	async refresh(target: GitTarget, remote: boolean): Promise<VcsStatus> {
+	async refresh(target: GitTarget): Promise<VcsStatus> {
 		const key = `${target.machine.url}|${target.cwd}`;
 		const stamp = `${target.thread.deck}|${target.thread.active}`;
 		try {
-			const status = await readStatus(target.machine, target.cwd!, remote);
+			const status = await readStatus(target.machine, target.cwd!, true);
 			this.#entries.set(key, { status, stamp, loading: false });
 			return status;
 		} catch (error) {
@@ -165,7 +166,7 @@ abstract class GitKey extends DeckAction<GitSettings> {
 		const which = this.gitAction(settings);
 		let status: VcsStatus;
 		try {
-			status = await statuses.refresh(first.target, true);
+			status = await statuses.refresh(first.target);
 		} catch (error) {
 			return void (await this.flash(ev.action, false, failureLabel(error)));
 		}
@@ -208,7 +209,7 @@ abstract class GitKey extends DeckAction<GitSettings> {
 		} finally {
 			this.#busy.delete(action.id);
 		}
-		void statuses.refresh(target, false).catch(() => undefined);
+		void statuses.refresh(target).catch(() => undefined);
 		await this.flash(action, ok, label);
 	}
 
