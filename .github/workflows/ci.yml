@@ -1,9 +1,12 @@
 name: CI
 
+# Pushes to main run this through release.yml, so a version is only tagged on a commit that passed.
 on:
-  push:
-    branches: [main]
   pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   check:
@@ -25,10 +28,10 @@ jobs:
         run: node scripts/commits.ts origin/${{ github.base_ref }}..HEAD
       - run: npm run typecheck
       - run: npm test
-      - run: npx oxlint src
-      # Generated inspectors, icons and the manifest version must be committed as `npm run assets` writes them.
-      # Profile zips are left out: zip output differs between platforms.
+      - run: npm run lint
+      # Generated inspectors, icons, profiles and the manifest version must be committed as `npm run assets` writes them.
       - run: npm run assets
-      - run: git diff --exit-code -- . ':(exclude)*.streamDeckProfile'
+      - name: Generated files are committed
+        run: test -z "$(git status --porcelain)" || { git status; echo "::error::Run npm run assets and commit its changes."; exit 1; }
       - run: npm run build
       - run: npx streamdeck validate com.alejandrom2.turnkey.sdPlugin

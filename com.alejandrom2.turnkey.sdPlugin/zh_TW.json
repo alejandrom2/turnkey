@@ -481,6 +481,7 @@
 		},
 		"connection": {
 			"noAnswer": "T3 Code 未及時回應。",
+			"foreignLink": "T3 Code 傳送了指向其他網站的連結。",
 			"closed": "與 T3 Code 的連線已關閉。",
 			"failed": "與 T3 Code 的連線失敗。",
 			"silent": "T3 Code 已停止回應。",
@@ -579,8 +580,6 @@
 			"holdTo": "長按以確認",
 			"holdOnDefault": "長按以推送至 {branch}",
 			"starting": "啟動中…",
-			"pulled": "已拉取",
-			"upToDate": "已是最新",
 			"files": "{count} 個檔案",
 			"fileOne": "1 個檔案"
 		},

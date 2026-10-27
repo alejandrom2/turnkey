@@ -1,5 +1,5 @@
-import streamDeck, { type Action, action, type DialAction, type DidReceiveSettingsEvent, type KeyUpEvent, type SendToPluginEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
-import type { JsonObject, JsonValue } from "@elgato/utils";
+import streamDeck, { type Action, action, type DialAction, type KeyUpEvent, type SendToPluginEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import type { JsonValue } from "@elgato/utils";
 
 import { t } from "../core/i18n.js";
 import { COLORS, glyphArt, renderInfoKey, renderSkeletonKey } from "../core/render.js";
@@ -9,62 +9,18 @@ import type { StripList } from "../core/styles.js";
 import type { Machine } from "../core/t3/machine.js";
 import { type ScheduledTask, type TaskState, taskView } from "../core/tasks.js";
 import { deck } from "../deck.js";
-import { connectionFace, DeckAction, pressWhileDisconnected } from "./base.js";
+import { canOperate, DeckAction, errorMessage, machineName, pressWhileDisconnected, readyMachines, sendChoices } from "./base.js";
 import { connectionOf } from "./needs.js";
-import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
+import { type DialSettings, StripDial } from "./strip.js";
+import { MachineWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("tasks");
 
-const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
-
 const STATE_COLOR: Record<TaskState, string> = { running: COLORS.accent, failed: COLORS.error, on: COLORS.text, off: COLORS.muted };
 
-const readyMachines = (url: string | undefined): Machine[] =>
-	deck.machines.filter((machine) => machine.state.kind === "ready" && machine.environmentId !== undefined && (url === undefined || machine.url === url));
-
-/**
- * Which machines visible task keys and dials read: their task lists stay live meanwhile, and a minute tick redraws
- * the "in 4m" times. Nothing runs while none shows.
- */
-class TasksWatch {
-	readonly #shown = new Map<string, string | undefined>();
-	readonly #watched = new Map<string, () => void>();
-	readonly #painters = new Set<() => void>();
-	#tick: ReturnType<typeof setInterval> | undefined;
-
-	show(id: string, url: string | undefined): void {
-		this.#shown.set(id, url);
-		this.sync();
-	}
-
-	hide(id: string): void {
-		this.#shown.delete(id);
-		this.sync();
-	}
-
-	onTick(paint: () => void): void {
-		this.#painters.add(paint);
-	}
-
-	sync(): void {
-		const urls = [...this.#shown.values()];
-		const wanted = new Set(deck.machines.filter((machine) => urls.some((url) => url === undefined || url === machine.url)).map((machine) => machine.url));
-		for (const [url, release] of this.#watched) {
-			if (wanted.has(url)) continue;
-			release();
-			this.#watched.delete(url);
-		}
-		for (const machine of deck.machines) if (wanted.has(machine.url) && !this.#watched.has(machine.url)) this.#watched.set(machine.url, machine.watchTasks());
-		if (this.#shown.size === 0) {
-			clearInterval(this.#tick);
-			this.#tick = undefined;
-		} else this.#tick ??= setInterval(() => this.#painters.forEach((paint) => paint()), 60_000);
-	}
-}
-
-const watch = new TasksWatch();
-deck.onRepaint(() => watch.sync());
+/** The task lists of the machines visible task keys and dials show stay live; a minute tick redraws the "in 4m" times. */
+const watch = new MachineWatch({ open: (machine) => machine.watchTasks() });
 
 /** A task with the machine it runs on, keyed `${environmentId}/${taskId}` like a thread. */
 type MachineTask = { key: string; task: ScheduledTask; machine: Machine };
@@ -82,39 +38,18 @@ function machineTasks(url: string | undefined): { tasks: MachineTask[]; loading:
 	return { tasks, loading, error };
 }
 
-const nameOf = (entry: MachineTask, many: boolean) =>
-	many && entry.machine.state.kind === "ready" ? `${entry.task.title} · ${entry.machine.state.label}` : entry.task.title;
-
-/** Shared lifecycle: an instance shown keeps its machines' task lists live. */
-abstract class TaskAction<T extends JsonObject & { machine?: string }> extends DeckAction<T> {
-	override onWillAppear(ev: WillAppearEvent<T>): void {
-		super.onWillAppear(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
-	}
-
-	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<T>): void {
-		super.onDidReceiveSettings(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<T>): void {
-		watch.hide(ev.action.id);
-		super.onWillDisappear(ev);
-	}
-}
+const nameOf = (entry: MachineTask, many: boolean) => (many ? `${entry.task.title} · ${machineName(entry.machine)}` : entry.task.title);
 
 type RunTaskSettings = { machine?: string; task?: string; taskTitle?: string };
 
 /** One scheduled task, picked in its settings: its name and when it runs next. Press runs it now. */
 @action({ UUID: `${ID}.task` })
-export class RunTaskKey extends TaskAction<RunTaskSettings> {
+export class RunTaskKey extends DeckAction<RunTaskSettings> {
+	protected override readonly watcher = watch;
+
 	constructor() {
 		super();
-		watch.onTick(() => this.#paintShown());
-	}
-
-	#paintShown(): void {
-		for (const instance of this.actions) void this.paint(instance);
+		watch.onTick(() => this.repaintAll());
 	}
 
 	#state(action: Action<RunTaskSettings>) {
@@ -138,15 +73,13 @@ export class RunTaskKey extends TaskAction<RunTaskSettings> {
 		const url = this.machineOf(action);
 		return [
 			{ kind: "paired", connection: connectionOf(url) },
-			{ kind: "operate", ok: entry?.machine.canOperate ?? readyMachines(url).some((machine) => machine.canOperate) },
+			{ kind: "operate", ok: entry?.machine.canOperate ?? canOperate(undefined, url) },
 			{ kind: "value", value: entry?.task.title ?? (missing || t("tasks.pickTask")), ok: entry !== undefined },
 		];
 	}
 
-	protected override async paint(action: Action<RunTaskSettings>): Promise<void> {
+	protected override async draw(action: Action<RunTaskSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		if (offline) return void (await this.setImage(action, offline));
 		const { entry, loading, missing } = this.#state(action);
 		if (loading) return void (await this.setImage(action, renderSkeletonKey()));
 		if (entry === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "task", title: missing ?? t("tasks.pickTask"), available: false })));
@@ -172,12 +105,11 @@ export class RunTaskKey extends TaskAction<RunTaskSettings> {
 					items.push({ label: nameOf({ key: "", task, machine }, machines.length > 1), value: `${machine.environmentId}/${task.id}` });
 				}
 			} catch (error) {
-				logger.warn(`Listing tasks failed: ${message(error)}`);
+				logger.warn(`Listing tasks failed: ${errorMessage(error)}`);
 			}
 		}
 		const { task, taskTitle } = this.settingsOf(ev.action);
-		if (task && !items.some((item) => item.value === task)) items.splice(1, 0, { label: t("tasks.gone", { task: taskTitle || task.slice(task.indexOf("/") + 1) }), value: task });
-		await streamDeck.ui.sendToPropertyInspector({ event: "getTasks", items });
+		await sendChoices("getTasks", items, task, (saved) => t("tasks.gone", { task: taskTitle || saved.slice(saved.indexOf("/") + 1) }));
 	}
 }
 
@@ -191,12 +123,11 @@ type TasksDialSettings = DialSettings;
 export class TasksDial extends StripDial<TasksDialSettings> {
 	/** The task each dial shows, by key, so it stays put as the list changes. */
 	readonly #shown = new Map<string, string>();
+	protected override readonly watcher = watch;
 
 	constructor() {
 		super();
-		watch.onTick(() => {
-			for (const instance of this.actions) void this.paint(instance);
-		});
+		watch.onTick(() => this.repaintAll());
 	}
 
 	#state(action: Action<TasksDialSettings>) {
@@ -213,15 +144,17 @@ export class TasksDial extends StripDial<TasksDialSettings> {
 		const url = this.machineOf(action);
 		return [
 			{ kind: "paired", connection: connectionOf(url) },
-			{ kind: "operate", ok: readyMachines(url).some((machine) => machine.canOperate) },
+			{ kind: "operate", ok: canOperate(undefined, url) },
 			{ kind: "tasks", ok: tasks.length > 0 ? true : loading ? undefined : false },
 		];
 	}
 
+	protected heading(): string {
+		return t("tasks.title");
+	}
+
 	protected face(action: Action<TasksDialSettings>): StripContent {
-		const header = t("tasks.title");
-		const offline = disconnectedStrip(header, this.machineOf(action));
-		if (offline) return offline;
+		const header = this.heading();
 		const { tasks, loading, error, index, entry, many } = this.#state(action);
 		if (entry === undefined) {
 			if (loading) return { header, icon: glyphArt("task", COLORS.muted), accent: COLORS.muted, value: t("tasks.loading"), loading: true };
@@ -240,7 +173,6 @@ export class TasksDial extends StripDial<TasksDialSettings> {
 	}
 
 	protected override list(action: Action<TasksDialSettings>): StripList | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const { tasks, index, entry, many } = this.#state(action);
 		if (entry === undefined) return undefined;
 		const now = Date.now();
@@ -279,18 +211,7 @@ export class TasksDial extends StripDial<TasksDialSettings> {
 		return this.#act(dial, (entry) => entry.machine.setTaskEnabled(entry.task.id, !entry.task.enabled));
 	}
 
-	override onWillAppear(ev: WillAppearEvent<TasksDialSettings>): void {
-		super.onWillAppear(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
-	}
-
-	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<TasksDialSettings>): void {
-		super.onDidReceiveSettings(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action));
-	}
-
 	override onWillDisappear(ev: WillDisappearEvent<TasksDialSettings>): void {
-		watch.hide(ev.action.id);
 		this.#shown.delete(ev.action.id);
 		super.onWillDisappear(ev);
 	}

@@ -8,7 +8,7 @@ import { type EnvironmentUsage, type MergedUsage, mergeUsage } from "./merge.js"
 import { USAGE_CONTRACT_VERSION, type UsageSummary, type UsageSummaryInput } from "./types.js";
 
 /** T3 Code's Usage periods (`WINDOW_OPTIONS`): the past 24 hours by the hour, else calendar days up to today. */
-export const USAGE_PERIODS = [1, 7, 30, 90] as const;
+const USAGE_PERIODS = [1, 7, 30, 90] as const;
 export type UsagePeriod = (typeof USAGE_PERIODS)[number];
 
 /** T3 Code's Usage page opens on 30 days. */
@@ -26,7 +26,7 @@ export interface UsageReader {
 	usageSummary(input: UsageSummaryInput): Promise<UsageSummary>;
 }
 
-export type UsageEntry = {
+type UsageEntry = {
 	summary?: UsageSummary;
 	error?: unknown;
 	/** A read is in flight. */
@@ -38,7 +38,7 @@ export type UsageEntry = {
 	scanDurationMs?: number;
 };
 
-export const USAGE_FRESH_MS = 60_000;
+const USAGE_FRESH_MS = 60_000;
 export const USAGE_REFETCH_MS = 5 * 60_000;
 /** Scans slower than this read again half as often; T3 Code doesn't, the deck spares the host. */
 export const SLOW_SCAN_MS = 2_000;
@@ -137,7 +137,7 @@ export class UsageStore {
 		const merged = mergeUsage(answered, USAGE_CONTRACT_VERSION);
 		// Every answer was a contract version this port can't merge: say who needs updating rather than show $0.00.
 		const [mismatch] = merged.contractMismatches;
-		if (merged.contributingEnvironments.length === 0 && mismatch !== undefined) return { loading, mismatch: mismatch.direction };
+		if (mismatch !== undefined && merged.contractMismatches.length === answered.length) return { loading, mismatch: mismatch.direction };
 		return { merged, loading };
 	}
 }

@@ -52,7 +52,7 @@ export type UsageBucket = {
 
 export type UsageSourceFingerprint = { hostId: string; provider: UsageProviderKind; resolvedHomePath: string; volumeId: string };
 
-export const USAGE_SOURCE_STATUSES = ["ok", "missing", "partial", "failed"] as const;
+const USAGE_SOURCE_STATUSES = ["ok", "missing", "partial", "failed"] as const;
 
 export type UsageSource = {
 	fingerprint: UsageSourceFingerprint;
@@ -81,13 +81,31 @@ const COST_SOURCES = ["providerReported", "modelPriced", "unpriced"] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object";
 const isProvider = (value: unknown): value is UsageProviderKind => (USAGE_PROVIDER_KINDS as readonly unknown[]).includes(value);
+const isNumber = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
+const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
+const TOKEN_FIELDS = ["uncachedInputTokens", "cachedInputTokens", "cacheCreationTokens", "outputTokens", "reasoningTokens"] as const;
+
+/** T3 Code's `UsageBucket` schema, minus the optional fields the deck doesn't read. */
+const isBucket = (bucket: unknown): bucket is UsageBucket =>
+	isRecord(bucket) &&
+	isProvider(bucket.provider) &&
+	typeof bucket.model === "string" &&
+	bucket.model.trim() !== "" &&
+	isRecord(bucket.totals) &&
+	TOKEN_FIELDS.every((field) => isCount((bucket.totals as Record<string, unknown>)[field])) &&
+	isNumber(bucket.costUsd) &&
+	isNumber(bucket.cacheSavingsUsd) &&
+	(COST_SOURCES as readonly unknown[]).includes(bucket.costSource) &&
+	isCount(bucket.records) &&
+	isCount(bucket.unpricedRecords) &&
+	isCount(bucket.sessions);
 
 /** A summary with the buckets and sources this client doesn't know left out, as T3 Code's decoder leaves them. */
 export function readUsageSummary(raw: unknown): UsageSummary {
 	const summary = (isRecord(raw) ? raw : {}) as Partial<UsageSummary>;
 	const buckets = (Array.isArray(summary.buckets) ? summary.buckets : [])
-		.filter((bucket) => isRecord(bucket) && isProvider(bucket.provider) && isRecord(bucket.totals) && (COST_SOURCES as readonly unknown[]).includes(bucket.costSource))
-		.map((bucket) => (typeof bucket.model === "string" && bucket.model !== bucket.model.trim() ? { ...bucket, model: bucket.model.trim() } : bucket));
+		.filter(isBucket)
+		.map((bucket) => (bucket.model === bucket.model.trim() ? bucket : { ...bucket, model: bucket.model.trim() }));
 	const sources = (Array.isArray(summary.sources) ? summary.sources : []).filter(
 		(source) => isRecord(source) && isRecord(source.fingerprint) && isProvider(source.fingerprint.provider) && (USAGE_SOURCE_STATUSES as readonly unknown[]).includes(source.status),
 	);
@@ -104,8 +122,8 @@ export function readUsageSummary(raw: unknown): UsageSummary {
 	};
 }
 
-export const USAGE_WINDOW_KINDS = ["session", "weekly", "monthly", "other"] as const;
-export type UsageWindowKind = (typeof USAGE_WINDOW_KINDS)[number];
+const USAGE_WINDOW_KINDS = ["session", "weekly", "monthly", "other"] as const;
+type UsageWindowKind = (typeof USAGE_WINDOW_KINDS)[number];
 
 export type ServerProviderUsageWindow = {
 	id: string;
@@ -116,7 +134,7 @@ export type ServerProviderUsageWindow = {
 	windowDurationMins?: number;
 };
 
-export type ServerProviderResetCredits = { availableCount: number; nextExpiresAt?: string; nextCreditId?: string };
+type ServerProviderResetCredits = { availableCount: number; nextExpiresAt?: string; nextCreditId?: string };
 
 export type ServerProviderUsageLimits = {
 	checkedAt: string;
@@ -127,7 +145,7 @@ export type ServerProviderUsageLimits = {
 	unavailable?: { reason: "unsupported" | "probeFailed"; message?: string };
 };
 
-export type UsageLimitSourceAccount = {
+type UsageLimitSourceAccount = {
 	id: string;
 	driver: string;
 	email?: string;

@@ -8,7 +8,7 @@ const CONVENTIONAL = new RegExp(`^(${TYPES.join("|")})(\\([\\w./-]+\\))?!?: \\S`
 // Merges and release-please's own commits are exempt.
 const EXEMPT = /^(Merge |Revert ")/;
 
-export const conventional = (subject: string): boolean => EXEMPT.test(subject) || CONVENTIONAL.test(subject);
+const conventional = (subject: string): boolean => EXEMPT.test(subject) || CONVENTIONAL.test(subject);
 
 const [flag, value] = process.argv.slice(2);
 const subjects =

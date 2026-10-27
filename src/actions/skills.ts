@@ -1,4 +1,4 @@
-import streamDeck, { type Action, action, type DialAction, type KeyDownEvent, type KeyUpEvent, type SendToPluginEvent } from "@elgato/streamdeck";
+import streamDeck, { type Action, action, type DialAction, type KeyUpEvent, type SendToPluginEvent } from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 
 import { availability } from "../core/availability.js";
@@ -11,10 +11,9 @@ import { findSkill, type ProviderSkill, skillDescription, skillLabel, skillMessa
 import type { StripContent } from "../core/strip.js";
 import type { StripList } from "../core/styles.js";
 import { pinnedName } from "../core/target.js";
-import { deck } from "../deck.js";
-import { canOperate, connectionFace, DeckAction, pressWhileDisconnected, sendToThread, ultrathinkArmed } from "./base.js";
+import { canOperate, DeckAction, errorMessage, pressWhileDisconnected, readyMachines, sendChoices, sendToThread, ultrathinkArmed } from "./base.js";
 import { threadNeeds } from "./needs.js";
-import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
+import { type DialSettings, StripDial } from "./strip.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("skills");
@@ -64,17 +63,11 @@ export class RunSkillKey extends DeckAction<RunSkillSettings> {
 		return thread && JSON.stringify([thread.key, text]);
 	}
 
-	protected override async paint(action: Action<RunSkillSettings>): Promise<void> {
+	protected override async draw(action: Action<RunSkillSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const offline = connectionFace(this.machineOf(action));
-		if (offline) return void (await this.setImage(action, offline));
 		const { thread, pinned, name, skill, check } = this.#state(action);
 		const label = this.settingsOf(action).title?.trim() || (skill ? skillLabel(skill) : name) || t("skills.title");
 		await this.setImage(action, renderControlKey({ glyph: "skill", label, available: check.available, ultrathink: ultrathinkArmed(thread), pinned, shrink: !check.available }));
-	}
-
-	override onKeyDown(ev: KeyDownEvent<RunSkillSettings>): void {
-		this.pressStarted(ev.action.id);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<RunSkillSettings>): Promise<void> {
@@ -92,8 +85,9 @@ export class RunSkillKey extends DeckAction<RunSkillSettings> {
 	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, RunSkillSettings>): Promise<void> {
 		if ((ev.payload as { event?: string } | null)?.event !== "getSkills") return super.onSendToPlugin(ev);
 		const items = [{ label: t("skills.chooseSkill"), value: "" }];
+		const sameName = (item: { value: string }, name: string) => item.value.toLowerCase() === name.toLowerCase();
 		const add = (skill: ProviderSkill) => {
-			if (!items.some((item) => item.value.toLowerCase() === skill.name.toLowerCase())) items.push({ label: skillLabel(skill), value: skill.name });
+			if (!items.some((item) => sameName(item, skill.name))) items.push({ label: skillLabel(skill), value: skill.name });
 		};
 		const thread = this.target(ev.action).thread;
 		try {
@@ -101,18 +95,14 @@ export class RunSkillKey extends DeckAction<RunSkillSettings> {
 				const cwd = gitCwd(thread, thread.machine.project(thread.projectId)?.workspaceRoot);
 				(await thread.machine.readSkills(thread.model.instanceId, cwd)).forEach(add);
 			} else {
-				const url = this.machineOf(ev.action);
-				for (const machine of deck.machines) {
-					if (machine.state.kind !== "ready" || (url !== undefined && machine.url !== url)) continue;
+				for (const machine of readyMachines(this.machineOf(ev.action))) {
 					for (const provider of machine.modelConfig?.providers ?? []) machine.skills(provider.instanceId, undefined).skills.forEach(add);
 				}
 			}
 		} catch (error) {
-			logger.warn(`Listing skills failed: ${error instanceof Error ? error.message : String(error)}`);
+			logger.warn(`Listing skills failed: ${errorMessage(error)}`);
 		}
-		const saved = this.settingsOf(ev.action).skill?.trim();
-		if (saved && !items.some((item) => item.value.toLowerCase() === saved.toLowerCase())) items.splice(1, 0, { label: t("skills.gone", { skill: saved }), value: saved });
-		await streamDeck.ui.sendToPropertyInspector({ event: "getSkills", items });
+		await sendChoices("getSkills", items, this.settingsOf(ev.action).skill?.trim(), (skill) => t("skills.gone", { skill }), sameName);
 	}
 }
 
@@ -150,10 +140,12 @@ export class SkillsDial extends StripDial<SkillsDialSettings> {
 		];
 	}
 
+	protected heading(): string {
+		return t("skills.title");
+	}
+
 	protected face(action: Action<SkillsDialSettings>): StripContent {
-		const header = t("skills.title");
-		const offline = disconnectedStrip(header, this.machineOf(action));
-		if (offline) return offline;
+		const header = this.heading();
 		const { thread, listed, skills, index, skill, check } = this.#state(action);
 		const tone = toneOf(thread?.deck, thread?.unseen);
 		const muted = { header, icon: glyphArt("skill", COLORS.muted), accent: COLORS.muted, tone };
@@ -173,7 +165,6 @@ export class SkillsDial extends StripDial<SkillsDialSettings> {
 	}
 
 	protected override list(action: Action<SkillsDialSettings>): StripList | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const { thread, skills, index, check } = this.#state(action);
 		if (thread === undefined || skills.length === 0) return undefined;
 		const art = glyphArt("skill", check.available ? COLORS.text : COLORS.muted);
