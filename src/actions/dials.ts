@@ -183,7 +183,7 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 	}
 }
 
-type PowerSettings = DialSettings & { dialControls?: string };
+type PowerSettings = DialSettings & { dialControls?: string; showSpeed?: boolean; showEffort?: boolean };
 
 
 /** The thread's effort as `model` would carry it, colored by its level. */
@@ -319,10 +319,10 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
 		// The model's effort sits on the bottom row beside Speed, under its own icon in its level's paint.
 		const effort = shown?.kind === "model" ? modelEffort(shown.model, thread, context.armed) : undefined;
-		const footer =
-			speed || effort
-				? { start: speed, end: effort && { mark: paintedGlyphArt(CONTROL.effort.glyph, effort.paint ?? COLORS.muted), text: effort.text, paint: effort.paint } }
-				: undefined;
+		const { showSpeed, showEffort } = this.settingsOf(action);
+		const start = showSpeed === false ? undefined : speed;
+		const end = showEffort === false || effort === undefined ? undefined : { mark: paintedGlyphArt(CONTROL.effort.glyph, effort.paint ?? COLORS.muted), text: effort.text, paint: effort.paint };
+		const footer = start || end ? { start, end } : undefined;
 		const tone = shown?.kind === "effort" ? effortToneOf(effortChoices(model), shown.key, colorStyle(), model && modelColor(model)) : undefined;
 		return {
 			// The badge and the color already name the provider.
@@ -341,6 +341,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 							: undefined,
 			// Models are places in a list, not levels: pills like the Model key's, not a filling track.
 			pages: control === "model",
+			lower: control === "model" && footer === undefined && check.available && !pending,
 			ends,
 			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending, thread) } : undefined,
 			badges,

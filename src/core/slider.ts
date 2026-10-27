@@ -33,6 +33,8 @@ export type SliderInput = {
 	dim?: boolean;
 	/** One pill per choice instead of a filled track: for choices that are places, not levels (models). */
 	pages?: boolean;
+	/** Nothing goes on the bottom row at rest, so the pills sit lower, in its place. */
+	lower?: boolean;
 	/** How far an overflowing label has scrolled left, in px. */
 	labelOffset?: number;
 };
@@ -57,12 +59,12 @@ export function fit(text: string, width: number, size: number): string {
  * One pill per choice across the track, as the Model key's pages: the thread's filled in its paint, the previewed one
  * outlined, the rest dim. Past eight, the pills stand for stretches of the list.
  */
-function pagePills(count: number, current: number | undefined, preview: number | undefined, paint: Paint): string {
+function pagePills(count: number, current: number | undefined, preview: number | undefined, paint: Paint, drop: number): string {
 	const shown = Math.min(count, 8);
 	const gap = 6;
 	const width = (SLIDER.width - gap * (shown - 1)) / shown;
 	const height = 12;
-	const y = SLIDER.y + (SLIDER.height - height) / 2;
+	const y = SLIDER.y + drop + (SLIDER.height - height) / 2;
 	const slot = (index: number | undefined) => (index === undefined ? undefined : count > shown ? Math.round((index * (shown - 1)) / (count - 1)) : index);
 	const at = slot(current);
 	const next = slot(preview);
@@ -117,7 +119,7 @@ export function sliderArt(input: SliderInput): string {
 
 	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
 	if (input.pages) {
-		const pills = pagePills(stops, current, input.preview, input.fill ?? COLORS.accent);
+		const pills = pagePills(stops, current, input.preview, input.fill ?? COLORS.accent, input.lower ? 16 : 0);
 		parts.push(input.dim ? `<g opacity=".45">${pills}</g>` : pills);
 		return finish(parts, input);
 	}

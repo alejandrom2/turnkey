@@ -127,6 +127,10 @@
 					<option value="permissions" data-i18n="inspector.field.access">Access</option>
 				</sdpi-select>
 			</sdpi-item>
+			<sdpi-item label="Model view shows" data-i18n-label="inspector.power.bottomRow" id="model-row">
+				<sdpi-checkbox setting="showSpeed" default="true" label="Speed" data-i18n-label="inspector.power.showSpeed"></sdpi-checkbox>
+				<sdpi-checkbox setting="showEffort" default="true" label="Effort" data-i18n-label="inspector.power.showEffort"></sdpi-checkbox>
+			</sdpi-item>
 			<p class="hint" data-i18n="inspector.power.hint">Rotate to preview, press to apply to the selected thread. Model turns through T3 Code's favorite models across providers. Press with nothing to apply, or tap, to switch Speed when the model offers it. Ultrathink, where Claude offers it, prefixes the deck's next prompts to the thread.</p>
 			<sdpi-item label="Strip" data-i18n-label="inspector.field.strip">
 				<sdpi-select setting="background" default="">
@@ -504,6 +508,13 @@
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["background"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["background"]));
+			}
+			{
+				const field = document.querySelector('[setting="dialControls"]');
+				const apply = (value) => { $("model-row").hidden = !((value) => value === "" || value === "model")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["dialControls"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["dialControls"]));
 			}
 		</script>
 	</body>
