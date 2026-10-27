@@ -16,6 +16,7 @@ import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { messageTable, t } from "../core/i18n.js";
 import { effortValues, favoriteModels, findModel, pickableModels } from "../core/models.js";
 import { COLORS, renderNoticeKey, renderResultKey, stripCanvas, stripIcon } from "../core/render.js";
+import type { Need } from "../core/requirements.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
 import type { SendMode } from "../core/t3/machine.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
@@ -27,6 +28,9 @@ const logger = streamDeck.logger.createScope("actions");
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 type Placement = { device: string; position?: { row: number; column: number } };
+
+/** Every registered action, so the open inspector's checklist can ask the one it belongs to. */
+export const deckActions = new Set<DeckAction<JsonObject>>();
 
 /** Shared lifecycle: visibility drives the clock, every board change repaints visible instances. */
 export abstract class DeckAction<T extends JsonObject = JsonObject> extends SingletonAction<T> {
@@ -42,7 +46,18 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 
 	constructor() {
 		super();
+		deckActions.add(this as unknown as DeckAction<JsonObject>);
 		deck.onRepaint(() => this.#repaintAll());
+	}
+
+	/** What the inspector's "What this action needs" lists; empty falls back to the shared table in needs.ts. */
+	needs(_action: Action<T>): Need[] {
+		return [];
+	}
+
+	/** This instance's settings, for the checklist built outside the class. */
+	settingsFor(action: Action<T>): T {
+		return this.settingsOf(action);
 	}
 
 	protected abstract paint(action: Action<T>): Promise<void> | void;
