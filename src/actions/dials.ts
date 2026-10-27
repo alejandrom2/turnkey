@@ -254,7 +254,8 @@ export class ModelDial extends StripDial<PowerSettings> {
 					: [index >= 0 ? `${index + 1}/${state.choices.length}` : "", shown?.kind === "model" ? shown.model.providerName : ""];
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
 		return {
-			label: shown?.label ?? thread.model.model,
+			// The badge and the end label already name the provider.
+			label: shown?.kind === "model" ? shown.model.name : (shown?.label ?? thread.model.model),
 			labelColor: shown?.kind === "model" ? modelColor(shown.model) : pending || fullAccess ? COLORS.attention : undefined,
 			stops: state.choices.length,
 			current: at(state.current),
