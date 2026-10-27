@@ -253,3 +253,34 @@ export function styleFlash(style: Exclude<StripStyle, "classic">, ok: boolean, l
 	if (overflowIn(label, CAROUSEL_TITLE) === 0) return carouselFeedback(content, list, { appearance, scroll: "off" });
 	return carouselFeedback(content, list, { appearance, scroll: "off", reading: { lines: readingLines([label]), top: 0 } });
 }
+
+export type ThreadRow = { title: string; art: MarkPainter };
+
+const ROWS = [
+	{ baseline: 31, size: 19, weight: 700, fill: "#FFFFFF", width: 184 },
+	{ baseline: 61, size: 17, weight: 600, fill: "#8A8A8A", width: 146 },
+	{ baseline: 89, size: 17, weight: 600, fill: "#8A8A8A", width: 146 },
+] as const;
+
+/**
+ * The Classic thread strip: the selected title large on top, the next two dimmed below with their status at the right.
+ * Titles too long for their row fade out at its end.
+ */
+export function threadRowsArt(rows: readonly ThreadRow[]): string {
+	const parts: string[] = [];
+	rows.slice(0, 3).forEach((row, at) => {
+		const line = ROWS[at]!;
+		let text = svgText(row.title, 12, line.baseline, line.size, line.weight, line.fill);
+		if (textWidth(row.title, line.size) > line.width - 2) {
+			const end = 12 + line.width;
+			const top = line.baseline - line.size - 4;
+			parts.push(
+				`<defs><linearGradient id="row-fade-${at}" gradientUnits="userSpaceOnUse" x1="${end - 24}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="row-${at}" maskUnits="userSpaceOnUse" x="0" y="${top}" width="200" height="${line.size + 10}"><rect y="${top}" width="200" height="${line.size + 10}" fill="url(#row-fade-${at})"/></mask></defs>`,
+			);
+			text = `<g mask="url(#row-${at})">${text}</g>`;
+		}
+		parts.push(text);
+		if (at > 0) parts.push(row.art(168, line.baseline - 16, 20));
+	});
+	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${parts.join("")}</svg>`);
+}

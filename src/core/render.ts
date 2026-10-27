@@ -56,7 +56,7 @@ export const STATE_GLYPH: Record<DeckState, GlyphName> = {
 };
 
 /** Thread keys follow the activity-key convention: spinner while working, clock while waiting on someone. */
-const THREAD_GLYPH: Record<DeckState, GlyphName> = {
+export const THREAD_GLYPH: Record<DeckState, GlyphName> = {
 	approval: "clock",
 	question: "clock",
 	running: "spinner",

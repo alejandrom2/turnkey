@@ -62,9 +62,9 @@ A key that can't act right now is dimmed, and pressing it says why. Each action'
 
 **Motion** (**Advanced**): Full (default) spins running threads on keys and strips, pulses keys waiting on you and flashes a thread once when it finishes or fails. Reduced spins slowly without pulsing. Off keeps every face still.
 
-Each dial's strip has a style, set under **Advanced → Strip style** in any action's settings and overridable per dial. By default the Threads dial uses List and the others Classic:
+Each dial's strip has a style, set under **Advanced → Strip style** in any action's settings and overridable per dial. Classic is the default:
 
-- **Classic**: an icon, the value and a detail line. The Power dial shows its setting as a slider: the thread's value filled, the one you turned to as a hollow thumb.
+- **Classic**: an icon, the value and a detail line. The Threads dial shows the selected thread's title large, with the next two dimmed below and their status at the right. The Power dial shows its setting as a slider: the thread's value filled, the one you turned to as a hollow thumb.
 - **List**: a wheel of the dial's items (threads, models, efforts or access modes, prompts, answers). The heading shows the dial and where you are (`3/12`), the selected item is bold with its glyph between the previous and the next ones, and the last row says what pressing does or why the dial can't act.
 - **Carousel**: the selected item as a tile between its dimmed neighbors, with its title below. Turning slides to the next tile. On the Power dial every tile has its short name on the bottom row, sliding with it, and the selected model's name (and its row in List) takes its provider's color: T3 Code's accent for the instance, else the brand color.
 
