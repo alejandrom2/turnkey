@@ -46,6 +46,7 @@ const ACTIONS: Record<string, GlyphName> = {
 	"pr-ask": "question",
 	"pr-guide": "spark",
 	editor: "editor",
+	preview: "preview",
 	"dial-pr": "pullRequest",
 	limits: "gauge",
 	"dial-limits": "gauge",

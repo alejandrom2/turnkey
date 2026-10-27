@@ -118,6 +118,10 @@
 		"Name": "Open in Editor",
 		"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on."
 	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "Open Preview",
+		"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser."
+	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Health",
 		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects."
@@ -570,6 +574,7 @@
 			"editor": "An editor on the machine",
 			"limits": "A provider that reports limits",
 			"snoozed": "A snoozed thread",
+			"preview": "A preview or HTML render",
 			"notAvailable": "Not available: {value}",
 			"fix": {
 				"openT3": "Open T3 Code on this computer, then press the key.",
@@ -596,7 +601,8 @@
 				"providersInT3": "Fix them in T3 Code under Settings → Providers.",
 				"queueMessage": "Send a message while the thread works; it waits in its queue.",
 				"addTask": "Add one in T3 Code under Settings → Scheduled tasks.",
-				"snoozeOne": "Snooze one with an Organize key or in T3 Code."
+				"snoozeOne": "Snooze one with an Organize key or in T3 Code.",
+				"openPreview": "Open a page in the thread's preview panel in T3 Code, or ask the agent to render HTML."
 			},
 			"findings": "Findings to fix",
 			"providers": "Providers ready",
@@ -609,11 +615,20 @@
 			"noFolder": "No folder",
 			"opensOn": "Opens on {machine}"
 		},
+		"openPreview": {
+			"title": "Open preview",
+			"none": "No preview",
+			"onlyOn": "Only on {machine}",
+			"htmlRender": "HTML render"
+		},
 		"inspector": {
 			"editor": {
 				"label": "Editor",
 				"loading": "Loading editors…",
 				"hint": "Opens the selected thread's worktree, or its project's folder. T3 Code launches the editor on its own machine, which may not be this one."
+			},
+			"preview": {
+				"hint": "Opens the page the thread's preview panel shows in this computer's browser, else the thread's newest HTML render. A page on another machine's localhost only opens on that machine, so the key says so; open it from T3 Code there."
 			},
 			"pr": {
 				"confirm": "To send",
