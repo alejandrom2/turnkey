@@ -163,6 +163,7 @@
 			"holdToAllow": "Hold to allow",
 			"holdToAnswer": "Hold to answer",
 			"holdToSend": "Hold to send",
+			"holdToSettle": "Hold to settle",
 			"resumed": "Resumed",
 			"notWebLink": "Not a web link"
 		},
@@ -186,6 +187,7 @@
 			"restart": "Restart with?",
 			"steer": "Steer?",
 			"newThread": "New thread?",
+			"settle": "Settle?",
 			"pressAgain": "Press again",
 			"pressToSend": "Press again to send",
 			"to": "To {thread}"
@@ -714,7 +716,11 @@
 				"snooze": "Snooze",
 				"archive": "Archive",
 				"markUnread": "Mark unread",
-				"snoozeMinutes": "Snooze minutes"
+				"snoozeMinutes": "Snooze minutes",
+				"confirmSettle": "Confirm settle",
+				"settleReview": "Review, then press again",
+				"settleHold": "Hold to settle",
+				"settleOff": "Settle right away"
 			},
 			"prompts": {
 				"label": "Prompts",
