@@ -32,7 +32,7 @@ function row(threadId: string, patch: Partial<ShellRow> = {}): ShellRow {
 
 function machine(url: string, rows: ShellRow[], state: MachineState = { kind: "ready", environmentId: url, label: url, canOperate: true }) {
 	const visit = vi.fn(async () => undefined);
-	return { url, state, rows, visit } satisfies BoardMachine;
+	return { url, state, rows, visit, threadRow: (threadId: string) => rows.find((candidate) => candidate.threadId === threadId) ?? null } satisfies BoardMachine;
 }
 
 describe("ThreadBoard", () => {
@@ -195,5 +195,16 @@ describe("ThreadBoard", () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+
+	it("finds a pinned thread while settled or snoozed, and reports it gone once its machine drops it", () => {
+		const hidden = row("settled", { title: "Settled" });
+		const owner = { ...machine("a", [row("x")]), threadRow: (threadId: string) => (threadId === "settled" ? hidden : null) };
+		const board = new ThreadBoard(() => [owner, machine("b", [], { kind: "connecting" })]);
+		board.update();
+		expect(board.lookup("a/x")).toMatchObject({ state: "found", thread: { key: "a/x" } });
+		expect(board.lookup("a/settled")).toMatchObject({ state: "found", thread: { key: "a/settled", title: "Settled", environmentId: "a" } });
+		expect(board.lookup("a/archived")).toEqual({ state: "gone" });
+		expect(board.lookup("b/y")).toEqual({ state: "unknown" });
 	});
 });

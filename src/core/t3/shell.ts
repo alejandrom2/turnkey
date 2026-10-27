@@ -194,9 +194,10 @@ function effectiveSnoozed(thread: ThreadShell, childAsks: boolean, now: number):
 	return thread.snoozedAt != null && !(time(thread.latestRunCompletedAt ?? thread.updatedAt) > time(thread.snoozedAt));
 }
 
-/** A thread the deck lists: top-level, not deleted, settled or snoozed (archived ones never arrive). */
-function listed(thread: ThreadShell, childAsks: boolean, capabilities: ThreadCapabilities, now: number): boolean {
+/** A thread the deck lists: top-level, not deleted, settled or snoozed (archived ones never arrive); `all` keeps settled and snoozed ones. */
+function listed(thread: ThreadShell, childAsks: boolean, capabilities: ThreadCapabilities, now: number, all: boolean): boolean {
 	if (isSubagent(thread) || thread.deletedAt != null) return false;
+	if (all) return true;
 	if (capabilities.threadSettlement === true && thread.settledOverride === "settled") return false;
 	return !(capabilities.threadSnooze === true && effectiveSnoozed(thread, childAsks, now));
 }
@@ -286,12 +287,13 @@ export function deckState(thread: ThreadShell, runtime: ThreadStatus | null, blo
 	return "idle";
 }
 
-export function shellRows(state: ShellState, capabilities: ThreadCapabilities, now: number): ShellRow[] {
+/** The board's rows; `all` also keeps settled and snoozed threads, which a key aimed at one thread still follows. */
+export function shellRows(state: ShellState, capabilities: ThreadCapabilities, now: number, all = false): ShellRow[] {
 	const lifted = liftedRequests(state.threads);
 	const rows: ShellRow[] = [];
 	for (const thread of state.threads.values()) {
 		const child = lifted.get(thread.id);
-		if (!listed(thread, child !== undefined, capabilities, now)) continue;
+		if (!listed(thread, child !== undefined, capabilities, now, all)) continue;
 		const runtime = runtimeStatus(thread);
 		const own = thread.pendingRuntimeRequest;
 		const ownClass = own == null ? undefined : requestClass(own.kind);

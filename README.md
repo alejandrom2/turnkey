@@ -17,6 +17,8 @@ T3 Deck asks to read threads and act on them, for source control access (git and
 
 Most actions act on the **selected thread**: the one you opened last in T3 Code, on the action's machine or across all of them. Opening a thread from the deck, holding a Thread key or turning the Threads dial selects it too, by visiting it in T3 Code. The selected thread's key is lit, and the other thread keys dim their titles.
 
+Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Permissions, Plan and Organize can instead aim at one thread: set **Target** to **This thread** and pick it. The key then acts on that thread whatever is selected, even while it is settled or snoozed, and shows a small pin. Once that thread is archived or deleted the key says **Not available** with its name until you pick another.
+
 | Action | Controller | What it does |
 |---|---|---|
 | Activity | key | The most urgent thread matching a filter (all, needs you, working, unread) and optional project. More Activity keys with the same settings show the next ones. Tap opens it. |

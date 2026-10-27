@@ -164,15 +164,15 @@ export class Stop extends DeckAction {
 	readonly #resume = new Map<string, { key: string; idle: boolean; timer: ReturnType<typeof setTimeout> }>();
 
 	#check(action: Action<JsonObject>) {
-		const thread = selectedThread(this.machineOf(action));
-		return { thread, check: availability("stop", { thread, canOperate: canOperate(thread) }) };
+		const { thread, gone, pinned } = this.target(action);
+		return { thread, pinned, check: availability("stop", { thread, gone, canOperate: canOperate(thread) }) };
 	}
 
 	/** The stopped thread this key may resume: still selected and not running again. */
 	#resumable(action: Action<JsonObject>): DeckThread | undefined {
 		const resume = this.#resume.get(action.id);
 		if (resume === undefined) return undefined;
-		const thread = selectedThread(this.machineOf(action));
+		const thread = this.target(action).thread;
 		if (thread?.key === resume.key && thread.active && !resume.idle) return undefined;
 		if (thread?.key === resume.key && !thread.active && canOperate(thread)) {
 			resume.idle = true;
@@ -189,8 +189,9 @@ export class Stop extends DeckAction {
 
 	protected override async paint(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
-		if (this.#resumable(action)) return void (await this.setImage(action, renderControlKey({ glyph: "play", primary: true })));
-		await this.setImage(action, renderControlKey({ glyph: "stop", primary: true, available: this.#check(action).check.available }));
+		const { check, pinned } = this.#check(action);
+		if (this.#resumable(action)) return void (await this.setImage(action, renderControlKey({ glyph: "play", primary: true, pinned })));
+		await this.setImage(action, renderControlKey({ glyph: "stop", primary: true, available: check.available, pinned }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
@@ -245,8 +246,8 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 
 	#check(action: Action<T>) {
 		const { text, label } = this.prompt(this.settingsOf(action));
-		const thread = selectedThread(this.machineOf(action));
-		return { text, label, thread, check: availability(this.steers ? "steer" : "send", { thread, canOperate: canOperate(thread), hasPrompt: text !== "" }) };
+		const { thread, gone, pinned } = this.target(action);
+		return { text, label, thread, pinned, check: availability(this.steers ? "steer" : "send", { thread, gone, canOperate: canOperate(thread), hasPrompt: text !== "" }) };
 	}
 
 	protected override reviewScope(action: Action<T>): string | undefined {
@@ -256,8 +257,8 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
-		const { label, check, thread } = this.#check(action);
-		await this.setImage(action, renderControlKey({ glyph: this.glyphName, primary: !this.steers, label, available: check.available, ultrathink: ultrathinkArmed(thread) }));
+		const { label, check, thread, pinned } = this.#check(action);
+		await this.setImage(action, renderControlKey({ glyph: this.glyphName, primary: !this.steers, label, available: check.available, ultrathink: ultrathinkArmed(thread), pinned }));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<T>): void {
@@ -426,20 +427,20 @@ const snoozeLabel = (settings: OrganizeSettings) => {
 export class Organize extends DeckAction<OrganizeSettings> {
 	#check(action: Action<OrganizeSettings>) {
 		const setting = this.settingsOf(action).organize ?? "settle";
-		const thread = selectedThread(this.machineOf(action));
+		const { thread, gone, pinned: targeted } = this.target(action);
 		const pinning = setting === "pin" || setting === "unpin";
 		const pin = thread?.pinned ? "unpin" : "pin";
 		const which: OrganizeAction = pinning ? pin : setting;
 		const kind = pinning ? pin : "organize";
-		return { which, pinned: pinning && thread?.pinned === true, thread, check: availability(kind, { thread, canOperate: canOperate(thread) }) };
+		return { which, pinned: pinning && thread?.pinned === true, targeted, thread, check: availability(kind, { thread, gone, canOperate: canOperate(thread) }) };
 	}
 
 	protected override async paint(action: Action<OrganizeSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const { which, pinned, check } = this.#check(action);
+		const { which, pinned, targeted, check } = this.#check(action);
 		const [glyph, label] = ORGANIZE_FACE[which];
 		const text = which === "snooze" ? t("organize.snoozeFor", { duration: snoozeLabel(this.settingsOf(action)) }) : t(label);
-		await this.setImage(action, renderControlKey({ glyph, label: text, available: check.available, active: pinned }));
+		await this.setImage(action, renderControlKey({ glyph, label: text, available: check.available, active: pinned, pinned: targeted }));
 	}
 
 	/** Settle and Snooze ask first (Review by default): both take the thread off the board. */
@@ -480,11 +481,6 @@ export class Organize extends DeckAction<OrganizeSettings> {
 	}
 }
 
-/** The selected thread on a key's machine, with its machine's model config. */
-function selection(machine: string | undefined) {
-	const thread = selectedThread(machine);
-	return { thread, config: thread?.machine.modelConfig };
-}
 
 const markOf =
 	(model: CatalogModel): MarkPainter =>
@@ -495,6 +491,12 @@ const markOf =
 abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 	/** The face, the availability and what a press applies (undefined: already current). */
 	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown> };
+
+	/** The thread the key acts on, with its machine's model config. */
+	protected selection(action: Action<T>) {
+		const target = this.target(action);
+		return { ...target, config: target.thread?.machine.modelConfig };
+	}
 
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
@@ -518,18 +520,18 @@ type ModelSettings = { model?: string; machine?: string };
 @action({ UUID: `${ID}.model` })
 export class ModelKey extends SettingKey<ModelSettings> {
 	protected state(action: Action<ModelSettings>) {
-		const { thread, config } = selection(this.machineOf(action));
+		const { thread, config, gone, pinned } = this.selection(action);
 		const fixed = parseModelKey(this.settingsOf(action).model);
 		const current = thread && findModel(config, thread.model);
 		const catalog = thread ? modelCatalog(config, thread.model) : [];
 		const target = thread === undefined ? undefined : fixed ? findModel(config, fixed) : nextModel(catalog, thread.model);
 		const missing = fixed ? (target === undefined ? t("reason.unavailable") : undefined) : catalog.length === 0 ? t("reason.noModels") : undefined;
-		const check = availability("model", { thread, canOperate: canOperate(thread), missing });
+		const check = availability("model", { thread, gone, canOperate: canOperate(thread), missing });
 		const shown = fixed ? target : current;
 		const label = shown?.name ?? (fixed ? fixed.model : (thread?.model.model ?? t("face.model")));
 		const position = shown === undefined ? -1 : catalog.findIndex((model) => model.key === shown.key);
 		const cue = catalog.length > 1 && position >= 0 ? dotsCue(catalog.length, position) : undefined;
-		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue });
+		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue, pinned });
 		if (thread === undefined || target === undefined) return { face, check };
 		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;
 		return { face, check, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
@@ -545,7 +547,7 @@ type EffortSettings = { effort?: string; machine?: string };
 @action({ UUID: `${ID}.effort` })
 export class EffortKey extends SettingKey<EffortSettings> {
 	protected state(action: Action<EffortSettings>) {
-		const { thread, config } = selection(this.machineOf(action));
+		const { thread, config, gone, pinned } = this.selection(action);
 		const fixed = this.settingsOf(action).effort || undefined;
 		const model = thread && findModel(config, thread.model);
 		const armed = ultrathinkArmed(thread);
@@ -553,7 +555,7 @@ export class EffortKey extends SettingKey<EffortSettings> {
 		const values = choices.map((choice) => choice.value);
 		const current = thread && currentEffort(model, thread.model, armed);
 		const missing = choices.length === 0 ? t("reason.noEffort") : fixed !== undefined && !values.includes(fixed) ? t("reason.notOffered") : undefined;
-		const check = availability("effort", { thread, canOperate: canOperate(thread), missing });
+		const check = availability("effort", { thread, gone, canOperate: canOperate(thread), missing });
 		const labelOf = (value: unknown) =>
 			choices.find((choice) => choice.value === value)?.label ??
 			effortValues(config).find((choice) => choice.value === value)?.label ??
@@ -571,6 +573,7 @@ export class EffortKey extends SettingKey<EffortSettings> {
 			active: fixed !== undefined && fixed === current,
 			ultrathink: armed,
 			cue,
+			pinned,
 		});
 		const next = fixed ?? cycleValue(values, current);
 		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
@@ -593,13 +596,13 @@ export function applyEffort(thread: DeckThread, change: NonNullable<ReturnType<t
 @action({ UUID: `${ID}.speed` })
 export class SpeedKey extends SettingKey<JsonObject> {
 	protected state(action: Action<JsonObject>) {
-		const { thread, config } = selection(this.machineOf(action));
+		const { thread, config, gone, pinned } = this.selection(action);
 		const model = thread && findModel(config, thread.model);
 		const toggle = thread && speedToggle(model, thread.model);
-		const check = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
+		const check = availability("speed", { thread, gone, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
 		const fast = toggle?.fast === true;
 		// Just the bolt, like Elgato's: outlined at Standard, filled in the model's color at Fast.
-		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", mark: fast ? paintedGlyphArt("speedFilled", speedPaint(model)) : undefined, available: check.available });
+		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", mark: fast ? paintedGlyphArt("speedFilled", speedPaint(model)) : undefined, available: check.available, pinned });
 		if (thread === undefined || toggle === undefined) return { face, check };
 		return {
 			face,
@@ -615,13 +618,13 @@ type PermissionSettings = { mode?: string; machine?: string };
 @action({ UUID: `${ID}.permissions` })
 export class Permissions extends SettingKey<PermissionSettings> {
 	protected state(action: Action<PermissionSettings>) {
-		const { thread, config } = selection(this.machineOf(action));
+		const { thread, config, gone, pinned } = this.selection(action);
 		const fixed = RUNTIME_MODES.find((mode) => mode === this.settingsOf(action).mode);
 		const values = thread ? runtimeModes(config, thread.model.instanceId).map((mode) => mode.value) : [];
 		const current = thread?.runtimeMode;
 		const shown = fixed ?? current ?? "approval-required";
 		const missing = fixed !== undefined && !values.includes(fixed) ? t("reason.notOffered") : undefined;
-		const check = availability("permissions", { thread, canOperate: canOperate(thread), missing });
+		const check = availability("permissions", { thread, gone, canOperate: canOperate(thread), missing });
 		const labelOf = (value: RuntimeMode | undefined) => (value === undefined ? t("face.access") : modeLabel(value));
 		const full = shown === "full-access" && (thread !== undefined || fixed !== undefined);
 		// The pill is filled when the mode shown is the thread's; outlined when this key would switch to it.
@@ -634,6 +637,7 @@ export class Permissions extends SettingKey<PermissionSettings> {
 			available: check.available,
 			active: fixed !== undefined && fixed === current,
 			cue,
+			pinned,
 		});
 		const next = fixed ?? cycleValue(values, current);
 		if (thread === undefined || next === undefined) return { face, check };
@@ -645,11 +649,11 @@ export class Permissions extends SettingKey<PermissionSettings> {
 @action({ UUID: `${ID}.plan` })
 export class PlanKey extends SettingKey<JsonObject> {
 	protected state(action: Action<JsonObject>) {
-		const { thread, config } = selection(this.machineOf(action));
+		const { thread, config, gone, pinned } = this.selection(action);
 		const toggle = thread === undefined ? undefined : config?.providers?.find((provider) => provider.instanceId === thread.model.instanceId)?.showInteractionModeToggle;
-		const check = availability("plan", { thread, canOperate: canOperate(thread), missing: toggle === false ? t("reason.noPlanMode") : undefined });
+		const check = availability("plan", { thread, gone, canOperate: canOperate(thread), missing: toggle === false ? t("reason.noPlanMode") : undefined });
 		const planning = thread?.interactionMode === "plan";
-		const face = renderControlKey({ glyph: planning ? "modePlan" : "modeBuild", label: t(planning ? "face.plan" : "face.build"), available: check.available, active: planning });
+		const face = renderControlKey({ glyph: planning ? "modePlan" : "modeBuild", label: t(planning ? "face.plan" : "face.build"), available: check.available, active: planning, pinned });
 		if (thread === undefined) return { face, check };
 		return { face, check, apply: () => thread.machine.setInteractionMode(thread, planning ? "default" : "plan") };
 	}
@@ -692,23 +696,23 @@ export class Approve extends DeckAction<ApproveSettings> {
 	#state(action: Action<ApproveSettings>) {
 		const settings = this.settingsOf(action);
 		const authority = approvalAuthority(settings.approvalAuthority);
-		const thread = selectedThread(this.machineOf(action));
-		const check = availability("approve", { thread, canOperate: authority === "open" || canOperate(thread) });
+		const { thread, gone, pinned } = this.target(action);
+		const check = availability("approve", { thread, gone, canOperate: authority === "open" || canOperate(thread) });
 		const request = check.available && thread !== undefined ? requestFor(thread) : undefined;
 		const press = request?.type === "approval" ? approvePress(authority, request.decisions) : undefined;
-		return { thread, check, request, press, confirm: approvalConfirm(settings.approvalConfirm), authority };
+		return { thread, pinned, check, request, press, confirm: approvalConfirm(settings.approvalConfirm), authority };
 	}
 
 	protected override async paint(action: Action<ApproveSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const face = connectionFace(this.machineOf(action));
 		if (face) return void (await this.setImage(action, face));
-		const { check, request, press, authority, confirm } = this.#state(action);
-		if (!check.available) return void (await this.setImage(action, renderDecisionKey({ kind: "approve", armed: false, caption: authorityLabel(authority), detail: check.reason })));
+		const { check, request, press, authority, confirm, pinned } = this.#state(action);
+		if (!check.available) return void (await this.setImage(action, renderDecisionKey({ kind: "approve", armed: false, caption: authorityLabel(authority), detail: check.reason, pinned })));
 		if (request === undefined) return void (await this.setImage(action, renderSkeletonKey()));
 		const label = press?.label ?? authorityLabel("open");
 		const caption = press?.kind === "respond" && confirm === "hold" ? t("strip.withHold", { label }) : label;
-		await this.setImage(action, renderDecisionKey({ kind: "approve", armed: true, caption, detail: requestSummary(request) }));
+		await this.setImage(action, renderDecisionKey({ kind: "approve", armed: true, caption, detail: requestSummary(request), pinned }));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<ApproveSettings>): void {
@@ -731,18 +735,18 @@ export class Approve extends DeckAction<ApproveSettings> {
 @action({ UUID: `${ID}.deny` })
 export class Deny extends DeckAction {
 	#state(action: Action<JsonObject>) {
-		const thread = selectedThread(this.machineOf(action));
-		const check = availability("deny", { thread, canOperate: canOperate(thread) });
-		return { thread, check, request: check.available && thread !== undefined ? requestFor(thread) : undefined };
+		const { thread, gone, pinned } = this.target(action);
+		const check = availability("deny", { thread, gone, canOperate: canOperate(thread) });
+		return { thread, pinned, check, request: check.available && thread !== undefined ? requestFor(thread) : undefined };
 	}
 
 	protected override async paint(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
 		const face = connectionFace(this.machineOf(action));
 		if (face) return void (await this.setImage(action, face));
-		const { check, request } = this.#state(action);
+		const { check, request, pinned } = this.#state(action);
 		if (check.available && request === undefined) return void (await this.setImage(action, renderSkeletonKey()));
-		await this.setImage(action, renderDecisionKey({ kind: "deny", armed: check.available, caption: t("face.deny"), detail: request ? requestSummary(request) : check.available ? undefined : check.reason }));
+		await this.setImage(action, renderDecisionKey({ kind: "deny", armed: check.available, caption: t("face.deny"), detail: request ? requestSummary(request) : check.available ? undefined : check.reason, pinned }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
