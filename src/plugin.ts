@@ -4,7 +4,7 @@ import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.j
 import { Activity, NewThread, Organize, SendPrompt, Stop, ThreadSlot } from "./actions/keys.js";
 import { deck } from "./deck.js";
 
-// Never "trace": it would log OAuth tokens passing through global settings.
+// Never "trace": it would log the access tokens kept in global settings.
 streamDeck.logger.setLevel("info");
 
 for (const instance of [
