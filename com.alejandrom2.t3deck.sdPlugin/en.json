@@ -192,17 +192,11 @@
 		},
 		"organize": {
 			"settle": "Settle",
-			"settled": "Settled",
 			"pin": "Pin",
-			"pinned": "Pinned",
 			"unpin": "Unpin",
-			"unpinned": "Unpinned",
 			"snooze": "Snooze",
-			"snoozed": "Snoozed",
 			"archive": "Archive",
-			"archived": "Archived",
-			"markUnread": "Unread",
-			"markedUnread": "Marked unread"
+			"markUnread": "Unread"
 		},
 		"notice": {
 			"openT3Code": "Open T3 Code",
