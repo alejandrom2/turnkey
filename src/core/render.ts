@@ -92,10 +92,10 @@ export function ultrathinkFrame(width: number, height: number, radius: number, s
 	);
 }
 
-const FONT_FAMILY =
+export const FONT_FAMILY =
 	process.platform === "win32" ? `'Segoe UI Variable','Segoe UI',sans-serif` : `-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif`;
 
-const escapeXml = (text: string) =>
+export const escapeXml = (text: string) =>
 	text.replace(/[<>&"']/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[char]!);
 
 export const svgDataUrl = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
