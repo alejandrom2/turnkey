@@ -453,8 +453,8 @@ export class PrDial extends StripDial<PrDialSettings> {
 		const found = findings({ ...info.activity, checks: info.checks ?? [] });
 		if (found.total === 0) return t("pr.fix.none");
 		return [
-			found.checks.length > 0 ? `${counted(found.checks.length, "pr.fix.checkOne", "pr.fix.checks")}: ${found.checks.map((check) => check.name).join(", ")}` : undefined,
-			found.threads.length > 0 ? `${counted(found.threads.length, "pr.fix.threadOne", "pr.fix.threads")}: ${found.threads.map((thread) => thread.path).join(", ")}` : undefined,
+			found.checks.length > 0 ? t("pr.fix.named", { findings: counted(found.checks.length, "pr.fix.checkOne", "pr.fix.checks"), names: found.checks.map((check) => check.name).join(", ") }) : undefined,
+			found.threads.length > 0 ? t("pr.fix.named", { findings: counted(found.threads.length, "pr.fix.threadOne", "pr.fix.threads"), names: found.threads.map((thread) => thread.path).join(", ") }) : undefined,
 			found.remarks.length > 0 ? counted(found.remarks.length, "pr.fix.remarkOne", "pr.fix.remarks") : undefined,
 		]
 			.filter(Boolean)
