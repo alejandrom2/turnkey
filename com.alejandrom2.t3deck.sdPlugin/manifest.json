@@ -336,6 +336,20 @@
 			"States": [{ "Image": "imgs/actions/dial-answer/key" }]
 		},
 		{
+			"Name": "Queue Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.queue",
+			"Icon": "imgs/actions/dial-queue/icon",
+			"Tooltip": "Rotate through the selected thread's queued messages. Press sends one now (steering it in, or starting it while nothing runs); hold removes it.",
+			"PropertyInspectorPath": "ui/queue-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-queue/icon",
+				"TriggerDescription": { "Rotate": "Choose message", "Push": "Send now (hold: remove)", "Touch": "Open thread" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-queue/key" }]
+		},
+		{
 			"Name": "PR Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.pr",
 			"Icon": "imgs/actions/dial-pr/icon",

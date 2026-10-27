@@ -5,7 +5,7 @@
  * the tiles and any text that scrolls.
  */
 import { t } from "./i18n.js";
-import { BLANK_ART, COLORS, glyphArt, type MarkPainter, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, textWidth, wrapText } from "./render.js";
+import { BLANK_ART, COLORS, glyphArt, type MarkPainter, queueBadge, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, textWidth, wrapText } from "./render.js";
 import { overflowIn, type ScrollLine, scrollLine, type StripContent, slotItems, type TextScroll, type TextSlot } from "./strip.js";
 
 export type StripStyle = "classic" | "list" | "carousel";
@@ -254,7 +254,8 @@ export function styleFlash(style: Exclude<StripStyle, "classic">, ok: boolean, l
 	return carouselFeedback(content, list, { appearance, scroll: "off", reading: { lines: readingLines([label]), top: 0 } });
 }
 
-export type ThreadRow = { title: string; art: MarkPainter };
+/** `queued` draws the first row's queue as "+N" at its right. */
+export type ThreadRow = { title: string; art: MarkPainter; queued?: number };
 
 const ROWS = [
 	{ baseline: 31, size: 19, weight: 700, fill: "#FFFFFF", width: 184 },
@@ -270,16 +271,18 @@ export function threadRowsArt(rows: readonly ThreadRow[]): string {
 	const parts: string[] = [];
 	rows.slice(0, 3).forEach((row, at) => {
 		const line = ROWS[at]!;
+		const badge = at === 0 && row.queued !== undefined && row.queued > 0 ? queueBadge(row.queued, 192, line.baseline - 16) : "";
+		const width = badge ? line.width - 40 : line.width;
 		let text = svgText(row.title, 12, line.baseline, line.size, line.weight, line.fill);
-		if (textWidth(row.title, line.size) > line.width - 2) {
-			const end = 12 + line.width;
+		if (textWidth(row.title, line.size) > width - 2) {
+			const end = 12 + width;
 			const top = line.baseline - line.size - 4;
 			parts.push(
 				`<defs><linearGradient id="row-fade-${at}" gradientUnits="userSpaceOnUse" x1="${end - 24}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="row-${at}" maskUnits="userSpaceOnUse" x="0" y="${top}" width="200" height="${line.size + 10}"><rect y="${top}" width="200" height="${line.size + 10}" fill="url(#row-fade-${at})"/></mask></defs>`,
 			);
 			text = `<g mask="url(#row-${at})">${text}</g>`;
 		}
-		parts.push(text);
+		parts.push(text + badge);
 		if (at > 0) parts.push(row.art(168, line.baseline - 16, 20));
 	});
 	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${parts.join("")}</svg>`);
