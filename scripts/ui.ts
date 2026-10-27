@@ -493,7 +493,8 @@ const script = (extra = "") => `
 			}
 
 			/** Swaps the English copy for the plugin's current-language table; sdpi selects re-read their options on refresh. */
-			function applyStrings(table) {
+			function applyStrings(table, lang) {
+				if (lang) document.documentElement.lang = lang;
 				Object.assign(strings, table);
 				for (const node of document.querySelectorAll("[data-i18n]")) if (table[node.dataset.i18n]) node.textContent = table[node.dataset.i18n];
 				for (const name of ["label", "placeholder", "loading", "aria-label"]) {
@@ -508,7 +509,7 @@ const script = (extra = "") => `
 			}
 
 			client.sendToPropertyInspector.subscribe(({ payload }) => {
-				if (payload?.event === "strings") return applyStrings(payload.strings ?? {});
+				if (payload?.event === "strings") return applyStrings(payload.strings ?? {}, payload.lang);
 				if (payload?.event === "diagnostics") {
 					$("t3-diagnostics-result").hidden = payload.ok === true;
 					return;
