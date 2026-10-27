@@ -227,6 +227,52 @@ describe("Machine connection", () => {
 	});
 });
 
+describe("Machine scopes", () => {
+	const denial = (permission: string) => ({
+		_tag: "Failure",
+		cause: [{ _tag: "Fail", error: { _tag: "EnvironmentAuthorizationError", message: `The authenticated token is missing required scope: ${permission}.`, requiredScope: "orchestration:operate", requiredPermission: permission } }],
+	});
+
+	it("refuses a scope the pairing lacks before asking, the way T3 Code would", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		await expect(h.machine.call("vcs.pull", { cwd: "/repo" }, "source-control:write")).rejects.toMatchObject({ tag: "EnvironmentAuthorizationError", requiredPermission: "source-control:write" });
+		expect(socket.sent.some((frame) => frame.tag === "vcs.pull")).toBe(false);
+	});
+
+	it("keeps T3 Code's requiredPermission, not its legacy requiredScope, from a denial", async () => {
+		const h = setup({ credential: { ...CREDENTIAL, scopes: [...CREDENTIAL.scopes, "source-control:write"] } });
+		const socket = await connect(h);
+		const pulling = h.machine.call("vcs.pull", { cwd: "/repo" }, "source-control:write");
+		await flush();
+		socket.receive({ _tag: "Exit", requestId: socket.request("vcs.pull").id, exit: denial("source-control:write") });
+		await expect(pulling).rejects.toMatchObject({ requiredPermission: "source-control:write" });
+	});
+
+	it("streams a request until it ends, acking chunks, and never re-sends it after a drop", async () => {
+		const h = setup({ credential: { ...CREDENTIAL, scopes: [...CREDENTIAL.scopes, "source-control:write"] } });
+		const socket = await connect(h);
+		const seen: unknown[] = [];
+		const run = h.machine.stream("git.runStackedAction", { actionId: "a", cwd: "/repo", action: "commit" }, (value) => seen.push(value), "source-control:write");
+		await flush();
+		const request = socket.request("git.runStackedAction");
+		socket.receive({ _tag: "Chunk", requestId: request.id, values: [{ kind: "action_started" }] });
+		expect(socket.sent.at(-1)).toEqual({ _tag: "Ack", requestId: request.id });
+		socket.receive({ _tag: "Exit", requestId: request.id, exit: { _tag: "Success" } });
+		await run;
+		expect(seen).toEqual([{ kind: "action_started" }]);
+
+		const again = h.machine.stream("git.runStackedAction", { actionId: "b", cwd: "/repo", action: "push" }, () => undefined, "source-control:write");
+		await flush();
+		socket.drop();
+		await expect(again).rejects.toMatchObject({ tag: "Disconnected" });
+		await vi.advanceTimersByTimeAsync(5_000);
+		h.sockets.last.open();
+		await flush();
+		expect(h.sockets.last.sent.filter((frame) => frame.tag === "git.runStackedAction")).toEqual([]);
+	});
+});
+
 describe("Machine commands", () => {
 	it("answers approvals and questions as the thread that asked", async () => {
 		const h = setup();
@@ -311,6 +357,31 @@ describe("Machine commands", () => {
 			interactionMode: "default",
 			workspaceStrategy: { type: "root" },
 			initialMessage: { messageId: "uuid-3", text: "Add retry to the upload client\nand tests", attachments: [] },
+		});
+	});
+
+	it("sends and launches a handoff with its composer context, into an existing worktree under a chosen id", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const context = { version: 1 as const, records: [{ version: 1, kind: "review-comment", contextId: "review-comment_x" }] };
+		expect(await dispatched(socket, () => h.machine.send(row(h.machine), "Fix it [a.ts L1](t3-context://v1/review-comment/review-comment_x)", "queue", context))).toMatchObject({
+			type: "message.dispatch",
+			context,
+			dispatchMode: { type: "queue_after_active" },
+		});
+		const launched = h.machine.launch({ projectId: "p-1" }, "Fix the findings", {
+			threadId: "thr_new",
+			context,
+			workspaceStrategy: { type: "existing_worktree", worktreePath: "/w/app-pr-42", branch: "feat/page" },
+		});
+		await flush();
+		const request = socket.request("orchestration.launchThread");
+		socket.reply("orchestration.launchThread", { threadId: "thr_new", projection: {}, resumed: false });
+		expect(await launched).toEqual({ threadId: "thr_new" });
+		expect(request.payload).toMatchObject({
+			threadId: "thr_new",
+			workspaceStrategy: { type: "existing_worktree", worktreePath: "/w/app-pr-42", branch: "feat/page" },
+			initialMessage: { text: "Fix the findings", context, attachments: [] },
 		});
 	});
 

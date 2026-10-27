@@ -21,12 +21,15 @@ export type SocketFactory = (url: string) => SocketLike;
 /**
  * A failed RPC: `tag` is the typed error's `_tag`, or `Die`, `Interrupt`, `Disconnected`. `reason` is the
  * human sentence T3 Code buried in the error's cause chain, such as why a provider switch was refused.
+ * `requiredPermission` names the scope an `EnvironmentAuthorizationError` wanted; its `requiredScope` is only
+ * the legacy parent older clients understand, so it is not kept.
  */
 export class RpcError extends Error {
 	constructor(
 		readonly tag: string,
 		message: string,
 		readonly reason?: string,
+		readonly requiredPermission?: string,
 	) {
 		super(message);
 	}
@@ -89,12 +92,17 @@ type Frame =
 	| { _tag: "Exit"; requestId: number; exit: { _tag: "Success"; value?: unknown } | { _tag: "Failure"; cause: Cause[] } }
 	| { _tag: "Pong" }
 	| { _tag: "Defect"; defect: unknown };
-type Cause = { _tag: "Fail"; error: { _tag?: string; message?: string; cause?: unknown } } | { _tag: "Die"; defect: unknown } | { _tag: "Interrupt" };
+type Cause = { _tag: "Fail"; error: { _tag?: string; message?: string; cause?: unknown; requiredPermission?: unknown; detail?: unknown } } | { _tag: "Die"; defect: unknown } | { _tag: "Interrupt" };
 
 export function causeError(cause: Cause[] | undefined): RpcError {
 	const reasons = cause ?? [];
 	const fail = reasons.find((reason) => reason._tag === "Fail");
-	if (fail?._tag === "Fail") return new RpcError(fail.error?._tag ?? "Fail", fail.error?.message ?? "T3 Code rejected the request.", causeReason(fail.error));
+	if (fail?._tag === "Fail") {
+		const { _tag, message, requiredPermission, detail } = fail.error ?? {};
+		// Source control and pull request errors carry their sentence in `detail`, not in a cause.
+		const reason = causeReason(fail.error) ?? (typeof detail === "string" && detail.trim() !== "" && detail.length <= 160 ? detail.trim() : undefined);
+		return new RpcError(_tag ?? "Fail", message ?? "T3 Code rejected the request.", reason, typeof requiredPermission === "string" ? requiredPermission : undefined);
+	}
 	const die = reasons.find((reason) => reason._tag === "Die");
 	if (die?._tag === "Die") {
 		const defect = die.defect as { message?: string } | string | undefined;

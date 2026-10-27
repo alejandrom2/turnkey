@@ -11,7 +11,7 @@ Open any T3 Deck action's settings in Stream Deck. The **T3 Code** card lists yo
 - In T3 Code, open **Settings → Sharing & access** and create a pair link (`http://192.168.1.20:3773/pair#token=…`). Paste it under **Add a machine** and press **Connect**. This works the same for this machine and for others; **this machine** shows up by itself whenever T3 Code runs here, marked **Needs pairing** until you do.
 - Each action follows the machine you pick in its card, or **All machines**. Machines are shared, so add each one once.
 
-T3 Deck asks to read threads and act on them. A link that only grants reading gives a read-only deck. Pairings last 30 days, then need a new link. T3 Deck appears under **Sharing & access** in T3 Code, which is where you revoke it. **Sign out** only forgets the pairing on this computer, and **Remove** forgets a machine you added.
+T3 Deck asks to read threads and act on them, for source control access (git and pull request keys) and to read usage. T3 Code grants what the pair link allows, so a link that only grants reading gives a read-only deck, and a key that needs access the pairing lacks says so; pair again with a new standard link to grant it. Actions that need broader access later ask for it on that machine's next pairing. Pairings last 30 days, then need a new link. T3 Deck appears under **Sharing & access** in T3 Code, which is where you revoke it. **Sign out** only forgets the pairing on this computer, and **Remove** forgets a machine you added.
 
 ## Actions
 
@@ -36,13 +36,23 @@ Most actions act on the **selected thread**: the one you opened last in T3 Code,
 | Organize | key | Settle, pin, unpin, snooze, archive or mark unread. |
 | Pull Request | key | The selected thread's pull request and its state. Tap opens it in the browser. |
 | Branch | key | The selected thread's branch. Tap opens the thread. |
+| Commit | key | Commits the selected thread's changes, or commits and pushes, or also opens a pull request (**Action**). T3 Code writes the message unless you set one. Shows the changed files, or why it can't. |
+| Push | key | Pushes the selected thread's branch. Hold to push (**To run**: tap or hold). |
+| Create PR | key | Pushes the selected thread's branch and opens a pull request for it. Hold to create. |
+| Pull | key | Pulls the selected thread's branch when it is behind its upstream. |
+| Fix Findings | key | T3 Code's Fix findings for the selected thread's pull request: its unresolved review threads, review remarks and failing checks, sent to that thread (queued if it is busy). Hold to send. Shows how many findings there are. |
+| Explain PR | key | T3 Code's Explain: asks the selected thread to walk through its pull request. |
+| Ask about PR | key | Opens the thread that holds the pull request in T3 Code, to ask about it there. |
+| Review Guide | key | Writes T3 Code's review guide for the selected thread's pull request, shows its progress, then opens the thread. Needs **Review guides** on in T3 Code. |
+| Open in Editor | key | Opens the selected thread's worktree, or its project's folder, in an editor T3 Code found on that machine: the one you pick, or T3 Code's default. A key on a remote machine says where it opens. |
 | Health | key | The connection to the action's machine (or all): connected, read only, connecting, needs pairing or the error. Tap reconnects. |
 | Threads Dial | dial | Like Activity: the threads matching a filter (all, needs you, working, unread), project and **From the last** (no limit, 24 hours … 7 days), most urgent first. Rotate selects one (it settles after a short pause), press or tap opens it. The strip shows its provider, title, status and timer or diff. |
 | Power Dial | dial | Controls one setting of the selected thread, picked in its settings: the **model** (your favorites across providers, with each provider's mark), the **effort** (with Ultrathink) or **access** (with T3 Code's mode icons). Rotate previews, press applies; when T3 Code refuses, the strip shows why. Press with nothing to apply, or tap, switches Speed where the model has it. |
 | Prompts Dial | dial | Rotate through your prompts, then Quick Prompt's templates (turn them off in settings). Press or tap sends to the selected thread, hold starts a new thread. |
+| PR Dial | dial | The open pull requests T3 Code lists, with their checks. Rotate picks one; press runs Fix findings (a hold by default) in the thread linked to it, or in a new thread on a worktree checked out at it; tap opens it in the browser; touch and hold reads its findings. |
 | Answer Dial | dial | Approvals: the strip shows the request; rotate between the dial's **Approvals** setting and Deny, then hold (or press, if set) to answer. **Approvals** defaults to opening the request in T3 Code; it can allow once, for the session, or always. Questions: pick a choice per question. Tap opens the thread. Requests the deck can't answer open in T3 Code. |
 
-A key that can't act right now is dimmed, and pressing it says why. After a press, the key shows what happened for a moment. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Effort shows where it sits on its model's ladder, Model where it sits among your favorites, and Permissions a small pill (filled when the key's mode is the thread's) with Full access in amber. Models and favorites are read again whenever a key's settings open.
+A key that can't act right now is dimmed, and pressing it says why. Each action's settings list **What this action needs**: every condition it checks (paired, can act, a selected thread, access, what the thread's model offers, a pull request…), met or not, with how to fix what isn't; a saved choice that no longer exists shows as **Not available**. After a press, the key shows what happened for a moment. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Effort shows where it sits on its model's ladder, Model where it sits among your favorites, and Permissions a small pill (filled when the key's mode is the thread's) with Full access in amber. Models and favorites are read again whenever a key's settings open.
 
 **Confirm before sending** (**Advanced**, overridable per action) covers Send Prompt, Steer, Quick Prompt, the Prompts dial and the Model, Effort, Speed and Power controls:
 
@@ -67,6 +77,9 @@ Board order: needs approval, has a question, running, queued, then unseen failur
 - **Free-text answers and approval feedback** need T3 Code; the dials pick from the offered choices.
 - **Opening a thread** uses the desktop app's `t3code://threads/<environment>/<thread>` link. Set **App link** to `t3code-dev` for a dev build. It opens on the machine running Stream Deck. Selecting with the dial or a hold doesn't switch the app's window.
 - **Provider icons** for ACP registry agents load from `cdn.agentclientprotocol.com`, as T3 Code's do; until then, or if that fails, the key shows the generic ACP mark.
+- **Git keys** act on the selected thread's checkout. Pushing to the default branch always needs a hold, and a pull request from it is refused, where T3 Code would offer a new branch first. Servers from before T3 Code's source control access treat git as plain thread access; the deck still asks for source control access there.
+- **Pull request handoffs** are sent straight away: T3 Code puts them in the composer for you to read first, but the composer lives in the app. That's why Fix Findings needs a hold by default, and why **Ask about PR** only opens the thread. The **Review Guide** opens the thread, since there is no link to the guide itself.
+- **Open in Editor** uses T3 Code's first available editor as the default; T3 Code also remembers the last one you picked, per browser, which the deck can't see.
 - **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.
 
 ## Development

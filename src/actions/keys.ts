@@ -44,6 +44,7 @@ import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../cor
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
+import { pullRequestKeyFace } from "./pr.js";
 import {
 	canOperate,
 	connectionFace,
@@ -779,25 +780,22 @@ export class Health extends DeckAction {
 	}
 }
 
-const PR_STATE: Record<string, [MessageKey, string]> = { open: ["pr.open", COLORS.done], merged: ["pr.merged", "#A371F7"], closed: ["pr.closed", COLORS.error] };
-
-/** The selected thread's pull request: number and state. Tap opens it in the browser. */
+/** The selected thread's pull request: number and state, with live checks, review and findings. Tap opens it in the browser. */
 @action({ UUID: `${ID}.pr` })
 export class PullRequest extends DeckAction {
 	#state(action: Action<JsonObject>) {
 		const thread = selectedThread(this.machineOf(action));
 		const pr = thread?.pullRequests.find((link) => link.state === "open") ?? thread?.pullRequests[0];
-		return { pr, check: availability("pr", { thread, canOperate: true }) };
+		return { thread, pr, check: availability("pr", { thread, canOperate: true }) };
 	}
 
 	protected override async paint(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
 		const face = connectionFace(this.machineOf(action));
 		if (face) return void (await this.setImage(action, face));
-		const { pr, check } = this.#state(action);
+		const { thread, pr, check } = this.#state(action);
 		if (pr === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "pullRequest", title: t("face.pullRequest"), detail: check.available ? undefined : check.reason, available: false })));
-		const [state, color] = PR_STATE[pr.state ?? ""] ?? [undefined, COLORS.text];
-		await this.setImage(action, renderInfoKey({ glyph: "pullRequest", color, title: `#${pr.number}`, detail: state && t(state) }));
+		await this.setImage(action, pullRequestKeyFace(thread!, pr));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
