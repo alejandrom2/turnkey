@@ -618,13 +618,15 @@ export type InfoKeyInput = {
 	active?: boolean;
 	/** The key acts on one thread picked in its settings: a small pin top-right. */
 	pinned?: boolean;
+	/** The glyph's rotation in degrees, for a spinner. */
+	spin?: number;
 };
 
 /** A status: icon top-left, a title of up to three lines, and an optional muted detail line, laid out like a thread key. */
 export function renderInfoKey(input: InfoKeyInput): string {
 	const parts = [background(input.active ? COLORS.keyActive : COLORS.key)];
 	if (input.tint) parts.push(overlay(input.tint, 0.2));
-	const content: string[] = [input.mark ? input.mark(14, 14, 36) : glyph(input.glyph, 12, 12, 40, input.color ?? COLORS.text)];
+	const content: string[] = [input.mark ? input.mark(14, 14, 36) : glyph(input.glyph, 12, 12, 40, input.color ?? COLORS.text, 2, input.spin ?? 0)];
 	const size = fitSize(input.title, 114, TITLE_SIZES);
 	const title = wrapText(input.title, 114, size, input.detail ? 2 : 3, { cut: true });
 	content.push(textBlock(title, { ...TITLE, size, maxWidth: 114 }));

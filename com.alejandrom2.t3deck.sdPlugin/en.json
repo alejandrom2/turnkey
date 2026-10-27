@@ -186,6 +186,18 @@
 			"TriggerDescription": { "Rotate": "Choose pull request", "Push": "Fix findings (hold)", "Touch": "Open in browser", "LongTouch": "Read findings" }
 		}
 	},
+	"com.alejandrom2.t3deck.update": {
+		"Name": "Update T3",
+		"Tooltip": "T3 Code's version on a machine. Hold updates it to the newest release; needs update access, asked for at that machine's next pairing."
+	},
+	"com.alejandrom2.t3deck.script": {
+		"Name": "Run Script",
+		"Tooltip": "Runs one of the project's saved scripts in the thread's terminal; hold stops it. Needs terminal access (shell), asked for at that machine's next pairing."
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "Share Thread",
+		"Tooltip": "Makes a guest link for the thread and copies it; shows Shared and its guest. Hold stops sharing. Needs guest link access, asked for at that machine's next pairing."
+	},
 	"com.alejandrom2.t3deck.limits": {
 		"Name": "Limits",
 		"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset."
@@ -423,7 +435,8 @@
 			"defaultEditor": "T3 Code's default",
 			"firstProvider": "First with limits",
 			"firstWindow": "Shortest window",
-			"chooseThread": "Choose a thread…"
+			"chooseThread": "Choose a thread…",
+			"chooseScript": "Choose a script…"
 		},
 		"machine": {
 			"thisMachine": "This machine",
@@ -459,7 +472,8 @@
 			"maintain": "Needs update access — re-pair to enable",
 			"terminal": "Needs terminal access — re-pair to enable",
 			"share": "Needs sharing access — re-pair to enable",
-			"other": "Needs more access — re-pair"
+			"other": "Needs more access — re-pair",
+			"rePair": "Re-pair to enable"
 		},
 		"pr": {
 			"open": "Open",
@@ -598,12 +612,19 @@
 				"noFindings": "Nothing is failing or unresolved on it.",
 				"providersInT3": "Fix them in T3 Code under Settings → Providers.",
 				"queueMessage": "Send a message while the thread works; it waits in its queue.",
-				"addTask": "Add one in T3 Code under Settings → Scheduled tasks."
+				"addTask": "Add one in T3 Code under Settings → Scheduled tasks.",
+				"optInNext": "This machine's next pairing asks for it once an action here needs it.",
+				"addScript": "Add one in T3 Code with the project's Add action button.",
+				"guestLinks": "Turn on Guest links in T3 Code under Settings → Labs, with T3 Connect running.",
+				"selfUpdate": "Update T3 Code on that machine by hand."
 			},
 			"findings": "Findings to fix",
 			"providers": "Providers ready",
 			"queued": "A queued message",
-			"tasks": "A scheduled task"
+			"tasks": "A scheduled task",
+			"script": "A saved script in the thread's project",
+			"guestLinks": "Guest links turned on",
+			"selfUpdate": "T3 Code can update itself"
 		},
 		"editor": {
 			"title": "Open in editor",
@@ -754,7 +775,8 @@
 				"windows": "Loading windows…",
 				"threads": "Loading threads…",
 				"tasks": "Loading tasks…",
-				"skills": "Loading skills…"
+				"skills": "Loading skills…",
+				"scripts": "Loading scripts…"
 			},
 			"filter": {
 				"all": "All threads",
@@ -930,6 +952,21 @@
 			"lineage": {
 				"forkHint": "Forks the thread from its newest finished reply into a new thread, as T3 Code's fork button on that reply does, then opens the fork.",
 				"mergeHint": "Merges a forked thread back into the thread it came from, as T3 Code's Merge does, then opens that thread. Hold the key to merge."
+			},
+			"update": {
+				"hint": "Shows the T3 Code version on the machine picked below (this computer's when none is). Hold to update it to the newest release on its channel; a desktop app installs its own update and relaunches. T3 Code doesn't announce updates to the deck, so the key can't show one is waiting.",
+				"access": "Needs update access, which lets this deck update and restart T3 Code there. The key's first press asks for it at the machine's next pairing."
+			},
+			"script": {
+				"label": "Script",
+				"hint": "Press runs the script in its own terminal on the thread, in its worktree or else the project's folder, as T3 Code's script button does. Hold stops it. The key shows whether it runs; T3 Code doesn't report a script's exit code, only its terminal's.",
+				"access": "Shell access: this needs terminal access, which lets this deck run any command in T3 Code's terminals on that machine. The key's first press asks for it at the machine's next pairing."
+			},
+			"share": {
+				"hint": "Press makes a guest link for the thread and copies it; anyone with it can watch the thread for 24 hours and propose messages you send or dismiss. Hold stops sharing. Needs Guest links (Settings → Labs) and T3 Connect.",
+				"access": "Needs guest link access, which lets this deck share threads with people outside. The key's first press asks for it at the machine's next pairing.",
+				"link": "Guest link",
+				"linkHint": "Shown only while T3 Deck runs: T3 Code shows a link once, when it is made."
 			}
 		},
 		"usage": {
@@ -1032,6 +1069,55 @@
 			"needsPrompt": "Needs a prompt",
 			"notRepo": "Not a git repository",
 			"noBranch": "No branch to start from"
+		},
+		"update": {
+			"title": "Update T3",
+			"version": "v{version}",
+			"noVersion": "Version unknown",
+			"holdToUpdate": "Hold to update",
+			"checking": "Checking…",
+			"downloading": "Downloading…",
+			"installing": "Installing…",
+			"restarting": "Restarting…",
+			"toVersion": "To v{version}",
+			"upToDate": "Up to date",
+			"inProgress": "Already updating",
+			"manual": "Update by hand",
+			"desktopTooOld": "Update the desktop app",
+			"failed": "Update failed",
+			"noReturn": "Didn't come back",
+			"pickMachine": "Pick a machine",
+			"needsAccess": "Needs update access"
+		},
+		"script": {
+			"title": "Run Script",
+			"pick": "Pick a script",
+			"idle": "Press to run",
+			"starting": "Starting…",
+			"running": "Running",
+			"finished": "Finished",
+			"stopped": "Stopped",
+			"exited": "Exited {code}",
+			"ended": "Exited",
+			"error": "Terminal failed",
+			"holdToStop": "Hold to stop",
+			"needsAccess": "Needs terminal access"
+		},
+		"share": {
+			"title": "Share thread",
+			"shared": "Shared",
+			"guest": "{name} joined",
+			"unused": "Link not used yet",
+			"pending": "{count} messages waiting",
+			"pendingOne": "1 message waiting",
+			"expired": "Link expired",
+			"holdToClear": "Hold to clear",
+			"holdToStop": "Hold to stop sharing",
+			"disabled": "Turn on guest links",
+			"noConnect": "Needs T3 Connect",
+			"unavailable": "Can't share this thread",
+			"copyFailed": "Couldn't copy",
+			"needsAccess": "Needs sharing access"
 		}
 	}
 }
