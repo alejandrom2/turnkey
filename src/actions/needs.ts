@@ -5,7 +5,7 @@ import type { DeckThread } from "../core/board.js";
 import { t } from "../core/i18n.js";
 import { findModel, modelKey, parseModelKey, pickableModels, RUNTIME_MODES, runtimeModes, speedToggle } from "../core/models.js";
 import { effortChoices } from "../core/power.js";
-import { dialPrompts, quickPrompt } from "../core/prompts.js";
+import { dialPrompts } from "../core/prompts.js";
 import { type Connection, type Need, requirements } from "../core/requirements.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
@@ -61,11 +61,6 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 				...(settings.destination === "project" ? projectNeed : []),
 				...(settings.startIn === "worktree" ? [{ kind: "prompt", ok: text(settings.prompt) !== "" } satisfies Need] : []),
 			];
-		case "send":
-		case "steer":
-			return [...needsFor(machine, thread), ...(kind === "steer" ? [{ kind: "running", ok: thread?.active === true } satisfies Need] : []), { kind: "prompt", ok: text(settings.prompt) !== "" }];
-		case "quick":
-			return [...needsFor(machine, thread), { kind: "prompt", ok: quickPrompt(settings).text !== "" }];
 		case "dial.prompts":
 			return [...needsFor(machine, thread), { kind: "prompt", ok: dialPrompts(settings).length > 0 }];
 		case "stop":

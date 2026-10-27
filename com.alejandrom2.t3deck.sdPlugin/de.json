@@ -12,15 +12,15 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "Prompt senden",
-		"Tooltip": "Sendet einen gespeicherten Prompt an den ausgewählten Thread. Halten unterbricht und startet damit neu."
+		"Tooltip": "Sendet deinen eigenen Prompt oder einen Alltags-Prompt (fortfahren, Tests reparieren, erklären, committen …) an den ausgewählten Thread. Halten unterbricht und startet damit neu."
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "Lenken",
 		"Tooltip": "Fügt dem laufenden Durchlauf des ausgewählten Threads eine gespeicherte Anweisung hinzu."
 	},
 	"com.alejandrom2.t3deck.quick": {
-		"Name": "Schnell-Prompt",
-		"Tooltip": "Sendet einen Alltags-Prompt an den ausgewählten Thread: fortfahren, Tests reparieren, diagnostizieren, erklären, committen oder ein eigener."
+		"Name": "Prompt senden",
+		"Tooltip": "Sendet deinen eigenen Prompt oder einen Alltags-Prompt (fortfahren, Tests reparieren, erklären, committen …) an den ausgewählten Thread. Halten unterbricht und startet damit neu."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Stopp",
@@ -810,7 +810,7 @@
 				"previewPet": "Haustier zeigen",
 				"idlePetHint": "Nach zwei Minuten ohne Drücken, Drehen oder Berühren läuft ein kleiner Roboter über deine längste Reihe benachbarter Regler-Leisten, bis zu dreimal, im Abstand von vier Minuten. Jedes Drücken, Drehen oder Berühren einer T3 Deck-Aktion schickt ihn weg. Er folgt Bewegung: Reduziert läuft gemächlich, Aus hält ihn fern.",
 				"confirm": "Vor dem Senden bestätigen",
-				"confirmHint": "Gilt für Prompt senden, Lenken, Schnell-Prompt, Skill ausführen, den Prompt-Regler und den Skill-Regler; Modell, Aufwand, Tempo, Zugriff und der Power-Regler wirken immer sofort. Prüfen zeigt beim ersten Drücken, was wohin geht; drücke innerhalb von 10 Sekunden erneut, um zu senden. Halten sendet bei gehaltenem Druck, daher kann Halten nicht zugleich neu starten oder einen Thread starten. Jede Aktion kann das überschreiben."
+				"confirmHint": "Gilt für Prompt senden, Lenken, Skill ausführen, den Prompt-Regler und den Skill-Regler; Modell, Aufwand, Tempo, Zugriff und der Power-Regler wirken immer sofort. Prüfen zeigt beim ersten Drücken, was wohin geht; drücke innerhalb von 10 Sekunden erneut, um zu senden. Halten sendet bei gehaltenem Druck, daher kann Halten nicht zugleich neu starten oder einen Thread starten. Jede Aktion kann das überschreiben."
 			},
 			"field": {
 				"strip": "Leiste",
@@ -907,7 +907,9 @@
 			"send": {
 				"titlePlaceholder": "Tests fixen",
 				"promptPlaceholder": "Führe die Tests aus und behebe, was fehlschlägt",
-				"hint": "Geht an den in T3 Code ausgewählten Thread: Er startet einen Durchlauf oder lenkt einen laufenden bzw. reiht sich dahinter ein. Halte die Taste, um zu unterbrechen und damit neu zu starten."
+				"hint": "Geht an den in T3 Code ausgewählten Thread: Er startet einen Durchlauf oder lenkt einen laufenden bzw. reiht sich dahinter ein. Halte die Taste, um zu unterbrechen und damit neu zu starten.",
+				"myText": "Eigener Text",
+				"text": "Text"
 			},
 			"steer": {
 				"titlePlaceholder": "Klein halten",
@@ -915,16 +917,11 @@
 				"hint": "Ergänzt den laufenden Durchlauf des ausgewählten Threads. Ist abgeblendet, solange der Thread inaktiv ist."
 			},
 			"quick": {
-				"titlePlaceholder": "Optionale Beschriftung für diese Taste",
-				"type": "Prompt-Typ",
 				"continue": "Weiter",
 				"test": "Tests ausführen und Fehler beheben",
 				"fix": "Diagnostizieren und beheben",
 				"explain": "Aktuellen Stand erklären",
-				"commit": "Änderungen committen",
-				"custom": "Eigener Prompt",
-				"customPlaceholder": "Prompt eingeben, den diese Taste sendet",
-				"hint": "Geht an den in T3 Code ausgewählten Thread. Halte die Taste, um zu unterbrechen und damit neu zu starten."
+				"commit": "Änderungen committen"
 			},
 			"new": {
 				"createIn": "Erstellen in",

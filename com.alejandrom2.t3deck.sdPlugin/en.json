@@ -12,15 +12,15 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "Send Prompt",
-		"Tooltip": "Sends a saved prompt to the selected thread. Hold to interrupt and restart with it."
+		"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it."
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "Steer",
 		"Tooltip": "Adds a saved instruction to the selected thread's running turn."
 	},
 	"com.alejandrom2.t3deck.quick": {
-		"Name": "Quick Prompt",
-		"Tooltip": "Sends an everyday prompt to the selected thread: continue, fix tests, diagnose, explain, commit, or your own."
+		"Name": "Send Prompt",
+		"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Stop",
@@ -810,7 +810,7 @@
 				"previewPet": "Preview pet",
 				"idlePetHint": "After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a T3 Deck action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.",
 				"confirm": "Confirm before sending",
-				"confirmHint": "Applies to Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
+				"confirmHint": "Applies to Send Prompt, Steer, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
 			},
 			"field": {
 				"strip": "Strip",
@@ -907,7 +907,9 @@
 			"send": {
 				"titlePlaceholder": "Fix tests",
 				"promptPlaceholder": "Run the tests and fix what fails",
-				"hint": "Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it."
+				"hint": "Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it.",
+				"myText": "My text",
+				"text": "Text"
 			},
 			"steer": {
 				"titlePlaceholder": "Keep it small",
@@ -915,16 +917,11 @@
 				"hint": "Adds to the selected thread's running turn. It's dimmed while the thread is idle."
 			},
 			"quick": {
-				"titlePlaceholder": "Optional label for this key",
-				"type": "Prompt type",
 				"continue": "Continue",
 				"test": "Run tests and fix failures",
 				"fix": "Diagnose and fix",
 				"explain": "Explain the current state",
-				"commit": "Commit your changes",
-				"custom": "Custom prompt",
-				"customPlaceholder": "Type the prompt this key sends",
-				"hint": "Goes to the thread selected in T3 Code. Hold the key to interrupt and restart with it."
+				"commit": "Commit your changes"
 			},
 			"new": {
 				"createIn": "Create in",
