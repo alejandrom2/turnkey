@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Thread</title>
+		<script src="sdpi-components.js"></script>
+		<style>
+			:root {
+				color-scheme: dark;
+				--t3-card: #121212;
+				--t3-foreground: #f5f5f5;
+				--t3-muted: #a3a3a3;
+				--t3-border: rgb(255 255 255 / 8%);
+				--t3-input: rgb(255 255 255 / 11%);
+				--t3-accent: rgb(255 255 255 / 4%);
+				--t3-tile: rgb(255 255 255 / 3.5%);
+				--t3-primary: #4a68f0;
+				--t3-primary: oklch(0.571 0.21 264);
+				--t3-success: #34d399;
+				--t3-warning: #fbbf24;
+				--t3-error: #f87171;
+				--t3-font: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", system-ui, sans-serif;
+			}
+			main { display: grid; gap: 2px; }
+			.hint { color: #a8a8a8; line-height: 1.4; margin: -2px 0 8px 106px; font-size: 9pt; }
+			[hidden] { display: none !important; }
+
+			.t3 {
+				position: relative; overflow: hidden; margin: 12px 0 4px; padding: 16px;
+				border: 1px solid var(--t3-border); border-radius: 14px;
+				background: var(--t3-card); color: var(--t3-foreground); font-family: var(--t3-font);
+				box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
+			}
+			.t3::before {
+				content: ""; position: absolute; inset: 0 0 auto 0; height: 110px; pointer-events: none;
+				background: radial-gradient(22rem 7rem at top, rgb(16 185 129 / 14%), transparent);
+			}
+			.t3[data-tone="error"]::before { background: radial-gradient(22rem 7rem at top, rgb(239 68 68 / 16%), transparent); }
+			.t3 > * { position: relative; }
+			.eyebrow { margin: 0; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--t3-primary); }
+			.t3 h2 { margin: 6px 0 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+			.lede { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: var(--t3-muted); }
+			.label { margin: 16px 0 6px; font-size: 12px; font-weight: 500; }
+
+			/* Machine tiles follow T3 Code's access options: a ring marks the one this action follows. */
+			.machines { display: grid; gap: 6px; margin-top: 14px; }
+			.machine {
+				display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 2px 10px;
+				padding: 9px 11px; border-radius: 9px; background: var(--t3-tile); cursor: pointer;
+				box-shadow: inset 0 0 0 1px transparent; transition: background-color .12s, box-shadow .12s;
+			}
+			.machine:hover { background: rgb(255 255 255 / 6%); }
+			.machine:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--t3-primary); }
+			.machine[aria-checked="true"] { background: color-mix(in srgb, var(--t3-primary) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t3-primary) 45%, transparent); }
+			.machine svg { width: 16px; height: 16px; color: var(--t3-muted); }
+			.machine[aria-checked="true"] svg { color: var(--t3-primary); }
+			.machine .name { margin: 0; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+			.machine .where { margin: 0; font-size: 11px; color: var(--t3-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+			.machine .actions { display: flex; align-items: center; gap: 4px; }
+			.machine .detail { grid-column: 2 / 4; margin: 4px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-error); }
+
+			.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+			.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+			.pill.ready { color: var(--t3-success); background: rgb(16 185 129 / 12%); }
+			.pill.wait { color: var(--t3-warning); background: rgb(245 158 11 / 12%); }
+			.pill.muted { color: var(--t3-muted); background: var(--t3-accent); }
+
+			.t3 button, .t3 select, .t3 input { font: 500 12px var(--t3-font); border-radius: 8px; }
+			.t3 button { padding: 5px 11px; cursor: pointer; border: 1px solid transparent; transition: background-color .12s, border-color .12s; }
+			.t3 button.primary { background: var(--t3-primary); color: #fff; }
+			.t3 button.primary:hover { filter: brightness(1.08); }
+			.t3 button.primary:disabled { opacity: .5; cursor: default; filter: none; }
+			.t3 button.outline { background: transparent; color: var(--t3-foreground); border-color: var(--t3-input); }
+			.t3 button.outline:hover { background: var(--t3-accent); }
+			.t3 button.ghost { background: transparent; color: var(--t3-muted); padding: 5px 6px; }
+			.t3 button.ghost:hover { color: var(--t3-foreground); }
+			.t3 button:focus-visible, .t3 select:focus-visible, .t3 input:focus-visible { outline: 2px solid var(--t3-primary); outline-offset: 1px; }
+
+			.add { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--t3-border); }
+			.add .label { margin-top: 0; }
+			.add input, .add select {
+				width: 100%; box-sizing: border-box; padding: 7px 9px; color: var(--t3-foreground);
+				background: transparent; border: 1px solid var(--t3-input);
+			}
+			.add input::placeholder { color: var(--t3-muted); }
+			.add .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; margin-top: 6px; }
+			.add select { appearance: none; padding-right: 26px; background-image: linear-gradient(45deg, transparent 50%, var(--t3-muted) 50%), linear-gradient(135deg, var(--t3-muted) 50%, transparent 50%); background-position: calc(100% - 13px) 50%, calc(100% - 9px) 50%; background-size: 4px 4px; background-repeat: no-repeat; }
+			.add select option { background: #1c1c1c; }
+			.add .access-help { margin: 6px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-muted); }
+			.add .result { margin: 6px 0 0; font-size: 11px; line-height: 1.4; }
+			.add .result.error { color: var(--t3-error); }
+			.add .result.working { color: var(--t3-muted); }
+			.note { margin: 12px 0 0; font-size: 11px; line-height: 1.5; color: var(--t3-muted); }
+
+			details.group { border-top: 1px solid #555; margin-top: 10px; padding-top: 8px; }
+			details.group > summary {
+				cursor: pointer; margin: 0 0 8px; font-size: 8.5pt; font-weight: 600;
+				letter-spacing: .06em; text-transform: uppercase; color: #a8a8a8;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<sdpi-item label="Slot">
+				<sdpi-select setting="slot" default="1">
+					<option value="0">Focused thread</option>
+					<option value="1">1 (most urgent)</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+					<option value="10">10</option>
+					<option value="11">11</option>
+					<option value="12">12</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint">Threads are ordered: needs approval, has a question, running, then the rest.</p>
+			<section class="t3" id="t3" aria-live="polite">
+				<p class="eyebrow">T3 Code</p>
+				<h2 id="t3-title">Choose a machine</h2>
+				<p class="lede" id="t3-lede">Looking for T3 Code on this machine…</p>
+				<div class="machines" id="t3-machines" role="radiogroup" aria-label="Machine for this action"></div>
+				<div class="add">
+					<p class="label">Add a machine</p>
+					<input id="t3-link" type="url" autocomplete="off" spellcheck="false" placeholder="Paste a pair link from Settings → Sharing &amp; access" />
+					<div class="controls">
+						<select id="t3-access" aria-label="What T3 Deck may do">
+							<option value="read-only">Read only</option><option value="approval-required" selected>Supervised</option><option value="auto-accept-edits">Auto-accept edits</option><option value="auto">Auto</option><option value="full-access">Full access</option>
+						</select>
+						<button class="primary" id="t3-pair" type="button" disabled>Connect</button>
+					</div>
+					<p class="access-help" id="t3-access-help"></p>
+					<p class="result" id="t3-result" hidden></p>
+				</div>
+				<p class="note">Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.</p>
+			</section>
+			<details class="group">
+				<summary>Advanced</summary>
+				<sdpi-item label="App link">
+					<sdpi-textfield setting="scheme" global placeholder="t3code"></sdpi-textfield>
+				</sdpi-item>
+				<p class="hint">Use t3code-dev to open threads in a development build.</p>
+			</details>
+		</main>
+		<script>
+			const client = SDPIComponents.streamDeckClient;
+			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
+			const ACCESS = {"read-only":"Read projects and threads. Cannot start, message or change anything.","approval-required":"Ask before commands and file changes.","auto-accept-edits":"Auto-approve edits, ask before other actions.","auto":"Supported providers approve routine actions; others still ask.","full-access":"Allow commands and edits without prompts."};
+			const icons = {
+				all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+				local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+				remote: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>',
+			};
+			const $ = (id) => document.getElementById(id);
+			const el = (tag, className, text) => {
+				const node = document.createElement(tag);
+				if (className) node.className = className;
+				if (text !== undefined) node.textContent = text;
+				return node;
+			};
+			const button = (label, kind, event, url) => {
+				const node = el("button", kind, label);
+				node.type = "button";
+				node.addEventListener("click", (click) => {
+					click.stopPropagation();
+					send(event, { url });
+				});
+				return node;
+			};
+
+			function tile({ url, icon, name, where, checked, actions = [], detail }) {
+				const node = el("div", "machine");
+				node.setAttribute("role", "radio");
+				node.setAttribute("aria-checked", String(checked));
+				node.tabIndex = checked ? 0 : -1;
+				const select = () => send("selectMachine", { url });
+				node.addEventListener("click", select);
+				node.addEventListener("keydown", (key) => {
+					if (key.key === " " || key.key === "Enter") {
+						key.preventDefault();
+						select();
+					}
+				});
+				const glyph = el("span");
+				glyph.innerHTML = icons[icon];
+				const text = el("div");
+				text.style.minWidth = "0";
+				text.append(el("p", "name", name), el("p", "where", where));
+				const right = el("div", "actions");
+				right.append(...actions);
+				node.append(glyph, text, right);
+				if (detail) node.append(el("p", "detail", detail));
+				return node;
+			}
+
+			function machineActions(env) {
+				const actions = [];
+				if (env.state === "ready") {
+					actions.push(el("span", env.access === "Can act" ? "pill ready" : "pill muted", env.access === "Can act" ? "Connected" : "Read only"));
+					actions.push(button("Sign out", "ghost", "signOut", env.url));
+				} else if (env.state === "approving") {
+					actions.push(el("span", "pill wait", "Approve in browser"));
+				} else if (env.state === "connecting") {
+					actions.push(el("span", "pill muted", "Connecting…"));
+				} else {
+					actions.push(button(env.state === "error" ? "Try again" : "Sign in", "primary", "signIn", env.url));
+				}
+				if (!env.local) actions.push(button("Remove", "ghost", "remove", env.url));
+				return actions;
+			}
+
+			client.sendToPropertyInspector.subscribe(({ payload }) => {
+				if (payload?.event !== "status") return;
+				const environments = payload.environments ?? [];
+				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
+				const ready = environments.filter((env) => env.state === "ready");
+				const approving = environments.some((env) => env.state === "approving");
+				const failed = environments.some((env) => env.state === "error") || payload.pairing?.state === "error";
+
+				$("t3").dataset.tone = failed ? "error" : "pairing";
+				$("t3-title").textContent =
+					environments.length === 0 ? "Connect T3 Deck" : approving ? "Waiting for approval" : ready.length === 0 ? "Sign in to a machine" : "Choose a machine";
+				$("t3-lede").textContent =
+					environments.length === 0
+						? "T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below."
+						: approving
+							? "Finish the sign-in in your browser, then come back here."
+							: ready.length === 0
+								? "Sign in, then approve in your browser. Or paste a pair link below to skip the browser."
+								: "This action shows and acts on threads from the machine you pick.";
+
+				const tiles = [];
+				if (environments.length > 1 || selected === "") {
+					tiles.push(tile({
+						url: "",
+						icon: "all",
+						name: "All machines",
+						where: environments.length === 0 ? "None yet" : ready.length + " of " + environments.length + " connected",
+						checked: selected === "",
+					}));
+				}
+				for (const env of environments) {
+					tiles.push(tile({
+						url: env.url,
+						icon: env.local ? "local" : "remote",
+						name: env.name,
+						where: env.where,
+						checked: env.url === selected,
+						actions: machineActions(env),
+						detail: env.state === "error" ? env.message : undefined,
+					}));
+				}
+				$("t3-machines").replaceChildren(...tiles);
+
+				const result = $("t3-result");
+				const pairing = payload.pairing ?? { state: "idle" };
+				result.hidden = pairing.state === "idle";
+				result.className = "result " + pairing.state;
+				result.textContent = pairing.state === "error" ? pairing.message : "Connecting with the pair link…";
+				if (pairing.state === "idle" && pairedOnce) {
+					$("t3-link").value = "";
+					pairedOnce = false;
+				}
+				syncPairButton(pairing.state === "working");
+			});
+
+			let pairedOnce = false;
+			const syncPairButton = (working = false) => {
+				$("t3-pair").disabled = working || !/[#?&]token=./.test($("t3-link").value);
+				$("t3-pair").textContent = working ? "Connecting…" : "Connect";
+			};
+			const syncAccessHelp = () => ($("t3-access-help").textContent = ACCESS[$("t3-access").value]);
+			$("t3-link").addEventListener("input", () => syncPairButton());
+			$("t3-access").addEventListener("change", syncAccessHelp);
+			$("t3-pair").addEventListener("click", () => {
+				pairedOnce = true;
+				send("pair", { link: $("t3-link").value.trim(), access: $("t3-access").value });
+				syncPairButton(true);
+			});
+			$("t3-link").addEventListener("keydown", (key) => {
+				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
+			});
+			syncAccessHelp();
+			send("status");
+		</script>
+	</body>
+</html>
