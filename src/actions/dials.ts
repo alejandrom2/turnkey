@@ -5,16 +5,17 @@ import { type ActionKind, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { findModel, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
-import { dialControl, type DialControl, effortChange, type PowerChoice, powerIconUrl, powerState, stepChoice } from "../core/power.js";
+import { dialControl, type DialControl, effortChange, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
-import { COLORS, elapsed, type GlyphName, STATE_COLOR, STATE_GLYPH, stripIcon, toneOf } from "../core/render.js";
+import { COLORS, elapsed, glyphArt, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgText, toneOf } from "../core/render.js";
 import { matchesDial, type ThreadFilter, threadFilter } from "../core/slots.js";
 import type { StripContent } from "../core/strip.js";
+import type { StripItem, StripList } from "../core/styles.js";
 import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
 import { canOperate, LONG_PRESS_MS, openThread, pressWhileDisconnected, selectedThread, sendToThread, ultrathinkArmed } from "./base.js";
 import { applyEffort, launchable, requestFor, startThread } from "./keys.js";
-import { type DialSettings, disconnectedStrip, markIcon, StripDial } from "./strip.js";
+import { type DialSettings, disconnectedStrip, markArt, StripDial } from "./strip.js";
 
 const ID = "com.alejandrom2.t3deck";
 
@@ -65,13 +66,13 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 		if (offline) return offline;
 		const match = this.#match(action);
 		const thread = deck.board.shownOn(machine, match);
-		if (thread === undefined) return { header: label, icon: stripIcon("check", COLORS.muted), accent: COLORS.muted, value: filter === "all" ? "No threads" : "All quiet" };
+		if (thread === undefined) return { header: label, icon: glyphArt("check", COLORS.muted), accent: COLORS.muted, value: filter === "all" ? "No threads" : "All quiet" };
 		const threads = deck.board.threadsOn(machine).filter(match);
 		const model = findModel(thread.machine.modelConfig, thread.model);
 		const color = STATE_COLOR[thread.deck];
 		return {
 			header: `${label} · ${threads.indexOf(thread) + 1}/${threads.length}`,
-			icon: model ? markIcon(model) : stripIcon(STATE_GLYPH[thread.deck], color),
+			icon: model ? markArt(model) : glyphArt(STATE_GLYPH[thread.deck], color),
 			accent: color,
 			value: thread.title,
 			detail: [statusLine(thread), thread.projectTitle].filter(Boolean).join(" · "),
@@ -80,6 +81,24 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 			// A running thread's status line ticks every second, which would cut its scroll short.
 			scroll: thread.active ? ["value"] : undefined,
 		};
+	}
+
+	protected override list(action: Action<ThreadDialSettings>): StripList | undefined {
+		const machine = this.machineOf(action);
+		const filter = threadFilter(this.settingsOf(action).filter);
+		if (disconnectedStrip(FILTER_LABEL[filter], machine)) return undefined;
+		const match = this.#match(action);
+		const thread = deck.board.shownOn(machine, match);
+		if (thread === undefined) return undefined;
+		const threads = deck.board.threadsOn(machine).filter(match);
+		if (!threads.includes(thread)) return undefined;
+		const item = (row: DeckThread): StripItem => {
+			const color = STATE_COLOR[row.deck];
+			const tint = toneOf(row.deck) === "neutral" ? undefined : color;
+			const detail = row === thread ? [statusLine(row), row.projectTitle].filter(Boolean).join(" · ") : undefined;
+			return { key: row.key, label: row.title, art: glyphArt(STATE_GLYPH[row.deck], color === COLORS.muted ? COLORS.text : color), tint, detail };
+		};
+		return { heading: FILTER_LABEL[filter], items: threads.map(item), index: threads.indexOf(thread) };
 	}
 
 	protected override rotated(dial: DialAction<ThreadDialSettings>, ticks: number): void {
@@ -145,20 +164,43 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const { label, glyph } = CONTROL[context.control];
 		const offline = disconnectedStrip(label, this.machineOf(action));
 		if (offline) return offline;
-		if (context.thread === undefined) return { header: label, icon: stripIcon(glyph, COLORS.muted), accent: COLORS.muted, value: "No thread" };
+		if (context.thread === undefined) return { header: label, icon: glyphArt(glyph, COLORS.muted), accent: COLORS.muted, value: "No thread" };
 		const { thread, state, pending, check, armed } = context;
 		const shown = pending ?? state.current;
 		const index = shown === undefined ? -1 : state.choices.findIndex((choice) => choice.key === shown.key);
 		const color = !check.available ? COLORS.muted : pending ? COLORS.attention : COLORS.accent;
 		return {
 			header: `${label}${index >= 0 && state.choices.length > 1 ? ` · ${index + 1}/${state.choices.length}` : ""}`,
-			icon: shown ? powerIconUrl(shown.icon, { acpIcons: deck.acpIcons }) : stripIcon(glyph),
+			icon: shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(glyph),
 			accent: color,
 			value: shown?.label ?? (context.control === "model" ? thread.model.model : "Default"),
 			detail: !check.available ? check.reason : pending ? "Press to apply" : this.#idleDetail(context.control, thread),
 			detailColor: pending ? COLORS.attention : undefined,
 			tone: toneOf(thread.deck),
 			ultrathink: context.control === "effort" && (armed || (pending?.kind === "effort" && pending.ultrathink)),
+		};
+	}
+
+	protected override list(action: Action<PowerSettings>): StripList | undefined {
+		const context = this.#context(action);
+		if (context.thread === undefined || disconnectedStrip("", this.machineOf(action))) return undefined;
+		const { state, pending, check, thread } = context;
+		const shown = pending ?? state.current;
+		if (shown === undefined) return undefined;
+		const listed = state.choices.some((choice) => choice.key === shown.key);
+		const choices = listed ? state.choices : [shown, ...state.choices];
+		const detail = !check.available ? check.reason : pending ? "Press to apply" : this.#idleDetail(context.control, thread);
+		return {
+			heading: CONTROL[context.control].label,
+			index: choices.findIndex((choice) => choice.key === shown.key),
+			items: choices.map((choice) => ({
+				key: choice.key,
+				label: choice.label,
+				art: powerArt(choice.icon, { acpIcons: deck.acpIcons }),
+				color: choice.key === pending?.key ? COLORS.attention : undefined,
+				detail: choice.key === shown.key ? detail : undefined,
+			})),
+			note: !check.available ? { text: check.reason } : pending ? { text: "Press to apply", color: COLORS.attention } : undefined,
 		};
 	}
 
@@ -244,17 +286,38 @@ export class PromptDial extends StripDial<PromptListSettings> {
 		const offline = disconnectedStrip("Prompts", this.machineOf(action));
 		if (offline) return offline;
 		const { prompts, index, prompt } = this.#current(action);
-		if (prompt === undefined) return { header: "Prompts", icon: stripIcon("spark", COLORS.muted), accent: COLORS.muted, value: "No prompts", detail: "Add them in settings" };
+		if (prompt === undefined) return { header: "Prompts", icon: glyphArt("spark", COLORS.muted), accent: COLORS.muted, value: "No prompts", detail: "Add them in settings" };
 		const thread = selectedThread(this.machineOf(action));
 		const check = availability("send", { thread, canOperate: canOperate(thread), hasPrompt: true });
 		return {
 			header: `${prompt.label ?? "Prompt"} · ${index + 1}/${prompts.length}`,
-			icon: stripIcon("spark", check.available ? COLORS.text : COLORS.muted),
+			icon: glyphArt("spark", check.available ? COLORS.text : COLORS.muted),
 			accent: check.available ? COLORS.accent : COLORS.muted,
 			value: prompt.text,
 			detail: check.available ? `→ ${thread!.title}` : check.reason,
 			tone: toneOf(thread?.deck),
 			ultrathink: ultrathinkArmed(thread),
+		};
+	}
+
+	protected override list(action: Action<PromptListSettings>): StripList | undefined {
+		if (disconnectedStrip("Prompts", this.machineOf(action))) return undefined;
+		const { prompts, index } = this.#current(action);
+		if (prompts.length === 0) return undefined;
+		const thread = selectedThread(this.machineOf(action));
+		const check = availability("send", { thread, canOperate: canOperate(thread), hasPrompt: true });
+		const art = glyphArt("spark", check.available ? COLORS.text : COLORS.muted);
+		return {
+			heading: "Prompts",
+			index,
+			wrap: true,
+			items: prompts.map((prompt, at) => ({
+				key: `${at}:${prompt.text}`,
+				label: prompt.label ?? prompt.text,
+				art,
+				detail: at === index ? [prompt.label ? prompt.text : undefined, check.available ? `→ ${thread!.title}` : undefined].filter(Boolean).join("\n") || undefined : undefined,
+			})),
+			note: check.available ? undefined : { text: check.reason },
 		};
 	}
 
@@ -296,6 +359,13 @@ type Answering = { id: string; request: PendingRequest; step: number; picks: num
 const PRESS_FACE = (press: ApprovalPress): { glyph: GlyphName; color: string } =>
 	press.kind === "open" ? { glyph: "shield", color: COLORS.attention } : press.decision === "decline" ? { glyph: "deny", color: COLORS.error } : { glyph: "approve", color: COLORS.done };
 
+/** A question's choice number, drawn where other items have a glyph. */
+const numberArt =
+	(n: number, color: string): MarkPainter =>
+	(x, y, size) =>
+		`<circle cx="${x + size / 2}" cy="${y + size / 2}" r="${size / 2 - 1}" fill="none" stroke="${color}" stroke-width="${Math.max(1.5, size / 14)}"/>` +
+		svgText(String(n), x + size / 2, y + size / 2 + size * 0.2, Math.round(size * 0.56), 700, color, ` text-anchor="middle"`);
+
 /**
  * Answers what blocks the selected thread (or the board's first blocked one). Approvals: rotate between the dial's
  * approval authority (open in T3 Code, or allow once, for the session or always) and Deny; press, or hold when it
@@ -335,11 +405,11 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 		const thread = this.#target(this.machineOf(dial));
 		if (thread === undefined) {
 			this.#answers.delete(dial.id);
-			return { header: "Answer", icon: stripIcon("check", COLORS.muted), accent: COLORS.muted, value: "Nothing pending", detail: `Approvals: ${authorityLabel(approvalAuthority(settings.approvalAuthority))}` };
+			return { header: "Answer", icon: glyphArt("check", COLORS.muted), accent: COLORS.muted, value: "Nothing pending", detail: `Approvals: ${authorityLabel(approvalAuthority(settings.approvalAuthority))}` };
 		}
 		const approval = thread.deck === "approval";
 		const answering = this.#answering(dial, thread);
-		const waiting: StripContent = { header: approval ? "Approval" : "Question", icon: stripIcon(approval ? "shield" : "question", COLORS.attention), accent: COLORS.attention, value: thread.title, tone: "attention" };
+		const waiting: StripContent = { header: approval ? "Approval" : "Question", icon: glyphArt(approval ? "shield" : "question", COLORS.attention), accent: COLORS.attention, value: thread.title, tone: "attention" };
 		if (answering === undefined) return { ...waiting, detail: "Loading…" };
 		const { request, step, picks } = answering;
 		const canAct = canOperate(thread);
@@ -353,7 +423,7 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 				const { glyph, color } = check?.available === false ? { glyph: "shield" as const, color: COLORS.muted } : PRESS_FACE(press);
 				return {
 					header: request.heading,
-					icon: stripIcon(glyph, color),
+					icon: glyphArt(glyph, color),
 					accent: color,
 					value: request.summary || thread.title,
 					detail: check?.available === false ? check.reason : `${press.label}${hold ? " · hold" : ""}`,
@@ -368,7 +438,7 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 				const unavailable = check?.available === false;
 				return {
 					header: `${question?.header || "Question"}${request.questions.length > 1 ? ` · ${step + 1}/${request.questions.length}` : ""}`,
-					icon: stripIcon("question", unavailable ? COLORS.muted : COLORS.attention),
+					icon: glyphArt("question", unavailable ? COLORS.muted : COLORS.attention),
 					accent: unavailable ? COLORS.muted : COLORS.attention,
 					value: option?.label ?? "Open in T3 Code",
 					detail: unavailable ? check.reason : (question?.question ?? ""),
@@ -376,6 +446,38 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 				};
 			}
 		}
+	}
+
+	protected override list(dial: Action<AnswerSettings>): StripList | undefined {
+		if (disconnectedStrip("Answer", this.machineOf(dial))) return undefined;
+		const thread = this.#target(this.machineOf(dial));
+		const answering = thread === undefined ? undefined : this.#answering(dial, thread);
+		if (thread === undefined || answering === undefined) return undefined;
+		const { request, step, picks } = answering;
+		const canAct = canOperate(thread);
+		if (request.type === "approval") {
+			const hold = approvalConfirm(this.settingsOf(dial).approvalConfirm) === "hold";
+			const about = request.summary || thread.title;
+			const items = this.#choices(dial, request).map((press, at): StripItem => {
+				const check = press.kind === "open" ? undefined : availability(press.decision === "decline" ? "deny" : "approve", { thread, canOperate: canAct });
+				const { glyph, color } = check?.available === false ? { glyph: "shield" as const, color: COLORS.muted } : PRESS_FACE(press);
+				const label = `${press.label}${press.kind === "respond" && hold ? " · hold" : ""}`;
+				return { key: `${at}:${press.label}`, label, art: glyphArt(glyph, color), tint: color, detail: check?.available === false ? check.reason : undefined };
+			});
+			const selected = items[picks[0] ?? 0];
+			return { heading: request.heading, items, index: picks[0] ?? 0, note: { text: selected?.detail ?? about, color: COLORS.muted } };
+		}
+		if (request.type !== "question") return undefined;
+		const question = request.questions[step];
+		if (question === undefined || question.options.length === 0) return undefined;
+		const check = availability("answer", { thread, canOperate: canAct });
+		const color = check.available ? COLORS.attention : COLORS.muted;
+		return {
+			heading: `${question.header || "Question"}${request.questions.length > 1 ? ` · ${step + 1}/${request.questions.length}` : ""}`,
+			items: question.options.map((option, at) => ({ key: `${step}:${at}`, label: option.label, art: numberArt(at + 1, color), tint: color })),
+			index: picks[step] ?? 0,
+			note: { text: check.available ? question.question : check.reason, color: COLORS.muted },
+		};
 	}
 
 	protected override rotated(dial: DialAction<AnswerSettings>, ticks: number): void {

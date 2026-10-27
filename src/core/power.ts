@@ -3,7 +3,7 @@
  * Ultrathink, or access modes. Each choice carries the icon the strip shows while it is previewed or current.
  */
 import { type AcpIcons, type CatalogModel, currentOptionValue, effortOption, findModel, type ModelConfig, pickableModels, providerMark, runtimeModes } from "./models.js";
-import { COLORS, type GlyphName, MODE_GLYPH, stripIcon, stripMarkIcon } from "./render.js";
+import { COLORS, type GlyphName, glyphArt, type MarkPainter, MODE_GLYPH, stripMarkIcon } from "./render.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 import { ULTRATHINK } from "./ultrathink.js";
 
@@ -92,8 +92,13 @@ export function stepChoice(state: PowerState, from: string | undefined, ticks: n
 	return choices[Math.min(choices.length - 1, Math.max(0, start + ticks))];
 }
 
-/** The strip icon for a choice: the model's provider mark (ACP icon and initials badge included), or a white glyph. */
-export function powerIconUrl(icon: PowerIcon, options: { color?: string; acpIcons?: Pick<AcpIcons, "get"> } = {}): string {
-	if (icon.kind === "glyph") return stripIcon(icon.name, options.color ?? COLORS.text);
-	return stripMarkIcon((x, y, size) => providerMark(icon.model, x, y, size, { acpIcons: options.acpIcons }));
+type IconOptions = { color?: string; acpIcons?: Pick<AcpIcons, "get"> };
+
+/** A choice's art: the model's provider mark (ACP icon and initials badge included), or a white glyph. */
+export function powerArt(icon: PowerIcon, options: IconOptions = {}): MarkPainter {
+	if (icon.kind === "glyph") return glyphArt(icon.name, options.color ?? COLORS.text);
+	return (x, y, size) => providerMark(icon.model, x, y, size, { acpIcons: options.acpIcons });
 }
+
+/** The strip icon for a choice. */
+export const powerIconUrl = (icon: PowerIcon, options: IconOptions = {}): string => stripMarkIcon(powerArt(icon, options));

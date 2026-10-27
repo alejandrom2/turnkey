@@ -139,6 +139,21 @@ const card = `
 					<sdpi-checkbox setting="stripHairline" global default="true" label="Show the coloured line under each strip"></sdpi-checkbox>
 				</sdpi-item>
 				<p class="hint">Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
+				<sdpi-item label="Strip style">
+					<sdpi-select setting="stripStyle" global default="classic">
+						<option value="classic">Classic</option>
+						<option value="list">List</option>
+						<option value="carousel">Carousel</option>
+					</sdpi-select>
+				</sdpi-item>
+				<sdpi-item label="Long text">
+					<sdpi-select setting="textScroll" global default="horizontal">
+						<option value="horizontal">Scroll sideways</option>
+						<option value="vertical">Roll up line by line</option>
+						<option value="off">Don't scroll</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint">List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.</p>
 			</details>`;
 
 /** Shows the element `id` only while `setting` (a global one with `global`) passes `test`, as it is edited and as settings arrive. */
@@ -151,7 +166,7 @@ const showWhen = (setting: string, id: string, test: string, global = false) => 
 				client.${global ? "didReceiveGlobalSettings" : "didReceiveSettings"}.subscribe(({ payload }) => apply(payload?.settings?.["${setting}"]));
 			}`;
 
-/** A dial's own strip background, over the global one in Advanced. */
+/** A dial's own strip background, style and text scroll, over the global ones in Advanced. */
 const dialAppearance = `
 			<sdpi-item label="Strip">
 				<sdpi-select setting="background" default="">
@@ -164,6 +179,22 @@ const dialAppearance = `
 			</sdpi-item>
 			<sdpi-item label="Strip colour" id="background-color" hidden>
 				<sdpi-color setting="backgroundColor" default="#121212"></sdpi-color>
+			</sdpi-item>
+			<sdpi-item label="Style">
+				<sdpi-select setting="stripStyle" default="">
+					<option value="">Use global</option>
+					<option value="classic">Classic</option>
+					<option value="list">List</option>
+					<option value="carousel">Carousel</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Long text">
+				<sdpi-select setting="textScroll" default="">
+					<option value="">Use global</option>
+					<option value="horizontal">Scroll sideways</option>
+					<option value="vertical">Roll up line by line</option>
+					<option value="off">Don't scroll</option>
+				</sdpi-select>
 			</sdpi-item>`;
 const dialAppearanceScript = showWhen("background", "background-color", `value === "custom"`);
 

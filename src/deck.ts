@@ -19,10 +19,12 @@ type GlobalSettings = {
 	stripBackground?: string;
 	stripColor?: string;
 	stripHairline?: boolean;
+	stripStyle?: string;
+	textScroll?: string;
 	auth?: Record<string, JsonValue>;
 };
 
-const appearanceOf = ({ stripBackground, stripColor, stripHairline }: GlobalSettings) => ({ stripBackground, stripColor, stripHairline });
+const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll }: GlobalSettings) => ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll });
 
 const logger = streamDeck.logger.createScope("deck");
 
