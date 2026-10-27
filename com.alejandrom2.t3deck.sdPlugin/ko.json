@@ -716,7 +716,11 @@
 				"pullHint": "선택한 스레드의 브랜치가 업스트림보다 뒤처졌을 때 업스트림에서 풀합니다."
 			},
 			"card": {
-				"choose": "머신 선택",
+				"machine": "기기",
+				"machines": "기기 목록",
+				"getLink": "페어링 링크 받기",
+				"getLinkRow": "링크 받기",
+				"pasteLink": "링크 붙여넣기",
 				"looking": "이 머신에서 T3 Code를 찾는 중…",
 				"machineGroup": "이 액션의 머신",
 				"addMachine": "머신 추가",
@@ -725,8 +729,6 @@
 				"connecting": "연결 중…",
 				"accessHelp": "T3 Deck은 링크가 허용하는 범위에서 스레드를 읽고 조작할 권한을 요청합니다. Settings → Sharing & access에서 취소할 수 있습니다.",
 				"shared": "추가한 모든 머신은 모든 T3 Deck 액션이 공유합니다. 각 액션은 위에서 선택한 머신을 따릅니다.",
-				"connectTitle": "T3 Deck 연결",
-				"pairTitle": "T3 Deck 페어링",
 				"notRunning": "이 머신에서 T3 Code가 실행 중이 아닙니다. T3 Code를 열거나, 아래에 다른 머신의 페어링 링크를 붙여넣으세요.",
 				"howToPair": "T3 Code에서 Settings → Sharing & access를 열고 페어링 링크를 만들어 아래에 붙여넣으세요.",
 				"picked": "이 액션은 선택한 머신의 스레드를 표시하고 조작합니다.",
