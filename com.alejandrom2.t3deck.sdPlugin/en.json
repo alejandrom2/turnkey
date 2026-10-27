@@ -914,6 +914,9 @@
 				"worktreeHint": "A new worktree starts from the repository's default branch, as T3 Code's composer does, and takes its branch name from the prompt; it needs a prompt and a project."
 			},
 			"model": {
+				"nameColor": "Name color",
+				"nameModel": "Model color",
+				"nameWhite": "White",
 				"hint": "Cycling steps through T3 Code's favorite models, across providers, or the thread's provider's models when you have none. Picking another provider's model hands the thread over, as T3 Code's model picker does."
 			},
 			"effort": {

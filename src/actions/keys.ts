@@ -589,7 +589,7 @@ abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 	}
 }
 
-type ModelSettings = { model?: string; machine?: string };
+type ModelSettings = { model?: string; machine?: string; nameColor?: string };
 
 /**
  * Switches the selected thread to one favorite model, or to the next of T3 Code's favorites (else of its
@@ -610,7 +610,9 @@ export class ModelKey extends SettingKey<ModelSettings> {
 		const position = shown === undefined ? -1 : catalog.findIndex((model) => model.key === shown.key);
 		// The shown model's pill takes its color, as on the Power dial.
 		const cue = catalog.length > 1 && position >= 0 ? dotsCue(catalog.length, position, modelFill(maxEffortStyle(deck.appearance.maxEffort), shown && modelColor(shown))) : undefined;
-		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue, pinned });
+		// The name takes the model's color unless the key's Name color is White.
+		const labelColor = this.settingsOf(action).nameColor === "white" ? undefined : shown && modelColor(shown);
+		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, labelColor, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue, pinned });
 		if (thread === undefined || target === undefined) return { face, check };
 		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;
 		return { face, check, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
