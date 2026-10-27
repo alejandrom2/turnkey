@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "Stream Deck から T3 Code のスレッドを確認・操作。スレッドの状態、停止、プロンプト、モデルオプション、回答を、すべてのプロバイダーで。",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "スレッド",
+		"Tooltip": "キーの位置に応じたボードのスレッド 1 件：状態、タイトル、タイマー。タップで T3 Code で開き、長押しで選択します。"
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "アクティビティ",
 		"Tooltip": "フィルターに一致する最も緊急なスレッド。タップで T3 Code で開きます。"
@@ -18,25 +22,13 @@
 		"Name": "追加指示",
 		"Tooltip": "選択中スレッドの実行中のターンに、保存した指示を追加します。"
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "プロンプト送信",
-		"Tooltip": "自分のプロンプト、またはよく使うプロンプト（続行、テスト修正、説明、コミットなど）を選択中のスレッドに送信します。長押しで中断し、そのプロンプトで再開します。"
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "スキル実行",
+		"Tooltip": "T3 Code のコンポーザーで選んで送信するのと同様に、スレッドのプロバイダーのスキルを実行します。"
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "停止",
 		"Tooltip": "選択中スレッドの実行中のターン、または設定に応じてスレッドが実行するワークフロー（Claude）を停止します。ワークフローは長押しで停止。"
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "停止",
-		"Tooltip": "選択中スレッドの実行中のターン、または設定に応じてスレッドが実行するワークフロー（Claude）を停止します。ワークフローは長押しで停止。"
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "フォーク",
-		"Tooltip": "最新の完了した返信からスレッドをフォークして開くか、フォークを元のスレッドにマージします（長押し）。"
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "フォーク",
-		"Tooltip": "最新の完了した返信からスレッドをフォークして開くか、フォークを元のスレッドにマージします（長押し）。"
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "モデル",
@@ -66,17 +58,13 @@
 		"Name": "拒否",
 		"Tooltip": "選択中スレッドの承認を拒否します。"
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "スレッド",
-		"Tooltip": "キーの位置に応じたボードのスレッド 1 件：状態、タイトル、タイマー。タップで T3 Code で開き、長押しで選択します。"
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "整理",
 		"Tooltip": "選択中のスレッドを完了扱い、ピン留め、スヌーズ、アーカイブ、未読にするか、最後にスヌーズしたスレッドを再開します。"
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "プルリクエスト",
-		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "フォーク",
+		"Tooltip": "最新の完了した返信からスレッドをフォークして開くか、フォークを元のスレッドにマージします（長押し）。"
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "ブランチ",
@@ -86,45 +74,21 @@
 		"Name": "Git",
 		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Git",
-		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
-	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Git",
-		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Git",
-		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Git",
-		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
+	"com.alejandrom2.t3deck.pr": {
 		"Name": "プルリクエスト",
 		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
 	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "プルリクエスト",
-		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	"com.alejandrom2.t3deck.task": {
+		"Name": "タスク実行",
+		"Tooltip": "T3 Code のスケジュールタスクの 1 つ：名前と次回の実行時刻。押すと今すぐ実行します。"
 	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "プルリクエスト",
-		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "使用量",
+		"Tooltip": "期間ごとの API 推定コスト、トークン、セッションを T3 Code の Usage と同様に、1 台または全マシンで表示します。タップで更新、長押しでモデル価格も再読み込みします。"
 	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "プルリクエスト",
-		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "開く",
-		"Tooltip": "選択中スレッドのワークツリーをエディターで、または設定に応じてプレビューページをこのコンピューターのブラウザーで開きます。"
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "開く",
-		"Tooltip": "選択中スレッドのワークツリーをエディターで、または設定に応じてプレビューページをこのコンピューターのブラウザーで開きます。"
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "制限",
+		"Tooltip": "プロバイダーのサブスクリプション制限を T3 Code の Limits と同様に合算：残り %、次回リセット、保有リセット。タップで更新、長押しで T3 Code の「Usage」を開くかリセットを使用します。"
 	},
 	"com.alejandrom2.t3deck.open": {
 		"Name": "開く",
@@ -134,13 +98,17 @@
 		"Name": "ヘルス",
 		"Tooltip": "T3 Code とそのプロバイダーへの接続。最も深刻な問題を先に表示します（オフライン、ペアリングが必要、未認証、非対応バージョン、利用不可）。タップで再接続。"
 	},
-	"com.alejandrom2.t3deck.task": {
-		"Name": "タスク実行",
-		"Tooltip": "T3 Code のスケジュールタスクの 1 つ：名前と次回の実行時刻。押すと今すぐ実行します。"
+	"com.alejandrom2.t3deck.update": {
+		"Name": "T3 を更新",
+		"Tooltip": "マシン上の T3 Code のバージョン。長押しで最新リリースに更新します。更新アクセスが必要で、そのマシンの次回ペアリング時に要求されます。"
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "スキル実行",
-		"Tooltip": "T3 Code のコンポーザーで選んで送信するのと同様に、スレッドのプロバイダーのスキルを実行します。"
+	"com.alejandrom2.t3deck.script": {
+		"Name": "スクリプト実行",
+		"Tooltip": "プロジェクトの保存済みスクリプトをスレッドのターミナルで実行します。長押しで停止。ターミナルアクセス（シェル）が必要で、そのマシンの次回ペアリング時に要求されます。"
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "スレッド共有",
+		"Tooltip": "スレッドのゲストリンクを作成してコピーし、共有中とゲストを表示します。長押しで共有を停止。ゲストリンクアクセスが必要で、そのマシンの次回ペアリング時に要求されます。"
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "スレッドダイヤル",
@@ -198,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "PR 選択", "Push": "指摘を修正（長押し）", "Touch": "ブラウザーで開く", "LongTouch": "指摘を表示" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "T3 を更新",
-		"Tooltip": "マシン上の T3 Code のバージョン。長押しで最新リリースに更新します。更新アクセスが必要で、そのマシンの次回ペアリング時に要求されます。"
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "スクリプト実行",
-		"Tooltip": "プロジェクトの保存済みスクリプトをスレッドのターミナルで実行します。長押しで停止。ターミナルアクセス（シェル）が必要で、そのマシンの次回ペアリング時に要求されます。"
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "スレッド共有",
-		"Tooltip": "スレッドのゲストリンクを作成してコピーし、共有中とゲストを表示します。長押しで共有を停止。ゲストリンクアクセスが必要で、そのマシンの次回ペアリング時に要求されます。"
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "制限",
-		"Tooltip": "プロバイダーのサブスクリプション制限を T3 Code の Limits と同様に合算：残り %、次回リセット、保有リセット。タップで更新、長押しで T3 Code の「Usage」を開くかリセットを使用します。"
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "制限ダイヤル",
 		"Tooltip": "回すと各プロバイダーの制限ウィンドウを切り替えます。押すかタップで更新、押したまま長押しで T3 Code の「Usage」を開くかリセットを使用します。",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "プロバイダーとウィンドウ選択", "Push": "更新（長押し：リセット）", "Touch": "更新", "LongTouch": "詳細を表示" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "使用量",
-		"Tooltip": "期間ごとの API 推定コスト、トークン、セッションを T3 Code の Usage と同様に、1 台または全マシンで表示します。タップで更新、長押しでモデル価格も再読み込みします。"
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "デバイスダイヤル",
-		"Tooltip": "回すと T3 Code のシミュレーターとエミュレーターを切り替えます。押すと表示中のデバイスをスレッドの「Device panel」で起動するか開き、長押しで電源を切ります。タッチでデバイスを再検索します。",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "デバイス選択", "Push": "起動／開く（長押し：電源オフ）", "Touch": "再検索" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -238,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "モデル選択", "Push": "更新（長押し：価格も）", "Touch": "更新", "LongTouch": "詳細を表示" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "デバイスダイヤル",
+		"Tooltip": "回すと T3 Code のシミュレーターとエミュレーターを切り替えます。押すと表示中のデバイスをスレッドの「Device panel」で起動するか開き、長押しで電源を切ります。タッチでデバイスを再検索します。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "デバイス選択", "Push": "起動／開く（長押し：電源オフ）", "Touch": "再検索" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "選択中スレッドのブランチをコミット、プッシュ、PR 作成、プルします。どれを行うかはアクション設定で選びます。長押しでプッシュ。"
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "プルリクエスト",
+		"Tooltip": "選択中スレッドのプルリクエストとその状態。タップで開きます。またはエージェントに渡します：指摘を修正（長押し）、説明、質問、レビューガイド。"
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "プロンプト送信",
+		"Tooltip": "自分のプロンプト、またはよく使うプロンプト（続行、テスト修正、説明、コミットなど）を選択中のスレッドに送信します。長押しで中断し、そのプロンプトで再開します。"
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "停止",
+		"Tooltip": "選択中スレッドの実行中のターン、または設定に応じてスレッドが実行するワークフロー（Claude）を停止します。ワークフローは長押しで停止。"
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "フォーク",
+		"Tooltip": "最新の完了した返信からスレッドをフォークして開くか、フォークを元のスレッドにマージします（長押し）。"
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "開く",
+		"Tooltip": "選択中スレッドのワークツリーをエディターで、または設定に応じてプレビューページをこのコンピューターのブラウザーで開きます。"
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "開く",
+		"Tooltip": "選択中スレッドのワークツリーをエディターで、または設定に応じてプレビューページをこのコンピューターのブラウザーで開きます。"
 	},
 	"Localization": {
 		"result": {
