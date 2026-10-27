@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "Watch and steer T3 Code threads from Stream Deck: thread status, stop, prompts, model options and answers, across every provider.",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "Thread",
+		"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it."
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "Activity",
 		"Tooltip": "The most urgent thread matching a filter. Tap opens it in T3 Code."
@@ -12,31 +16,19 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "Send Prompt",
-		"Tooltip": "Sends a saved prompt to the selected thread. Hold to interrupt and restart with it."
+		"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it."
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "Steer",
 		"Tooltip": "Adds a saved instruction to the selected thread's running turn."
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "Quick Prompt",
-		"Tooltip": "Sends an everyday prompt to the selected thread: continue, fix tests, diagnose, explain, commit, or your own."
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "Run Skill",
+		"Tooltip": "Runs one of the thread's provider skills, the way picking it in T3 Code's composer and sending does."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Stop",
-		"Tooltip": "Stops the running turn of the thread selected in T3 Code."
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Stop Workflow",
-		"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop."
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "Fork",
-		"Tooltip": "Forks the thread from its newest finished reply and opens the fork."
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "Merge Back",
-		"Tooltip": "Merges a forked thread back into the thread it came from. Hold to merge."
+		"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Model",
@@ -66,73 +58,57 @@
 		"Name": "Deny",
 		"Tooltip": "Declines the selected thread's approval."
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "Thread",
-		"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it."
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "Organize",
 		"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread, or wakes the thread snoozed last."
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "Pull Request",
-		"Tooltip": "The selected thread's pull request and its state. Tap opens it."
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "Fork",
+		"Tooltip": "Forks the thread from its newest finished reply and opens the fork, or merges a fork back into the thread it came from (hold)."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Branch",
 		"Tooltip": "The selected thread's branch. Tap opens the thread in T3 Code."
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Commit",
-		"Tooltip": "Commits the selected thread's changes, or also pushes them or opens a PR, with T3 Code's commit message unless you set one."
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
 	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Push",
-		"Tooltip": "Pushes the selected thread's branch. Hold to push."
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Create PR",
-		"Tooltip": "Pushes the selected thread's branch and opens a pull request for it. Hold to create."
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Pull",
-		"Tooltip": "Pulls the selected thread's branch when it is behind its upstream."
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "Fix Findings",
-		"Tooltip": "Sends T3 Code's Fix findings task for the selected thread's pull request: unresolved reviews and failing checks. Hold to send."
-	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "Explain PR",
-		"Tooltip": "Asks the selected thread to walk through its pull request, as T3 Code's Explain does."
-	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Ask about PR",
-		"Tooltip": "Opens the thread that holds the pull request in T3 Code, to ask about it there."
-	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Review Guide",
-		"Tooltip": "Writes T3 Code's review guide for the selected thread's pull request, then opens the thread."
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "Open in Editor",
-		"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on."
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "Open Preview",
-		"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser."
-	},
-	"com.alejandrom2.t3deck.health": {
-		"Name": "Health",
-		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects."
+	"com.alejandrom2.t3deck.pr": {
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
 	},
 	"com.alejandrom2.t3deck.task": {
 		"Name": "Run Task",
 		"Tooltip": "One of T3 Code's scheduled tasks: its name and when it runs next. Press runs it now."
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "Run Skill",
-		"Tooltip": "Runs one of the thread's provider skills, the way picking it in T3 Code's composer and sending does."
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "Usage",
+		"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices."
+	},
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "Limits",
+		"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset."
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "Open",
+		"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks."
+	},
+	"com.alejandrom2.t3deck.health": {
+		"Name": "Health",
+		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects."
+	},
+	"com.alejandrom2.t3deck.update": {
+		"Name": "Update T3",
+		"Tooltip": "T3 Code's version on a machine. Hold updates it to the newest release; needs update access, asked for at that machine's next pairing."
+	},
+	"com.alejandrom2.t3deck.script": {
+		"Name": "Run Script",
+		"Tooltip": "Runs one of the project's saved scripts in the thread's terminal; hold stops it. Needs terminal access (shell), asked for at that machine's next pairing."
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "Share Thread",
+		"Tooltip": "Makes a guest link for the thread and copies it; shows Shared and its guest. Hold stops sharing. Needs guest link access, asked for at that machine's next pairing."
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Threads Dial",
@@ -190,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "Choose pull request", "Push": "Fix findings (hold)", "Touch": "Open in browser", "LongTouch": "Read findings" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "Update T3",
-		"Tooltip": "T3 Code's version on a machine. Hold updates it to the newest release; needs update access, asked for at that machine's next pairing."
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "Run Script",
-		"Tooltip": "Runs one of the project's saved scripts in the thread's terminal; hold stops it. Needs terminal access (shell), asked for at that machine's next pairing."
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "Share Thread",
-		"Tooltip": "Makes a guest link for the thread and copies it; shows Shared and its guest. Hold stops sharing. Needs guest link access, asked for at that machine's next pairing."
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "Limits",
-		"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset."
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "Limits Dial",
 		"Tooltip": "Rotate through every provider's limit windows. Press or tap refreshes; hold the press to open T3 Code's Usage or use a reset.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choose provider and window", "Push": "Refresh (hold: reset)", "Touch": "Refresh", "LongTouch": "Read details" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "Usage",
-		"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices."
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "Devices Dial",
-		"Tooltip": "Rotate through T3 Code's simulators and emulators. Press starts the shown one, or opens it, in the thread's Device panel; hold powers it off. Touch looks for devices again.",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "Choose device", "Push": "Start or open (hold: power off)", "Touch": "Look again" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -230,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choose model", "Push": "Refresh (hold: prices too)", "Touch": "Refresh", "LongTouch": "Read details" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "Devices Dial",
+		"Tooltip": "Rotate through T3 Code's simulators and emulators. Press starts the shown one, or opens it, in the thread's Device panel; hold powers it off. Touch looks for devices again.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose device", "Push": "Start or open (hold: power off)", "Touch": "Look again" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push."
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "Pull Request",
+		"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide."
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "Send Prompt",
+		"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it."
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "Stop",
+		"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow."
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "Fork",
+		"Tooltip": "Forks the thread from its newest finished reply and opens the fork, or merges a fork back into the thread it came from (hold)."
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "Open",
+		"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks."
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "Open",
+		"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks."
 	},
 	"Localization": {
 		"result": {
@@ -699,7 +707,12 @@
 				"hold": "Hold",
 				"tap": "Tap",
 				"fixHint": "Sends T3 Code's Fix findings task for the selected thread's pull request to that thread, queued if it is busy. Review comments and check output come from the host and are attached as untrusted data.",
-				"dialHint": "Lists open pull requests on the machine. Press runs Fix findings in the thread linked to it, or in a new worktree thread; tap opens it in the browser; touch and hold reads its findings."
+				"dialHint": "Lists open pull requests on the machine. Press runs Fix findings in the thread linked to it, or in a new worktree thread; tap opens it in the browser; touch and hold reads its findings.",
+				"show": "Show",
+				"fix": "Fix findings",
+				"explain": "Explain",
+				"ask": "Ask",
+				"guide": "Review guide"
 			},
 			"git": {
 				"action": "Action",
@@ -713,7 +726,10 @@
 				"tap": "Tap",
 				"hold": "Hold",
 				"hint": "Acts on the selected thread's worktree, or its project's folder. Pushing to the default branch always needs a hold; a PR from it is refused, as T3 Code would offer a new branch first.",
-				"pullHint": "Pulls the selected thread's branch from its upstream when it is behind."
+				"pullHint": "Pulls the selected thread's branch from its upstream when it is behind.",
+				"push": "Push",
+				"createPr": "Create PR",
+				"pull": "Pull"
 			},
 			"card": {
 				"machine": "Machine",
@@ -803,7 +819,7 @@
 				"previewPet": "Preview pet",
 				"idlePetHint": "After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a T3 Deck action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.",
 				"confirm": "Confirm before sending",
-				"confirmHint": "Applies to Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
+				"confirmHint": "Applies to Send Prompt, Steer, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
 			},
 			"field": {
 				"strip": "Strip",
@@ -819,7 +835,8 @@
 				"model": "Model",
 				"effort": "Effort",
 				"access": "Access",
-				"confirm": "Confirm"
+				"confirm": "Confirm",
+				"does": "Does"
 			},
 			"background": {
 				"global": "Use global",
@@ -900,7 +917,9 @@
 			"send": {
 				"titlePlaceholder": "Fix tests",
 				"promptPlaceholder": "Run the tests and fix what fails",
-				"hint": "Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it."
+				"hint": "Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it.",
+				"myText": "My text",
+				"text": "Text"
 			},
 			"steer": {
 				"titlePlaceholder": "Keep it small",
@@ -908,16 +927,11 @@
 				"hint": "Adds to the selected thread's running turn. It's dimmed while the thread is idle."
 			},
 			"quick": {
-				"titlePlaceholder": "Optional label for this key",
-				"type": "Prompt type",
 				"continue": "Continue",
 				"test": "Run tests and fix failures",
 				"fix": "Diagnose and fix",
 				"explain": "Explain the current state",
-				"commit": "Commit your changes",
-				"custom": "Custom prompt",
-				"customPlaceholder": "Type the prompt this key sends",
-				"hint": "Goes to the thread selected in T3 Code. Hold the key to interrupt and restart with it."
+				"commit": "Commit your changes"
 			},
 			"new": {
 				"createIn": "Create in",
@@ -1050,7 +1064,9 @@
 			},
 			"lineage": {
 				"forkHint": "Forks the thread from its newest finished reply into a new thread, as T3 Code's fork button on that reply does, then opens the fork.",
-				"mergeHint": "Merges a forked thread back into the thread it came from, as T3 Code's Merge does, then opens that thread. Hold the key to merge."
+				"mergeHint": "Merges a forked thread back into the thread it came from, as T3 Code's Merge does, then opens that thread. Hold the key to merge.",
+				"fork": "Fork",
+				"merge": "Merge back"
 			},
 			"update": {
 				"hint": "Shows the T3 Code version on the machine picked below (this computer's when none is). Hold to update it to the newest release on its channel; a desktop app installs its own update and relaunches. T3 Code doesn't announce updates to the deck, so the key can't show one is waiting.",
@@ -1066,6 +1082,16 @@
 				"access": "Needs guest link access, which lets this deck share threads with people outside. The key's first press asks for it at the machine's next pairing.",
 				"link": "Guest link",
 				"linkHint": "Shown only while T3 Deck runs: T3 Code shows a link once, when it is made."
+			},
+			"stop": {
+				"stops": "Stops",
+				"turn": "The turn",
+				"workflow": "The workflow"
+			},
+			"open": {
+				"in": "In",
+				"editor": "Editor",
+				"preview": "Preview"
 			}
 		},
 		"usage": {

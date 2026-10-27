@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "Suivez et pilotez les fils T3 Code depuis Stream Deck : état des fils, arrêt, prompts, options de modèle et réponses, pour tous les fournisseurs.",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "Fil",
+		"Tooltip": "Un fil du tableau, attribué selon la position de la touche : état, titre et minuteur. Un appui l'ouvre dans T3 Code ; maintenir le sélectionne."
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "Activité",
 		"Tooltip": "Le fil le plus urgent correspondant à un filtre. Un appui l'ouvre dans T3 Code."
@@ -12,31 +16,19 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "Envoyer prompt",
-		"Tooltip": "Envoie un prompt enregistré au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
+		"Tooltip": "Envoie votre propre prompt, ou un prompt courant (continuer, corriger les tests, expliquer, faire un commit…), au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "Orienter",
 		"Tooltip": "Ajoute une instruction enregistrée au tour en cours du fil sélectionné."
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "Prompt rapide",
-		"Tooltip": "Envoie un prompt courant au fil sélectionné : continuer, corriger les tests, diagnostiquer, expliquer, faire un commit, ou le vôtre."
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "Lancer skill",
+		"Tooltip": "Lance un des skills du fournisseur du fil, comme le choisir dans le compositeur de T3 Code puis l'envoyer."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Arrêter",
-		"Tooltip": "Arrête le tour en cours du fil sélectionné dans T3 Code."
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Arrêter workflow",
-		"Tooltip": "Arrête les workflows exécutés par le fil (Claude). Maintenir pour arrêter."
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "Fork",
-		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork."
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "Fusionner",
-		"Tooltip": "Fusionne un fil forké dans le fil dont il est issu. Maintenir pour fusionner."
+		"Tooltip": "Arrête le tour en cours du fil sélectionné ou, selon son réglage, les workflows qu'il exécute (Claude). Maintenir pour arrêter un workflow."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Modèle",
@@ -66,73 +58,57 @@
 		"Name": "Refuser",
 		"Tooltip": "Refuse l'approbation du fil sélectionné."
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "Fil",
-		"Tooltip": "Un fil du tableau, attribué selon la position de la touche : état, titre et minuteur. Un appui l'ouvre dans T3 Code ; maintenir le sélectionne."
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "Organiser",
 		"Tooltip": "Classe, épingle, reporte, archive ou marque comme non lu le fil sélectionné, ou réveille le dernier fil reporté."
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "Pull Request",
-		"Tooltip": "La pull request du fil sélectionné et son état. Un appui l'ouvre."
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "Fork",
+		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork, ou fusionne un fork dans le fil dont il est issu (maintenir)."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Branche",
 		"Tooltip": "La branche du fil sélectionné. Un appui ouvre le fil dans T3 Code."
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Commit",
-		"Tooltip": "Fait un commit des modifications du fil sélectionné, et éventuellement un push ou une PR, avec le message de commit de T3 Code sauf si vous en définissez un."
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
 	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Push",
-		"Tooltip": "Fait un push de la branche du fil sélectionné. Maintenir pour pusher."
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Créer PR",
-		"Tooltip": "Fait un push de la branche du fil sélectionné et ouvre une pull request pour elle. Maintenir pour créer."
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Pull",
-		"Tooltip": "Fait un pull de la branche du fil sélectionné quand elle est en retard sur son upstream."
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "Corriger retours",
-		"Tooltip": "Envoie la tâche Fix findings de T3 Code pour la pull request du fil sélectionné : revues non résolues et checks en échec. Maintenir pour envoyer."
-	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "Expliquer PR",
-		"Tooltip": "Demande au fil sélectionné de présenter sa pull request, comme le fait Explain dans T3 Code."
-	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Question PR",
-		"Tooltip": "Ouvre dans T3 Code le fil qui porte la pull request, pour poser vos questions là-bas."
-	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Guide de revue",
-		"Tooltip": "Rédige le guide de revue de T3 Code pour la pull request du fil sélectionné, puis ouvre le fil."
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "Ouvrir dans l'éditeur",
-		"Tooltip": "Ouvre le worktree ou le projet du fil sélectionné dans un éditeur, sur la machine où tourne T3 Code."
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "Ouvrir l'aperçu",
-		"Tooltip": "Ouvre la page d'aperçu du fil, ou son dernier rendu HTML, dans le navigateur de cet ordinateur."
-	},
-	"com.alejandrom2.t3deck.health": {
-		"Name": "Santé",
-		"Tooltip": "La connexion à T3 Code et à ses fournisseurs : le pire problème d'abord (hors ligne, association requise, non authentifié, version non prise en charge, indisponible). Un appui reconnecte."
+	"com.alejandrom2.t3deck.pr": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
 	},
 	"com.alejandrom2.t3deck.task": {
 		"Name": "Lancer tâche",
 		"Tooltip": "Une des tâches planifiées de T3 Code : son nom et sa prochaine exécution. Un appui la lance maintenant."
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "Lancer skill",
-		"Tooltip": "Lance un des skills du fournisseur du fil, comme le choisir dans le compositeur de T3 Code puis l'envoyer."
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "Consommation",
+		"Tooltip": "Coût estimé API, tokens et sessions d'une période, comme les affiche Usage dans T3 Code, sur une machine ou toutes. Un appui actualise ; maintenir recharge aussi les prix des modèles."
+	},
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "Limites",
+		"Tooltip": "Une limite d'abonnement d'un fournisseur, regroupée comme dans Limits de T3 Code : % restant, prochaine réinitialisation et réinitialisations en réserve. Un appui actualise ; maintenir ouvre Usage dans T3 Code ou utilise une réinitialisation."
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
+	},
+	"com.alejandrom2.t3deck.health": {
+		"Name": "Santé",
+		"Tooltip": "La connexion à T3 Code et à ses fournisseurs : le pire problème d'abord (hors ligne, association requise, non authentifié, version non prise en charge, indisponible). Un appui reconnecte."
+	},
+	"com.alejandrom2.t3deck.update": {
+		"Name": "MàJ T3",
+		"Tooltip": "La version de T3 Code sur une machine. Maintenir la met à jour vers la dernière version ; nécessite l'accès mise à jour, demandé à la prochaine association de cette machine."
+	},
+	"com.alejandrom2.t3deck.script": {
+		"Name": "Lancer script",
+		"Tooltip": "Lance un des scripts enregistrés du projet dans le terminal du fil ; maintenir l'arrête. Nécessite l'accès terminal (shell), demandé à la prochaine association de cette machine."
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "Partager le fil",
+		"Tooltip": "Crée un lien invité pour le fil et le copie ; affiche Partagé et son invité. Maintenir arrête le partage. Nécessite l'accès lien invité, demandé à la prochaine association de cette machine."
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Molette fils",
@@ -190,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "Choisir pull request", "Push": "Corriger (maintenir)", "Touch": "Ouvrir navigateur", "LongTouch": "Lire retours" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "MàJ T3",
-		"Tooltip": "La version de T3 Code sur une machine. Maintenir la met à jour vers la dernière version ; nécessite l'accès mise à jour, demandé à la prochaine association de cette machine."
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "Lancer script",
-		"Tooltip": "Lance un des scripts enregistrés du projet dans le terminal du fil ; maintenir l'arrête. Nécessite l'accès terminal (shell), demandé à la prochaine association de cette machine."
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "Partager le fil",
-		"Tooltip": "Crée un lien invité pour le fil et le copie ; affiche Partagé et son invité. Maintenir arrête le partage. Nécessite l'accès lien invité, demandé à la prochaine association de cette machine."
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "Limites",
-		"Tooltip": "Une limite d'abonnement d'un fournisseur, regroupée comme dans Limits de T3 Code : % restant, prochaine réinitialisation et réinitialisations en réserve. Un appui actualise ; maintenir ouvre Usage dans T3 Code ou utilise une réinitialisation."
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "Molette limites",
 		"Tooltip": "Tournez pour parcourir les fenêtres de limite de chaque fournisseur. Appuyer ou toucher actualise ; maintenir l'appui ouvre Usage dans T3 Code ou utilise une réinitialisation.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choisir fournisseur et fenêtre", "Push": "Actualiser (maintenir : réinit.)", "Touch": "Actualiser", "LongTouch": "Lire détails" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "Consommation",
-		"Tooltip": "Coût estimé API, tokens et sessions d'une période, comme les affiche Usage dans T3 Code, sur une machine ou toutes. Un appui actualise ; maintenir recharge aussi les prix des modèles."
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "Molette appareils",
-		"Tooltip": "Tournez pour parcourir les simulateurs et émulateurs de T3 Code. Un appui démarre celui affiché, ou l'ouvre, dans le Device panel du fil ; maintenir l'éteint. Toucher relance la recherche d'appareils.",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "Choisir appareil", "Push": "Démarrer/ouvrir (maintenir : éteindre)", "Touch": "Rechercher" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -230,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choisir modèle", "Push": "Actualiser (maintenir : prix)", "Touch": "Actualiser", "LongTouch": "Lire détails" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "Molette appareils",
+		"Tooltip": "Tournez pour parcourir les simulateurs et émulateurs de T3 Code. Un appui démarre celui affiché, ou l'ouvre, dans le Device panel du fil ; maintenir l'éteint. Toucher relance la recherche d'appareils.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir appareil", "Push": "Démarrer/ouvrir (maintenir : éteindre)", "Touch": "Rechercher" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "Envoyer prompt",
+		"Tooltip": "Envoie votre propre prompt, ou un prompt courant (continuer, corriger les tests, expliquer, faire un commit…), au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "Arrêter",
+		"Tooltip": "Arrête le tour en cours du fil sélectionné ou, selon son réglage, les workflows qu'il exécute (Claude). Maintenir pour arrêter un workflow."
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "Fork",
+		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork, ou fusionne un fork dans le fil dont il est issu (maintenir)."
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
 	},
 	"Localization": {
 		"result": {
@@ -699,7 +707,12 @@
 				"hold": "Maintenir",
 				"tap": "Appuyer",
 				"fixHint": "Envoie la tâche Fix findings de T3 Code pour la pull request du fil sélectionné à ce fil, en attente s'il est occupé. Les commentaires de revue et la sortie des checks viennent de l'hébergeur et sont joints comme données non fiables.",
-				"dialHint": "Liste les pull requests ouvertes sur la machine. Un appui lance Fix findings dans le fil qui y est lié, ou dans un nouveau fil worktree ; toucher l'ouvre dans le navigateur ; un toucher maintenu lit ses retours."
+				"dialHint": "Liste les pull requests ouvertes sur la machine. Un appui lance Fix findings dans le fil qui y est lié, ou dans un nouveau fil worktree ; toucher l'ouvre dans le navigateur ; un toucher maintenu lit ses retours.",
+				"show": "Afficher",
+				"fix": "Corriger les retours",
+				"explain": "Expliquer",
+				"ask": "Poser une question",
+				"guide": "Guide de revue"
 			},
 			"git": {
 				"action": "Action",
@@ -713,7 +726,10 @@
 				"tap": "Appuyer",
 				"hold": "Maintenir",
 				"hint": "Agit sur le worktree du fil sélectionné, ou le dossier de son projet. Un push sur la branche par défaut demande toujours un maintien ; une PR depuis celle-ci est refusée, car T3 Code proposerait d'abord une nouvelle branche.",
-				"pullHint": "Fait un pull de la branche du fil sélectionné depuis son upstream quand elle est en retard."
+				"pullHint": "Fait un pull de la branche du fil sélectionné depuis son upstream quand elle est en retard.",
+				"push": "Push",
+				"createPr": "Créer une PR",
+				"pull": "Pull"
 			},
 			"card": {
 				"machine": "Machine",
@@ -803,7 +819,7 @@
 				"previewPet": "Aperçu du compagnon",
 				"idlePetHint": "Après deux minutes sans appui, rotation ni toucher, un petit robot traverse votre plus longue rangée de bandeaux de molettes voisines, jusqu'à trois fois, à quatre minutes d'intervalle. Tout appui, rotation ou toucher sur une action T3 Deck le fait partir. Il suit Animation : Réduite le fait marcher calmement, Désactivée le tient à l'écart.",
 				"confirm": "Confirmer avant d'envoyer",
-				"confirmHint": "S'applique à Envoyer prompt, Orienter, Prompt rapide, Lancer skill, la Molette prompts et la Molette skills ; Modèle, Effort, Vitesse, Accès et la Molette puissance s'appliquent toujours immédiatement. Vérifier montre quoi va où au premier appui ; rappuyez dans les 10 secondes pour envoyer. Maintenir envoie sur un appui maintenu, donc maintenir ne peut plus aussi relancer ou démarrer un fil. Chaque action peut remplacer ce choix."
+				"confirmHint": "S'applique à Envoyer prompt, Orienter, Lancer skill, la Molette prompts et la Molette skills ; Modèle, Effort, Vitesse, Accès et la Molette puissance s'appliquent toujours immédiatement. Vérifier montre quoi va où au premier appui ; rappuyez dans les 10 secondes pour envoyer. Maintenir envoie sur un appui maintenu, donc maintenir ne peut plus aussi relancer ou démarrer un fil. Chaque action peut remplacer ce choix."
 			},
 			"field": {
 				"strip": "Bandeau",
@@ -819,7 +835,8 @@
 				"model": "Modèle",
 				"effort": "Effort",
 				"access": "Accès",
-				"confirm": "Confirmer"
+				"confirm": "Confirmer",
+				"does": "Action"
 			},
 			"background": {
 				"global": "Réglage global",
@@ -900,7 +917,9 @@
 			"send": {
 				"titlePlaceholder": "Corriger tests",
 				"promptPlaceholder": "Lance les tests et corrige ce qui échoue",
-				"hint": "Va au fil sélectionné dans T3 Code : démarre un tour, ou oriente ou attend derrière un tour en cours. Maintenez la touche pour interrompre et relancer avec ce prompt."
+				"hint": "Va au fil sélectionné dans T3 Code : démarre un tour, ou oriente ou attend derrière un tour en cours. Maintenez la touche pour interrompre et relancer avec ce prompt.",
+				"myText": "Mon texte",
+				"text": "Texte"
 			},
 			"steer": {
 				"titlePlaceholder": "Rester simple",
@@ -908,16 +927,11 @@
 				"hint": "S'ajoute au tour en cours du fil sélectionné. Grisé tant que le fil est inactif."
 			},
 			"quick": {
-				"titlePlaceholder": "Libellé facultatif pour cette touche",
-				"type": "Type de prompt",
 				"continue": "Continuer",
 				"test": "Lancer les tests et corriger les échecs",
 				"fix": "Diagnostiquer et corriger",
 				"explain": "Expliquer l'état actuel",
-				"commit": "Faire un commit de vos modifications",
-				"custom": "Prompt personnalisé",
-				"customPlaceholder": "Saisissez le prompt que cette touche envoie",
-				"hint": "Va au fil sélectionné dans T3 Code. Maintenez la touche pour interrompre et relancer avec ce prompt."
+				"commit": "Faire un commit de vos modifications"
 			},
 			"new": {
 				"createIn": "Créer dans",
@@ -1050,7 +1064,9 @@
 			},
 			"lineage": {
 				"forkHint": "Crée un fork du fil depuis sa dernière réponse terminée dans un nouveau fil, comme le bouton fork de T3 Code sur cette réponse, puis ouvre le fork.",
-				"mergeHint": "Fusionne un fil forké dans le fil dont il est issu, comme Merge dans T3 Code, puis ouvre ce fil. Maintenez la touche pour fusionner."
+				"mergeHint": "Fusionne un fil forké dans le fil dont il est issu, comme Merge dans T3 Code, puis ouvre ce fil. Maintenez la touche pour fusionner.",
+				"fork": "Créer un fork",
+				"merge": "Fusionner"
 			},
 			"update": {
 				"hint": "Affiche la version de T3 Code sur la machine choisie ci-dessous (celle de cet ordinateur sinon). Maintenir la met à jour vers la dernière version de son canal ; une app de bureau installe sa propre mise à jour et redémarre. T3 Code n'annonce pas les mises à jour au deck, donc la touche ne peut pas indiquer qu'une mise à jour attend.",
@@ -1066,6 +1082,16 @@
 				"access": "Nécessite l'accès lien invité, qui permet à ce deck de partager des fils avec des personnes extérieures. Le premier appui sur la touche le demande à la prochaine association de la machine.",
 				"link": "Lien invité",
 				"linkHint": "Affiché seulement pendant que T3 Deck tourne : T3 Code n'affiche un lien qu'une fois, à sa création."
+			},
+			"stop": {
+				"stops": "Arrête",
+				"turn": "Le tour",
+				"workflow": "Le workflow"
+			},
+			"open": {
+				"in": "Ouvrir dans",
+				"editor": "Éditeur",
+				"preview": "Aperçu"
 			}
 		},
 		"usage": {

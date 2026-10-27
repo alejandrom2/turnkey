@@ -56,7 +56,8 @@ const script = (): Placed => ({ action: "script", name: "Run Script" });
 /** Run Task keys start unpicked: tasks are the user's own. */
 const task = (): Placed => ({ action: "task", name: "Run Task" });
 
-const quick = (template: string): Placed => ({ action: "quick", name: "Quick Prompt", settings: { template } });
+/** Send Prompt with one of its everyday templates. */
+const quick = (template: string): Placed => ({ action: "send", name: "Send Prompt", settings: { template } });
 const organize = (which: string): Placed => ({ action: "organize", name: "Organize", settings: { organize: which } });
 
 const key = (action: string, name: string, settings?: Record<string, string>): Placed => ({ action, name, ...(settings ? { settings } : {}) });
@@ -65,15 +66,21 @@ const newThread = key("new", "New Thread");
 const sendContinue = key("send", "Send Prompt", { prompt: "Continue", title: "Continue" });
 const steer = key("steer", "Steer", { title: "Keep it small", prompt: "Keep the change small and focused." });
 const stop = key("stop", "Stop");
+const stopWorkflow = key("stop", "Stop", { mode: "workflow" });
 const approve = key("approve", "Approve");
 const deny = key("deny", "Deny");
 const model = key("model", "Model");
 const effort = key("effort", "Effort");
 const speed = key("speed", "Speed");
 const health = key("health", "Health");
-const editor = key("editor", "Open in Editor");
+const editor = key("open", "Open");
+const preview = key("open", "Open", { mode: "preview" });
 const branch = key("branch", "Branch");
-const createPr = key("git.pr", "Create PR");
+/** Git starts on Commit; other keys pick their action. */
+const git = (gitAction?: string): Placed => key("git", "Git", gitAction ? { gitAction } : undefined);
+const createPr = git("create_pr");
+/** Pull Request starts on Show; other keys hand the pull request to an agent. */
+const prKey = (mode: string): Placed => key("pr", "Pull Request", { mode });
 const threadsDial = (filter: string): Placed => ({ action: "dial.threads", name: "Threads Dial", settings: { filter } });
 const queueDial: Placed = { action: "dial.queue", name: "Queue Dial" };
 const usageDial: Placed = { action: "dial.usage", name: "Usage Dial", settings: { period: "7" } };
@@ -102,22 +109,22 @@ const PAGES_8: Page[] = [
 	},
 	{
 		name: "SKILLS",
-		keys: [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("merge", "Merge Back"), key("workflow.stop", "Stop Workflow"), branch],
+		keys: [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("fork", "Fork", { mode: "merge" }), stopWorkflow, branch],
 		dials: [skillsDial, DIALS[0]!, queueDial, DIALS[3]!],
 	},
 	{
 		name: "GIT",
-		keys: [key("git.commit", "Commit"), key("git.push", "Push"), createPr, key("git.pull", "Pull"), branch, editor, organize("archive"), health],
+		keys: [git(), git("push"), createPr, git("pull"), branch, editor, organize("archive"), health],
 		dials: [DIALS[0]!, prDial, power("model"), DIALS[3]!],
 	},
 	{
 		name: "PULL REQUESTS",
-		keys: [key("pr", "Pull Request"), key("pr.fix", "Fix Findings"), key("pr.explain", "Explain PR"), key("pr.ask", "Ask about PR"), key("pr.guide", "Review Guide"), createPr, editor, stop],
+		keys: [key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), createPr, editor, stop],
 		dials: [prDial, DIALS[0]!, DIALS[2]!, DIALS[3]!],
 	},
 	{
 		name: "DEVICES",
-		keys: [key("preview", "Open Preview"), editor, quick("test"), stop, organize("snooze"), organize("wake"), approve, health],
+		keys: [preview, editor, quick("test"), stop, organize("snooze"), organize("wake"), approve, health],
 		dials: [{ action: "dial.devices", name: "Devices Dial" }, DIALS[0]!, queueDial, DIALS[3]!],
 	},
 	{ name: "TASKS", keys: [task(), task(), task(), task(), quick("continue"), stop, approve, health], dials: [{ action: "dial.tasks", name: "Tasks Dial" }, queueDial, DIALS[0]!, DIALS[3]!] },
@@ -146,12 +153,12 @@ const PAGES_15: Page[] = [
 	{ name: "THREADS", keys: [slot(5), slot(6), slot(7), slot(8), slot(9), slot(10), slot(11), slot(12), slot(13), slot(14), organize("settle"), organize("pin"), organize("snooze")] },
 	{
 		name: "CONTROLS",
-		keys: [key("permissions", "Permissions"), key("plan", "Plan"), quick("continue"), quick("test"), quick("fix"), quick("explain"), quick("commit"), key("workflow.stop", "Stop Workflow"), key("fork", "Fork"), key("merge", "Merge Back"), organize("wake"), organize("archive"), health],
+		keys: [key("permissions", "Permissions"), key("plan", "Plan"), quick("continue"), quick("test"), quick("fix"), quick("explain"), quick("commit"), stopWorkflow, key("fork", "Fork"), key("fork", "Fork", { mode: "merge" }), organize("wake"), organize("archive"), health],
 	},
-	{ name: "SKILLS", keys: [skill(), skill(), skill(), skill(), task(), task(), task(), task(), editor, key("preview", "Open Preview"), key("update", "Update T3"), key("share", "Share Thread"), stop] },
+	{ name: "SKILLS", keys: [skill(), skill(), skill(), skill(), task(), task(), task(), task(), editor, preview, key("update", "Update T3"), key("share", "Share Thread"), stop] },
 	{
 		name: "GIT",
-		keys: [key("git.commit", "Commit"), key("git.push", "Push"), createPr, key("git.pull", "Pull"), branch, key("pr", "Pull Request"), key("pr.fix", "Fix Findings"), key("pr.explain", "Explain PR"), key("pr.ask", "Ask about PR"), key("pr.guide", "Review Guide"), editor, stop, health],
+		keys: [git(), git("push"), createPr, git("pull"), branch, key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), editor, stop, health],
 	},
 	{ name: "USAGE", keys: [limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly"), usage("1"), usage("7"), usage("30"), script(), script(), script(), health, stop, approve, deny] },
 ];
@@ -173,11 +180,11 @@ const XL_HOME: Placed[] = [
 	key("plan", "Plan"),
 	health,
 	editor,
-	key("preview", "Open Preview"),
-	key("git.commit", "Commit"),
-	key("git.push", "Push"),
+	preview,
+	git(),
+	git("push"),
 	createPr,
-	key("git.pull", "Pull"),
+	git("pull"),
 	branch,
 	key("pr", "Pull Request"),
 	usage("7"),
@@ -206,12 +213,12 @@ const XL_MORE: Placed[] = [
 	task(),
 	task(),
 	key("fork", "Fork"),
-	key("merge", "Merge Back"),
-	key("workflow.stop", "Stop Workflow"),
-	key("pr.fix", "Fix Findings"),
-	key("pr.explain", "Explain PR"),
-	key("pr.ask", "Ask about PR"),
-	key("pr.guide", "Review Guide"),
+	key("fork", "Fork", { mode: "merge" }),
+	stopWorkflow,
+	prKey("fix"),
+	prKey("explain"),
+	prKey("ask"),
+	prKey("guide"),
 	key("update", "Update T3"),
 	script(),
 	key("share", "Share Thread"),

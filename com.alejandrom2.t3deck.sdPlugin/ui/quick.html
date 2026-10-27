@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>Quick Prompt</title>
+		<title>Send Prompt</title>
 		<script src="sdpi-components.js"></script>
 		<style>
 			:root { color-scheme: dark; --t3-warning: #fcd34d; }
@@ -58,23 +58,23 @@
 				<sdpi-select setting="thread" datasource="getThreads" hot-reload loading="Loading threads…" data-i18n-loading="inspector.loading.threads"></sdpi-select>
 			</sdpi-item>
 			<p class="hint" id="target-hint" hidden data-i18n="inspector.target.hint">The key acts on this thread even when another is selected, and shows a small pin. Archived or deleted, it shows as not available until you pick another.</p>
-			<sdpi-item label="Key title" data-i18n-label="inspector.field.keyTitle">
-				<sdpi-textfield setting="title" placeholder="Optional label for this key" data-i18n-placeholder="inspector.quick.titlePlaceholder"></sdpi-textfield>
-			</sdpi-item>
-			<sdpi-item label="Prompt type" data-i18n-label="inspector.quick.type">
+			<sdpi-item label="Prompt" data-i18n-label="inspector.field.prompt">
 				<sdpi-select setting="template" default="continue">
+					<option value="custom" data-i18n="inspector.send.myText">My text</option>
 					<option value="continue" data-i18n="inspector.quick.continue">Continue</option>
 					<option value="test" data-i18n="inspector.quick.test">Run tests and fix failures</option>
 					<option value="fix" data-i18n="inspector.quick.fix">Diagnose and fix</option>
 					<option value="explain" data-i18n="inspector.quick.explain">Explain the current state</option>
 					<option value="commit" data-i18n="inspector.quick.commit">Commit your changes</option>
-					<option value="custom" data-i18n="inspector.quick.custom">Custom prompt</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item label="Custom prompt" data-i18n-label="inspector.quick.custom" id="custom" hidden>
-				<sdpi-textarea setting="prompt" rows="4" placeholder="Type the prompt this key sends" data-i18n-placeholder="inspector.quick.customPlaceholder"></sdpi-textarea>
+			<sdpi-item label="Text" data-i18n-label="inspector.send.text" id="send-text" hidden>
+				<sdpi-textarea setting="prompt" rows="4" placeholder="Run the tests and fix what fails" data-i18n-placeholder="inspector.send.promptPlaceholder"></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint" data-i18n="inspector.quick.hint">Goes to the thread selected in T3 Code. Hold the key to interrupt and restart with it.</p>
+			<sdpi-item label="Key title" data-i18n-label="inspector.field.keyTitle">
+				<sdpi-textfield setting="title" placeholder="Fix tests" data-i18n-placeholder="inspector.send.titlePlaceholder"></sdpi-textfield>
+			</sdpi-item>
+			<p class="hint" data-i18n="inspector.send.hint">Goes to the thread selected in T3 Code: it starts a turn, or steers or queues behind a running one. Hold the key to interrupt and restart with it.</p>
 			<sdpi-item label="Confirm" data-i18n-label="inspector.field.confirm">
 				<sdpi-select setting="confirmSend" default="">
 					<option value="" data-i18n="inspector.background.global">Use global</option>
@@ -314,7 +314,7 @@ function mergeGlobalSettings(current , patch ) {
 			send("status");
 			{
 				const field = document.querySelector('[setting="template"]');
-				const apply = (value) => { $("custom").hidden = !((value) => value === "custom")(value ?? ""); };
+				const apply = (value) => { $("send-text").hidden = !((value) => ["custom"].includes(value === "" ? "continue" : value))(value ?? ""); };
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["template"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["template"]));
