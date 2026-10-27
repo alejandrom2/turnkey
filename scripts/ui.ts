@@ -651,7 +651,12 @@ const settingsPage = `<!doctype html>
 				$("strip-color").hidden = (globals.stripBackground ?? DEFAULTS.stripBackground) !== "custom";
 			}
 			for (const control of document.querySelectorAll("[data-setting]")) {
-				control.addEventListener("change", () => write({ [control.dataset.setting]: control.type === "checkbox" ? control.checked : control.value.trim() }));
+				control.addEventListener("change", () => {
+					const patch = { [control.dataset.setting]: control.type === "checkbox" ? control.checked : control.value.trim() };
+					// The plugin ignores a custom background with no color, so save the one the picker shows.
+					if (patch.stripBackground === "custom" && !globals.stripColor) patch.stripColor = DEFAULTS.stripColor;
+					write(patch);
+				});
 			}
 
 			function onMessage(message) {
