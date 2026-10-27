@@ -5,8 +5,16 @@ updates:
     schedule:
       interval: monthly
     groups:
+      # Minor and patch updates together; a major version comes in a PR of its own, to check by hand.
       npm:
         patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      # The plugin runs on Stream Deck's Node 24, and the Rollup TypeScript plugin doesn't support TypeScript 7 yet.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
     commit-message:
       prefix: build
   - package-ecosystem: github-actions
