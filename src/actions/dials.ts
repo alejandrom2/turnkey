@@ -273,13 +273,16 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const toggle = speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
 		const model = findModel(thread.machine.modelConfig, thread.model);
 		const fastColor = (model && modelColor(model)) ?? COLORS.accent;
-		const badges: MarkPainter[] = toggle ? [glyphArt(toggle.fast ? "speedFilled" : "speed", toggle.fast ? fastColor : COLORS.muted)] : [];
+		const bolt = toggle && glyphArt(toggle.fast ? "speedFilled" : "speed", toggle.fast ? fastColor : COLORS.muted);
+		// The model slider shows Speed along the bottom, where a tap toggles it; the others keep the bolt at the top right.
+		const badges: MarkPainter[] = bolt && control !== "model" ? [bolt] : [];
+		const footer = bolt && control === "model" ? { mark: bolt, text: toggle!.label, color: toggle!.fast ? fastColor : undefined } : undefined;
 		const ends: [string, string] =
 			control === "effort"
 				? [t("power.quicker"), t("power.deeper")]
 				: control === "permissions"
 					? [t("power.asksFirst"), t("power.handsOff")]
-					: [t("power.faster"), t("power.smarter")];
+					: ["", ""];
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
 		return {
 			// The badge and the color already name the provider.
@@ -295,6 +298,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			ends,
 			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending) } : undefined,
 			badges,
+			footer,
 			lead: shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph),
 			dim: !check.available,
 		};

@@ -284,8 +284,6 @@
 			"withHold": "{label} · hold"
 		},
 		"power": {
-			"faster": "Faster",
-			"smarter": "Smarter",
 			"quicker": "Quicker",
 			"deeper": "Deeper",
 			"asksFirst": "Asks first",
