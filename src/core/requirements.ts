@@ -19,6 +19,7 @@ export type Need =
 	| { kind: "tasks"; ok: boolean | undefined }
 	| { kind: "snoozed"; ok: boolean }
 	| { kind: "preview"; ok: boolean | undefined }
+	| { kind: "devices"; ok: boolean | undefined }
 	| { kind: "prompt"; ok: boolean }
 	| { kind: "scope"; scope: string; ok: boolean }
 	| { kind: "option"; option: string; ok: boolean }
@@ -74,6 +75,8 @@ function describe(need: Need): Requirement {
 			return make("pending", t("needs.pending"), need.ok, ["needs.fix.waitForAgent"]);
 		case "tasks":
 			return make("tasks", t("needs.tasks"), need.ok, ["needs.fix.addTask"]);
+		case "devices":
+			return make("devices", t("needs.devices"), need.ok, ["needs.fix.turnOnDevices"]);
 		case "preview":
 			return make("preview", t("needs.preview"), need.ok, ["needs.fix.openPreview"]);
 		case "snoozed":
