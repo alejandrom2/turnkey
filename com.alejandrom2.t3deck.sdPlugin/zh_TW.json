@@ -32,11 +32,11 @@
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "分叉",
-		"Tooltip": "從最新一則完成的回覆分叉出對話，並開啟分叉。"
+		"Tooltip": "從最新一則完成的回覆分叉出對話並開啟，或將分叉合併回原本的對話（長按）。"
 	},
 	"com.alejandrom2.t3deck.merge": {
-		"Name": "合併回去",
-		"Tooltip": "將分叉的對話合併回原本的對話。長按以合併。"
+		"Name": "分叉",
+		"Tooltip": "從最新一則完成的回覆分叉出對話並開啟，或將分叉合併回原本的對話（長按）。"
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "模型",
@@ -826,7 +826,8 @@
 				"model": "模型",
 				"effort": "強度",
 				"access": "權限",
-				"confirm": "確認"
+				"confirm": "確認",
+				"does": "功能"
 			},
 			"background": {
 				"global": "使用全域設定",
@@ -1054,7 +1055,9 @@
 			},
 			"lineage": {
 				"forkHint": "從最新一則完成的回覆將對話分叉為新對話，與 T3 Code 在該回覆上的分叉按鈕相同，然後開啟分叉。",
-				"mergeHint": "將分叉的對話合併回原本的對話，與 T3 Code 的「Merge」相同，然後開啟該對話。長按按鍵以合併。"
+				"mergeHint": "將分叉的對話合併回原本的對話，與 T3 Code 的「Merge」相同，然後開啟該對話。長按按鍵以合併。",
+				"fork": "分叉",
+				"merge": "合併回去"
 			},
 			"update": {
 				"hint": "顯示下方所選機器上的 T3 Code 版本（未選取時為這台電腦）。長按可更新至其更新頻道的最新版本；桌面應用程式會自行安裝更新並重新啟動。T3 Code 不會向 T3 Deck 通知更新，因此按鍵無法顯示有更新待安裝。",
