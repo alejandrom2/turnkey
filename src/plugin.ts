@@ -4,7 +4,7 @@ import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.j
 import { OpenInEditor } from "./actions/editor.js";
 import { CommitKey, CreatePrKey, PullKey, PushKey } from "./actions/git.js";
 import { LimitsDial, LimitsKey } from "./actions/limits.js";
-import { StopWorkflowKey } from "./actions/lineage.js";
+import { ForkKey, MergeBackKey, StopWorkflowKey } from "./actions/lineage.js";
 import { QueueDial } from "./actions/queue.js";
 import { RunSkillKey, SkillsDial } from "./actions/skills.js";
 import { RunTaskKey, TasksDial } from "./actions/tasks.js";
@@ -49,6 +49,8 @@ for (const instance of [
 	new QuickPrompt(),
 	new Stop(),
 	new StopWorkflowKey(),
+	new ForkKey(),
+	new MergeBackKey(),
 	new ModelKey(),
 	new EffortKey(),
 	new SpeedKey(),

@@ -82,6 +82,24 @@
 			"States": [{ "Image": "imgs/actions/workflow-stop/key" }]
 		},
 		{
+			"Name": "Fork",
+			"UUID": "com.alejandrom2.t3deck.fork",
+			"Icon": "imgs/actions/fork/icon",
+			"Tooltip": "Forks the thread from its newest finished turn and opens the fork.",
+			"PropertyInspectorPath": "ui/fork.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/fork/key" }]
+		},
+		{
+			"Name": "Merge Back",
+			"UUID": "com.alejandrom2.t3deck.merge",
+			"Icon": "imgs/actions/merge/icon",
+			"Tooltip": "Merges a forked thread back into the thread it came from. Hold to merge.",
+			"PropertyInspectorPath": "ui/merge.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/merge/key" }]
+		},
+		{
 			"Name": "Model",
 			"UUID": "com.alejandrom2.t3deck.model",
 			"Icon": "imgs/actions/model/icon",
