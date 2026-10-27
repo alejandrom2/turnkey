@@ -423,6 +423,16 @@ function placed(x: number, y: number, size: number, art: MarkArt, color: string,
 const badgeAt = (x: number, y: number, ...args: Parameters<typeof initialsBadgeSvg>) =>
 	`<g transform="translate(${x} ${y})">${initialsBadgeSvg(...args).replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g>`;
 
+/** The name without a leading provider word ("Claude Opus 4.7" → "Opus 4.7"), kept whole when only a number would remain. */
+export function bareModelName(model: Pick<CatalogModel, "name" | "providerName">): string {
+	for (const prefix of new Set([model.providerName.trim(), model.providerName.trim().split(/\s+/)[0] ?? ""])) {
+		if (prefix === "" || !model.name.toLowerCase().startsWith(`${prefix.toLowerCase()} `)) continue;
+		const rest = model.name.slice(prefix.length).trim();
+		if (/^\p{L}/u.test(rest)) return rest;
+	}
+	return model.name;
+}
+
 /** Codex's mark is white, so its highlight takes OpenAI Codex's blue instead. */
 const BRAND_HIGHLIGHT: Record<string, string> = { codex: "#4C9BFF" };
 

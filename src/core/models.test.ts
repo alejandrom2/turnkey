@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
 	AcpIcons,
+	bareModelName,
 	cycleValue,
 	effortOption,
 	effortValues,
@@ -281,5 +282,15 @@ describe("modelColor", () => {
 		expect(modelColor({ driver: "claudeAgent", accentColor: undefined })).toBe("#d97757");
 		expect(modelColor({ driver: "cursor", accentColor: undefined })).toBeUndefined();
 		expect(modelColor({ driver: "unknown", accentColor: "not a color" })).toBeUndefined();
+	});
+});
+
+describe("bareModelName", () => {
+	it("drops a leading provider word unless only a number would remain", () => {
+		expect(bareModelName({ name: "Claude Opus 4.7", providerName: "Claude" })).toBe("Opus 4.7");
+		expect(bareModelName({ name: "Claude Sonnet 4.6", providerName: "Claude Work" })).toBe("Sonnet 4.6");
+		expect(bareModelName({ name: "GPT-5.5", providerName: "Codex" })).toBe("GPT-5.5");
+		expect(bareModelName({ name: "Grok 4", providerName: "Grok" })).toBe("Grok 4");
+		expect(bareModelName({ name: "Gemini 3.1 Pro", providerName: "Antigravity" })).toBe("Gemini 3.1 Pro");
 	});
 });
