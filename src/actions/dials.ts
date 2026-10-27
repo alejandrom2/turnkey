@@ -17,6 +17,7 @@ import {
 	type GlyphName,
 	type MarkPainter,
 	modelFill,
+	type Paint,
 	paintedGlyphArt,
 	SPECTRUM,
 	STATE_COLOR,
@@ -186,7 +187,7 @@ type PowerSettings = DialSettings & { dialControls?: string };
 
 
 /** The thread's effort as `model` would carry it, colored by its level. */
-function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): SliderInput["suffix"] {
+function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): { text: string; paint?: Paint } | undefined {
 	const value = currentEffort(findModel(thread.machine.modelConfig, thread.model), thread.model, armed);
 	const choices = effortChoices(model);
 	const choice = choices.find((candidate) => candidate.key === String(value));
@@ -308,7 +309,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const bolt = toggle && (toggle.fast ? paintedGlyphArt("speedFilled", fastPaint) : glyphArt("speed", COLORS.muted));
 		// The model slider shows Speed along the bottom, where a tap toggles it; the others keep the bolt at the top right.
 		const badges: MarkPainter[] = bolt && control === "effort" ? [bolt] : [];
-		const footer = bolt && control === "model" ? { mark: bolt, text: toggle!.label, paint: toggle!.fast ? fastPaint : undefined } : undefined;
+		const speed = bolt && control === "model" ? { mark: bolt, text: toggle!.label, paint: toggle!.fast ? fastPaint : undefined } : undefined;
 		const ends: [string, string] =
 			control === "effort"
 				? [t("power.quicker"), t("power.deeper")]
@@ -316,12 +317,16 @@ export class ModelDial extends StripDial<PowerSettings> {
 					? [t("power.asksFirst"), t("power.handsOff")]
 					: ["", ""];
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
+		// The model's effort sits on the bottom row beside Speed, under its own icon in its level's paint.
 		const effort = shown?.kind === "model" ? modelEffort(shown.model, thread, context.armed) : undefined;
+		const footer =
+			speed || effort
+				? { start: speed, end: effort && { mark: paintedGlyphArt(CONTROL.effort.glyph, effort.paint ?? COLORS.muted), text: effort.text, paint: effort.paint } }
+				: undefined;
 		const tone = shown?.kind === "effort" ? effortToneOf(effortChoices(model), shown.key, colorStyle(), model && modelColor(model)) : undefined;
 		return {
 			// The badge and the color already name the provider.
 			label: shown?.kind === "model" ? bareModelName(shown.model) : (shown?.label ?? thread.model.model),
-			suffix: effort,
 			labelColor: shown?.kind === "model" ? modelColor(shown.model) : shown?.kind === "effort" ? (tone?.text ?? (pending ? COLORS.attention : undefined)) : pending || fullAccess ? COLORS.attention : undefined,
 			stops: state.choices.length,
 			current: at(state.current),

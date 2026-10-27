@@ -3,13 +3,14 @@
  * a stepped track with the current value filled and a previewed one as a hollow thumb, and what the ends mean (or
  * what pressing does) along the bottom.
  */
-import { COLORS, escapeXml, FONT_FAMILY, type MarkPainter, type Paint, paintFill, svgDataUrl, svgText, textWidth } from "./render.js";
+import { COLORS, type MarkPainter, type Paint, paintFill, svgDataUrl, svgText, textWidth } from "./render.js";
+
+/** A mark and a word on the bottom row; the word dims unless painted. */
+export type FooterItem = { mark: MarkPainter; text: string; paint?: Paint };
 
 export type SliderInput = {
 	label: string;
 	labelColor?: string;
-	/** After the label, dimmed unless painted: the model's effort, in the spectrum while Ultrathink is armed. */
-	suffix?: { text: string; paint?: Paint };
 	/** How many stops the track has, at least two. */
 	stops: number;
 	/** The thread's value, filled up to; -1 when it isn't on the track. */
@@ -21,7 +22,7 @@ export type SliderInput = {
 	/** What each end of the track means. */
 	ends: [string, string];
 	/** Replaces the ends with a mark and a word at the left: the model slider's Speed. */
-	footer?: { mark: MarkPainter; text: string; paint?: Paint };
+	footer?: { start?: FooterItem; end?: FooterItem };
 	/** Replaces the ends: what pressing does, or why the dial can't act. */
 	note?: { text: string; color?: string };
 	/** Up to two 20 px badges at the top right, rightmost first. */
@@ -52,9 +53,6 @@ export function fit(text: string, width: number, size: number): string {
 	return `${chars.join("").trimEnd()}…`;
 }
 
-/** Provider labels can carry stray or doubled spaces; the label keeps whitespace as written, so collapse them. */
-const tidy = (text: string) => text.replace(/\s+/g, " ").trim();
-
 /**
  * One pill per choice across the track, as the Model key's pages: the thread's filled in its paint, the previewed one
  * outlined, the rest dim. Past eight, the pills stand for stretches of the list.
@@ -80,7 +78,7 @@ function pagePills(count: number, current: number | undefined, preview: number |
 }
 
 /** The label line as the marquee measures it. */
-export const sliderLabelText = (input: Pick<SliderInput, "label" | "suffix">): string => (input.suffix ? `${input.label} ${input.suffix.text}` : input.label);
+export const sliderLabelText = (input: Pick<SliderInput, "label">): string => input.label;
 
 /** The room the label has beside the badges, as a text slot the marquee can scroll. */
 const LEAD = BADGE + 6;
@@ -105,13 +103,7 @@ export function sliderArt(input: SliderInput): string {
 	if (input.lead) parts.push(input.lead(SLIDER.x, 9, BADGE));
 	const labelColor = input.labelColor ?? COLORS.text;
 	const overflow = textWidth(sliderLabelText(input), 16) - labelRoom;
-	const suffix = input.suffix;
-	const suffixFill = suffix?.paint === undefined ? `fill="#FFFFFF" fill-opacity=".5"` : `fill="${paintFill(suffix.paint, "slider-suffix", start, start + labelRoom, parts)}"`;
-	const label = (x: number, extra = "") => {
-		if (suffix === undefined) return `<g${extra}>${svgText(input.label, x, 26, 16, 650, labelColor)}</g>`;
-		// One text run, as Elgato's slider draws it, so the space between name and effort comes from the font itself.
-		return `<g${extra}><text x="${x}" y="26" font-family="${FONT_FAMILY}" font-size="16" font-weight="650" xml:space="preserve"><tspan fill="${labelColor}">${escapeXml(tidy(input.label))} </tspan><tspan ${suffixFill}>${escapeXml(tidy(suffix.text))}</tspan></text></g>`;
-	};
+	const label = (x: number, extra = "") => `<g${extra}>${svgText(input.label, x, 26, 16, 650, labelColor)}</g>`;
 	if (overflow > 0) {
 		const end = start + labelRoom;
 		const offset = Math.min(Math.max(0, input.labelOffset ?? 0), overflow + 4);
@@ -148,11 +140,21 @@ export function sliderArt(input: SliderInput): string {
 function finish(parts: string[], input: SliderInput): string {
 	if (input.note) parts.push(svgText(fit(input.note.text, SLIDER.width, 15), SLIDER.x, 85, 15, 600, input.note.color ?? COLORS.muted));
 	else if (input.footer) {
-		parts.push(input.footer.mark(SLIDER.x, 70, 20));
-		const text = fit(input.footer.text, SLIDER.width - LEAD, 15);
-		const paint = input.footer.paint;
-		const fill = paint === undefined ? "#FFFFFF" : paintFill(paint, "slider-footer", SLIDER.x + LEAD, SLIDER.x + LEAD + textWidth(text, 15), parts);
-		parts.push(svgText(text, SLIDER.x + LEAD, 85, 15, 600, fill, paint === undefined ? ` fill-opacity=".5"` : ""));
+		const { start, end } = input.footer;
+		// Each side takes what it needs; when both don't fit, the longer one gives way.
+		const available = SLIDER.width - (start ? LEAD : 0) - (end ? LEAD : 0) - (start && end ? 10 : 0);
+		const natural = (entry: FooterItem | undefined) => (entry ? textWidth(entry.text, 15) : 0);
+		const startRoom = natural(start) + natural(end) <= available ? natural(start) : Math.max(available / 2, available - natural(end));
+		const item = (entry: FooterItem, side: "start" | "end") => {
+			const text = fit(entry.text, side === "start" ? startRoom : available - Math.min(startRoom, natural(start)), 15);
+			const width = textWidth(text, 15);
+			const x = side === "start" ? SLIDER.x + LEAD : SLIDER.x + SLIDER.width - width;
+			parts.push(entry.mark(x - LEAD, 70, 20));
+			const fill = entry.paint === undefined ? "#FFFFFF" : paintFill(entry.paint, `slider-footer-${side}`, x, x + width, parts);
+			parts.push(svgText(text, x, 85, 15, 600, fill, entry.paint === undefined ? ` fill-opacity=".5"` : ""));
+		};
+		if (start) item(start, "start");
+		if (end) item(end, "end");
 	}
 	else {
 		const half = SLIDER.width / 2 - 4;
