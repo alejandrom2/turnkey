@@ -25,6 +25,7 @@ import {
 	switchSelection,
 	withOptionValue,
 } from "../core/models.js";
+import { activityBar, renderActivityBar, renderNoticeBar } from "../core/infobar.js";
 import { currentEffort, effortChange, effortChoices, effortToneOf } from "../core/power.js";
 import { threadMotion } from "../core/motion.js";
 import { migratePromptSettings, QUICK_PROMPTS, quickPrompt } from "../core/prompts.js";
@@ -52,6 +53,7 @@ import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import { latestSnoozed, type RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
 import { gitTarget, statuses } from "./git.js";
+import { connectionNotice, InfobarWriter } from "./infobar.js";
 import { connectionOf } from "./needs.js";
 import { pullRequestKeyFace } from "./pr.js";
 import {
@@ -70,6 +72,8 @@ import {
 } from "./base.js";
 
 const ID = "com.alejandrom2.t3deck";
+
+const infobar = new InfobarWriter();
 
 /** A thread's key face, moving as the Motion setting allows; `moving` asks for animation frames. */
 function threadFace(thread: DeckThread | undefined, emptyLabel: string, selected: DeckThread | undefined): { face: string; moving: boolean } {
@@ -148,12 +152,33 @@ export class Activity extends DeckAction<ActivitySettings> {
 	}
 
 	protected override async paint(action: Action<ActivitySettings>): Promise<void> {
+		if (action.isNeoInfobar()) return this.#paintBar(action);
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
 		const offline = connectionFace(machine);
 		const { face, moving } = offline ? { face: offline, moving: false } : threadFace(this.#threadFor(action), t("face.allQuiet"), selectedThread(machine));
 		this.animate(action, moving);
 		await this.setImage(action, face);
+	}
+
+	/** The info bar shows the most urgent matching thread, whatever Activity keys sit on the same device. */
+	async #paintBar(action: Action<ActivitySettings>): Promise<void> {
+		const machine = this.machineOf(action);
+		const { filter, project } = this.settingsOf(action);
+		const notice = connectionNotice(machine);
+		const all = deck.board.threadsOn(machine);
+		const matching = all.filter((thread) => matchesFilter(thread, threadFilter(filter), project || undefined));
+		await infobar.paint(action, notice ? renderNoticeBar(notice) : renderActivityBar(activityBar(matching, all, t("face.allQuiet"), Date.now())));
+	}
+
+	override onWillAppear(ev: WillAppearEvent<ActivitySettings>): void {
+		infobar.forget(ev.action.id);
+		super.onWillAppear(ev);
+	}
+
+	override onWillDisappear(ev: WillDisappearEvent<ActivitySettings>): void {
+		infobar.forget(ev.action.id);
+		super.onWillDisappear(ev);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<ActivitySettings>): Promise<void> {

@@ -9,7 +9,7 @@
 	"Icon": "imgs/plugin/marketplace",
 	"CodePath": "bin/plugin.js",
 	"SDKVersion": 3,
-	"Software": { "MinimumVersion": "7.1" },
+	"Software": { "MinimumVersion": "7.6" },
 	"OS": [
 		{ "Platform": "mac", "MinimumVersion": "12" },
 		{ "Platform": "windows", "MinimumVersion": "10" }
@@ -34,7 +34,7 @@
 			"Icon": "imgs/actions/activity/icon",
 			"Tooltip": "The most urgent thread matching a filter. Tap opens it in T3 Code.",
 			"PropertyInspectorPath": "ui/activity.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/activity/key", "ShowTitle": false }]
 		},
 		{
@@ -367,7 +367,7 @@
 			"Icon": "imgs/actions/usage/icon",
 			"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices.",
 			"PropertyInspectorPath": "ui/usage.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/usage/key", "ShowTitle": false }]
 		},
 		{
