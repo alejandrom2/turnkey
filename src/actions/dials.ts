@@ -8,7 +8,7 @@ import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import { findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
 import { dialControl, type DialControl, effortChange, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
-import { sliderArt } from "../core/slider.js";
+import type { SliderInput } from "../core/slider.js";
 import { spinAngle } from "../core/motion.js";
 import { COLORS, glyph, glyphArt, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgText, toneOf } from "../core/render.js";
 import { matchesDial, type ThreadFilter, threadFilter } from "../core/slots.js";
@@ -235,7 +235,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 	}
 
 	/** The classic face as a slider: the setting's stops with the thread's value filled and the previewed one hollow. */
-	protected override slider(action: Action<PowerSettings>): string | undefined {
+	protected override slider(action: Action<PowerSettings>): SliderInput | undefined {
 		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const context = this.#context(action);
 		if (context.thread === undefined || context.state.choices.length === 0) return undefined;
@@ -253,9 +253,9 @@ export class ModelDial extends StripDial<PowerSettings> {
 					? [t("power.asksFirst"), t("power.handsOff")]
 					: [index >= 0 ? `${index + 1}/${state.choices.length}` : "", shown?.kind === "model" ? shown.model.providerName : ""];
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
-		return sliderArt({
+		return {
 			label: shown?.label ?? thread.model.model,
-			labelColor: pending ? COLORS.attention : fullAccess ? COLORS.attention : undefined,
+			labelColor: shown?.kind === "model" ? modelColor(shown.model) : pending || fullAccess ? COLORS.attention : undefined,
 			stops: state.choices.length,
 			current: at(state.current),
 			preview: pending ? index : undefined,
@@ -264,7 +264,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: COLORS.attention } : undefined,
 			badges,
 			dim: !check.available,
-		});
+		};
 	}
 
 	protected override rotated(dial: DialAction<PowerSettings>, ticks: number): void {
