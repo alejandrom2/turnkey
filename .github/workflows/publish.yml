@@ -11,11 +11,13 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
     steps:
@@ -34,10 +36,17 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run lint
+      - run: npm run assets
+      - name: Generated files are committed
+        run: test -z "$(git status --porcelain)" || { git status; echo "::error::The tag's generated files are stale."; exit 1; }
       - run: npm run build
+      - run: npx streamdeck validate com.alejandrom2.turnkey.sdPlugin
       - run: npx streamdeck pack com.alejandrom2.turnkey.sdPlugin --output dist --version "$VERSION.0" --no-update-check
       - name: Release notes from the changelog
-        run: awk -v v="$VERSION" '/^## /{ if (found) exit; if (index($0, "## " v " ") == 1 || index($0, "## [" v "]") == 1) { found=1; next } } found' CHANGELOG.md > notes.md
+        run: |
+          awk -v v="$VERSION" '/^## /{ if (found) exit; if (index($0, "## " v " ") == 1 || index($0, "## [" v "]") == 1) { found=1; next } } found' CHANGELOG.md > notes.md
+          grep -q '[^[:space:]]' notes.md || { echo "::error::CHANGELOG.md has no notes for $VERSION."; exit 1; }
       - name: Create the release
         run: |
           prerelease=""
