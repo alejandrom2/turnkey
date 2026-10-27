@@ -30,6 +30,14 @@
 		"Name": "Stop Workflow",
 		"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop."
 	},
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "Fork",
+		"Tooltip": "Forks the thread from its newest finished turn and opens the fork."
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "Merge Back",
+		"Tooltip": "Merges a forked thread back into the thread it came from. Hold to merge."
+	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Model",
 		"Tooltip": "Switches the selected thread to a favorite model, or to the next of T3 Code's favorites."
@@ -896,6 +904,10 @@
 			},
 			"workflow": {
 				"hint": "Stops the workflows the thread runs, as T3 Code's Lineage panel does. Only Claude's workflows can be stopped. Hold the key to stop; a stopped workflow can't be resumed."
+			},
+			"lineage": {
+				"forkHint": "Forks the thread from its newest finished turn into a new thread, as T3 Code's fork button does, then opens the fork.",
+				"mergeHint": "Merges a forked thread back into the thread it came from, as T3 Code's Merge does, then opens that thread. Hold the key to merge."
 			}
 		},
 		"usage": {
@@ -979,6 +991,19 @@
 			"unsupported": "Provider can't stop it",
 			"unavailable": "No live task",
 			"stopFailed": "Couldn't stop it"
+		},
+		"lineage": {
+			"fork": "Fork",
+			"mergeBack": "Merge back",
+			"into": "Into {thread}",
+			"notFork": "Not a fork",
+			"parentGone": "Its thread is gone",
+			"finishRunFirst": "Finish a turn first",
+			"finishTurn": "Wait for the turn",
+			"nothingToFork": "Nothing to fork yet",
+			"holdToMerge": "Hold to merge",
+			"aFork": "A forked thread",
+			"aFinishedTurn": "A finished turn"
 		}
 	}
 }

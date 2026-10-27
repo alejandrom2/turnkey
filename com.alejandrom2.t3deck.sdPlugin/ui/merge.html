@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Merge Back</title>
+		<script src="sdpi-components.js"></script>
+		<style>
+			:root {
+				color-scheme: dark;
+				--t3-card: #121212;
+				--t3-foreground: #f5f5f5;
+				--t3-muted: #a3a3a3;
+				--t3-border: rgb(255 255 255 / 8%);
+				--t3-input: rgb(255 255 255 / 11%);
+				--t3-accent: rgb(255 255 255 / 4%);
+				--t3-tile: rgb(255 255 255 / 3.5%);
+				--t3-primary: #4a68f0;
+				--t3-primary: oklch(0.571 0.21 264);
+				--t3-success: #34d399;
+				--t3-warning: #fbbf24;
+				--t3-error: #f87171;
+				--t3-font: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", system-ui, sans-serif;
+			}
+			main { display: grid; gap: 2px; }
+			.hint { color: #a8a8a8; line-height: 1.4; margin: -2px 0 8px 106px; font-size: 9pt; }
+			[hidden] { display: none !important; }
+
+			.t3 {
+				position: relative; overflow: hidden; margin: 12px 0 4px; padding: 16px;
+				border: 1px solid var(--t3-border); border-radius: 14px;
+				background: var(--t3-card); color: var(--t3-foreground); font-family: var(--t3-font);
+				box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
+			}
+			.t3::before {
+				content: ""; position: absolute; inset: 0 0 auto 0; height: 110px; pointer-events: none;
+				background: radial-gradient(22rem 7rem at top, rgb(16 185 129 / 14%), transparent);
+			}
+			.t3[data-tone="error"]::before { background: radial-gradient(22rem 7rem at top, rgb(239 68 68 / 16%), transparent); }
+			.t3 > * { position: relative; }
+			.eyebrow { margin: 0; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--t3-primary); }
+			.t3 h2 { margin: 6px 0 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+			.lede { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: var(--t3-muted); }
+			.label { margin: 16px 0 6px; font-size: 12px; font-weight: 500; }
+
+			/* Machine tiles follow T3 Code's access options: a ring marks the one this action follows. */
+			.machines { display: grid; gap: 6px; margin-top: 14px; }
+			.machine {
+				display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 2px 10px;
+				padding: 9px 11px; border-radius: 9px; background: var(--t3-tile); cursor: pointer;
+				box-shadow: inset 0 0 0 1px transparent; transition: background-color .12s, box-shadow .12s;
+			}
+			.machine:hover { background: rgb(255 255 255 / 6%); }
+			.machine:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--t3-primary); }
+			.machine[aria-checked="true"] { background: color-mix(in srgb, var(--t3-primary) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t3-primary) 45%, transparent); }
+			.machine svg { width: 16px; height: 16px; color: var(--t3-muted); }
+			.machine[aria-checked="true"] svg { color: var(--t3-primary); }
+			.machine .name { margin: 0; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+			.machine .where { margin: 0; font-size: 11px; color: var(--t3-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+			.machine .actions { display: flex; align-items: center; gap: 4px; }
+			.machine .detail { grid-column: 2 / 4; margin: 4px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-error); }
+			.machine .detail.muted { color: var(--t3-muted); }
+
+			.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+			.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+			.pill.ready { color: var(--t3-success); background: rgb(16 185 129 / 12%); }
+			.pill.wait { color: var(--t3-warning); background: rgb(245 158 11 / 12%); }
+			.pill.muted { color: var(--t3-muted); background: var(--t3-accent); }
+			.t3 button.pill { padding: 2px 8px; border: 0; border-radius: 999px; font: 500 11px var(--t3-font); }
+
+			.t3 button, .t3 select, .t3 input { font: 500 12px var(--t3-font); border-radius: 8px; }
+			.t3 button { padding: 5px 11px; cursor: pointer; border: 1px solid transparent; transition: background-color .12s, border-color .12s; }
+			.t3 button.primary { background: var(--t3-primary); color: #fff; }
+			.t3 button.primary:hover { filter: brightness(1.08); }
+			.t3 button.primary:disabled { opacity: .5; cursor: default; filter: none; }
+			.t3 button.outline { background: transparent; color: var(--t3-foreground); border-color: var(--t3-input); }
+			.t3 button.outline:hover { background: var(--t3-accent); }
+			.t3 button.ghost { background: transparent; color: var(--t3-muted); padding: 5px 6px; }
+			.t3 button.ghost:hover { color: var(--t3-foreground); }
+			.t3 button:focus-visible, .t3 select:focus-visible, .t3 input:focus-visible { outline: 2px solid var(--t3-primary); outline-offset: 1px; }
+
+			.add { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--t3-border); }
+			.add .label { margin-top: 0; }
+			.add input {
+				width: 100%; box-sizing: border-box; padding: 7px 9px; color: var(--t3-foreground);
+				background: transparent; border: 1px solid var(--t3-input);
+			}
+			.add input::placeholder { color: var(--t3-muted); }
+			.add .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+			.add .access-help { margin: 6px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-muted); }
+			.add .result { margin: 6px 0 0; font-size: 11px; line-height: 1.4; }
+			.add .result.error { color: var(--t3-error); }
+			.add .result.working { color: var(--t3-muted); }
+			.note { margin: 12px 0 0; font-size: 11px; line-height: 1.5; color: var(--t3-muted); }
+
+			details.group { border-top: 1px solid #555; margin-top: 10px; padding-top: 8px; }
+			details.group > summary {
+				cursor: pointer; margin: 0 0 8px; font-size: 8.5pt; font-weight: 600;
+				letter-spacing: .06em; text-transform: uppercase; color: #a8a8a8;
+			}
+		</style>
+		<style>
+			details.needs > summary .unmet { color: #f87171; text-transform: none; letter-spacing: 0; }
+			.needs ul { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 6px; }
+			.needs li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 6px; font-size: 9pt; line-height: 1.35; color: #d8d8d8; }
+			.needs li .mark { font-weight: 700; text-align: center; }
+			.needs li[data-state="met"] .mark { color: #34d399; }
+			.needs li[data-state="unmet"] .mark { color: #f87171; }
+			.needs li[data-state="checking"] .mark { color: #a8a8a8; }
+			.needs li .fix { grid-column: 2; color: #a8a8a8; }
+		</style>
+	</head>
+	<body>
+		<main>
+			<sdpi-item label="Target" data-i18n-label="inspector.target.label">
+				<sdpi-select setting="target" default="selected">
+					<option value="selected" data-i18n="inspector.target.selected">Selected thread</option>
+					<option value="thread" data-i18n="inspector.target.thread">This thread</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Thread" data-i18n-label="inspector.target.pick" id="target-thread" hidden>
+				<sdpi-select setting="thread" datasource="getThreads" hot-reload loading="Loading threads…" data-i18n-loading="inspector.loading.threads"></sdpi-select>
+			</sdpi-item>
+			<p class="hint" id="target-hint" hidden data-i18n="inspector.target.hint">The key acts on this thread even when another is selected, and shows a small pin. Archived or deleted, it shows as not available until you pick another.</p>
+			<p class="hint" data-i18n="inspector.lineage.mergeHint">Merges a forked thread back into the thread it came from, as T3 Code's Merge does, then opens that thread. Hold the key to merge.</p>
+			<details class="group needs" id="needs" hidden>
+				<summary><span data-i18n="inspector.card.needsTitle">What this action needs</span><span class="unmet" id="needs-unmet"></span></summary>
+				<ul id="needs-list"></ul>
+			</details>
+			<section class="t3" id="t3" aria-live="polite">
+				<p class="eyebrow">T3 Code</p>
+				<h2 id="t3-title" data-i18n="inspector.card.choose">Choose a machine</h2>
+				<p class="lede" id="t3-lede" data-i18n="inspector.card.looking">Looking for T3 Code on this machine…</p>
+				<div class="machines" id="t3-machines" role="radiogroup" aria-label="Machine for this action" data-i18n-aria-label="inspector.card.machineGroup"></div>
+				<div class="add">
+					<p class="label" data-i18n="inspector.card.addMachine">Add a machine</p>
+					<div class="controls">
+						<input id="t3-link" type="url" autocomplete="off" spellcheck="false" placeholder="Paste a pair link from Settings → Sharing &amp; access" data-i18n-placeholder="inspector.card.linkPlaceholder" />
+						<button class="primary" id="t3-pair" type="button" disabled data-i18n="inspector.card.connect">Connect</button>
+					</div>
+					<p class="access-help" data-i18n="inspector.card.accessHelp">T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing &amp; access.</p>
+					<p class="result" id="t3-result" hidden></p>
+				</div>
+				<p class="note" data-i18n="inspector.card.shared">Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.</p>
+			</section>
+			<details class="group">
+				<summary data-i18n="inspector.advanced.title">Advanced</summary>
+				<sdpi-item label="App link" data-i18n-label="inspector.advanced.appLink">
+					<sdpi-textfield setting="scheme" global placeholder="t3code"></sdpi-textfield>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.appLinkHint">Use t3code-dev to open threads in a development build.</p>
+				<sdpi-item label="Dial strips" data-i18n-label="inspector.advanced.dialStrips">
+					<sdpi-select setting="stripBackground" global default="t3">
+						<option value="t3" data-i18n="inspector.background.t3">T3 Code</option>
+						<option value="flow" data-i18n="inspector.background.flow">Flow</option>
+						<option value="state" data-i18n="inspector.background.state">Thread state</option>
+						<option value="custom" data-i18n="inspector.background.custom">Custom color</option>
+					</sdpi-select>
+				</sdpi-item>
+				<sdpi-item label="Strip color" data-i18n-label="inspector.field.stripColor" id="strip-color" hidden>
+					<sdpi-color setting="stripColor" global default="#121212"></sdpi-color>
+				</sdpi-item>
+				<sdpi-item label="State line" data-i18n-label="inspector.advanced.stateLine">
+					<sdpi-checkbox setting="stripHairline" global default="true" label="Show the colored line under each strip" data-i18n-label="inspector.advanced.stateLineLabel"></sdpi-checkbox>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.stateHint">Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
+				<sdpi-item label="Strip style" data-i18n-label="inspector.advanced.stripStyle">
+					<sdpi-select setting="stripStyle" global default="">
+						<option value="" data-i18n="inspector.style.perDial">Per dial default</option>
+						<option value="classic" data-i18n="inspector.style.classic">Classic</option>
+						<option value="list" data-i18n="inspector.style.list">List</option>
+						<option value="carousel" data-i18n="inspector.style.carousel">Carousel</option>
+					</sdpi-select>
+				</sdpi-item>
+				<sdpi-item label="Long text" data-i18n-label="inspector.field.longText">
+					<sdpi-select setting="textScroll" global default="horizontal">
+						<option value="horizontal" data-i18n="inspector.scroll.horizontal">Scroll sideways</option>
+						<option value="vertical" data-i18n="inspector.scroll.vertical">Roll up line by line</option>
+						<option value="off" data-i18n="inspector.scroll.off">Don't scroll</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.styleHint">List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Per dial default uses List for the Threads dial, Classic for the others; Classic shows the Power dial as a slider. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.</p>
+				<sdpi-item label="Motion" data-i18n-label="inspector.advanced.motion">
+					<sdpi-select setting="motion" global default="full">
+						<option value="full" data-i18n="inspector.motion.full">Full</option>
+						<option value="reduced" data-i18n="inspector.motion.reduced">Reduced</option>
+						<option value="off" data-i18n="inspector.motion.off">Off</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.motionHint">Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.</p>
+				<sdpi-item label="Colors" data-i18n-label="inspector.advanced.maxEffort">
+					<sdpi-select setting="maxEffort" global default="gradient">
+						<option value="gradient" data-i18n="inspector.maxEffort.gradient">Gradient</option>
+						<option value="solid" data-i18n="inspector.maxEffort.solid">Solid</option>
+						<option value="model" data-i18n="inspector.maxEffort.model">Model color</option>
+						<option value="off" data-i18n="inspector.maxEffort.off">Off</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.maxEffortHint">Gradient colors every effort level along a ladder in the model's own color, turning toward violet at the top, and gives each model and Fast its provider's gradient. Solid and Model color mark only the top effort level, in violet or the model's color; Off leaves them plain. Ultrathink keeps T3 Code's spectrum.</p>
+				<sdpi-item label="Confirm before sending" data-i18n-label="inspector.advanced.confirm">
+					<sdpi-select setting="confirmSend" global default="review">
+						<option value="review" data-i18n="inspector.confirm.review">Review, then press again</option>
+						<option value="hold" data-i18n="inspector.confirm.hold">Hold to send</option>
+						<option value="off" data-i18n="inspector.confirm.off">Send right away</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.confirmHint">Applies to Send Prompt, Steer, Quick Prompt and the Prompts dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this.</p>
+			</details>
+		</main>
+		<script>
+			const client = SDPIComponents.streamDeckClient;
+			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
+			const strings = {"inspector.card.choose":"Choose a machine","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.shared":"Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.","inspector.card.connectTitle":"Connect T3 Deck","inspector.card.pairTitle":"Pair T3 Deck","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.picked":"This action shows and acts on threads from the machine you pick.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…","inspector.card.needsTitle":"What this action needs","inspector.card.needsNotMet":" · {count} not met","inspector.card.needsMet":"Met","inspector.card.needsUnmet":"Not met","inspector.card.needsChecking":"Checking"};
+			const s = (key, params = {}) => (strings[key] ?? key).replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match));
+			const icons = {
+				all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+				local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+				remote: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>',
+			};
+			const $ = (id) => document.getElementById(id);
+			const el = (tag, className, text) => {
+				const node = document.createElement(tag);
+				if (className) node.className = className;
+				if (text !== undefined) node.textContent = text;
+				return node;
+			};
+			const button = (label, kind, event, url) => {
+				const node = el("button", kind, label);
+				node.type = "button";
+				node.addEventListener("click", (click) => {
+					click.stopPropagation();
+					send(event, { url });
+				});
+				return node;
+			};
+
+			function tile({ url, icon, name, where, checked, actions = [], detail, detailTone }) {
+				const node = el("div", "machine");
+				node.setAttribute("role", "radio");
+				node.setAttribute("aria-checked", String(checked));
+				node.tabIndex = checked ? 0 : -1;
+				const select = () => send("selectMachine", { url });
+				node.addEventListener("click", select);
+				node.addEventListener("keydown", (key) => {
+					if (key.key === " " || key.key === "Enter") {
+						key.preventDefault();
+						select();
+					}
+				});
+				const glyph = el("span");
+				glyph.innerHTML = icons[icon];
+				const text = el("div");
+				text.style.minWidth = "0";
+				text.append(el("p", "name", name), el("p", "where", where));
+				const right = el("div", "actions");
+				right.append(...actions);
+				node.append(glyph, text, right);
+				if (detail) node.append(el("p", detailTone === "muted" ? "detail muted" : "detail", detail));
+				return node;
+			}
+
+			const focusLink = () => {
+				$("t3-link").focus();
+				$("t3-link").select();
+			};
+
+			function machineActions(env) {
+				const actions = [];
+				if (env.state === "ready") {
+					actions.push(el("span", env.access === "Can act" ? "pill ready" : "pill muted", s(env.access === "Can act" ? "inspector.card.connected" : "inspector.card.readOnly")));
+					actions.push(button(s("inspector.card.signOut"), "ghost", "signOut", env.url));
+				} else if (env.state === "connecting") {
+					actions.push(el("span", "pill muted", s("inspector.card.connecting")));
+				} else if (env.state === "error") {
+					actions.push(button(s("inspector.card.tryAgain"), "primary", "retry", env.url));
+				} else {
+					const pill = el("button", "pill wait", s("inspector.card.needsPairing"));
+					pill.type = "button";
+					pill.addEventListener("click", (click) => {
+						click.stopPropagation();
+						focusLink();
+					});
+					actions.push(pill);
+				}
+				if (!env.local) actions.push(button(s("inspector.card.remove"), "ghost", "remove", env.url));
+				return actions;
+			}
+
+			const MARKS = { met: "✓", unmet: "✗", checking: "⋯" };
+			const STATES = { met: "inspector.card.needsMet", unmet: "inspector.card.needsUnmet", checking: "inspector.card.needsChecking" };
+			function renderNeeds(checklist) {
+				const items = checklist?.items ?? [];
+				$("needs").hidden = items.length === 0;
+				$("needs-unmet").textContent = checklist?.unmet > 0 ? s("inspector.card.needsNotMet", { count: checklist.unmet }) : "";
+				$("needs-list").replaceChildren(...items.map((item) => {
+					const row = el("li");
+					row.dataset.state = item.state;
+					const mark = el("span", "mark", MARKS[item.state] ?? "");
+					mark.setAttribute("aria-hidden", "true");
+					row.append(mark, el("span", "label", item.label));
+					for (const fix of item.fixes ?? []) row.append(el("span", "fix", fix));
+					row.setAttribute("aria-label", [item.label + ": " + s(STATES[item.state] ?? ""), ...(item.fixes ?? [])].join(". "));
+					return row;
+				}));
+			}
+
+			let lastStatus;
+			function renderStatus(payload) {
+				renderNeeds(payload.requirements);
+				const environments = payload.environments ?? [];
+				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
+				const ready = environments.filter((env) => env.state === "ready");
+				const failed = environments.some((env) => env.state === "error") || payload.pairing?.state === "error";
+
+				$("t3").dataset.tone = failed ? "error" : "pairing";
+				$("t3-title").textContent = s(environments.length === 0 ? "inspector.card.connectTitle" : ready.length === 0 ? "inspector.card.pairTitle" : "inspector.card.choose");
+				$("t3-lede").textContent = s(
+					environments.length === 0 ? "inspector.card.notRunning" : ready.length === 0 ? "inspector.card.howToPair" : "inspector.card.picked",
+				);
+
+				const tiles = [];
+				if (environments.length > 1 || selected === "") {
+					tiles.push(tile({
+						url: "",
+						icon: "all",
+						name: s("inspector.card.allMachines"),
+						where: environments.length === 0 ? s("inspector.card.noneYet") : s("inspector.card.connectedCount", { ready: ready.length, total: environments.length }),
+						checked: selected === "",
+					}));
+				}
+				for (const env of environments) {
+					tiles.push(tile({
+						url: env.url,
+						icon: env.local ? "local" : "remote",
+						name: env.name,
+						where: env.where,
+						checked: env.url === selected,
+						actions: machineActions(env),
+						detail: env.state === "error" ? env.message : env.state === "signed-out" ? (env.message ?? s("inspector.card.pasteFromMachine")) : undefined,
+						detailTone: env.state === "signed-out" ? "muted" : undefined,
+					}));
+				}
+				$("t3-machines").replaceChildren(...tiles);
+
+				const result = $("t3-result");
+				const pairing = payload.pairing ?? { state: "idle" };
+				result.hidden = pairing.state === "idle";
+				result.className = "result " + pairing.state;
+				result.textContent = pairing.state === "error" ? pairing.message : s("inspector.card.pairing");
+				if (pairing.state === "idle" && pairedOnce) {
+					$("t3-link").value = "";
+					pairedOnce = false;
+				}
+				syncPairButton(pairing.state === "working");
+			}
+
+			/** Swaps the English copy for the plugin's current-language table; sdpi selects re-read their options on refresh. */
+			function applyStrings(table) {
+				Object.assign(strings, table);
+				for (const node of document.querySelectorAll("[data-i18n]")) if (table[node.dataset.i18n]) node.textContent = table[node.dataset.i18n];
+				for (const name of ["label", "placeholder", "loading", "aria-label"]) {
+					for (const node of document.querySelectorAll("[data-i18n-" + name + "]")) {
+						const value = table[node.getAttribute("data-i18n-" + name)];
+						if (value) node.setAttribute(name, value);
+					}
+				}
+				for (const select of document.querySelectorAll("sdpi-select")) if (select.querySelector("option")) select.refresh?.();
+				if (lastStatus) renderStatus(lastStatus);
+				else syncPairButton();
+			}
+
+			client.sendToPropertyInspector.subscribe(({ payload }) => {
+				if (payload?.event === "strings") return applyStrings(payload.strings ?? {});
+				if (payload?.event !== "status") return;
+				lastStatus = payload;
+				renderStatus(payload);
+			});
+
+			let pairedOnce = false;
+			const syncPairButton = (working = false) => {
+				$("t3-pair").disabled = working || !/[#?&]token=./.test($("t3-link").value);
+				$("t3-pair").textContent = s(working ? "inspector.card.connecting" : "inspector.card.connect");
+			};
+			$("t3-link").addEventListener("input", () => syncPairButton());
+			$("t3-pair").addEventListener("click", () => {
+				pairedOnce = true;
+				send("pair", { link: $("t3-link").value.trim() });
+				syncPairButton(true);
+			});
+			$("t3-link").addEventListener("keydown", (key) => {
+				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
+			});
+			send("strings");
+			send("status");
+			{
+				const field = document.querySelector('[setting="stripBackground"]');
+				const apply = (value) => { $("strip-color").hidden = !((value) => value === "custom")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getGlobalSettings().then((payload) => apply(payload?.settings?.["stripBackground"]));
+				client.didReceiveGlobalSettings.subscribe(({ payload }) => apply(payload?.settings?.["stripBackground"]));
+			}
+			{
+				const field = document.querySelector('[setting="target"]');
+				const apply = (value) => { $("target-thread").hidden = !((value) => value === "thread")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["target"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["target"]));
+			}
+			{
+				const field = document.querySelector('[setting="target"]');
+				const apply = (value) => { $("target-hint").hidden = !((value) => value === "thread")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["target"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["target"]));
+			}
+		</script>
+	</body>
+</html>

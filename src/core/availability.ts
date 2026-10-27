@@ -22,7 +22,8 @@ export type ActionKind =
 	| "deny"
 	| "pr"
 	| "branch"
-	| "workflow";
+	| "workflow"
+	| "lineage";
 
 export type AvailabilityInput = {
 	/** The thread the action targets: usually the selected one. */
