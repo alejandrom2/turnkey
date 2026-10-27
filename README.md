@@ -6,7 +6,7 @@ It connects like T3 Code's own web and mobile clients: a pair link, then a live 
 
 ## Setup
 
-Open any T3 Deck action's settings in Stream Deck. The **T3 Code** card lists your machines.
+Open any T3 Deck action's settings in Stream Deck. The **Machines** list there shows your machines.
 
 - In T3 Code, open **Settings → Sharing & access** and create a pair link (`http://192.168.1.20:3773/pair#token=…`). Paste it under **Add a machine** and press **Connect**. This works the same for this machine and for others; **this machine** shows up by itself whenever T3 Code runs here, marked **Needs pairing** until you do.
 - Each action follows the machine you pick in its card, or **All machines**. Machines are shared, so add each one once.
@@ -100,7 +100,7 @@ Each dial's strip has a style, set under **Advanced → Strip style** in any act
 - **List**: a wheel of the dial's items (threads, models, efforts or access modes, prompts, answers). The heading shows the dial and where you are (`3/12`), the selected item is bold with its glyph between the previous and the next ones, and the last row says what pressing does or why the dial can't act.
 - **Carousel**: the selected item as a tile between its dimmed neighbors, with its title below. Turning slides to the next tile. On the Power dial every tile has its short name on the bottom row, sliding with it, and the selected model's name (and its row in List) takes its provider's color: T3 Code's accent for the instance, else the brand color.
 
-Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Advanced → Dial strips** in any action's settings: T3 Code (default), Flow (one picture across neighboring dials), the thread's state (green unseen done, red failed, amber approval, indigo question) or a color of your own, with or without the colored state line. Each dial can override it.
+Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Advanced → Dial strips** in any action's settings: Dark (default, a plain near-black), Flow (one picture across neighboring dials), the thread's state (green unseen done, red failed, amber approval, indigo question) or a color of your own, with or without the colored state line. Each dial can override it.
 
 ### Usage and limits
 

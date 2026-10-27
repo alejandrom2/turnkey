@@ -778,7 +778,7 @@
 				"dialStrips": "Bandeaux des molettes",
 				"stateLine": "Ligne d'état",
 				"stateLineLabel": "Afficher la ligne colorée sous chaque bandeau",
-				"stateHint": "Flux dessine une seule image sur les molettes voisines. État du fil teinte un bandeau en vert quand un tour non vu est terminé, en rouge en cas d'échec et en ambre quand il vous attend. Chaque molette peut remplacer ce choix dans ses propres réglages.",
+				"stateHint": "Sombre est un quasi-noir uni, comme les bandeaux de Stream Deck. Flux dessine une seule image sur les molettes voisines. État du fil teinte un bandeau en vert quand un tour non vu est terminé, en rouge en cas d'échec et en ambre quand il vous attend. Chaque molette peut remplacer ce choix dans ses propres réglages.",
 				"stripStyle": "Style des bandeaux",
 				"styleHint": "Liste fait défiler les éléments d'une molette comme une roue, Carrousel affiche chacun comme une tuile entre ses voisins. Défaut par molette utilise Liste pour la Molette fils et Classique pour les autres ; Classique affiche la Molette puissance comme un curseur. Le texte long défile une fois la molette au repos, deux fois, puis s'arrête ; touchez longuement le bandeau pour tout lire, et tournez pour faire défiler.",
 				"motion": "Animation",
@@ -809,7 +809,7 @@
 			},
 			"background": {
 				"global": "Réglage global",
-				"t3": "T3 Code",
+				"t3": "Sombre",
 				"flow": "Flux",
 				"state": "État du fil",
 				"custom": "Couleur personnalisée"

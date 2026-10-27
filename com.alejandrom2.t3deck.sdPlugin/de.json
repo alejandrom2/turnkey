@@ -778,7 +778,7 @@
 				"dialStrips": "Regler-Leisten",
 				"stateLine": "Statuslinie",
 				"stateLineLabel": "Farbige Linie unter jeder Leiste zeigen",
-				"stateHint": "Fluss zeichnet ein Bild über benachbarte Regler hinweg. Thread-Status färbt eine Leiste grün, wenn ein ungesehener Durchlauf fertig ist, rot bei Fehlern und bernsteinfarben, wenn er dich braucht. Jeder Regler kann das in seinen eigenen Einstellungen überschreiben.",
+				"stateHint": "Dunkel ist ein schlichtes Fast-Schwarz wie bei Stream Decks eigenen Leisten. Fluss zeichnet ein Bild über benachbarte Regler hinweg. Thread-Status färbt eine Leiste grün, wenn ein ungesehener Durchlauf fertig ist, rot bei Fehlern und bernsteinfarben, wenn er dich braucht. Jeder Regler kann das in seinen eigenen Einstellungen überschreiben.",
 				"stripStyle": "Leistenstil",
 				"styleHint": "Liste dreht die Einträge eines Reglers wie ein Rad, Karussell zeigt jeden als Kachel zwischen seinen Nachbarn. Standard je Regler nutzt Liste für den Thread-Regler und Klassisch für die anderen; Klassisch zeigt den Power-Regler als Schieberegler. Langer Text läuft, sobald der Regler ruht, zweimal durch und stoppt dann; berühre und halte die Leiste, um alles zu lesen, und drehe zum Scrollen.",
 				"motion": "Bewegung",
@@ -809,7 +809,7 @@
 			},
 			"background": {
 				"global": "Global verwenden",
-				"t3": "T3 Code",
+				"t3": "Dunkel",
 				"flow": "Fluss",
 				"state": "Thread-Status",
 				"custom": "Eigene Farbe"

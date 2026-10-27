@@ -778,7 +778,7 @@
 				"dialStrips": "Franjas de los diales",
 				"stateLine": "Línea de estado",
 				"stateLineLabel": "Mostrar la línea de color bajo cada franja",
-				"stateHint": "Flujo dibuja una imagen a lo largo de los diales vecinos. Estado del hilo tiñe una franja de verde cuando hay un turno terminado sin ver, de rojo cuando falla y de ámbar cuando te necesita. Cada dial puede cambiarlo en sus propios ajustes.",
+				"stateHint": "Oscuro es un casi negro liso, como las franjas propias de Stream Deck. Flujo dibuja una imagen a lo largo de los diales vecinos. Estado del hilo tiñe una franja de verde cuando hay un turno terminado sin ver, de rojo cuando falla y de ámbar cuando te necesita. Cada dial puede cambiarlo en sus propios ajustes.",
 				"stripStyle": "Estilo de franja",
 				"styleHint": "Lista pasa los elementos de un dial como una rueda; Carrusel muestra cada uno como una tarjeta entre sus vecinos. Según el dial usa Lista para el Dial de hilos y Clásico para los demás; Clásico muestra el Dial de potencia como un deslizador. El texto largo se desplaza cuando el dial se detiene, dos veces, y luego para; mantén tocada la franja para leerlo entero y gira para desplazarte.",
 				"motion": "Movimiento",
@@ -809,7 +809,7 @@
 			},
 			"background": {
 				"global": "Usar global",
-				"t3": "T3 Code",
+				"t3": "Oscuro",
 				"flow": "Flujo",
 				"state": "Estado del hilo",
 				"custom": "Color personalizado"
