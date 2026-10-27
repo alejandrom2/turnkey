@@ -123,6 +123,13 @@
 			<sdpi-item label="Snooze minutes" data-i18n-label="inspector.organize.snoozeMinutes">
 				<sdpi-textfield setting="snoozeMinutes" pattern="\d+" placeholder="60"></sdpi-textfield>
 			</sdpi-item>
+			<sdpi-item label="Confirm settle" data-i18n-label="inspector.organize.confirmSettle" id="confirm-settle">
+				<sdpi-select setting="confirmSettle" default="review">
+					<option value="review" data-i18n="inspector.organize.settleReview">Review, then press again</option>
+					<option value="hold" data-i18n="inspector.organize.settleHold">Hold to settle</option>
+					<option value="off" data-i18n="inspector.organize.settleOff">Settle right away</option>
+				</sdpi-select>
+			</sdpi-item>
 			<details class="group needs" id="needs" hidden>
 				<summary><span data-i18n="inspector.card.needsTitle">What this action needs</span><span class="unmet" id="needs-unmet"></span></summary>
 				<ul id="needs-list"></ul>
@@ -389,6 +396,13 @@
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getGlobalSettings().then((payload) => apply(payload?.settings?.["stripBackground"]));
 				client.didReceiveGlobalSettings.subscribe(({ payload }) => apply(payload?.settings?.["stripBackground"]));
+			}
+			{
+				const field = document.querySelector('[setting="organize"]');
+				const apply = (value) => { $("confirm-settle").hidden = !((value) => value === "" || value === "settle")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["organize"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["organize"]));
 			}
 		</script>
 	</body>

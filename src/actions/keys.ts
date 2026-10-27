@@ -25,6 +25,7 @@ import {
 import { currentEffort, effortChange, effortChoices } from "../core/power.js";
 import { threadMotion } from "../core/motion.js";
 import { migratePromptSettings, QUICK_PROMPTS, quickPrompt } from "../core/prompts.js";
+import { type ConfirmMode, confirmMode } from "../core/review.js";
 import {
 	COLORS,
 	dotsCue,
@@ -397,7 +398,7 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 	}
 }
 
-type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; machine?: string };
+type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; confirmSettle?: string; machine?: string };
 
 const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey]> = {
 	settle: ["settle", "organize.settle"],
@@ -428,10 +429,32 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		await this.setImage(action, renderControlKey({ glyph, label: t(label), available: check.available, active: pinned }));
 	}
 
+	/** Only Settle asks first (Review by default): it takes the thread off the board. */
+	protected override confirmModeOf(action: Action<OrganizeSettings>): ConfirmMode {
+		return this.#check(action).which === "settle" ? confirmMode(this.settingsOf(action).confirmSettle, "review") : "off";
+	}
+
+	protected override reviewScope(action: Action<OrganizeSettings>): string | undefined {
+		const { which, thread } = this.#check(action);
+		return which === "settle" && thread ? JSON.stringify([which, thread.key]) : undefined;
+	}
+
+	override onKeyDown(ev: KeyDownEvent<OrganizeSettings>): void {
+		this.pressStarted(ev.action.id);
+	}
+
 	override async onKeyUp(ev: KeyUpEvent<OrganizeSettings>): Promise<void> {
+		const held = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { which, thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
+		const go = await this.guard(ev.action, {
+			scope: JSON.stringify([which, thread!.key]),
+			held,
+			holdHint: t("result.holdToSettle"),
+			card: () => ({ glyph: "settle", verb: t("review.settle"), target: thread!.title, footer: t("review.pressAgain") }),
+		});
+		if (go === undefined) return;
 		const minutes = Number(ev.payload.settings.snoozeMinutes ?? 60) || 60;
 		await this.apply(ev.action, () => organize(thread!, which, minutes));
 	}
