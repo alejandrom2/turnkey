@@ -44,4 +44,33 @@ describe("availability", () => {
 		expect(reason(availability("pin", { thread: { ...idle, pinned: true }, canOperate: true }))).toBe("Pinned");
 		expect(reason(availability("unpin", { thread: idle, canOperate: true }))).toBe("Not pinned");
 	});
+
+	it("starts a thread without a prompt, unless its destination is missing", () => {
+		expect(reason(availability("launch", { canOperate: true }))).toBe("ok");
+		expect(reason(availability("launch", { canOperate: true, missing: "Pick a project" }))).toBe("Pick a project");
+		expect(reason(availability("launch", { canOperate: false }))).toBe("Read only");
+	});
+
+	it("dims model settings the thread's model can't take, and all of them on a read-only pairing", () => {
+		for (const kind of ["model", "effort", "speed", "permissions", "plan"] as const) {
+			expect(reason(availability(kind, { thread: idle, canOperate: true }))).toBe("ok");
+			expect(reason(availability(kind, { canOperate: true }))).toBe("No thread");
+			expect(reason(availability(kind, { thread: idle, canOperate: false }))).toBe("Read only");
+		}
+		expect(reason(availability("speed", { thread: idle, canOperate: true, missing: "No fast mode" }))).toBe("No fast mode");
+		expect(reason(availability("effort", { thread: idle, canOperate: false, missing: "No effort" }))).toBe("No effort");
+	});
+
+	it("opens a pull request or branch whenever the thread has one, read-only or not", () => {
+		const pr = { url: "https://github.com/o/r/pull/1", number: 1, state: "open" as const };
+		expect(reason(availability("pr", { thread: { ...idle, pullRequests: [pr] }, canOperate: false }))).toBe("ok");
+		expect(reason(availability("pr", { thread: { ...idle, pullRequests: [] }, canOperate: true }))).toBe("No PR");
+		expect(reason(availability("branch", { thread: { ...idle, branch: "fix/x" }, canOperate: false }))).toBe("ok");
+		expect(reason(availability("branch", { thread: idle, canOperate: true }))).toBe("No branch");
+		expect(reason(availability("pr", { canOperate: true }))).toBe("No thread");
+	});
+
+	it("lets Steer act on a queued turn too", () => {
+		expect(reason(availability("steer", { thread: { ...idle, deck: "queued", active: true }, canOperate: true, hasPrompt: true }))).toBe("ok");
+	});
 });

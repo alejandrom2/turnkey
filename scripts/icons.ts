@@ -11,8 +11,20 @@ const ACTIONS: Record<string, GlyphName> = {
 	activity: "chat",
 	stop: "stop",
 	send: "send",
+	steer: "steer",
+	quick: "spark",
 	new: "compose",
 	organize: "settle",
+	model: "model",
+	effort: "effort",
+	speed: "speed",
+	permissions: "permissions",
+	plan: "plan",
+	approve: "approve",
+	deny: "deny",
+	pr: "pullRequest",
+	branch: "branch",
+	health: "health",
 	"dial-threads": "chat",
 	"dial-model": "sliders",
 	"dial-prompts": "spark",
@@ -30,7 +42,7 @@ const write = (path: string, contents: string) => {
 for (const [name, mark] of Object.entries(ACTIONS)) {
 	// Action-list icons: 72-unit canvas, glyph at ~80%, ~5-unit stroke, plain white.
 	write(`actions/${name}/icon.svg`, svg(72, glyph(mark, 3, 3, 66, "#ffffff", 1.9)));
-	const key = renderControlKey({ glyph: mark, primary: name === "send" || name === "stop" });
+	const key = renderControlKey({ glyph: mark, primary: ["send", "stop", "steer", "quick"].includes(name), tone: name === "deny" ? "deny" : undefined });
 	write(`actions/${name}/key.svg`, Buffer.from(key.split(",")[1], "base64").toString());
 }
 

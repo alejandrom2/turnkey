@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderControlKey, renderNoticeKey, renderThreadKey, textWidth, wrapText } from "./render.js";
+import { renderControlKey, renderInfoKey, renderNoticeKey, renderResultKey, renderThreadKey, textWidth, wrapText } from "./render.js";
 
 const svg = (dataUrl: string) => Buffer.from(dataUrl.replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
 
@@ -86,6 +86,26 @@ describe("renderControlKey", () => {
 		const two = svg(renderControlKey({ glyph: "approve", label: "Approve always for session" }));
 		expect(two).toContain(`y="101"`);
 		expect(two).toContain(`y="123"`);
+	});
+
+	it("fits a refusal reason in smaller lines instead of cutting it off", () => {
+		const out = svg(renderResultKey({ ok: false, label: "The target provider instance is unavailable" }));
+		expect(out).toContain(`font-size="14"`);
+		expect(out).not.toContain("mask=");
+		expect(out).toContain("unavailable</text>");
+	});
+
+	it("draws a provider mark in place of the glyph", () => {
+		const out = svg(renderControlKey({ glyph: "model", label: "Opus 4.5", mark: (x, y, size) => `<rect x="${x}" y="${y}" width="${size}" id="mark"/>` }));
+		expect(out).toContain(`<rect x="15" y="12" width="42" id="mark"/>`);
+	});
+});
+
+describe("renderInfoKey", () => {
+	it("dims an unavailable status and escapes its text", () => {
+		const out = svg(renderInfoKey({ glyph: "pullRequest", title: "#12 <draft>", detail: "Open", available: false }));
+		expect(out).toContain(`<g opacity=".5">`);
+		expect(out).toContain("#12 &lt;draft&gt;");
 	});
 });
 

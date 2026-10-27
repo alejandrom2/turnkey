@@ -19,15 +19,6 @@
 	"Profiles": [{ "Name": "profiles/t3-deck-plus", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true }],
 	"Actions": [
 		{
-			"Name": "Thread",
-			"UUID": "com.alejandrom2.t3deck.slot",
-			"Icon": "imgs/actions/slot/icon",
-			"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it.",
-			"PropertyInspectorPath": "ui/slot.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/slot/key", "ShowTitle": true, "TitleAlignment": "top" }]
-		},
-		{
 			"Name": "Activity",
 			"UUID": "com.alejandrom2.t3deck.activity",
 			"Icon": "imgs/actions/activity/icon",
@@ -37,13 +28,13 @@
 			"States": [{ "Image": "imgs/actions/activity/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Stop",
-			"UUID": "com.alejandrom2.t3deck.stop",
-			"Icon": "imgs/actions/stop/icon",
-			"Tooltip": "Stops the running turn of the thread selected in T3 Code.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Name": "New Thread",
+			"UUID": "com.alejandrom2.t3deck.new",
+			"Icon": "imgs/actions/new/icon",
+			"Tooltip": "Starts a new thread in the selected thread's project, no project, or a chosen one; with a saved prompt or empty.",
+			"PropertyInspectorPath": "ui/new.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/stop/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/new/key", "ShowTitle": false }]
 		},
 		{
 			"Name": "Send Prompt",
@@ -55,13 +46,103 @@
 			"States": [{ "Image": "imgs/actions/send/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "New Thread",
-			"UUID": "com.alejandrom2.t3deck.new",
-			"Icon": "imgs/actions/new/icon",
-			"Tooltip": "Starts a new thread with a saved prompt in the selected thread's project.",
-			"PropertyInspectorPath": "ui/new.html",
+			"Name": "Steer",
+			"UUID": "com.alejandrom2.t3deck.steer",
+			"Icon": "imgs/actions/steer/icon",
+			"Tooltip": "Adds a saved instruction to the selected thread's running turn.",
+			"PropertyInspectorPath": "ui/steer.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/new/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/steer/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Quick Prompt",
+			"UUID": "com.alejandrom2.t3deck.quick",
+			"Icon": "imgs/actions/quick/icon",
+			"Tooltip": "Sends an everyday prompt to the selected thread: continue, fix tests, diagnose, explain, commit, or your own.",
+			"PropertyInspectorPath": "ui/quick.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/quick/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Stop",
+			"UUID": "com.alejandrom2.t3deck.stop",
+			"Icon": "imgs/actions/stop/icon",
+			"Tooltip": "Stops the running turn of the thread selected in T3 Code.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/stop/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Model",
+			"UUID": "com.alejandrom2.t3deck.model",
+			"Icon": "imgs/actions/model/icon",
+			"Tooltip": "Switches the selected thread to a favorite model, or to the next of T3 Code's favorites.",
+			"PropertyInspectorPath": "ui/model.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/model/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Effort",
+			"UUID": "com.alejandrom2.t3deck.effort",
+			"Icon": "imgs/actions/effort/icon",
+			"Tooltip": "Sets the selected thread's reasoning effort, or steps through what its model offers.",
+			"PropertyInspectorPath": "ui/effort.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/effort/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Speed",
+			"UUID": "com.alejandrom2.t3deck.speed",
+			"Icon": "imgs/actions/speed/icon",
+			"Tooltip": "Toggles fast mode on the selected thread where its model offers it.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/speed/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Permissions",
+			"UUID": "com.alejandrom2.t3deck.permissions",
+			"Icon": "imgs/actions/permissions/icon",
+			"Tooltip": "Sets the selected thread's access, from Supervised to Full access, or steps through them.",
+			"PropertyInspectorPath": "ui/permissions.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/permissions/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Plan",
+			"UUID": "com.alejandrom2.t3deck.plan",
+			"Icon": "imgs/actions/plan/icon",
+			"Tooltip": "Switches the selected thread between Build and Plan.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/plan/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Approve",
+			"UUID": "com.alejandrom2.t3deck.approve",
+			"Icon": "imgs/actions/approve/icon",
+			"Tooltip": "Answers the selected thread's approval as far as its settings allow, or opens it in T3 Code.",
+			"PropertyInspectorPath": "ui/approve.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/approve/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Deny",
+			"UUID": "com.alejandrom2.t3deck.deny",
+			"Icon": "imgs/actions/deny/icon",
+			"Tooltip": "Declines the selected thread's approval.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/deny/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Thread",
+			"UUID": "com.alejandrom2.t3deck.slot",
+			"Icon": "imgs/actions/slot/icon",
+			"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it.",
+			"PropertyInspectorPath": "ui/slot.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/slot/key", "ShowTitle": true, "TitleAlignment": "top" }]
 		},
 		{
 			"Name": "Organize",
@@ -71,6 +152,33 @@
 			"PropertyInspectorPath": "ui/organize.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/organize/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Pull Request",
+			"UUID": "com.alejandrom2.t3deck.pr",
+			"Icon": "imgs/actions/pr/icon",
+			"Tooltip": "The selected thread's pull request and its state. Tap opens it.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Branch",
+			"UUID": "com.alejandrom2.t3deck.branch",
+			"Icon": "imgs/actions/branch/icon",
+			"Tooltip": "The selected thread's branch. Tap opens the thread in T3 Code.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/branch/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Health",
+			"UUID": "com.alejandrom2.t3deck.health",
+			"Icon": "imgs/actions/health/icon",
+			"Tooltip": "The connection to T3 Code: ready, connecting, needs pairing or failing. Tap reconnects.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/health/key", "ShowTitle": false }]
 		},
 		{
 			"Name": "Threads Dial",
