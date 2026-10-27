@@ -398,7 +398,7 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 	}
 }
 
-type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; confirmSettle?: string; machine?: string };
+type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; confirm?: string; confirmSettle?: string; machine?: string };
 
 const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey]> = {
 	settle: ["settle", "organize.settle"],
@@ -407,6 +407,17 @@ const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey]> = {
 	snooze: ["moon", "organize.snooze"],
 	archive: ["archive", "organize.archive"],
 	mark_unread: ["chat", "organize.markUnread"],
+};
+
+const asksFirst = (which: OrganizeAction) => which === "settle" || which === "snooze";
+
+const snoozeMinutes = (settings: OrganizeSettings) => Number(settings.snoozeMinutes ?? 60) || 60;
+
+/** How long the key snoozes for, short: "30m", "1h", "1d". */
+const snoozeLabel = (settings: OrganizeSettings) => {
+	const minutes = snoozeMinutes(settings);
+	if (minutes % 1440 === 0) return t("time.days", { days: minutes / 1440 });
+	return elapsed(0, minutes * 60_000);
 };
 
 /** Settle, pin or unpin, snooze, archive or mark the selected thread unread. Pin toggles; the rest are undone in T3 Code. */
@@ -426,17 +437,19 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		if (!action.isKey()) return;
 		const { which, pinned, check } = this.#check(action);
 		const [glyph, label] = ORGANIZE_FACE[which];
-		await this.setImage(action, renderControlKey({ glyph, label: t(label), available: check.available, active: pinned }));
+		const text = which === "snooze" ? t("organize.snoozeFor", { duration: snoozeLabel(this.settingsOf(action)) }) : t(label);
+		await this.setImage(action, renderControlKey({ glyph, label: text, available: check.available, active: pinned }));
 	}
 
-	/** Only Settle asks first (Review by default): it takes the thread off the board. */
+	/** Settle and Snooze ask first (Review by default): both take the thread off the board. */
 	protected override confirmModeOf(action: Action<OrganizeSettings>): ConfirmMode {
-		return this.#check(action).which === "settle" ? confirmMode(this.settingsOf(action).confirmSettle, "review") : "off";
+		const { confirm, confirmSettle } = this.settingsOf(action);
+		return asksFirst(this.#check(action).which) ? confirmMode(confirm ?? confirmSettle, "review") : "off";
 	}
 
 	protected override reviewScope(action: Action<OrganizeSettings>): string | undefined {
 		const { which, thread } = this.#check(action);
-		return which === "settle" && thread ? JSON.stringify([which, thread.key]) : undefined;
+		return asksFirst(which) && thread ? JSON.stringify([which, thread.key, snoozeMinutes(this.settingsOf(action))]) : undefined;
 	}
 
 	override onKeyDown(ev: KeyDownEvent<OrganizeSettings>): void {
@@ -448,14 +461,20 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { which, thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
+		const minutes = snoozeMinutes(ev.payload.settings);
+		const duration = snoozeLabel(ev.payload.settings);
 		const go = await this.guard(ev.action, {
-			scope: JSON.stringify([which, thread!.key]),
+			scope: JSON.stringify([which, thread!.key, minutes]),
 			held,
-			holdHint: t("result.holdToSettle"),
-			card: () => ({ glyph: "settle", verb: t("review.settle"), target: thread!.title, footer: t("review.pressAgain") }),
+			holdHint: t(which === "snooze" ? "result.holdToSnooze" : "result.holdToSettle"),
+			card: () => ({
+				glyph: ORGANIZE_FACE[which][0],
+				verb: which === "snooze" ? t("review.snooze", { duration }) : t("review.settle"),
+				target: thread!.title,
+				footer: t("review.pressAgain"),
+			}),
 		});
 		if (go === undefined) return;
-		const minutes = Number(ev.payload.settings.snoozeMinutes ?? 60) || 60;
 		await this.apply(ev.action, () => organize(thread!, which, minutes));
 	}
 }
