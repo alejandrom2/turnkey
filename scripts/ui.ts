@@ -535,17 +535,7 @@ const periodField = `
 
 const usageProviderField = `
 			<sdpi-item ${attr("label", "inspector.usage.provider")}>
-				<sdpi-select setting="provider" default="">
-					<option value=""${text("inspector.usage.allProviders")}</option>
-					<option value="claude">Claude</option>
-					<option value="codex">Codex</option>
-					<option value="cursor">Cursor</option>
-					<option value="grok">Grok</option>
-					<option value="opencode">OpenCode</option>
-					<option value="antigravity">Antigravity</option>
-					<option value="pi">Pi</option>
-					<option value="muse">Muse</option>
-				</sdpi-select>
+				<sdpi-select setting="provider" datasource="getUsageProviders" hot-reload ${attr("loading", "inspector.loading.providers")} default=""></sdpi-select>
 			</sdpi-item>`;
 
 const pages: Record<string, string> = {
