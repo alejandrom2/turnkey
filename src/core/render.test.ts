@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	accessTone,
 	COLORS,
 	dotsCue,
 	fitSize,
@@ -253,5 +254,14 @@ describe("stripCanvas", () => {
 		expect(walked.indexOf(`<g id="pet"/>`)).toBeGreaterThan(walked.indexOf("flow-field"));
 		expect(walked.indexOf(`<g id="pet"/>`)).toBeLessThan(walked.indexOf(`y="95"`));
 		expect(stripCanvas(COLORS.accent, { ...appearance, pet: undefined })).toBe(plain);
+	});
+});
+
+describe("accessTone", () => {
+	it("runs from T3 blue through violet to Full access amber", () => {
+		expect(accessTone(0).text).toBe("#5B8CFF");
+		expect(accessTone(0.5).text).toBe("#AD7BF9");
+		expect(accessTone(1).text).toBe("#FCD34D");
+		expect(accessTone(0).fill).toEqual({ gradient: expect.any(Array) });
 	});
 });
