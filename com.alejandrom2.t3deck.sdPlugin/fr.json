@@ -12,15 +12,15 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "Envoyer prompt",
-		"Tooltip": "Envoie un prompt enregistré au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
+		"Tooltip": "Envoie votre propre prompt, ou un prompt courant (continuer, corriger les tests, expliquer, faire un commit…), au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "Orienter",
 		"Tooltip": "Ajoute une instruction enregistrée au tour en cours du fil sélectionné."
 	},
 	"com.alejandrom2.t3deck.quick": {
-		"Name": "Prompt rapide",
-		"Tooltip": "Envoie un prompt courant au fil sélectionné : continuer, corriger les tests, diagnostiquer, expliquer, faire un commit, ou le vôtre."
+		"Name": "Envoyer prompt",
+		"Tooltip": "Envoie votre propre prompt, ou un prompt courant (continuer, corriger les tests, expliquer, faire un commit…), au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Arrêter",
@@ -810,7 +810,7 @@
 				"previewPet": "Aperçu du compagnon",
 				"idlePetHint": "Après deux minutes sans appui, rotation ni toucher, un petit robot traverse votre plus longue rangée de bandeaux de molettes voisines, jusqu'à trois fois, à quatre minutes d'intervalle. Tout appui, rotation ou toucher sur une action T3 Deck le fait partir. Il suit Animation : Réduite le fait marcher calmement, Désactivée le tient à l'écart.",
 				"confirm": "Confirmer avant d'envoyer",
-				"confirmHint": "S'applique à Envoyer prompt, Orienter, Prompt rapide, Lancer skill, la Molette prompts et la Molette skills ; Modèle, Effort, Vitesse, Accès et la Molette puissance s'appliquent toujours immédiatement. Vérifier montre quoi va où au premier appui ; rappuyez dans les 10 secondes pour envoyer. Maintenir envoie sur un appui maintenu, donc maintenir ne peut plus aussi relancer ou démarrer un fil. Chaque action peut remplacer ce choix."
+				"confirmHint": "S'applique à Envoyer prompt, Orienter, Lancer skill, la Molette prompts et la Molette skills ; Modèle, Effort, Vitesse, Accès et la Molette puissance s'appliquent toujours immédiatement. Vérifier montre quoi va où au premier appui ; rappuyez dans les 10 secondes pour envoyer. Maintenir envoie sur un appui maintenu, donc maintenir ne peut plus aussi relancer ou démarrer un fil. Chaque action peut remplacer ce choix."
 			},
 			"field": {
 				"strip": "Bandeau",
@@ -907,7 +907,9 @@
 			"send": {
 				"titlePlaceholder": "Corriger tests",
 				"promptPlaceholder": "Lance les tests et corrige ce qui échoue",
-				"hint": "Va au fil sélectionné dans T3 Code : démarre un tour, ou oriente ou attend derrière un tour en cours. Maintenez la touche pour interrompre et relancer avec ce prompt."
+				"hint": "Va au fil sélectionné dans T3 Code : démarre un tour, ou oriente ou attend derrière un tour en cours. Maintenez la touche pour interrompre et relancer avec ce prompt.",
+				"myText": "Mon texte",
+				"text": "Texte"
 			},
 			"steer": {
 				"titlePlaceholder": "Rester simple",
@@ -915,16 +917,11 @@
 				"hint": "S'ajoute au tour en cours du fil sélectionné. Grisé tant que le fil est inactif."
 			},
 			"quick": {
-				"titlePlaceholder": "Libellé facultatif pour cette touche",
-				"type": "Type de prompt",
 				"continue": "Continuer",
 				"test": "Lancer les tests et corriger les échecs",
 				"fix": "Diagnostiquer et corriger",
 				"explain": "Expliquer l'état actuel",
-				"commit": "Faire un commit de vos modifications",
-				"custom": "Prompt personnalisé",
-				"customPlaceholder": "Saisissez le prompt que cette touche envoie",
-				"hint": "Va au fil sélectionné dans T3 Code. Maintenez la touche pour interrompre et relancer avec ce prompt."
+				"commit": "Faire un commit de vos modifications"
 			},
 			"new": {
 				"createIn": "Créer dans",

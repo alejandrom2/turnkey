@@ -56,7 +56,8 @@ const script = (): Placed => ({ action: "script", name: "Run Script" });
 /** Run Task keys start unpicked: tasks are the user's own. */
 const task = (): Placed => ({ action: "task", name: "Run Task" });
 
-const quick = (template: string): Placed => ({ action: "quick", name: "Quick Prompt", settings: { template } });
+/** Send Prompt with one of its everyday templates. */
+const quick = (template: string): Placed => ({ action: "send", name: "Send Prompt", settings: { template } });
 const organize = (which: string): Placed => ({ action: "organize", name: "Organize", settings: { organize: which } });
 
 const key = (action: string, name: string, settings?: Record<string, string>): Placed => ({ action, name, ...(settings ? { settings } : {}) });

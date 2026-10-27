@@ -779,6 +779,28 @@ const gitConfirm = `
 				</sdpi-select>
 			</sdpi-item>`;
 
+/** Send Prompt's panel, starting in `fallback`: the key's own text only for My text. */
+const sendPage = (fallback: string) =>
+	page(
+		"Send Prompt",
+		`${targetField}${modeField("template", "inspector.field.prompt", fallback, [
+			["custom", "inspector.send.myText"],
+			["continue", "inspector.quick.continue"],
+			["test", "inspector.quick.test"],
+			["fix", "inspector.quick.fix"],
+			["explain", "inspector.quick.explain"],
+			["commit", "inspector.quick.commit"],
+		])}
+			<sdpi-item ${attr("label", "inspector.send.text")} id="send-text" hidden>
+				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.send.promptPlaceholder")}></sdpi-textarea>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.send.titlePlaceholder")}></sdpi-textfield>
+			</sdpi-item>
+			<p class="hint"${text("inspector.send.hint")}</p>${confirmField}`,
+		inModes("template", "send-text", fallback, ["custom"]) + targetScript,
+	);
+
 /** Git's panel, starting in `fallback`: the message only for commits, and Pull's own hint. */
 const gitPage = (fallback: string) =>
 	page(
@@ -889,18 +911,8 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.answer.hint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
-	"send.html": page(
-		"Send Prompt",
-		`${targetField}
-			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
-				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.send.titlePlaceholder")}></sdpi-textfield>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.field.prompt")}>
-				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.send.promptPlaceholder")}></sdpi-textarea>
-			</sdpi-item>
-			<p class="hint"${text("inspector.send.hint")}</p>${confirmField}`,
-		targetScript,
-	),
+	"send.html": sendPage("custom"),
+	"quick.html": sendPage("continue"),
 	"steer.html": page(
 		"Steer",
 		`${targetField}
@@ -912,28 +924,6 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<p class="hint"${text("inspector.steer.hint")}</p>${confirmField}`,
 		targetScript,
-	),
-	"quick.html": page(
-		"Quick Prompt",
-		`${targetField}
-			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
-				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.quick.titlePlaceholder")}></sdpi-textfield>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.quick.type")}>
-				<sdpi-select setting="template" default="continue">
-					<option value="continue"${text("inspector.quick.continue")}</option>
-					<option value="test"${text("inspector.quick.test")}</option>
-					<option value="fix"${text("inspector.quick.fix")}</option>
-					<option value="explain"${text("inspector.quick.explain")}</option>
-					<option value="commit"${text("inspector.quick.commit")}</option>
-					<option value="custom"${text("inspector.quick.custom")}</option>
-				</sdpi-select>
-			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.quick.custom")} id="custom" hidden>
-				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.quick.customPlaceholder")}></sdpi-textarea>
-			</sdpi-item>
-			<p class="hint"${text("inspector.quick.hint")}</p>${confirmField}`,
-		showWhen("template", "custom", `value === "custom"`) + targetScript,
 	),
 	"new.html": page(
 		"New Thread",
