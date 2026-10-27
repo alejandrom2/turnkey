@@ -368,7 +368,8 @@
 			"noProject": "No project",
 			"defaultEditor": "T3 Code's default",
 			"firstProvider": "First with limits",
-			"firstWindow": "Shortest window"
+			"firstWindow": "Shortest window",
+			"chooseThread": "Choose a thread…"
 		},
 		"machine": {
 			"thisMachine": "This machine",

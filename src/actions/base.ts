@@ -324,7 +324,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	 */
 	async #sendThreads(action: Action<T>): Promise<void> {
 		const machines = this.#readyMachines(action);
-		const items: { label: string; value: string }[] = [];
+		const items = [{ label: t("datasource.chooseThread"), value: "" }];
 		for (const machine of machines) {
 			const where = machines.length > 1 && machine.state.kind === "ready" ? ` · ${machine.state.label}` : "";
 			const environmentId = machine.environmentId;
@@ -336,7 +336,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		}
 		const settings = this.settingsOf(action);
 		const saved = pinnedKey(settings);
-		if (saved && !items.some((item) => item.value === saved)) items.unshift({ label: t("reason.targetGone", { thread: pinnedName(settings) }), value: saved });
+		if (saved && !items.some((item) => item.value === saved)) items.splice(1, 0, { label: t("reason.targetGone", { thread: pinnedName(settings) }), value: saved });
 		await streamDeck.ui.sendToPropertyInspector({ event: "getThreads", items });
 	}
 
