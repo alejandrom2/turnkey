@@ -7,9 +7,7 @@ import type { DeckThread } from "../core/board.js";
 import { openExternal, organize, type OrganizeAction, threadDeepLink } from "../core/commands.js";
 import {
 	type CatalogModel,
-	currentOptionValue,
 	cycleValue,
-	effortOption,
 	effortValues,
 	findModel,
 	modelCatalog,
@@ -22,13 +20,24 @@ import {
 	switchSelection,
 	withOptionValue,
 } from "../core/models.js";
+import { currentEffort, effortChange, effortChoices } from "../core/power.js";
 import { migratePromptSettings, quickPrompt } from "../core/prompts.js";
-import { COLORS, elapsed, type GlyphName, type MarkPainter, renderControlKey, renderInfoKey, renderNoticeKey, renderThreadKey } from "../core/render.js";
+import { COLORS, elapsed, type GlyphName, type MarkPainter, MODE_GLYPH, renderControlKey, renderInfoKey, renderNoticeKey, renderThreadKey } from "../core/render.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
-import { canOperate, connectionFace, DeckAction, openThread, pressWhileDisconnected, selectedThread, selectThread } from "./base.js";
+import {
+	canOperate,
+	connectionFace,
+	DeckAction,
+	openThread,
+	pressWhileDisconnected,
+	selectedThread,
+	selectThread,
+	sendToThread,
+	ultrathinkArmed,
+} from "./base.js";
 
 const ID = "com.alejandrom2.t3deck";
 
@@ -157,8 +166,8 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
-		const { label, check } = this.#check(action);
-		await this.setImage(action, renderControlKey({ glyph: this.glyphName, primary: true, label, available: check.available }));
+		const { label, check, thread } = this.#check(action);
+		await this.setImage(action, renderControlKey({ glyph: this.glyphName, primary: true, label, available: check.available, ultrathink: ultrathinkArmed(thread) }));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<T>): void {
@@ -171,7 +180,7 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 		const { text, thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		const mode: SendMode = this.steers ? "steer" : restart ? "restart" : "auto";
-		await this.run(ev.action, () => thread!.machine.send(thread!, text, mode), this.steers ? "Steered" : restart ? "Restarted" : "Sent");
+		await this.run(ev.action, () => sendToThread(thread!, text, mode), this.steers ? "Steered" : restart ? "Restarted" : "Sent");
 	}
 }
 
@@ -384,26 +393,42 @@ export class ModelKey extends SettingKey<ModelSettings> {
 
 type EffortSettings = { effort?: string; machine?: string };
 
-/** Sets the selected thread's reasoning effort to one value, or steps through the values its model offers. */
+/**
+ * Sets the selected thread's reasoning effort to one value, or steps through the values its model offers. Ultrathink
+ * arms T3 Code's prompt prefix for the thread's next sends from the deck instead of changing the effort.
+ */
 @action({ UUID: `${ID}.effort` })
 export class EffortKey extends SettingKey<EffortSettings> {
 	protected state(action: Action<EffortSettings>) {
 		const { thread, config } = selection(this.machineOf(action));
 		const fixed = this.settingsOf(action).effort || undefined;
-		const option = effortOption(thread && findModel(config, thread.model));
-		const current = thread && option ? currentOptionValue(thread.model, option) : undefined;
-		const values = option?.values.map((choice) => choice.value) ?? [];
-		const missing = option === undefined ? "No effort" : fixed !== undefined && !values.includes(fixed) ? "Not offered" : undefined;
+		const model = thread && findModel(config, thread.model);
+		const armed = ultrathinkArmed(thread);
+		const choices = effortChoices(model);
+		const values = choices.map((choice) => choice.value);
+		const current = thread && currentEffort(model, thread.model, armed);
+		const missing = choices.length === 0 ? "No effort" : fixed !== undefined && !values.includes(fixed) ? "Not offered" : undefined;
 		const check = availability("effort", { thread, canOperate: canOperate(thread), missing });
 		const labelOf = (value: unknown) =>
-			option?.values.find((choice) => choice.value === value)?.label ??
+			choices.find((choice) => choice.value === value)?.label ??
 			effortValues(config).find((choice) => choice.value === value)?.label ??
 			(typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : "Effort");
-		const face = renderControlKey({ glyph: "effort", label: labelOf(fixed ?? current), available: check.available, active: fixed !== undefined && fixed === current });
+		const face = renderControlKey({ glyph: "effort", label: labelOf(fixed ?? current), available: check.available, active: fixed !== undefined && fixed === current, ultrathink: armed });
 		const next = fixed ?? cycleValue(values, current);
-		if (thread === undefined || option === undefined || next === undefined) return { face, check, done: labelOf(next) };
-		return { face, check, done: labelOf(next), apply: next === current ? undefined : () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, option.id, next)) };
+		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
+		if (thread === undefined || change === undefined) return { face, check, done: labelOf(next) };
+		return { face, check, done: labelOf(next), apply: applyEffort(thread, change, armed) };
 	}
+}
+
+/** What an effort pick does to `thread`: arm Ultrathink, or disarm it and set the option; undefined when nothing changes. */
+export function applyEffort(thread: DeckThread, change: NonNullable<ReturnType<typeof effortChange>>, armed: boolean): (() => Promise<unknown>) | undefined {
+	if (change.kind === "arm") return armed ? undefined : async () => deck.ultrathink.arm(thread.key);
+	if (!change.send && !armed) return undefined;
+	return async () => {
+		if (change.send) await thread.machine.setModelSelection(thread, withOptionValue(thread.model, change.optionId, change.value));
+		deck.ultrathink.disarm(thread.key);
+	};
 }
 
 /** Toggles the selected thread's fast mode (Claude's Fast mode, Codex's Fast tier) where its model offers one. */
@@ -418,13 +443,6 @@ export class SpeedKey extends SettingKey<JsonObject> {
 		return { face, check, done: toggle.nextLabel, apply: () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)) };
 	}
 }
-
-const MODE_GLYPH: Record<RuntimeMode, GlyphName> = {
-	"approval-required": "modeSupervised",
-	"auto-accept-edits": "modeAutoAcceptEdits",
-	auto: "modeAuto",
-	"full-access": "modeFullAccess",
-};
 
 type PermissionSettings = { mode?: string; machine?: string };
 
@@ -464,7 +482,7 @@ export class PlanKey extends SettingKey<JsonObject> {
 /** Approval details per thread and request, loaded once and shared by every Approve and Deny key. */
 const requests = new Map<string, PendingRequest | "loading">();
 
-function requestFor(thread: DeckThread): PendingRequest | undefined {
+export function requestFor(thread: DeckThread): PendingRequest | undefined {
 	const pending = thread.pendingRequest;
 	if (pending === undefined) return undefined;
 	const id = `${thread.key}#${pending.id}`;

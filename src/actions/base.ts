@@ -1,6 +1,7 @@
 import streamDeck, {
 	type Action,
 	type DidReceiveSettingsEvent,
+	type FeedbackPayload,
 	type SendToPluginEvent,
 	SingletonAction,
 	type WillAppearEvent,
@@ -12,9 +13,10 @@ import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
-import { effortValues, favoriteModels, pickableModels } from "../core/models.js";
+import { effortValues, favoriteModels, findModel, pickableModels } from "../core/models.js";
 import { COLORS, renderNoticeKey, renderResultKey, stripCanvas, stripIcon } from "../core/render.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
+import type { SendMode } from "../core/t3/machine.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 
@@ -30,8 +32,10 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	readonly #pressedAt = new Map<string, number>();
 	readonly #settings = new Map<string, T>();
 	readonly #placed = new Map<string, Placement>();
-	/** Last image or feedback sent per instance; the once-a-second clock repaints only what changed. */
+	/** Last image sent per key; the once-a-second clock repaints only what changed. */
 	readonly #sent = new Map<string, string>();
+	/** Last feedback sent per dial, item by item: a repaint sends only the items that changed. */
+	readonly #fed = new Map<string, Map<string, string>>();
 	/** Instances showing a press result; live repaints wait until it clears. */
 	readonly #flashing = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -88,17 +92,30 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		await action.setImage(image);
 	}
 
-	protected async setFeedback(action: Action<T>, feedback: Record<string, string>): Promise<void> {
-		const signature = JSON.stringify(feedback);
-		if (!action.isDial() || this.#flashing.has(action.id) || this.#sent.get(action.id) === signature) return;
-		this.#sent.set(action.id, signature);
-		await action.setFeedback(feedback);
+	protected async setFeedback(action: Action<T>, feedback: FeedbackPayload): Promise<void> {
+		if (!action.isDial() || this.#flashing.has(action.id)) return;
+		const sent = this.#fed.get(action.id) ?? new Map<string, string>();
+		const changed: FeedbackPayload = {};
+		for (const [key, item] of Object.entries(feedback)) {
+			const signature = JSON.stringify(item);
+			if (sent.get(key) === signature) continue;
+			sent.set(key, signature);
+			changed[key] = item;
+		}
+		this.#fed.set(action.id, sent);
+		if (Object.keys(changed).length > 0) await action.setFeedback(changed);
+	}
+
+	/** Forgets what was sent, so the next paint sends every item: after a face drawn outside `setFeedback`. */
+	protected forgetSent(id: string): void {
+		this.#sent.delete(id);
+		this.#fed.delete(id);
 	}
 
 	override onWillAppear(ev: WillAppearEvent<T>): void {
 		this.#store(ev.action, ev.payload.settings);
 		this.#placed.set(ev.action.id, { device: ev.action.device.id, position: ev.action.isKey() ? ev.action.coordinates : undefined });
-		this.#sent.delete(ev.action.id);
+		this.forgetSent(ev.action.id);
 		deck.setVisible(ev.action.id, true);
 		this.#repaintAll();
 	}
@@ -106,7 +123,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	override onWillDisappear(ev: WillDisappearEvent<T>): void {
 		this.#settings.delete(ev.action.id);
 		this.#placed.delete(ev.action.id);
-		this.#sent.delete(ev.action.id);
+		this.forgetSent(ev.action.id);
 		clearTimeout(this.#flashing.get(ev.action.id));
 		this.#flashing.delete(ev.action.id);
 		deck.setVisible(ev.action.id, false);
@@ -224,15 +241,18 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 			action.id,
 			setTimeout(() => {
 				this.#flashing.delete(action.id);
-				this.#sent.delete(action.id);
+				this.forgetSent(action.id);
 				if (this.#placed.has(action.id)) void this.paint(action);
 			}, FLASH_MS),
 		);
-		const color = ok ? COLORS.done : COLORS.error;
 		if (action.isKey()) await action.setImage(renderResultKey({ ok, label }));
-		else if (action.isDial()) {
-			await action.setFeedback({ canvas: stripCanvas(color), header: ok ? "Done" : "Not now", glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" });
-		}
+		else if (action.isDial()) await action.setFeedback(this.flashFeedback(action, ok, label));
+	}
+
+	/** A dial's press result; strip dials draw it in their own appearance. */
+	protected flashFeedback(_action: Action<T>, ok: boolean, label: string): FeedbackPayload {
+		const color = ok ? COLORS.done : COLORS.error;
+		return { canvas: stripCanvas(color), header: ok ? "Done" : "Not now", glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" };
 	}
 
 	/** Flashes why the action can't act when `check` says so; true when it may go ahead. */
@@ -254,6 +274,19 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		}
 	}
 }
+
+/** Sends `text` to an existing thread, with T3 Code's Ultrathink prefix while the deck has it armed there. */
+export function sendToThread(thread: DeckThread, text: string, mode: SendMode): Promise<void> {
+	return thread.machine.send(thread, ultrathinkPrompt(thread, text), mode);
+}
+
+/** `text` as the deck sends it to `thread`. */
+export const ultrathinkPrompt = (thread: DeckThread, text: string): string =>
+	deck.ultrathink.prompt(thread.key, findModel(thread.machine.modelConfig, thread.model), text);
+
+/** Whether Ultrathink is armed for `thread` and its model still offers it. */
+export const ultrathinkArmed = (thread: DeckThread | undefined): boolean =>
+	thread !== undefined && deck.ultrathink.armed(thread.key, findModel(thread.machine.modelConfig, thread.model));
 
 /** Selects the thread the way T3 Code's own open does, and opens it in the desktop app. */
 export async function openThread(thread: DeckThread): Promise<void> {

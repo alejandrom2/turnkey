@@ -184,8 +184,8 @@
 			"Name": "Threads Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.threads",
 			"Icon": "imgs/actions/dial-threads/icon",
-			"Tooltip": "Rotate to select a thread in T3 Code; press or tap to open it.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "Rotate through the threads that match its filter, selecting them in T3 Code; press or tap to open one.",
+			"PropertyInspectorPath": "ui/threads-dial.html",
 			"Controllers": ["Encoder"],
 			"Encoder": {
 				"layout": "layouts/strip.json",
@@ -195,16 +195,16 @@
 			"States": [{ "Image": "imgs/actions/dial-threads/key" }]
 		},
 		{
-			"Name": "Model Dial",
+			"Name": "Power Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.model",
 			"Icon": "imgs/actions/dial-model/icon",
-			"Tooltip": "Adjusts the selected thread's model options, such as effort, as its provider reports them.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Tooltip": "Changes the selected thread's model, effort or access; press or tap switches Speed where offered.",
+			"PropertyInspectorPath": "ui/power.html",
 			"Controllers": ["Encoder"],
 			"Encoder": {
 				"layout": "layouts/strip.json",
 				"Icon": "imgs/actions/dial-model/icon",
-				"TriggerDescription": { "Rotate": "Preview value", "Push": "Apply to next run", "Touch": "Next option" }
+				"TriggerDescription": { "Rotate": "Preview", "Push": "Apply (or toggle speed)", "Touch": "Toggle speed" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-model/key" }]
 		},
@@ -212,7 +212,7 @@
 			"Name": "Prompts Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.prompts",
 			"Icon": "imgs/actions/dial-prompts/icon",
-			"Tooltip": "Rotate through saved prompts. Press sends to the selected thread; hold starts a new thread.",
+			"Tooltip": "Rotate through your prompts and templates. Press sends to the selected thread; hold starts a new thread.",
 			"PropertyInspectorPath": "ui/prompts.html",
 			"Controllers": ["Encoder"],
 			"Encoder": {

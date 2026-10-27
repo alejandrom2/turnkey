@@ -140,6 +140,21 @@
 					<sdpi-textfield setting="scheme" global placeholder="t3code"></sdpi-textfield>
 				</sdpi-item>
 				<p class="hint">Use t3code-dev to open threads in a development build.</p>
+				<sdpi-item label="Dial strips">
+					<sdpi-select setting="stripBackground" global default="t3">
+						<option value="t3">T3 Code</option>
+						<option value="gradient">Gradient</option>
+						<option value="state">Thread state</option>
+						<option value="custom">Custom colour</option>
+					</sdpi-select>
+				</sdpi-item>
+				<sdpi-item label="Strip colour" id="strip-color" hidden>
+					<sdpi-color setting="stripColor" global default="#121212"></sdpi-color>
+				</sdpi-item>
+				<sdpi-item label="State line">
+					<sdpi-checkbox setting="stripHairline" global default="true" label="Show the coloured line under each strip"></sdpi-checkbox>
+				</sdpi-item>
+				<p class="hint">Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
 			</details>
 		</main>
 		<script>
@@ -286,6 +301,13 @@
 				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
 			});
 			send("status");
+			{
+				const field = document.querySelector('[setting="stripBackground"]');
+				const apply = (value) => { $("strip-color").hidden = !((value) => value === "custom")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getGlobalSettings().then((payload) => apply(payload?.settings?.["stripBackground"]));
+				client.didReceiveGlobalSettings.subscribe(({ payload }) => apply(payload?.settings?.["stripBackground"]));
+			}
 			{
 				const field = document.querySelector('[setting="destination"]');
 				const apply = (value) => { $("project").hidden = !((value) => value === "project")(value ?? ""); };

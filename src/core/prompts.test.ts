@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { migratePromptSettings, quickPrompt } from "./prompts.js";
+import { dialPrompts, migratePromptSettings, quickPrompt } from "./prompts.js";
 
 describe("quickPrompt", () => {
 	it("sends a template's text under its short label, defaulting to Continue", () => {
@@ -24,5 +24,18 @@ describe("migratePromptSettings", () => {
 	it("keeps a title set since, and drops an empty legacy label", () => {
 		expect(migratePromptSettings({ title: "New", label: "Old" })).toEqual({ title: "New" });
 		expect(migratePromptSettings({ prompt: "x", label: "" })).toEqual({ prompt: "x" });
+	});
+});
+
+describe("dialPrompts", () => {
+	it("lists the user's lines, then the templates not already among them", () => {
+		const prompts = dialPrompts({ prompts: "Continue\n\n  Review your changes  \nrun the tests and fix any failures!" });
+		expect(prompts.slice(0, 3)).toEqual([{ text: "Continue" }, { text: "Review your changes" }, { text: "run the tests and fix any failures!" }]);
+		expect(prompts.slice(3).map((prompt) => prompt.label)).toEqual(["Diagnose", "Explain", "Commit"]);
+	});
+
+	it("leaves the templates out when turned off", () => {
+		expect(dialPrompts({ prompts: "One", templates: false })).toEqual([{ text: "One" }]);
+		expect(dialPrompts({})).toHaveLength(5);
 	});
 });

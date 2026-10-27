@@ -502,47 +502,4 @@ describe("Machine details", () => {
 		expect(await loading).toEqual({ type: "question", threadId: "thr_123", requestId: "rr_q", questions, messageMode: true });
 		expect(socket.sent.at(-1)).toEqual({ _tag: "Interrupt", requestId: subscription.id });
 	});
-
-	it("lists providers without legacy models or prompt-injected values", async () => {
-		const h = setup();
-		await connect(h);
-		expect(h.machine.providers()).toEqual([
-			{
-				instanceId: "claudeAgent",
-				displayName: "Claude",
-				runtimeModes: undefined,
-				interactionModeToggle: true,
-				fixedModel: false,
-				models: [
-					{
-						id: "claude-opus-5-5",
-						label: "Opus 5.5",
-						isDefault: true,
-						options: [
-							{
-								id: "effort",
-								label: "Reasoning",
-								type: "select",
-								values: [
-									{ value: "medium", label: "Medium" },
-									{ value: "high", label: "High" },
-								],
-								default: "medium",
-							},
-							{
-								id: "fastMode",
-								label: "Fast Mode",
-								type: "boolean",
-								values: [
-									{ value: false, label: "Off" },
-									{ value: true, label: "On" },
-								],
-								default: false,
-							},
-						],
-					},
-				],
-			},
-		]);
-	});
 });

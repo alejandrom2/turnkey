@@ -36,13 +36,9 @@ const entry = (seed: string, placed: Placed) => ({
 const slot = (n?: number): Placed => ({ action: "slot", name: "Thread", ...(n === undefined ? {} : { settings: { slot: String(n) } }) });
 
 const DIALS: Placed[] = [
-	{ action: "dial.threads", name: "Threads Dial" },
-	{ action: "dial.model", name: "Model Dial" },
-	{
-		action: "dial.prompts",
-		name: "Prompts Dial",
-		settings: { prompts: ["Continue", "Run the tests and fix what fails", "Review your changes for bugs", "Summarize what you changed"].join("\n") },
-	},
+	{ action: "dial.threads", name: "Threads Dial", settings: { filter: "attention" } },
+	{ action: "dial.model", name: "Power Dial", settings: { dialControls: "model" } },
+	{ action: "dial.prompts", name: "Prompts Dial", settings: { prompts: ["Review your changes for bugs", "Summarize what you changed"].join("\n") } },
 	{ action: "dial.answer", name: "Answer Dial" },
 ];
 

@@ -13,6 +13,8 @@ export type DeckThread = ShellRow & {
 	environmentId: string;
 };
 
+const all = () => true;
+
 /** A dial that stops turning for this long selects the thread it rests on. */
 export const SELECT_DEBOUNCE_MS = 300;
 /** How long the deck's own visit may take to come back as a newer open stamp. */
@@ -157,18 +159,24 @@ export class ThreadBoard {
 		await thread.machine.visit(thread, { opened: true });
 	}
 
-	/** The thread a turning dial points at before selecting it; undefined when it is not on `machine`. */
-	pendingOn(machine?: string): DeckThread | undefined {
+	/** The thread a turning dial points at before selecting it; undefined when it is not on `machine` or fails `match`. */
+	pendingOn(machine?: string, match: (thread: DeckThread) => boolean = all): DeckThread | undefined {
 		const key = this.#pending?.key;
-		return key === undefined ? undefined : this.threadsOn(machine).find((thread) => thread.key === key);
+		return key === undefined ? undefined : this.threadsOn(machine).find((thread) => thread.key === key && match(thread));
 	}
 
-	/** Moves the pending choice by `steps` through one machine's threads (or all), clamped; it selects once the dial rests. */
-	step(steps: number, machine?: string): void {
-		const threads = this.threadsOn(machine);
+	/** What a dial showing the threads that pass `match` points at: its pending pick, the selection, else the first. */
+	shownOn(machine?: string, match: (thread: DeckThread) => boolean = all): DeckThread | undefined {
+		const selected = this.selectedOn(machine);
+		return this.pendingOn(machine, match) ?? (selected !== undefined && match(selected) ? selected : this.threadsOn(machine).find(match));
+	}
+
+	/** Moves the pending choice by `steps` through one machine's threads (or all) that pass `match`, clamped; it selects once the dial rests. */
+	step(steps: number, machine?: string, match: (thread: DeckThread) => boolean = all): void {
+		const threads = this.threadsOn(machine).filter(match);
 		if (threads.length === 0) return;
 		const selected = this.selectedOn(machine);
-		const from = Math.max(0, threads.indexOf((this.pendingOn(machine) ?? selected)!));
+		const from = Math.max(0, threads.indexOf(this.shownOn(machine, match)!));
 		const next = threads[Math.min(threads.length - 1, Math.max(0, from + steps))];
 		this.#clearPending();
 		if (next.key !== selected?.key) {

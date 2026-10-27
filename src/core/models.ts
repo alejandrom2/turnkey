@@ -50,10 +50,12 @@ export type ModelOptionInfo = {
 	label: string;
 	type: "select" | "boolean";
 	values: { value: OptionValue; label: string }[];
+	/** Prompt-injected values (Claude's Ultrathink): never sent as an option, they prefix the prompt instead. */
+	injected?: { value: string; label: string }[];
 	default?: OptionValue;
 };
 
-/** Options as the deck offers them: prompt-injected values (Claude's Ultrathink) are typed, not picked. */
+/** Options as T3 Code reads them; prompt-injected values (Claude's Ultrathink) are kept apart from the real ones. */
 export function optionInfo(descriptor: ProviderOptionDescriptor): ModelOptionInfo {
 	if (descriptor.type === "boolean") {
 		return {
@@ -73,6 +75,7 @@ export function optionInfo(descriptor: ProviderOptionDescriptor): ModelOptionInf
 		label: descriptor.label,
 		type: "select",
 		values: descriptor.options.filter((choice) => !injected.has(choice.id)).map((choice) => ({ value: choice.id, label: choice.label })),
+		...(injected.size > 0 ? { injected: descriptor.options.filter((choice) => injected.has(choice.id)).map((choice) => ({ value: choice.id, label: choice.label })) } : {}),
 		default: descriptor.currentValue ?? descriptor.options.find((choice) => choice.isDefault)?.id,
 	};
 }
@@ -287,16 +290,19 @@ export function effortOption(model: Pick<CatalogModel, "options"> | undefined): 
 	return undefined;
 }
 
-/** Every effort value any model on the machine offers, first label wins, for the Effort key's settings. */
+/** Every effort value any model on the machine offers, first label wins, then prompt-injected ones (Ultrathink), for the Effort key's settings. */
 export function effortValues(config: ModelConfig | undefined): { value: string; label: string }[] {
 	const seen = new Map<string, string>();
+	const injected = new Map<string, string>();
 	for (const provider of config?.providers ?? []) {
 		if (!pickerReady(provider)) continue;
 		for (const model of provider.models) {
 			const option = effortOption({ options: (model.capabilities?.optionDescriptors ?? []).map(optionInfo) });
 			for (const choice of option?.values ?? []) if (!seen.has(String(choice.value))) seen.set(String(choice.value), choice.label);
+			for (const choice of option?.injected ?? []) if (!injected.has(choice.value)) injected.set(choice.value, choice.label);
 		}
 	}
+	for (const [value, label] of injected) if (!seen.has(value)) seen.set(value, label);
 	return [...seen].map(([value, label]) => ({ value, label }));
 }
 

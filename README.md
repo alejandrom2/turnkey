@@ -26,7 +26,7 @@ Most actions act on the **selected thread**: the one you opened last in T3 Code,
 | Quick Prompt | key | Continue, run tests and fix failures, diagnose and fix, explain the current state, commit, or a custom prompt. Hold restarts, like Send Prompt. |
 | Stop | key | Stops the selected thread's running turn. |
 | Model | key | Switches the selected thread to one model, or to the next of your favorites in T3 Code (star them in its model picker), across providers. Without favorites it steps through the thread's provider's models. Switching provider works as in T3 Code's picker; when T3 Code refuses, the key shows why. |
-| Effort | key | Sets the reasoning effort, or steps through what the thread's model offers. |
+| Effort | key | Sets the reasoning effort, or steps through what the thread's model offers. **Ultrathink**, where Claude offers it, works as in T3 Code: the effort stays, and the deck prefixes its next prompts to that thread with `Ultrathink:` (not slash commands) until you pick another effort or switch to a model without it. Keys and dials that send to it get T3 Code's spectrum frame meanwhile. |
 | Speed | key | Toggles fast mode where the model has one (Claude's Fast mode, Codex's Fast tier). |
 | Permissions | key | Sets access (Supervised, Auto-accept edits, Auto, Full access), or steps through the modes the provider supports. |
 | Plan | key | Switches between Build and Plan. |
@@ -37,12 +37,14 @@ Most actions act on the **selected thread**: the one you opened last in T3 Code,
 | Pull Request | key | The selected thread's pull request and its state. Tap opens it in the browser. |
 | Branch | key | The selected thread's branch. Tap opens the thread. |
 | Health | key | The connection to the action's machine (or all): connected, read only, connecting, needs pairing or the error. Tap reconnects. |
-| Threads Dial | dial | Rotate selects a thread (it settles after a short pause), press or tap opens it. |
-| Model Dial | dial | Tap picks a setting: the model, its options as the provider reports them (effort, speed, …), access (Supervised … Full access) and Build/Plan. Rotate previews a value, press applies it. |
-| Prompts Dial | dial | Rotate through saved prompts, press sends, hold starts a new thread. |
-| Answer Dial | dial | Approvals: rotate between the dial's **Approvals** setting and Deny, then hold (or press, if set) to answer. **Approvals** defaults to opening the request in T3 Code; it can allow once, for the session, or always. Questions: pick a choice per question. Tap opens the thread. Requests the deck can't answer open in T3 Code. |
+| Threads Dial | dial | Like Activity: the threads matching a filter (all, needs you, working, unread), project and **From the last** (no limit, 24 hours … 7 days), most urgent first. Rotate selects one (it settles after a short pause), press or tap opens it. The strip shows its provider, title, status and timer or diff. |
+| Power Dial | dial | Controls one setting of the selected thread, picked in its settings: the **model** (your favorites across providers, with each provider's mark), the **effort** (with Ultrathink) or **access** (with T3 Code's mode icons). Rotate previews, press applies; when T3 Code refuses, the strip shows why. Press with nothing to apply, or tap, switches Speed where the model has it. |
+| Prompts Dial | dial | Rotate through your prompts, then Quick Prompt's templates (turn them off in settings). Press or tap sends to the selected thread, hold starts a new thread. |
+| Answer Dial | dial | Approvals: the strip shows the request; rotate between the dial's **Approvals** setting and Deny, then hold (or press, if set) to answer. **Approvals** defaults to opening the request in T3 Code; it can allow once, for the session, or always. Questions: pick a choice per question. Tap opens the thread. Requests the deck can't answer open in T3 Code. |
 
 A key that can't act right now is dimmed, and pressing it says why. After a press, the key shows what happened for a moment. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Models and favorites are read again whenever a key's settings open.
+
+On the dials, text too long for the strip scrolls once the dial has rested for a second, twice, then stops; touch and hold the strip to read it across both lines. Strip backgrounds follow **Advanced → Dial strips** in any action's settings: T3 Code (default), a dark blue-to-violet gradient, the thread's state (green done, red failed, amber needs you) or a colour of your own, with or without the coloured state line. Each dial can override it.
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 

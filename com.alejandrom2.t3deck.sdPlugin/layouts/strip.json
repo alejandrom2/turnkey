@@ -33,6 +33,8 @@
 			"color": "#B8BCC6",
 			"text-overflow": "fade",
 			"zOrder": 1
-		}
+		},
+		{ "key": "valueArt", "type": "pixmap", "rect": [56, 30, 136, 22], "zOrder": 2 },
+		{ "key": "detailArt", "type": "pixmap", "rect": [56, 52, 136, 23], "zOrder": 2 }
 	]
 }
