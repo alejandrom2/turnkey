@@ -4,8 +4,9 @@ import { EMPTY_QUEUE, type ThreadQueue } from "./t3/queue.js";
 type Entry = { wanted: string; read?: string; queue?: ThreadQueue; loading: boolean; version: number };
 
 /**
- * Queues of the threads the deck shows, read on demand: a thread's queue is read again only when its shell stamp
- * moves or the deck changed it, one read at a time per thread, and never for a thread with nothing queued.
+ * Queues of the threads the deck shows, read on demand: a thread's queue is read again only when its runs move or the
+ * deck changed it, one read at a time per thread, and only while the shell says one may wait or the last read found
+ * one (removing the newest message leaves older ones behind a non-queued status).
  */
 export class QueueStore {
 	readonly #entries = new Map<string, Entry>();
@@ -13,14 +14,15 @@ export class QueueStore {
 	constructor(private readonly onChange: () => void) {}
 
 	/** The queue as last read (the previous one while a newer read runs); undefined until the first read lands. */
-	of(thread: { key: string; queueStamp?: string }, read: () => Promise<ThreadQueue>): ThreadQueue | undefined {
-		if (thread.queueStamp === undefined) {
+	of(thread: { key: string; runStamp: string; mayQueue: boolean }, read: () => Promise<ThreadQueue>): ThreadQueue | undefined {
+		const known = this.#entries.get(thread.key);
+		if (!thread.mayQueue && !(known?.queue?.items.length)) {
 			this.#entries.delete(thread.key);
 			return EMPTY_QUEUE;
 		}
-		const entry = this.#entries.get(thread.key) ?? { wanted: thread.queueStamp, loading: false, version: 0 };
+		const entry = known ?? { wanted: thread.runStamp, loading: false, version: 0 };
 		this.#entries.set(thread.key, entry);
-		entry.wanted = thread.queueStamp;
+		entry.wanted = thread.runStamp;
 		this.#load(thread.key, entry, read);
 		return entry.queue;
 	}

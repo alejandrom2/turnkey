@@ -103,7 +103,7 @@ Board order: needs approval, has a question, running, queued, then unseen failur
 - **Pull request handoffs** are sent straight away: T3 Code puts them in the composer for you to read first, but the composer lives in the app. That's why Fix Findings needs a hold by default, and why **Ask about PR** only opens the thread. The **Review Guide** opens the thread, since there is no link to the guide itself.
 - **Open in Editor** uses T3 Code's first available editor as the default; T3 Code also remembers the last one you picked, per browser, which the deck can't see.
 - **Usage links**: T3 Code's desktop app has no link to its Usage page yet, so **Open Usage in T3 Code** only brings the app forward.
-- **Queues**: T3 Code's thread list doesn't count queued messages, so the deck reads a shown thread's queue from one snapshot of that thread when its runs change, and after its own queue presses. A message removed or reordered in T3 Code while the thread's runs stay the same shows on the deck after the next change.
+- **Queues**: T3 Code's thread list doesn't count queued messages, so the deck reads a shown thread's queue from one snapshot of that thread when its runs change (while it is queued, stopped, or had messages waiting), and after its own queue presses. A message removed or reordered in T3 Code while the thread's runs stay the same shows on the deck after the next change.
 - **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.
 
 ## Development
