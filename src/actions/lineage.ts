@@ -132,19 +132,18 @@ export class ForkKey extends LineageKey {
 export class MergeBackKey extends LineageKey {
 	#state(action: Action<TargetedSettings>) {
 		const { thread, gone, pinned } = this.target(action);
-		const parent = thread?.mergeInto === undefined ? undefined : thread.machine.threadRow(thread.mergeInto);
+		// An archived parent leaves the shell but still takes the merge, so it is only named when listed.
+		const parent = thread?.mergeInto === undefined ? undefined : (thread.machine.threadRow(thread.mergeInto) ?? undefined);
 		const missing =
 			thread === undefined
 				? undefined
 				: thread.mergeInto === undefined
 					? t("lineage.notFork")
-					: parent === null
-						? t("lineage.parentGone")
-						: thread.latestRunId === null
-							? t("lineage.finishRunFirst")
-							: mergeBlocked(thread.runStatus)
-								? t("lineage.finishTurn")
-								: undefined;
+					: thread.latestRunId === null
+						? t("lineage.finishRunFirst")
+						: mergeBlocked(thread.runStatus)
+							? t("lineage.finishTurn")
+							: undefined;
 		return { thread, pinned, parent, check: availability("lineage", { thread, gone, canOperate: canOperate(thread), missing }) };
 	}
 
