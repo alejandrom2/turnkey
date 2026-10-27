@@ -52,6 +52,7 @@ const ACTIONS: Record<string, GlyphName> = {
 	"dial-limits": "gauge",
 	usage: "usage",
 	"dial-usage": "usage",
+	"dial-devices": "device",
 };
 
 const svg = (size: number, body: string, background?: string) =>
