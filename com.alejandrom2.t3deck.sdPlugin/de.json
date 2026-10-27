@@ -917,6 +917,9 @@
 				"worktreeHint": "Ein neuer Worktree startet vom Standard-Branch des Repositorys, wie im Composer von T3 Code, und leitet seinen Branch-Namen aus dem Prompt ab; er braucht einen Prompt und ein Projekt."
 			},
 			"model": {
+				"nameColor": "Namensfarbe",
+				"nameModel": "Modellfarbe",
+				"nameWhite": "Weiß",
 				"hint": "Durchschalten geht durch die Favoritenmodelle von T3 Code über alle Anbieter, oder durch die Modelle des Thread-Anbieters, wenn du keine hast. Ein Modell eines anderen Anbieters übergibt den Thread, wie die Modellauswahl von T3 Code."
 			},
 			"effort": {
@@ -974,6 +977,9 @@
 			},
 			"power": {
 				"controls": "Dieser Regler steuert",
+				"bottomRow": "Modellansicht zeigt",
+				"showSpeed": "Tempo",
+				"showEffort": "Aufwand",
 				"hint": "Drehen zeigt eine Vorschau, Drücken wendet sie auf den ausgewählten Thread an. Modell geht durch die Favoritenmodelle von T3 Code über alle Anbieter. Drücken ohne etwas anzuwenden oder Tippen schaltet das Tempo um, wenn das Modell es bietet. Ultrathink wird, wo Claude es bietet, den nächsten Prompts des Decks an den Thread vorangestellt."
 			},
 			"limits": {

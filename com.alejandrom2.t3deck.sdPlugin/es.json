@@ -917,6 +917,9 @@
 				"worktreeHint": "Un worktree nuevo parte de la rama por defecto del repositorio, como hace el compositor de T3 Code, y toma el nombre de su rama del prompt; requiere un prompt y un proyecto."
 			},
 			"model": {
+				"nameColor": "Color del nombre",
+				"nameModel": "Color del modelo",
+				"nameWhite": "Blanco",
 				"hint": "Recorrer pasa por los modelos favoritos de T3 Code, entre proveedores, o por los modelos del proveedor del hilo si no tienes ninguno. Elegir un modelo de otro proveedor traspasa el hilo, como hace el selector de modelos de T3 Code."
 			},
 			"effort": {
@@ -974,6 +977,9 @@
 			},
 			"power": {
 				"controls": "Este dial controla",
+				"bottomRow": "La vista de modelo muestra",
+				"showSpeed": "Velocidad",
+				"showEffort": "Esfuerzo",
 				"hint": "Gira para previsualizar, pulsa para aplicar al hilo seleccionado. Modelo pasa por los modelos favoritos de T3 Code entre proveedores. Pulsa sin nada que aplicar, o toca, para cambiar la Velocidad si el modelo la ofrece. Ultrathink, donde Claude lo ofrece, se antepone a los próximos prompts del deck al hilo."
 			},
 			"limits": {
