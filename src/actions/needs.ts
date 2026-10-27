@@ -55,7 +55,12 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 		case "health":
 			return [paired];
 		case "new":
-			return [paired, { kind: "operate", ok: deck.machines.some((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine)) }, ...(settings.destination === "project" ? projectNeed : [])];
+			return [
+				paired,
+				{ kind: "operate", ok: deck.machines.some((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine)) },
+				...(settings.destination === "project" ? projectNeed : []),
+				...(settings.startIn === "worktree" ? [{ kind: "prompt", ok: text(settings.prompt) !== "" } satisfies Need] : []),
+			];
 		case "send":
 		case "steer":
 			return [...needsFor(machine, thread), ...(kind === "steer" ? [{ kind: "running", ok: thread?.active === true } satisfies Need] : []), { kind: "prompt", ok: text(settings.prompt) !== "" }];

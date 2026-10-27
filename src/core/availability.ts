@@ -21,11 +21,13 @@ export type ActionKind =
 	| "approve"
 	| "deny"
 	| "pr"
-	| "branch";
+	| "branch"
+	| "workflow"
+	| "lineage";
 
 export type AvailabilityInput = {
 	/** The thread the action targets: usually the selected one. */
-	thread?: Pick<DeckThread, "deck" | "active" | "pinned" | "pendingRequest"> & Partial<Pick<DeckThread, "pullRequests" | "branch">>;
+	thread?: Pick<DeckThread, "deck" | "active" | "pinned" | "pendingRequest"> & Partial<Pick<DeckThread, "pullRequests" | "branch" | "subagents">>;
 	/** The target's machine (or, for New Thread, the machine it launches on) may act, not just read. */
 	canOperate: boolean;
 	/** A saved prompt is set, for actions that send one. */
@@ -56,6 +58,10 @@ export function availability(kind: ActionKind, input: AvailabilityInput): Availa
 		case "stop":
 		case "steer":
 			if (!thread.active) return no(t("reason.notRunning"));
+			break;
+		case "workflow":
+			// A workflow keeps its thread busy or parked on subagents; the press reads which ones run.
+			if (!thread.active && !(thread.subagents ?? 0)) return no(t("workflow.none"));
 			break;
 		case "pin":
 			if (thread.pinned) return no(t("reason.pinned"));

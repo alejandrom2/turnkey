@@ -121,6 +121,17 @@ export function gitSummary(status: VcsStatus, action: GitKeyAction): string | un
 
 export const reasonText = (blocker: GitBlocker): string => t(blocker.key, blocker.params);
 
+/** A checkout at a glance, for the Branch key: changed files, then commits ahead (↑) and behind (↓) its upstream. */
+export function branchSummary(status: VcsStatus): string | undefined {
+	const files = status.workingTree.files.length;
+	const parts = [
+		files > 0 ? t(files === 1 ? "repo.fileOne" : "repo.files", { count: files }) : undefined,
+		status.aheadCount > 0 ? `↑${status.aheadCount}` : undefined,
+		status.behindCount > 0 ? `↓${status.behindCount}` : undefined,
+	].filter(Boolean);
+	return parts.length > 0 ? parts.join(" · ") : undefined;
+}
+
 /** `vcs.refreshStatus`; `remote: false` reads git's local state only and zero-fills what it didn't read from the remote. */
 export function readStatus(machine: GitMachine, cwd: string, remote: boolean): Promise<VcsStatus> {
 	return machine.call<VcsStatus>("vcs.refreshStatus", remote ? { cwd } : { cwd, localOnly: true }, READ_SCOPE);
@@ -173,3 +184,12 @@ export function progressLabel(progress: GitProgress): string | undefined {
 			return undefined;
 	}
 }
+
+/** A `VcsRef` from `vcs.listRefs`, the fields a worktree's base needs. */
+export type VcsRef = { name: string; current: boolean; isDefault: boolean };
+
+/**
+ * The branch a new worktree starts from, as T3 Code's branch picker seeds it: the repository's default branch, else
+ * the one checked out (BranchToolbarBranchSelector.tsx `worktreeBaseBranchCandidate`).
+ */
+export const worktreeBase = (refs: readonly VcsRef[]): string | undefined => refs.find((ref) => ref.isDefault)?.name ?? refs.find((ref) => ref.current)?.name;

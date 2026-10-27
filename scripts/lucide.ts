@@ -64,6 +64,12 @@ const NAME = {
   book: "book-open", // T3's Explain
   editor: "code", // closest: T3 shows each editor's brand mark
   task: "calendar-clock", // T3's Scheduled tasks
+  skill: "box", // T3's skill chip
+  fork: "git-fork", // T3's fork
+  mergeBack: "git-merge",
+  worktree: "folder-git-2", // T3's worktree mark
+  workflow: "workflow", // T3's workflow
+  subagent: "bot", // T3's subagent rows
 } as const;
 
 const dir = process.argv[2];

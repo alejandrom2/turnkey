@@ -2,7 +2,11 @@ import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { type VcsRef, worktreeBase } from "../git.js";
+import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun, type ProjectedTurnItem } from "../lineage.js";
+import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
+import { type ProjectedSubagent, type RunningWorkflow, runningWorkflows, stopWorkflowFailure } from "../workflows.js";
 import { type QueueProjection, type ThreadQueue, threadQueue } from "./queue.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
@@ -46,7 +50,7 @@ type Capabilities = ThreadCapabilities & {
 	threadVisitedTracking?: boolean;
 };
 
-type ProjectDefaults = { defaultModelSelection?: ModelSelection | null; defaultRuntimeMode?: RuntimeMode };
+type ProjectDefaults = { defaultModelSelection?: ModelSelection | null; defaultRuntimeMode?: RuntimeMode; newWorktreesStartFromOrigin?: boolean };
 
 /** The settings a usage scan depends on: a change makes T3 Code's own clients read usage again. */
 type UsageSettings = { usagePriceOverrides?: unknown; usageModelAliases?: unknown; cursorKeychainUsageEnabled?: unknown };
@@ -68,7 +72,10 @@ type ServerConfig = {
 export type MessageContext = { version: 1; records: Record<string, unknown>[] };
 
 /** Where a launched thread works (`OrchestrationV2ThreadLaunchWorkspaceStrategy`). */
-export type WorkspaceStrategy = { type: "root"; branch?: string } | { type: "existing_worktree"; worktreePath: string; branch?: string };
+export type WorkspaceStrategy =
+	| { type: "root"; branch?: string }
+	| { type: "existing_worktree"; worktreePath: string; branch?: string }
+	| { type: "worktree"; baseRef: string; branch?: string; startFromOrigin?: boolean };
 
 export type Decision = "accept" | "acceptForSession" | "acceptAlways" | "decline" | "cancel";
 export type Question = {
@@ -92,6 +99,13 @@ type ConfigEvent = {
 	config?: ServerConfig;
 	payload?: { providers?: ConfigProvider[]; settings?: ServerConfig["settings"]; sources?: UsageLimitSourceSnapshot[] };
 };
+
+/** T3 Code's composer retries a checkout's skills read this long after a failure, at most three times in a row. */
+const WORKSPACE_RETRY_MS = 10_000;
+const WORKSPACE_MAX_FAILURES = 3;
+
+/** One checkout's skills read: the snapshot T3 Code sent, when it was asked for, and its failures in a row. */
+type WorkspaceRead = { snapshot?: WorkspaceSnapshot; requestedAt?: number; retryAt?: number; failures: number; pending?: Promise<void> };
 
 /** How long the config subscription outlives its last watcher, so flipping pages doesn't resubscribe. */
 export const CONFIG_WATCH_LINGER_MS = 60_000;
@@ -157,6 +171,8 @@ export class Machine {
 	#untaskTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Bumped when the task list changes, so the deck repaints faces drawn from it. */
 	tasksVersion = 0;
+	/** Per provider instance and checkout, its skills snapshot: config replies leave these out, so they are read on demand. */
+	readonly #workspaces = new Map<string, WorkspaceRead>();
 	readonly #now: () => number;
 	readonly #uuid: () => string;
 
@@ -332,6 +348,7 @@ export class Machine {
 		this.#tasks = undefined;
 		this.#tasksError = undefined;
 		this.#configLoad = undefined;
+		this.#workspaces.clear();
 		this.#rows = [];
 		this.#everyRow = undefined;
 	}
@@ -593,6 +610,54 @@ export class Machine {
 		await this.call("server.refreshUsageRates", {}, DIAGNOSTICS_SCOPE);
 	}
 
+	/**
+	 * The skills a thread on `instanceId` working in `cwd` can run, as its composer lists them; `loading` while its
+	 * checkout's first read runs. The checkout is read again once T3 Code's snapshot goes stale, so only call this for
+	 * a thread a visible face shows.
+	 */
+	skills(instanceId: string, cwd: string | undefined): { skills: ProviderSkill[]; loading: boolean } {
+		const provider = this.#config?.providers?.find((candidate) => candidate.instanceId === instanceId);
+		if (provider === undefined || cwd === undefined) return { skills: threadSkills(provider, undefined), loading: false };
+		const read = this.#workspaceRead(instanceId, cwd);
+		const snapshot = read.snapshot ?? provider.workspaceSnapshots?.find((candidate) => candidate.cwd === cwd);
+		return { skills: threadSkills(provider, snapshot), loading: snapshot === undefined && read.pending !== undefined };
+	}
+
+	/** The same list once its checkout's read has landed, for an inspector's choices. */
+	async readSkills(instanceId: string, cwd: string | undefined): Promise<ProviderSkill[]> {
+		if (cwd !== undefined) await this.#workspaceRead(instanceId, cwd).pending;
+		return this.skills(instanceId, cwd).skills;
+	}
+
+	/** Starts a checkout's read when it has none, or a stale one, unless failures hold it back (`planProviderWorkspaceSnapshotRefresh`). */
+	#workspaceRead(instanceId: string, cwd: string): WorkspaceRead {
+		const key = `${instanceId}\n${cwd}`;
+		const read = this.#workspaces.get(key) ?? { failures: 0 };
+		this.#workspaces.set(key, read);
+		const now = this.#now();
+		const due = read.requestedAt === undefined || now - read.requestedAt >= WORKSPACE_SNAPSHOT_TTL_MS;
+		if (read.pending !== undefined || !due || (read.retryAt ?? 0) > now || read.failures >= WORKSPACE_MAX_FAILURES || this.state.kind !== "ready") return read;
+		read.requestedAt = now;
+		read.pending = this.#rpcFor(false)
+			.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { instanceId, cwd, workspaceSnapshotsOnDemand: true })
+			.then(({ providers }) => providers?.find((provider) => provider.instanceId === instanceId)?.workspaceSnapshots?.find((snapshot) => snapshot.cwd === cwd))
+			.catch(() => undefined)
+			.then((snapshot) => {
+				read.pending = undefined;
+				if (this.#workspaces.get(key) !== read) return;
+				if (snapshot === undefined || snapshot.slashCommandsPending === true) {
+					read.failures++;
+					read.requestedAt = undefined;
+					read.retryAt = this.#now() + WORKSPACE_RETRY_MS;
+				} else {
+					read.snapshot = snapshot;
+					read.failures = 0;
+				}
+				this.onChange();
+			});
+		return read;
+	}
+
 	/** Spends one banked reset credit on a provider account or hub account. */
 	consumeResetCredit(input: ResetCreditInput): Promise<{ outcome: ResetCreditOutcome; warning?: string }> {
 		return this.call("provider.consumeResetCredit", input, PROVIDERS_SCOPE);
@@ -723,6 +788,21 @@ export class Machine {
 			...(text === "" ? {} : { initialMessage: { messageId: this.#uuid(), text: message, ...(options.context === undefined ? {} : { context: options.context }), attachments: [] } }),
 		});
 		return { threadId };
+	}
+
+	/**
+	 * Where a new worktree for `projectId` starts, as T3 Code's composer launches one: from the repository's default
+	 * branch, under a branch name the server picks, from origin when the project's setting says so.
+	 */
+	async worktreeStrategy(projectId: string): Promise<WorkspaceStrategy> {
+		const root = this.#shell?.projects.get(projectId)?.workspaceRoot;
+		if (root === undefined) throw new RpcError("NoProject", "The project is gone.", t("worktree.noProject"));
+		const listed = await this.call<{ isRepo?: boolean; refs?: VcsRef[] }>("vcs.listRefs", { cwd: root, limit: 100 });
+		const baseRef = listed.isRepo === false ? undefined : worktreeBase(listed.refs ?? []);
+		if (baseRef === undefined) throw new RpcError("NoBaseRef", "No branch to start a worktree from.", t(listed.isRepo === false ? "worktree.notRepo" : "worktree.noBranch"));
+		const settings = this.#config?.settings;
+		const fromOrigin = settings?.projectSettingsOverrides?.[projectId]?.newWorktreesStartFromOrigin ?? settings?.newWorktreesStartFromOrigin ?? true;
+		return { type: "worktree", baseRef, ...(fromOrigin ? { startFromOrigin: true } : {}) };
 	}
 
 	#firstDefaultModel(): ModelSelection | undefined {
@@ -867,6 +947,62 @@ export class Machine {
 		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		return threadQueue(projection as QueueProjection);
+	}
+
+	/**
+	 * Forks the thread from its newest finished reply into a new thread, as T3 Code's fork button on that reply
+	 * does; the fork's id is chosen here so the caller can open it.
+	 */
+	async fork(thread: ThreadRef & { title: string }): Promise<{ threadId: string }> {
+		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[]; turnItems?: ProjectedTurnItem[] } | undefined;
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		const run = forkSourceRun(projection.runs ?? [], projection.turnItems ?? []);
+		if (run === undefined) throw new RpcError("NothingToFork", "No finished run to fork from.", t("lineage.nothingToFork"));
+		const threadId = this.#uuid();
+		await this.#dispatch({
+			type: "thread.fork",
+			createdBy: "user",
+			creationSource: DECK_CREATION_SOURCE,
+			sourceThreadId: thread.threadId,
+			targetThreadId: threadId,
+			sourcePoint: { type: "run", runId: run.id },
+			title: forkTitle(thread.title),
+		});
+		return { threadId };
+	}
+
+	/** Merges a fork back into the thread it came from, from its latest finished run, as T3 Code's Merge does. */
+	async mergeBack(thread: ThreadRef, into: string): Promise<void> {
+		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[] } | undefined;
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		const run = latestMergeBackRun(projection.runs ?? []);
+		if (run === undefined) throw new RpcError("NothingToMerge", "No finished run to merge back.", t("lineage.finishRunFirst"));
+		await this.#dispatch({
+			type: "thread.merge_back",
+			createdBy: "user",
+			creationSource: DECK_CREATION_SOURCE,
+			sourceThreadId: thread.threadId,
+			targetThreadId: into,
+			sourcePoint: { type: "run", runId: run.id },
+		});
+	}
+
+	/** The thread's running workflows, from one bounded snapshot: the shell doesn't carry them. */
+	async workflows(thread: ThreadRef): Promise<RunningWorkflow[]> {
+		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		return runningWorkflows(projection as { subagents?: ProjectedSubagent[] });
+	}
+
+	/** Stops one workflow the thread runs, as T3 Code's Lineage panel does; its refusal reads as T3 Code words it. */
+	async stopWorkflow(thread: ThreadRef, subagentId: string): Promise<void> {
+		try {
+			await this.call("orchestration.stopWorkflow", { threadId: thread.threadId, subagentId }, OPERATE_SCOPE);
+		} catch (error) {
+			const reason = error instanceof RpcError ? stopWorkflowFailure(error.code) : undefined;
+			if (reason === undefined) throw error;
+			throw new RpcError((error as RpcError).tag, (error as RpcError).message, reason);
+		}
 	}
 
 	/** Steers the running turn with a queued message (T3 Code's "Steer now"). */
