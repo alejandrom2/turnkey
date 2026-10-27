@@ -481,6 +481,7 @@
 		},
 		"connection": {
 			"noAnswer": "T3 Code가 제시간에 응답하지 않았습니다.",
+			"foreignLink": "T3 Code가 다른 사이트 링크를 보냈습니다.",
 			"closed": "T3 Code와의 연결이 닫혔습니다.",
 			"failed": "T3 Code와의 연결에 실패했습니다.",
 			"silent": "T3 Code가 응답을 멈췄습니다.",
@@ -579,8 +580,6 @@
 			"holdTo": "길게 눌러 확인",
 			"holdOnDefault": "길게 눌러 {branch}에 푸시",
 			"starting": "시작 중…",
-			"pulled": "풀 완료",
-			"upToDate": "최신 상태",
 			"files": "파일 {count}개",
 			"fileOne": "파일 1개"
 		},

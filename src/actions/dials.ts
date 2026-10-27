@@ -32,11 +32,13 @@ import {
 import { matchesDial, type ThreadFilter, threadFilter } from "../core/slots.js";
 import type { StripContent } from "../core/strip.js";
 import { type StripItem, type StripList, threadRowsArt } from "../core/styles.js";
+import type { Need } from "../core/requirements.js";
 import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
-import { canOperate, colorStyle, LONG_PRESS_MS, openThread, pressWhileDisconnected, queuedCount, selectedThread, sendToThread, speedPaint, ultrathinkArmed } from "./base.js";
-import { applyEffort, launchable, requestFor, startThread } from "./keys.js";
-import { type DialSettings, disconnectedStrip, markArt, StripDial } from "./strip.js";
+import { canOperate, colorStyle, LONG_PRESS_MS, markArt, openThread, pressWhileDisconnected, queuedCount, selectedThread, sendToThread, speedPaint, ultrathinkArmed } from "./base.js";
+import { applyEffort, requestFor, startThread } from "./keys.js";
+import { threadNeeds } from "./needs.js";
+import { type DialSettings, StripDial } from "./strip.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -97,12 +99,14 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 		return (thread) => matchesDial(thread, settings, now);
 	}
 
+	protected heading(action: Action<ThreadDialSettings>): string {
+		return t(FILTER_LABEL[threadFilter(this.settingsOf(action).filter)]);
+	}
+
 	protected face(action: Action<ThreadDialSettings>): StripContent {
 		const machine = this.machineOf(action);
 		const filter = threadFilter(this.settingsOf(action).filter);
-		const label = t(FILTER_LABEL[filter]);
-		const offline = disconnectedStrip(label, machine);
-		if (offline) return offline;
+		const label = this.heading(action);
 		const match = this.#match(action);
 		const thread = deck.board.shownOn(machine, match);
 		if (thread === undefined) return { header: label, icon: glyphArt("check", COLORS.muted), accent: COLORS.muted, value: t(filter === "all" ? "strip.noThreads" : "strip.allQuiet") };
@@ -125,8 +129,6 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 
 	protected override list(action: Action<ThreadDialSettings>): StripList | undefined {
 		const machine = this.machineOf(action);
-		const filter = threadFilter(this.settingsOf(action).filter);
-		if (disconnectedStrip(t(FILTER_LABEL[filter]), machine)) return undefined;
 		const match = this.#match(action);
 		const thread = deck.board.shownOn(machine, match);
 		if (thread === undefined) return undefined;
@@ -140,13 +142,12 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 			const art = spin === undefined ? glyphArt(STATE_GLYPH[row.deck], color === COLORS.muted ? COLORS.text : color) : spinnerArt(color, spin);
 			return { key: row.key, label: row.title, art, tint, detail };
 		};
-		return { heading: t(FILTER_LABEL[filter]), items: threads.map(item), index: threads.indexOf(thread) };
+		return { heading: this.heading(action), items: threads.map(item), index: threads.indexOf(thread) };
 	}
 
 	/** Classic draws Elgato's thread rows: the selected title, then the next two with their status. */
 	protected override picture(action: Action<ThreadDialSettings>): string | undefined {
 		const machine = this.machineOf(action);
-		if (disconnectedStrip("", machine)) return undefined;
 		const match = this.#match(action);
 		const thread = deck.board.shownOn(machine, match);
 		const threads = deck.board.threadsOn(machine).filter(match);
@@ -186,7 +187,6 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 }
 
 type PowerSettings = DialSettings & { dialControls?: string; showSpeed?: boolean; showEffort?: boolean };
-
 
 /** The thread's effort as `model` would carry it, colored by its level. */
 function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): { text: string; paint?: Paint } | undefined {
@@ -245,12 +245,14 @@ export class ModelDial extends StripDial<PowerSettings> {
 		return { control, thread, config, armed, state, preview, pending, check };
 	}
 
+	protected heading(action: Action<PowerSettings>): string {
+		return t(CONTROL[dialControl(this.settingsOf(action).dialControls)].label);
+	}
+
 	protected face(action: Action<PowerSettings>): StripContent {
 		const context = this.#context(action);
 		const label = t(CONTROL[context.control].label);
 		const { glyph } = CONTROL[context.control];
-		const offline = disconnectedStrip(label, this.machineOf(action));
-		if (offline) return offline;
 		if (context.thread === undefined) return { header: label, icon: glyphArt(glyph, COLORS.muted), accent: COLORS.muted, value: t("strip.noThread") };
 		const { thread, state, pending, check, armed } = context;
 		const shown = pending ?? state.current;
@@ -272,7 +274,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 
 	protected override list(action: Action<PowerSettings>): StripList | undefined {
 		const context = this.#context(action);
-		if (context.thread === undefined || disconnectedStrip("", this.machineOf(action))) return undefined;
+		if (context.thread === undefined) return undefined;
 		const { state, pending, check, thread } = context;
 		const shown = pending ?? state.current;
 		if (shown === undefined) return undefined;
@@ -303,7 +305,6 @@ export class ModelDial extends StripDial<PowerSettings> {
 
 	/** The classic face as a slider: the setting's stops with the thread's value filled and the previewed one hollow. */
 	protected override slider(action: Action<PowerSettings>): SliderInput | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const context = this.#context(action);
 		if (context.thread === undefined || context.state.choices.length === 0) return undefined;
 		const { control, thread, state, pending, check } = context;
@@ -388,7 +389,6 @@ export class ModelDial extends StripDial<PowerSettings> {
 		return this.#act(dial, "speed");
 	}
 
-
 	/** Applies the previewed value, or switches Speed. */
 	async #act(dial: DialAction<PowerSettings>, wants: "apply" | "speed"): Promise<void> {
 		const machine = this.machineOf(dial);
@@ -446,9 +446,11 @@ export class PromptDial extends StripDial<PromptListSettings> {
 		return { prompts, index, prompt: prompts[index] };
 	}
 
+	protected heading(): string {
+		return t("strip.prompts");
+	}
+
 	protected face(action: Action<PromptListSettings>): StripContent {
-		const offline = disconnectedStrip(t("strip.prompts"), this.machineOf(action));
-		if (offline) return offline;
 		const { prompts, index, prompt } = this.#current(action);
 		if (prompt === undefined) return { header: t("strip.prompts"), icon: glyphArt("spark", COLORS.muted), accent: COLORS.muted, value: t("strip.noPrompts"), detail: t("strip.addPrompts") };
 		const thread = selectedThread(this.machineOf(action));
@@ -465,7 +467,6 @@ export class PromptDial extends StripDial<PromptListSettings> {
 	}
 
 	protected override list(action: Action<PromptListSettings>): StripList | undefined {
-		if (disconnectedStrip(t("strip.prompts"), this.machineOf(action))) return undefined;
 		const { prompts, index } = this.#current(action);
 		if (prompts.length === 0) return undefined;
 		const thread = selectedThread(this.machineOf(action));
@@ -518,7 +519,7 @@ export class PromptDial extends StripDial<PromptListSettings> {
 		const thread = selectedThread(machine);
 		const check =
 			wants === "new"
-				? availability("new", { canOperate: launchable(thread, machine), hasPrompt: text !== undefined })
+				? availability("new", { canOperate: canOperate(thread, machine), hasPrompt: text !== undefined })
 				: availability("send", { thread, canOperate: canOperate(thread), hasPrompt: text !== undefined });
 		if (!(await this.allowed(dial, check))) return;
 		const go = await this.guard(dial, {
@@ -536,7 +537,6 @@ export class PromptDial extends StripDial<PromptListSettings> {
 		});
 		if (go === undefined) return;
 		if (go === "new") return this.run(dial, () => startThread(thread, machine, text!));
-		if (!(await this.allowed(dial, availability("send", { thread, canOperate: canOperate(thread), hasPrompt: text !== undefined })))) return;
 		await this.run(dial, () => sendToThread(thread!, text!, "auto"));
 	}
 
@@ -593,9 +593,18 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 		return [approvePress(approvalAuthority(this.settingsOf(dial).approvalAuthority), request.decisions), DENY_PRESS];
 	}
 
+	/** The thread is the dial's own (the selection when blocked, else the first blocked thread), not just the selection. */
+	override needs(dial: Action<AnswerSettings>): Need[] {
+		const machine = this.machineOf(dial);
+		const blocked = this.#target(machine);
+		return [...threadNeeds(machine, blocked ?? selectedThread(machine)), { kind: "pending", ok: blocked !== undefined }];
+	}
+
+	protected heading(): string {
+		return t("strip.answer");
+	}
+
 	protected face(dial: Action<AnswerSettings>): StripContent {
-		const offline = disconnectedStrip(t("strip.answer"), this.machineOf(dial));
-		if (offline) return offline;
 		const settings = this.settingsOf(dial);
 		const thread = this.#target(this.machineOf(dial));
 		if (thread === undefined) {
@@ -650,7 +659,6 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 	}
 
 	protected override list(dial: Action<AnswerSettings>): StripList | undefined {
-		if (disconnectedStrip(t("strip.answer"), this.machineOf(dial))) return undefined;
 		const thread = this.#target(this.machineOf(dial));
 		const answering = thread === undefined ? undefined : this.#answering(dial, thread);
 		if (thread === undefined || answering === undefined) return undefined;

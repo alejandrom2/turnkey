@@ -10,7 +10,7 @@ import { type Connection, type Need, requirements } from "../core/requirements.j
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 import { pinnedName } from "../core/target.js";
-import { canOperate, connectionProblem, deckActions, queueOf, targetOf } from "./base.js";
+import { canOperate, connectionProblem, deckActions, machinesOn, queueOf, targetOf } from "./base.js";
 
 const ID = "com.alejandrom2.turnkey.";
 
@@ -24,12 +24,12 @@ export function threadNeeds(machine: string | undefined, thread: DeckThread | un
 	return [
 		{ kind: "paired", connection: connectionOf(machine) },
 		pinned === undefined ? { kind: "thread", ok: thread !== undefined } : { kind: "value", value: thread?.title ?? pinned, ok: thread !== undefined },
-		...(operate ? [{ kind: "operate", ok: canOperate(thread) } satisfies Need] : []),
+		...(operate ? [{ kind: "operate", ok: canOperate(thread, machine) } satisfies Need] : []),
 	];
 }
 
 const projectKnown = (machine: string | undefined, project: string): boolean =>
-	deck.machines.some((candidate) => (machine === undefined || candidate.url === machine) && candidate.projects.some((known) => known.id === project));
+	machinesOn(machine).some((candidate) => candidate.projects.some((known) => known.id === project));
 
 const modelLabel = (thread: DeckThread | undefined) => thread && findModel(thread.machine.modelConfig, thread.model);
 
@@ -52,12 +52,10 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 		case "slot":
 		case "dial.threads":
 			return [paired, ...projectNeed];
-		case "health":
-			return [paired];
 		case "new":
 			return [
 				paired,
-				{ kind: "operate", ok: deck.machines.some((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine)) },
+				{ kind: "operate", ok: canOperate(undefined, machine) },
 				...(settings.destination === "project" ? projectNeed : []),
 				...(settings.startIn === "worktree" ? [{ kind: "prompt", ok: text(settings.prompt) !== "" } satisfies Need] : []),
 			];
@@ -89,11 +87,9 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 			return [...needsFor(machine, thread), { kind: "option", option: t("needs.optionPlan"), ok: thread !== undefined && toggle !== false }];
 		}
 		case "approve":
-		case "deny":
-		case "dial.answer": {
+		case "deny": {
 			const opensOnly = kind === "approve" && (settings.approvalAuthority ?? "open") === "open";
-			const pending = thread?.pendingRequest !== undefined && (thread.deck === "approval" || (kind === "dial.answer" && thread.deck === "question"));
-			return [...needsFor(machine, thread, !opensOnly), { kind: "pending", ok: pending }];
+			return [...needsFor(machine, thread, !opensOnly), { kind: "pending", ok: thread?.pendingRequest !== undefined && thread.deck === "approval" }];
 		}
 		case "dial.queue": {
 			const queue = thread && queueOf(thread);

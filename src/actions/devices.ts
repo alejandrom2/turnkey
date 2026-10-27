@@ -1,6 +1,5 @@
-import { type Action, action, type DialAction, type DidReceiveSettingsEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import { type Action, action, type DialAction, type WillDisappearEvent } from "@elgato/streamdeck";
 
-import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { DeckThread } from "../core/board.js";
 import { type DevicePress, devicePress, type DeviceRow, deviceRows, type DeviceState, type DeviceStatus, hubProblem, readDeviceState } from "../core/devices.js";
 import { type MessageKey, t } from "../core/i18n.js";
@@ -12,9 +11,10 @@ import type { Machine } from "../core/t3/machine.js";
 import { OPERATE_SCOPE } from "../core/t3/pairing.js";
 import { pinnedName } from "../core/target.js";
 import { deck } from "../deck.js";
-import { pressWhileDisconnected } from "./base.js";
+import { held, pressWhileDisconnected, readyMachines } from "./base.js";
 import { threadNeeds } from "./needs.js";
-import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
+import { type DialSettings, StripDial } from "./strip.js";
+import { MachineWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -39,23 +39,25 @@ const platformName = (row: DeviceRow) => t(row.device.platform === "ios" ? "devi
  * Each machine's device hub while a Devices dial shows it: its state streams meanwhile, and its devices are listed
  * once per connection (which, as T3 Code's Device panel does, starts the hub when devices are turned on there).
  */
-class DeviceWatch {
-	/** Per visible dial, the machine it shows now: only those machines' hubs are watched (and listing may start one). */
-	readonly #shown = new Map<string, () => Machine | undefined>();
-	readonly #streams = new Map<string, () => void>();
+class DeviceHubs {
 	readonly #states = new Map<string, DeviceState>();
 	/** Machines whose devices couldn't be read (an older T3 Code, a hub error) since their last state. */
 	readonly #failed = new Set<string>();
-
-	show(id: string, machine: () => Machine | undefined): void {
-		this.#shown.set(id, machine);
-		this.sync();
-	}
-
-	hide(id: string): void {
-		this.#shown.delete(id);
-		this.sync();
-	}
+	/** Only the hubs of the machines visible dials show are watched (and listing may start one). */
+	readonly watch = new MachineWatch({
+		// A new connection may be a restarted T3 Code, whose revisions start over: drop the old state first.
+		open: (machine) =>
+			machine.live(
+				"subscribeDeviceState",
+				{},
+				(value) => this.#set(machine, value),
+				() => {
+					this.#forget(machine);
+					void this.list(machine).catch(() => undefined);
+				},
+			),
+		closed: (machine) => this.#forget(machine),
+	});
 
 	of(machine: Machine): DeviceState | undefined {
 		return this.#states.get(machine.url);
@@ -76,29 +78,9 @@ class DeviceWatch {
 		}
 	}
 
-	sync(): void {
-		const wanted = new Map<string, Machine>();
-		for (const resolve of this.#shown.values()) {
-			const machine = resolve();
-			if (machine !== undefined) wanted.set(machine.url, machine);
-		}
-		for (const [url, release] of this.#streams) {
-			if (wanted.has(url)) continue;
-			release();
-			this.#streams.delete(url);
-			this.#states.delete(url);
-			this.#failed.delete(url);
-		}
-		for (const machine of wanted.values()) {
-			if (this.#streams.has(machine.url)) continue;
-			// A new connection may be a restarted T3 Code, whose revisions start over: drop the old state first.
-			const opened = () => {
-				this.#states.delete(machine.url);
-				this.#failed.delete(machine.url);
-				void this.list(machine).catch(() => undefined);
-			};
-			this.#streams.set(machine.url, machine.live("subscribeDeviceState", {}, (value) => this.#set(machine, value), opened));
-		}
+	#forget(machine: Machine): void {
+		this.#states.delete(machine.url);
+		this.#failed.delete(machine.url);
 	}
 
 	#set(machine: Machine, value: unknown): void {
@@ -110,8 +92,7 @@ class DeviceWatch {
 	}
 }
 
-const watch = new DeviceWatch();
-deck.onRepaint(() => watch.sync());
+const hubs = new DeviceHubs();
 
 /**
  * T3 Code's simulators and emulators: name, platform and whether each runs. Rotate picks one; press starts it, or
@@ -121,17 +102,25 @@ deck.onRepaint(() => watch.sync());
 export class DevicesDial extends StripDial<DevicesDialSettings> {
 	/** The device each dial shows, by key, so it stays put as the list changes. */
 	readonly #shown = new Map<string, string>();
+	protected override readonly watcher = hubs.watch;
 
 	/** The machine whose devices the dial shows: its target thread's, else the first ready one it follows. */
 	#machine(action: Action<DevicesDialSettings>, thread: DeckThread | undefined = this.target(action).thread): Machine | undefined {
-		const url = this.machineOf(action);
-		return thread?.machine ?? deck.machines.find((candidate) => candidate.state.kind === "ready" && (url === undefined || candidate.url === url));
+		return thread?.machine ?? readyMachines(this.machineOf(action))[0];
+	}
+
+	protected override watched(action: Action<DevicesDialSettings>): readonly Machine[] {
+		return [this.#machine(action)].filter((machine) => machine !== undefined);
+	}
+
+	protected heading(): string {
+		return t("devices.title");
 	}
 
 	#state(action: Action<DevicesDialSettings>) {
 		const { thread, gone, pinned } = this.target(action);
 		const machine = this.#machine(action, thread);
-		const hub = machine && watch.of(machine);
+		const hub = machine && hubs.of(machine);
 		const rows = hub === undefined ? [] : deviceRows(hub, thread?.threadId);
 		const index = Math.max(
 			0,
@@ -143,7 +132,7 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 	override needs(action: Action<DevicesDialSettings>): Need[] {
 		const { thread, machine, hub, problem, rows } = this.#state(action);
 		const target = this.target(action);
-		const failed = machine !== undefined && watch.failed(machine);
+		const failed = machine !== undefined && hubs.failed(machine);
 		return [
 			...threadNeeds(this.machineOf(action), thread, true, target.pinned ? pinnedName(this.settingsOf(action)) : undefined),
 			{ kind: "devices", ok: hub === undefined ? (failed ? false : undefined) : problem === undefined && rows.length > 0 },
@@ -151,12 +140,10 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 	}
 
 	protected face(action: Action<DevicesDialSettings>): StripContent {
-		const header = t("devices.title");
-		const offline = disconnectedStrip(header, this.machineOf(action));
-		if (offline) return offline;
+		const header = this.heading();
 		const { thread, gone, machine, hub, problem, rows, index, row } = this.#state(action);
 		const muted = (value: string, detail?: string, color: string = COLORS.muted): StripContent => ({ header, icon: glyphArt("device", color), accent: color, value, detail });
-		if (hub === undefined && machine !== undefined && watch.failed(machine)) return muted(t("devices.unreadable"), t("devices.touchToCheck"));
+		if (hub === undefined && machine !== undefined && hubs.failed(machine)) return muted(t("devices.unreadable"), t("devices.touchToCheck"));
 		if (hub === undefined) return { ...muted(t("devices.loading")), loading: true };
 		if (problem?.kind === "off") return muted(t("devices.off"), t("devices.turnOn"));
 		if (problem?.kind === "starting") return { ...muted(t("devices.hubStarting")), loading: true };
@@ -175,7 +162,6 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 	}
 
 	protected override list(action: Action<DevicesDialSettings>): StripList | undefined {
-		if (disconnectedStrip("", this.machineOf(action))) return undefined;
 		const { rows, index, row, problem } = this.#state(action);
 		if (row === undefined || problem !== undefined) return undefined;
 		return {
@@ -204,7 +190,7 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 		if (problem !== undefined) return void (await this.flash(dial, false, t(problem.kind === "off" ? "devices.off" : problem.kind === "starting" ? "devices.hubStarting" : "devices.hubFailed")));
 		if (row === undefined) return void (await this.flash(dial, false, t("devices.none")));
 		if (!machine.canOperate) return void (await this.flash(dial, false, t("reason.readOnly")));
-		const press = devicePress(row, heldMs >= HOLD_CONFIRM_MS);
+		const press = devicePress(row, held(heldMs));
 		if (press.kind === "refuse") return void (await this.flash(dial, false, t(REFUSAL[press.reason])));
 		const { hostId, id: deviceId, platform } = row.device;
 		if (press.kind === "powerOff") return this.run(dial, () => machine.call("device.shutdown", { hostId, deviceId, platform }, OPERATE_SCOPE));
@@ -218,21 +204,10 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 		if (await pressWhileDisconnected(this.machineOf(dial))) return;
 		const { machine } = this.#state(dial);
 		if (machine === undefined) return;
-		await this.run(dial, () => watch.list(machine));
-	}
-
-	override onWillAppear(ev: WillAppearEvent<DevicesDialSettings>): void {
-		super.onWillAppear(ev);
-		watch.show(ev.action.id, () => this.#machine(ev.action));
-	}
-
-	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<DevicesDialSettings>): void {
-		super.onDidReceiveSettings(ev);
-		watch.sync();
+		await this.run(dial, () => hubs.list(machine));
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<DevicesDialSettings>): void {
-		watch.hide(ev.action.id);
 		this.#shown.delete(ev.action.id);
 		super.onWillDisappear(ev);
 	}

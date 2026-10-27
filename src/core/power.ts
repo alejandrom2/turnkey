@@ -4,7 +4,7 @@
  */
 import { type AcpIcons, type CatalogModel, currentOptionValue, effortOption, findModel, type ModelConfig, pickableModels, providerMark, runtimeModes } from "./models.js";
 import { t } from "./i18n.js";
-import { COLORS, effortTone, type GlyphName, glyphArt, type MarkPainter, type MaxEffortStyle, MODE_GLYPH, stripMarkIcon } from "./render.js";
+import { COLORS, effortTone, type GlyphName, glyphArt, type MarkPainter, type MaxEffortStyle, MODE_GLYPH } from "./render.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 import { ULTRATHINK } from "./ultrathink.js";
 
@@ -47,10 +47,9 @@ export function isTopEffort(choices: readonly Extract<PowerChoice, { kind: "effo
 
 /** How effort level `key` is colored, by where it sits on its model's ladder; undefined for Ultrathink or an unknown level. */
 export function effortToneOf(choices: readonly Extract<PowerChoice, { kind: "effort" }>[], key: string | undefined, style: MaxEffortStyle, modelColor: string | undefined) {
-	const levels = choices.filter((choice) => !choice.ultrathink);
-	const at = levels.findIndex((choice) => choice.key === key);
-	if (at < 0) return undefined;
-	return effortTone(style, levels.length > 1 ? at / (levels.length - 1) : 1, isTopEffort(choices, key), modelColor);
+	const place = effortPlace(choices, key);
+	if (place === undefined || choices.some((choice) => choice.key === key && choice.ultrathink)) return undefined;
+	return effortTone(style, place, isTopEffort(choices, key), modelColor);
 }
 
 /** How far up its model's ladder effort level `key` sits, 0 to 1; Ultrathink, above the ladder, is 1. */
@@ -125,4 +124,3 @@ export function powerArt(icon: PowerIcon, options: IconOptions = {}): MarkPainte
 }
 
 /** The strip icon for a choice. */
-export const powerIconUrl = (icon: PowerIcon, options: IconOptions = {}): string => stripMarkIcon(powerArt(icon, options));

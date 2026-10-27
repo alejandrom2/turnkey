@@ -481,6 +481,7 @@
 		},
 		"connection": {
 			"noAnswer": "T3 Code が時間内に応答しませんでした。",
+			"foreignLink": "T3 Code が別のサイトへのリンクを送信しました。",
 			"closed": "T3 Code との接続が閉じられました。",
 			"failed": "T3 Code との接続に失敗しました。",
 			"silent": "T3 Code が応答しなくなりました。",
@@ -579,8 +580,6 @@
 			"holdTo": "長押しで確定",
 			"holdOnDefault": "長押しで {branch} にプッシュ",
 			"starting": "開始中…",
-			"pulled": "プル完了",
-			"upToDate": "最新",
 			"files": "{count} ファイル",
 			"fileOne": "1 ファイル"
 		},
