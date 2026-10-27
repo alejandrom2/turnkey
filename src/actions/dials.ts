@@ -294,20 +294,16 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const pending = context.pending;
 		if (!(await this.allowed(dial, wants === "apply" ? context.check : speedCheck))) return;
 		const work = wants === "apply" && pending ? this.#apply(thread, pending, context.armed) : undefined;
-		if (wants === "apply" && work === undefined) return void (await this.flash(dial, true, pending?.label ?? ""));
-		if (wants === "apply" && pending !== undefined && work !== undefined) {
+		if (wants === "apply") {
+			if (work === undefined) return;
 			const { preview } = context;
-			return this.run(
-				dial,
-				async () => {
-					await work();
-					preview.key = undefined;
-				},
-				pending.kind === "model" ? pending.model.name : pending.label,
-			);
+			return this.apply(dial, async () => {
+				await work();
+				preview.key = undefined;
+			});
 		}
 		if (toggle === undefined) return void (await this.allowed(dial, speedCheck));
-		await this.run(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)), toggle.nextLabel);
+		await this.apply(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)));
 	}
 
 	#apply(thread: DeckThread, choice: PowerChoice, armed: boolean): (() => Promise<unknown>) | undefined {

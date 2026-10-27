@@ -448,7 +448,7 @@ const markOf =
 /** A setting key: the current value or the one it applies, highlighted when the thread already has it. */
 abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 	/** The face, the availability and what a press applies (undefined: already current). */
-	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown>; done: string };
+	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown> };
 
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
@@ -457,10 +457,9 @@ abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 
 	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { check, apply, done } = this.state(ev.action);
+		const { check, apply } = this.state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
-		if (apply === undefined) return void (await this.flash(ev.action, true, done));
-		await this.run(ev.action, apply, done);
+		if (apply !== undefined) await this.apply(ev.action, apply);
 	}
 }
 
@@ -485,9 +484,9 @@ export class ModelKey extends SettingKey<ModelSettings> {
 		const position = shown === undefined ? -1 : catalog.findIndex((model) => model.key === shown.key);
 		const cue = catalog.length > 1 && position >= 0 ? dotsCue(catalog.length, position) : undefined;
 		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue });
-		if (thread === undefined || target === undefined) return { face, check, done: label };
+		if (thread === undefined || target === undefined) return { face, check };
 		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;
-		return { face, check, done: target.name, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
+		return { face, check, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
 	}
 }
 
@@ -519,8 +518,8 @@ export class EffortKey extends SettingKey<EffortSettings> {
 		const face = renderControlKey({ glyph: "effort", label: labelOf(shown), available: check.available, active: fixed !== undefined && fixed === current, ultrathink: armed, cue });
 		const next = fixed ?? cycleValue(values, current);
 		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
-		if (thread === undefined || change === undefined) return { face, check, done: labelOf(next) };
-		return { face, check, done: labelOf(next), apply: applyEffort(thread, change, armed) };
+		if (thread === undefined || change === undefined) return { face, check };
+		return { face, check, apply: applyEffort(thread, change, armed) };
 	}
 }
 
@@ -543,11 +542,10 @@ export class SpeedKey extends SettingKey<JsonObject> {
 		const check = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
 		const fast = toggle?.fast === true;
 		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", glyphColor: fast ? COLORS.accent : undefined, label: toggle?.label ?? t("face.speed"), available: check.available, active: fast });
-		if (thread === undefined || toggle === undefined) return { face, check, done: "" };
+		if (thread === undefined || toggle === undefined) return { face, check };
 		return {
 			face,
 			check,
-			done: toggle.nextLabel,
 			apply: () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)),
 		};
 	}
@@ -580,8 +578,8 @@ export class Permissions extends SettingKey<PermissionSettings> {
 			cue,
 		});
 		const next = fixed ?? cycleValue(values, current);
-		if (thread === undefined || next === undefined) return { face, check, done: labelOf(next) };
-		return { face, check, done: labelOf(next), apply: next === current ? undefined : () => thread.machine.setRuntimeMode(thread, next) };
+		if (thread === undefined || next === undefined) return { face, check };
+		return { face, check, apply: next === current ? undefined : () => thread.machine.setRuntimeMode(thread, next) };
 	}
 }
 
@@ -594,8 +592,8 @@ export class PlanKey extends SettingKey<JsonObject> {
 		const check = availability("plan", { thread, canOperate: canOperate(thread), missing: toggle === false ? t("reason.noPlanMode") : undefined });
 		const planning = thread?.interactionMode === "plan";
 		const face = renderControlKey({ glyph: planning ? "modePlan" : "modeBuild", label: t(planning ? "face.plan" : "face.build"), available: check.available, active: planning });
-		if (thread === undefined) return { face, check, done: "" };
-		return { face, check, done: t(planning ? "face.build" : "face.plan"), apply: () => thread.machine.setInteractionMode(thread, planning ? "default" : "plan") };
+		if (thread === undefined) return { face, check };
+		return { face, check, apply: () => thread.machine.setInteractionMode(thread, planning ? "default" : "plan") };
 	}
 }
 
