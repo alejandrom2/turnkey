@@ -49,6 +49,9 @@ const style = `
 			}
 			main { display: grid; gap: 2px; }
 			.hint { color: #a8a8a8; line-height: 1.4; margin: -2px 0 8px 106px; font-size: 9pt; }
+			/* What broader access an action needs, said plainly. */
+			.hint.access { color: var(--t3-warning); }
+			.link { width: 100%; box-sizing: border-box; padding: 4px 6px; font: 9pt var(--t3-font); color: #d8d8d8; background: #2d2d2d; border: 1px solid #3d3d3d; border-radius: 3px; }
 			[hidden] { display: none !important; }
 
 			.t3 {
@@ -965,6 +968,47 @@ const pages: Record<string, string> = {
 		`${periodField}${usageProviderField}
 			<p class="hint"${text("inspector.usage.dialHint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
+	),
+	"update.html": page(
+		"Update T3",
+		`
+			<p class="hint"${text("inspector.update.hint")}</p>
+			<p class="hint access"${text("inspector.update.access")}</p>`,
+	),
+	"script.html": page(
+		"Run Script",
+		`${targetField}
+			<sdpi-item ${attr("label", "inspector.script.label")}>
+				<sdpi-select setting="script" datasource="getScripts" hot-reload ${attr("loading", "inspector.loading.scripts")}></sdpi-select>
+			</sdpi-item>
+			<p class="hint"${text("inspector.script.hint")}</p>
+			<p class="hint access"${text("inspector.script.access")}</p>`,
+		targetScript,
+	),
+	"share.html": page(
+		"Share Thread",
+		`${targetField}
+			<sdpi-item ${attr("label", "inspector.share.link")} id="share-link" hidden>
+				<input class="link" id="share-url" type="text" readonly spellcheck="false" />
+			</sdpi-item>
+			<p class="hint" id="share-link-hint" hidden${text("inspector.share.linkHint")}</p>
+			<p class="hint"${text("inspector.share.hint")}</p>
+			<p class="hint access"${text("inspector.share.access")}</p>`,
+		`${targetScript}
+			{
+				// The link is a credential: it lives only in this page and the running plugin, never in settings.
+				const showLink = (url) => {
+					$("share-url").value = url ?? "";
+					$("share-link").hidden = !url;
+					$("share-link-hint").hidden = !url;
+				};
+				$("share-url").addEventListener("focus", () => $("share-url").select());
+				client.sendToPropertyInspector.subscribe(({ payload }) => {
+					if (payload?.event === "shareLink") showLink(payload.url);
+				});
+				client.didReceiveSettings.subscribe(() => send("getShareLink"));
+				send("getShareLink");
+			}`,
 	),
 	"editor.html": page(
 		"Open in Editor",

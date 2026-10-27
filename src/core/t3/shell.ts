@@ -4,6 +4,7 @@
  * apps/web/src/components/Sidebar.logic.ts). Pure: no I/O, no clock of its own.
  */
 import { type ForkedFrom, mergeBackTarget } from "../lineage.js";
+import type { ProjectScript } from "../scripts.js";
 
 export type RunStatus = "preparing" | "queued" | "starting" | "running" | "waiting" | "completed" | "interrupted" | "failed" | "cancelled" | "rolled_back";
 export type ThreadStatus = "idle" | RunStatus;
@@ -65,7 +66,15 @@ export type ThreadShell = {
 	deletedAt?: string | null;
 };
 
-export type ProjectShell = { id: string; title: string; workspaceRoot: string; defaultModelSelection?: ModelSelection | null; repositoryIdentity?: unknown };
+export type ProjectShell = {
+	id: string;
+	title: string;
+	workspaceRoot: string;
+	defaultModelSelection?: ModelSelection | null;
+	repositoryIdentity?: unknown;
+	/** The project's saved scripts; the server settings may replace them (`projectScripts`). */
+	scripts?: ProjectScript[];
+};
 
 export type ShellItem =
 	| { kind: "synchronized" }
