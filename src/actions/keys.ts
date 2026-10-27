@@ -445,49 +445,22 @@ const markOf =
 	(x, y, size) =>
 		providerMark(model, x, y, size, { acpIcons: deck.acpIcons });
 
-/** What a setting key's press would change, for its review card; undefined for keys that apply at once. */
-type Change = { verb: MessageKey; target: DeckThread; value: string };
-
 /** A setting key: the current value or the one it applies, highlighted when the thread already has it. */
 abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
-	/** The face, the availability and what a press applies (undefined: already current), and what it changes when confirmed. */
-	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown>; done: string; change?: Change };
-
-	protected override reviewScope(action: Action<T>): string | undefined {
-		const { change } = this.state(action);
-		return change && JSON.stringify([change.target.key, change.value]);
-	}
+	/** The face, the availability and what a press applies (undefined: already current). */
+	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown>; done: string };
 
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isKey()) return;
 		await this.setImage(action, connectionFace(this.machineOf(action)) ?? this.state(action).face);
 	}
 
-	override onKeyDown(ev: KeyDownEvent<T>): void {
-		this.pressStarted(ev.action.id);
-	}
-
 	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { check, apply, done, change } = this.state(ev.action);
+		const { check, apply, done } = this.state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		if (apply === undefined) return void (await this.flash(ev.action, true, done));
-		if (change !== undefined) {
-			const go = await this.guard(ev.action, {
-				scope: JSON.stringify([change.target.key, change.value]),
-				held,
-				holdHint: t("result.holdToApply"),
-				card: () => ({ glyph: this.glyphOf, verb: t(change.verb), target: change.target.title, body: change.value, footer: t("review.pressToApply") }),
-			});
-			if (go === undefined) return;
-		}
 		await this.run(ev.action, apply, done);
-	}
-
-	/** The review card's glyph. */
-	protected get glyphOf(): GlyphName {
-		return "sliders";
 	}
 }
 
@@ -499,10 +472,6 @@ type ModelSettings = { model?: string; machine?: string };
  */
 @action({ UUID: `${ID}.model` })
 export class ModelKey extends SettingKey<ModelSettings> {
-	protected override get glyphOf(): GlyphName {
-		return "model";
-	}
-
 	protected state(action: Action<ModelSettings>) {
 		const { thread, config } = selection(this.machineOf(action));
 		const fixed = parseModelKey(this.settingsOf(action).model);
@@ -518,8 +487,7 @@ export class ModelKey extends SettingKey<ModelSettings> {
 		const face = renderControlKey({ glyph: "model", mark: shown && markOf(shown), label, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue });
 		if (thread === undefined || target === undefined) return { face, check, done: label };
 		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;
-		const change: Change = { verb: "review.model", target: thread, value: target.label };
-		return { face, check, done: target.name, change, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
+		return { face, check, done: target.name, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
 	}
 }
 
@@ -531,10 +499,6 @@ type EffortSettings = { effort?: string; machine?: string };
  */
 @action({ UUID: `${ID}.effort` })
 export class EffortKey extends SettingKey<EffortSettings> {
-	protected override get glyphOf(): GlyphName {
-		return "effort";
-	}
-
 	protected state(action: Action<EffortSettings>) {
 		const { thread, config } = selection(this.machineOf(action));
 		const fixed = this.settingsOf(action).effort || undefined;
@@ -556,7 +520,7 @@ export class EffortKey extends SettingKey<EffortSettings> {
 		const next = fixed ?? cycleValue(values, current);
 		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
 		if (thread === undefined || change === undefined) return { face, check, done: labelOf(next) };
-		return { face, check, done: labelOf(next), change: { verb: "review.effort" as const, target: thread, value: labelOf(next) }, apply: applyEffort(thread, change, armed) };
+		return { face, check, done: labelOf(next), apply: applyEffort(thread, change, armed) };
 	}
 }
 
@@ -573,10 +537,6 @@ export function applyEffort(thread: DeckThread, change: NonNullable<ReturnType<t
 /** Toggles the selected thread's fast mode (Claude's Fast mode, Codex's Fast tier) where its model offers one. */
 @action({ UUID: `${ID}.speed` })
 export class SpeedKey extends SettingKey<JsonObject> {
-	protected override get glyphOf(): GlyphName {
-		return "speed";
-	}
-
 	protected state(action: Action<JsonObject>) {
 		const { thread, config } = selection(this.machineOf(action));
 		const toggle = thread && speedToggle(findModel(config, thread.model), thread.model);
@@ -588,7 +548,6 @@ export class SpeedKey extends SettingKey<JsonObject> {
 			face,
 			check,
 			done: toggle.nextLabel,
-			change: { verb: "review.speed" as const, target: thread, value: toggle.nextLabel },
 			apply: () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)),
 		};
 	}

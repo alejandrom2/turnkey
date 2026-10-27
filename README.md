@@ -54,9 +54,9 @@ Most actions act on the **selected thread**: the one you opened last in T3 Code,
 
 A key that can't act right now is dimmed, and pressing it says why. Each action's settings list **What this action needs**: every condition it checks (paired, can act, a selected thread, access, what the thread's model offers, a pull request…), met or not, with how to fix what isn't; a saved choice that no longer exists shows as **Not available**. After a press, the key shows what happened for a moment. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Effort shows where it sits on its model's ladder, Model where it sits among your favorites, and Permissions a small pill (filled when the key's mode is the thread's) with Full access in amber. Models and favorites are read again whenever a key's settings open.
 
-**Confirm before sending** (**Advanced**, overridable per action) covers Send Prompt, Steer, Quick Prompt, the Prompts dial and the Model, Effort, Speed and Power controls:
+**Confirm before sending** (**Advanced**, overridable per action) covers Send Prompt, Steer, Quick Prompt and the Prompts dial. Model, Effort, Speed, Permissions and the Power dial always apply on the press:
 
-- **Review, then press again** (default): the first press shows what would be sent or changed and on which thread; press again between ¾ of a second and 10 seconds later to go ahead. If anything changed in between, it shows the new review instead. Turning the dial drops a review.
+- **Review, then press again** (default): the first press shows what would be sent and to which thread; press again between ¾ of a second and 10 seconds later to go ahead. If anything changed in between, it shows the new review instead. Turning the dial drops a review.
 - **Hold to send**: a held press sends. Holding then can't also restart (Send Prompt, Quick Prompt) or start a thread (Prompts dial).
 - **Send right away**: a press acts at once.
 
