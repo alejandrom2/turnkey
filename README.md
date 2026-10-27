@@ -17,7 +17,7 @@ T3 Deck asks to read threads and act on them, for source control access (git and
 
 Most actions act on the **selected thread**: the one you opened last in T3 Code, on the action's machine or across all of them. Opening a thread from the deck, holding a Thread key or turning the Threads dial selects it too, by visiting it in T3 Code. The selected thread's key is lit, and the other thread keys dim their titles.
 
-Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Permissions, Plan, Organize, Run Skill, Stop Workflow, Fork, Merge Back, Open Preview, the Skills dial and the Devices dial can instead aim at one thread: set **Target** to **This thread** and pick it. The key then acts on that thread whatever is selected, even while it is settled or snoozed, and shows a small pin. Once that thread is archived or deleted the key says **Not available** with its name until you pick another.
+Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Permissions, Plan, Organize, Run Skill, Run Script, Share Thread, Stop Workflow, Fork, Merge Back, Open Preview, the Skills dial and the Devices dial can instead aim at one thread: set **Target** to **This thread** and pick it. The key then acts on that thread whatever is selected, even while it is settled or snoozed, and shows a small pin. Once that thread is archived or deleted the key says **Not available** with its name until you pick another.
 
 | Action | Controller | What it does |
 |---|---|---|
@@ -54,6 +54,9 @@ Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Per
 | Stop Workflow | key | Stops the workflows the thread runs, as T3 Code's Lineage panel does; only Claude's can be stopped. Shows how many subagents are out. Hold to stop. |
 | Fork | key | Forks the thread from its newest finished reply into a new thread, as its Fork button in T3 Code does, named "… fork", and opens it. |
 | Merge Back | key | On a forked thread: merges it back into the thread it came from, and opens that thread. Hold to merge. Says why when the thread isn't a fork or a turn is still running. |
+| Update T3 | key | T3 Code's version on the key's machine (this computer's when none is picked). Hold updates it to the newest release on its channel, as T3 Code's Update action does, showing each stage until the server is back on the new version; a desktop app installs its own update and relaunches. A machine T3 Code can't update from a client says **Update by hand**. Needs update access (see below). |
+| Run Script | key | One of the project's saved scripts (T3 Code's project actions), picked in its settings: its name and whether it runs. Press runs it in its own terminal on the thread, in the thread's worktree or else the project's folder, as T3 Code's script button does. While it runs, hold stops it (Ctrl-C). Needs terminal access (see below). |
+| Share Thread | key | Makes a guest link for the thread, as T3 Code's **Share with guest** does, and copies it; the link also shows in the key's settings while T3 Deck runs. A shared thread shows **Shared** and its guest, in amber while their messages wait for you. Hold stops sharing. Needs Guest links on (**Settings → Labs**), T3 Connect running, and guest link access (see below). |
 | Usage | key | A period's API-estimate cost (Past 24h, 7, 30 or 90 days, as on T3 Code's Usage page), with its tokens and sessions, on the key's machine or all of them merged, for every provider or just one (with its mark). Tap reads it again; hold also reloads T3 Code's model prices. |
 | Limits | key | One provider's subscription limit window (5-hour, Weekly, Monthly…), pooled across its accounts like T3 Code's **Usage → Limits**: % left (or used) with a bar, a tick where even pace would be, the next reset and the resets banked. Tap refreshes; hold opens T3 Code or uses a reset (see below). |
 | Threads Dial | dial | Like Activity: the threads matching a filter (all, needs you, working, unread), project and **From the last** (no limit, 24 hours … 7 days), most urgent first. Rotate selects one (it settles after a short pause), press or tap opens it. The strip shows its provider, title, status and timer or diff, how many messages wait in its queue, and how many subagents run. |
@@ -99,6 +102,19 @@ Limits come from T3 Code's live server config: the same pooled figures as **Usag
 - **Open Usage in T3 Code** (default): brings T3 Code forward to use a reset there.
 - **Use a banked reset**: spends one reset credit on the account T3 Code would refill first, then says which account and what happened. A tap says **Hold to use reset** when there is one to use. This needs T3 Code's provider access, which the deck doesn't ask for by default: choosing it on a machine whose pairing lacks it shows **Needs provider access — re-pair to enable**, and that machine's next pair link asks for it.
 
+### Extra access
+
+Some actions need access a standard pairing doesn't ask for. The deck asks for it only on the machine an action works on, and only once you use the action there: pressing the key (or, for Run Script, picking a script). Until that machine is paired again with a new link, the key says what it needs, like **Needs update access — re-pair to enable**; T3 Code's standard pair links grant all of these when asked.
+
+| Access | Asked for by | What it lets the deck do on that machine |
+|---|---|---|
+| Provider access | Limits set to **Use a banked reset** | Manage provider accounts, including spending reset credits. |
+| Update access | Update T3 | Update T3 Code and restart it. |
+| Terminal access | Run Script | Run any command in T3 Code's terminals: shell access to that machine. Terminal status access comes with it, so the key can show whether the script runs. |
+| Guest link access | Share Thread | Create guest links, which let someone outside watch a thread for a day and propose messages. |
+
+The **T3 Code** card in any action's settings lists, per machine, the extra access its pairing holds (**Granted**) and what its next pairing will ask for (**Next pairing**). **Don't ask** takes back a pending request. To give up access the pairing already holds, sign out and pair again, or revoke the session in T3 Code under **Sharing & access**.
+
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
 ### Diagnostics
@@ -121,6 +137,9 @@ Under **Diagnostics** in any action's settings:
 - **Skills** come from the thread's provider for its checkout. T3 Code's server config leaves a checkout's skills out, so the deck asks for them when a skill key or dial shows the thread, and again after five minutes, as T3 Code's composer does. Skill names T3 Code can't read as a mention (such as `pdf.tools`) aren't offered.
 - **Stop Workflow, Fork and Merge Back** read one snapshot of the thread when pressed, for its workflows and runs; their faces use the thread list only.
 - **Previews and devices** are read and started, not driven: the deck can't open a new preview tab (that takes T3 Code's preview access), and a device started from the deck runs in the thread's Device panel, which T3 Code shows once you open the panel there.
+- **T3 Code updates**: T3 Code doesn't tell clients that a newer T3 Code exists; its own clients update a server to their own version. Update T3 asks npm for the newest release on the server's channel when you hold it, so its face can only show the current version.
+- **Script results**: T3 Code runs a script by typing it into a terminal's shell and reports whether something runs there, not how it ended. Run Script shows **Finished** after a run, not its exit code; it has one only when the shell itself exits.
+- **Guest links** are shown once, when they are made, so the deck can copy again only a link it made since it started. Pressing a thread shared elsewhere says **Hold to stop sharing**, since a new link would end the current one.
 - **Moving a thread to another machine** isn't possible: T3 Code has no way to export a thread or move it between environments yet.
 - **Queues**: T3 Code's thread list doesn't count queued messages, so the deck reads a shown thread's queue from one snapshot of that thread when its runs change (while it is queued, stopped, or had messages waiting), and after its own queue presses. A message removed or reordered in T3 Code while the thread's runs stay the same shows on the deck after the next change.
 - **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.

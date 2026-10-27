@@ -1,5 +1,6 @@
 import streamDeck from "@elgato/streamdeck";
 
+import { RunScriptKey, ShareKey, UpdateKey } from "./actions/admin.js";
 import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.js";
 import { DevicesDial } from "./actions/devices.js";
 import { OpenInEditor } from "./actions/editor.js";
@@ -79,6 +80,9 @@ for (const instance of [
 	new UsageKey(),
 	new RunTaskKey(),
 	new RunSkillKey(),
+	new UpdateKey(),
+	new RunScriptKey(),
+	new ShareKey(),
 	new ThreadDial(),
 	new ModelDial(),
 	new PromptDial(),
