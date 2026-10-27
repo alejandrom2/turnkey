@@ -32,7 +32,7 @@ import { connectionNotice, InfobarWriter } from "./infobar.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("usage");
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));

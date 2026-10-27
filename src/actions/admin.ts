@@ -32,7 +32,7 @@ import { connectionOf, threadNeeds } from "./needs.js";
  * sharing threads with guests. Each asks for it only on the machine it acts on, once the user presses it there (or
  * picks a script); that machine's next pairing then requests it.
  */
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("admin");
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));

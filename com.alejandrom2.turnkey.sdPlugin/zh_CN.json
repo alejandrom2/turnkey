@@ -1,0 +1,1248 @@
+{
+	"Name": "Turnkey for T3 Code",
+	"Description": "在 Stream Deck 上查看并操控 T3 Code 对话：对话状态、停止、提示词、模型选项与回答，支持所有提供方。",
+	"Category": "Turnkey for T3 Code",
+	"com.alejandrom2.turnkey.slot": {
+		"Name": "对话",
+		"Tooltip": "看板中的一个对话，按按键位置填充：状态、标题和计时。轻触在 T3 Code 中打开；长按选中。"
+	},
+	"com.alejandrom2.turnkey.activity": {
+		"Name": "动态",
+		"Tooltip": "符合筛选条件的最紧急对话。轻触在 T3 Code 中打开。"
+	},
+	"com.alejandrom2.turnkey.new": {
+		"Name": "新对话",
+		"Tooltip": "在所选对话的项目、无项目或指定项目中新建对话；可带已保存的提示词，也可为空。"
+	},
+	"com.alejandrom2.turnkey.send": {
+		"Name": "发送提示词",
+		"Tooltip": "向所选对话发送你自己的提示词，或常用提示词（继续、修复测试、解释、提交等）。长按则中断并以它重新开始。"
+	},
+	"com.alejandrom2.turnkey.steer": {
+		"Name": "引导",
+		"Tooltip": "向所选对话正在进行的轮次追加一条已保存的指令。"
+	},
+	"com.alejandrom2.turnkey.skill": {
+		"Name": "运行技能",
+		"Tooltip": "运行对话提供方的某个技能，与在 T3 Code 输入框中选择并发送相同。"
+	},
+	"com.alejandrom2.turnkey.stop": {
+		"Name": "停止",
+		"Tooltip": "停止所选对话正在进行的轮次，或按设置停止其运行的工作流（Claude）。停止工作流需长按。"
+	},
+	"com.alejandrom2.turnkey.model": {
+		"Name": "模型",
+		"Tooltip": "将所选对话切换到某个收藏模型，或切换到 T3 Code 收藏中的下一个。"
+	},
+	"com.alejandrom2.turnkey.effort": {
+		"Name": "推理强度",
+		"Tooltip": "设置所选对话的推理强度，或在其模型提供的选项间循环。"
+	},
+	"com.alejandrom2.turnkey.speed": {
+		"Name": "速度",
+		"Tooltip": "在模型支持时，为所选对话开关快速模式。"
+	},
+	"com.alejandrom2.turnkey.permissions": {
+		"Name": "权限",
+		"Tooltip": "设置所选对话的访问权限（从“监督”到“完全访问”），或在其间循环。"
+	},
+	"com.alejandrom2.turnkey.plan": {
+		"Name": "计划",
+		"Tooltip": "在“构建”和“计划”之间切换所选对话。"
+	},
+	"com.alejandrom2.turnkey.approve": {
+		"Name": "批准",
+		"Tooltip": "在设置允许的范围内答复所选对话的审批，否则在 T3 Code 中打开。"
+	},
+	"com.alejandrom2.turnkey.deny": {
+		"Name": "拒绝",
+		"Tooltip": "拒绝所选对话的审批。"
+	},
+	"com.alejandrom2.turnkey.organize": {
+		"Name": "整理",
+		"Tooltip": "将所选对话完结、置顶、延后、归档或标为未读，或唤醒最近延后的对话。"
+	},
+	"com.alejandrom2.turnkey.fork": {
+		"Name": "分叉",
+		"Tooltip": "从对话最新完成的回复处分叉并打开分叉，或将分叉合并回其来源对话（长按）。"
+	},
+	"com.alejandrom2.turnkey.branch": {
+		"Name": "分支",
+		"Tooltip": "所选对话的分支。轻触在 T3 Code 中打开对话。"
+	},
+	"com.alejandrom2.turnkey.git": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.turnkey.pr": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.turnkey.task": {
+		"Name": "运行任务",
+		"Tooltip": "T3 Code 的某个定时任务：名称及下次运行时间。按下立即运行。"
+	},
+	"com.alejandrom2.turnkey.usage": {
+		"Name": "用量",
+		"Tooltip": "某时段按 API 估算的费用、token 和会话数，与 T3 Code 的 Usage 一致，可看单台或全部机器。轻触刷新；长按同时重新加载模型价格。"
+	},
+	"com.alejandrom2.turnkey.limits": {
+		"Name": "额度",
+		"Tooltip": "提供方的订阅额度，与 T3 Code 的“Limits”一样汇总：剩余百分比、下次重置和储备的重置次数。轻触刷新；长按打开 T3 Code 的 Usage 或使用一次重置。"
+	},
+	"com.alejandrom2.turnkey.open": {
+		"Name": "打开",
+		"Tooltip": "用编辑器打开所选对话的工作树，或按设置在这台电脑的浏览器中打开其预览页面。"
+	},
+	"com.alejandrom2.turnkey.health": {
+		"Name": "健康状态",
+		"Tooltip": "与 T3 Code 及其提供方的连接：最严重的问题优先（离线、需要配对、未认证、版本不受支持、不可用）。轻触重新连接。"
+	},
+	"com.alejandrom2.turnkey.update": {
+		"Name": "更新 T3",
+		"Tooltip": "某台机器上的 T3 Code 版本。长按更新到最新版本；需要更新权限，会在该机器下次配对时申请。"
+	},
+	"com.alejandrom2.turnkey.script": {
+		"Name": "运行脚本",
+		"Tooltip": "在对话的终端中运行项目的某个已保存脚本；长按停止。需要终端权限（shell），会在该机器下次配对时申请。"
+	},
+	"com.alejandrom2.turnkey.share": {
+		"Name": "分享对话",
+		"Tooltip": "为对话生成访客链接并复制；显示“已分享”及其访客。长按停止分享。需要访客链接权限，会在该机器下次配对时申请。"
+	},
+	"com.alejandrom2.turnkey.dial.threads": {
+		"Name": "对话旋钮",
+		"Tooltip": "旋转浏览符合筛选条件的对话，并在 T3 Code 中选中；按下或轻触打开。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择对话", "Push": "在 T3 Code 中打开", "Touch": "在 T3 Code 中打开" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.model": {
+		"Name": "性能旋钮",
+		"Tooltip": "更改所选对话的模型、推理强度或访问权限；在支持时按下或轻触切换速度。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "预览", "Push": "应用（或切换速度）", "Touch": "切换速度" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.prompts": {
+		"Name": "提示词旋钮",
+		"Tooltip": "旋转浏览你的提示词和模板。按下发送到所选对话；长按新建对话。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择提示词", "Push": "发送（长按：新对话）", "Touch": "发送" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.answer": {
+		"Name": "回答旋钮",
+		"Tooltip": "逐个选项回答智能体的问题，并在设置允许的范围内答复审批。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择回答", "Push": "回答（默认长按）", "Touch": "打开对话" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.queue": {
+		"Name": "队列旋钮",
+		"Tooltip": "旋转浏览所选对话的排队消息。按下立即发送一条（引导进当前轮次，或在空闲时开始新轮次）；长按移除。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择消息", "Push": "立即发送（长按：移除）", "Touch": "打开对话" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.tasks": {
+		"Name": "任务旋钮",
+		"Tooltip": "旋转浏览 T3 Code 的定时任务及其下次运行时间。按下立即运行当前任务；轻触停用或重新启用。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择任务", "Push": "立即运行", "Touch": "启用或停用" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.skills": {
+		"Name": "技能旋钮",
+		"Tooltip": "旋转浏览对话提供方的技能。按下或轻触运行当前技能；触摸并按住查看其描述。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择技能", "Push": "运行技能", "Touch": "运行技能", "LongTouch": "查看描述" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.pr": {
+		"Name": "PR 旋钮",
+		"Tooltip": "旋转浏览打开的拉取请求。按下运行“Fix findings”，轻触在浏览器中打开，触摸并按住查看问题。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择拉取请求", "Push": "修复问题（长按）", "Touch": "在浏览器中打开", "LongTouch": "查看问题" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.limits": {
+		"Name": "额度旋钮",
+		"Tooltip": "旋转浏览每个提供方的额度窗口。按下或轻触刷新；按住可打开 T3 Code 的 Usage 或使用一次重置。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择提供方和窗口", "Push": "刷新（长按：重置）", "Touch": "刷新", "LongTouch": "查看详情" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.usage": {
+		"Name": "用量旋钮",
+		"Tooltip": "旋转浏览某时段的总计及每个模型的费用、token、缓存命中率和每百万 token 费用。按下或轻触刷新；长按重新加载模型价格。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择模型", "Push": "刷新（长按：含价格）", "Touch": "刷新", "LongTouch": "查看详情" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.devices": {
+		"Name": "设备旋钮",
+		"Tooltip": "旋转浏览 T3 Code 的模拟器与仿真器。按下在对话的 Device panel 中启动或打开当前设备；长按关机。触摸重新查找设备。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择设备", "Push": "启动或打开（长按：关机）", "Touch": "重新查找" }
+		}
+	},
+	"com.alejandrom2.turnkey.git.commit": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.turnkey.git.push": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.turnkey.git.pr": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.turnkey.git.pull": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.turnkey.pr.fix": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.turnkey.pr.explain": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.turnkey.pr.ask": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.turnkey.pr.guide": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.turnkey.quick": {
+		"Name": "发送提示词",
+		"Tooltip": "向所选对话发送你自己的提示词，或常用提示词（继续、修复测试、解释、提交等）。长按则中断并以它重新开始。"
+	},
+	"com.alejandrom2.turnkey.workflow.stop": {
+		"Name": "停止",
+		"Tooltip": "停止所选对话正在进行的轮次，或按设置停止其运行的工作流（Claude）。停止工作流需长按。"
+	},
+	"com.alejandrom2.turnkey.merge": {
+		"Name": "分叉",
+		"Tooltip": "从对话最新完成的回复处分叉并打开分叉，或将分叉合并回其来源对话（长按）。"
+	},
+	"com.alejandrom2.turnkey.editor": {
+		"Name": "打开",
+		"Tooltip": "用编辑器打开所选对话的工作树，或按设置在这台电脑的浏览器中打开其预览页面。"
+	},
+	"com.alejandrom2.turnkey.preview": {
+		"Name": "打开",
+		"Tooltip": "用编辑器打开所选对话的工作树，或按设置在这台电脑的浏览器中打开其预览页面。"
+	},
+	"Localization": {
+		"result": {
+			"done": "完成",
+			"opened": "已打开",
+			"sent": "已发送",
+			"started": "已开始",
+			"loading": "加载中…",
+			"holdToAllow": "长按允许",
+			"holdToAnswer": "长按回答",
+			"holdToSend": "长按发送",
+			"holdToSettle": "长按完结",
+			"holdToSnooze": "长按延后",
+			"notWebLink": "非网页链接",
+			"holdToRemove": "长按移除",
+			"cantSteerYet": "暂无法引导"
+		},
+		"face": {
+			"noThread": "无对话",
+			"allQuiet": "一切安静",
+			"model": "模型",
+			"effort": "推理强度",
+			"access": "权限",
+			"plan": "计划",
+			"build": "构建",
+			"deny": "拒绝",
+			"pullRequest": "拉取请求",
+			"branch": "分支",
+			"needsYou": "需要你",
+			"prompt": "提示词"
+		},
+		"review": {
+			"send": "发送？",
+			"restart": "以此重启？",
+			"steer": "引导？",
+			"newThread": "新对话？",
+			"settle": "完结？",
+			"snooze": "延后 {duration}？",
+			"pressAgain": "再按一次",
+			"pressToSend": "再按一次发送",
+			"to": "发往 {thread}",
+			"runSkill": "运行技能？"
+		},
+		"organize": {
+			"settle": "完结",
+			"pin": "置顶",
+			"unpin": "取消置顶",
+			"snooze": "延后",
+			"snoozeFor": "延后 {duration}",
+			"archive": "归档",
+			"markUnread": "未读",
+			"wake": "唤醒对话",
+			"nothingSnoozed": "无延后对话"
+		},
+		"notice": {
+			"openT3Code": "打开 T3 Code",
+			"thenPress": "然后按下",
+			"notFound": "未找到 T3 Code",
+			"openThenPress": "打开后按下",
+			"machineRemoved": "机器已移除",
+			"pickAnother": "另选一个",
+			"pickAnotherMachine": "另选机器",
+			"pickAnotherInSettings": "在设置中另选",
+			"pairDeck": "配对 Turnkey",
+			"pastePairLink": "在设置中粘贴配对链接",
+			"connecting": "连接中…",
+			"pressToRetry": "按下重试"
+		},
+		"health": {
+			"allConnected": "全部已连接",
+			"offline": "离线",
+			"someOffline": "部分离线",
+			"readyCount": "{ready}/{total} 就绪",
+			"connected": "已连接",
+			"readOnly": "只读",
+			"connecting": "连接中…",
+			"needsPairing": "需要配对",
+			"notFound": "未找到",
+			"unavailable": "不可用",
+			"unauthenticated": "未认证",
+			"unsupported": "版本不受支持",
+			"broken": "已知问题版本",
+			"needsAttention": "需要关注",
+			"updateAvailable": "有可用更新",
+			"disabled": "已停用",
+			"providerUpdate": "{provider} 有更新",
+			"providerOff": "{provider} 已关闭",
+			"more": "另 {count} 项"
+		},
+		"reason": {
+			"noPrompt": "无提示词",
+			"readOnly": "只读",
+			"nothingPending": "无待处理",
+			"noThread": "无对话",
+			"noPr": "无 PR",
+			"noBranch": "无分支",
+			"notRunning": "未运行",
+			"pinned": "已置顶",
+			"notPinned": "未置顶",
+			"pickProject": "选择项目",
+			"noProject": "无项目",
+			"unavailable": "不可用",
+			"noModels": "无模型",
+			"noEffort": "无推理强度",
+			"noModes": "无模式",
+			"notOffered": "不支持",
+			"noFastMode": "无快速模式",
+			"noPlanMode": "无计划模式",
+			"pickThread": "选择对话",
+			"targetGone": "不可用：{thread}"
+		},
+		"failure": {
+			"readOnly": "只读",
+			"offline": "离线",
+			"updateT3": "更新 T3 Code",
+			"noModel": "无模型",
+			"noMachine": "无机器",
+			"timedOut": "超时",
+			"failed": "失败"
+		},
+		"status": {
+			"needsApproval": "需要审批",
+			"hasQuestion": "有问题",
+			"running": "运行中 {time}",
+			"queued": "排队中",
+			"done": "完成",
+			"failed": "失败",
+			"stopped": "已停止",
+			"idle": "空闲",
+			"queuedCount": "+{count} 排队",
+			"subagent": "{count} 个子智能体",
+			"subagents": "{count} 个子智能体"
+		},
+		"filter": {
+			"all": "对话",
+			"attention": "需要你",
+			"active": "工作中",
+			"unread": "未读"
+		},
+		"strip": {
+			"done": "完成",
+			"notNow": "稍后",
+			"noThread": "无对话",
+			"noThreads": "无对话",
+			"allQuiet": "一切安静",
+			"default": "默认",
+			"pressToApply": "按下应用",
+			"speed": "速度：{speed}",
+			"prompts": "提示词",
+			"noPrompts": "无提示词",
+			"addPrompts": "在设置中添加",
+			"answer": "回答",
+			"nothingPending": "无待处理",
+			"approvals": "审批：{authority}",
+			"approval": "审批",
+			"question": "问题",
+			"pressToOpen": "按下在 T3 Code 中打开",
+			"openInT3Code": "在 T3 Code 中打开",
+			"withHold": "{label} · 长按",
+			"queue": "队列",
+			"nothingQueued": "队列为空",
+			"queuedMessage": "排队消息",
+			"queueHeld": "已暂停 · 按下立即发送",
+			"queueSendNow": "按下立即发送 · 长按移除",
+			"queueSteer": "按下引导进去 · 长按移除",
+			"queueRemoveOnly": "长按移除"
+		},
+		"power": {
+			"quicker": "更快",
+			"deeper": "更深",
+			"asksFirst": "先询问",
+			"handsOff": "放手"
+		},
+		"approval": {
+			"open": "在 T3 中打开",
+			"once": "允许一次",
+			"session": "本会话允许",
+			"always": "始终允许",
+			"deny": "拒绝",
+			"needsYou": "需在 T3 Code 中处理",
+			"command": "命令审批",
+			"fileRead": "文件读取审批",
+			"fileChange": "文件更改审批",
+			"permission": "应用权限审批",
+			"mcpElicitation": "应用访问审批"
+		},
+		"mode": {
+			"approvalRequired": "监督",
+			"autoAcceptEdits": "自动接受编辑",
+			"auto": "自动",
+			"fullAccess": "完全访问"
+		},
+		"option": {
+			"off": "关",
+			"on": "开",
+			"fast": "快速",
+			"normal": "标准"
+		},
+		"quick": {
+			"continue": "继续",
+			"test": "修复测试",
+			"fix": "诊断",
+			"explain": "解释",
+			"commit": "提交"
+		},
+		"time": {
+			"minutes": "{minutes}分",
+			"hours": "{hours}小时",
+			"days": "{days}天"
+		},
+		"datasource": {
+			"cycleFavorites": "循环收藏",
+			"cycleModels": "循环模型",
+			"cycleEfforts": "循环推理强度",
+			"anyProject": "任意项目",
+			"noProject": "无项目",
+			"defaultEditor": "T3 Code 默认",
+			"firstProvider": "首个有额度的",
+			"firstWindow": "最短窗口",
+			"chooseThread": "选择对话…",
+			"chooseScript": "选择脚本…"
+		},
+		"machine": {
+			"thisMachine": "本机",
+			"pairingExpired": "此配对已过期。请粘贴新的配对链接。",
+			"cannotRead": "此配对无法读取对话。请粘贴新的配对链接。"
+		},
+		"pairing": {
+			"notALink": "这看起来不是 T3 Code 配对链接。请从 Settings → Sharing & access 复制。",
+			"unreachable": "无法连接到 {host} 上的 T3 Code。请检查它是否在运行，以及能否从这台电脑访问。",
+			"notT3": "{host} 看起来不是 T3 Code 服务器。",
+			"tooOld": "该机器上的 T3 Code 版本过旧，Turnkey 无法使用。请更新 T3 Code。",
+			"tooNew": "此 T3 Code 版本比 Turnkey 支持的更新。请更新 Turnkey。",
+			"linkUsed": "该配对链接已被使用或已过期。请在 Settings → Sharing & access 中创建新链接。",
+			"noAccess": "该配对链接不提供对话访问权限。请创建一个提供该权限的链接。",
+			"refused": "T3 Code 拒绝了该配对链接（{status}）。",
+			"noRead": "该配对链接不允许读取对话。请创建一个允许读取的链接。",
+			"different": "{host} 上现在响应的是另一个 T3 Code。",
+			"ended": "T3 Code 已结束此配对。请粘贴新的配对链接以重新连接。",
+			"cannotOpen": "T3 Code 无法建立连接（{status}）。"
+		},
+		"connection": {
+			"noAnswer": "T3 Code 未及时响应。",
+			"closed": "与 T3 Code 的连接已关闭。",
+			"failed": "与 T3 Code 的连接失败。",
+			"silent": "T3 Code 停止了响应。",
+			"feedEnded": "T3 Code 结束了对话推送。",
+			"disconnected": "已与 T3 Code 断开连接。"
+		},
+		"access": {
+			"sourceControl": "需要源代码管理权限 — 请重新配对",
+			"diagnostics": "需要用量权限 — 请重新配对",
+			"providers": "需要提供方权限 — 重新配对以启用",
+			"maintain": "需要更新权限 — 重新配对以启用",
+			"terminal": "需要终端权限 — 重新配对以启用",
+			"share": "需要分享权限 — 重新配对以启用",
+			"other": "需要更多权限 — 请重新配对",
+			"rePair": "重新配对以启用"
+		},
+		"pr": {
+			"open": "打开",
+			"merged": "已合并",
+			"closed": "已关闭",
+			"draft": "草稿",
+			"face": {
+				"failing": "{count} 项检查失败",
+				"failingOne": "1 项检查失败",
+				"findings": "{count} 个问题",
+				"findingsOne": "1 个问题",
+				"running": "检查运行中",
+				"changesRequested": "请求更改",
+				"approved": "已批准",
+				"passing": "检查通过"
+			},
+			"fix": {
+				"title": "修复问题",
+				"none": "无问题",
+				"threads": "{count} 个讨论",
+				"threadOne": "1 个讨论",
+				"remarks": "{count} 条评论",
+				"remarkOne": "1 条评论",
+				"checks": "{count} 项检查",
+				"checkOne": "1 项检查",
+				"named": "{findings}：{names}"
+			},
+			"explain": {
+				"title": "解释 {term}"
+			},
+			"ask": {
+				"title": "询问 {term}"
+			},
+			"guide": {
+				"title": "评审指南",
+				"write": "按下编写",
+				"writing": "正在编写指南…",
+				"ready": "就绪：按下打开",
+				"failed": "失败：按下重试"
+			},
+			"dial": {
+				"title": "拉取请求",
+				"none": "无打开的拉取请求"
+			},
+			"result": {
+				"queued": "已排队",
+				"offHead": "已开始，未基于 PR 头部"
+			}
+		},
+		"repo": {
+			"action": {
+				"commit": "提交",
+				"commitPush": "提交并推送",
+				"commitPushPr": "提交、推送并建 PR",
+				"push": "推送",
+				"createPr": "创建 PR",
+				"pull": "拉取"
+			},
+			"reason": {
+				"notRepo": "不是 Git 仓库",
+				"detached": "HEAD 游离：请检出分支",
+				"noUpstream": "无上游分支",
+				"diverged": "已分叉：请先变基或合并",
+				"upToDate": "已是最新",
+				"clean": "无可提交内容",
+				"uncommitted": "请先提交或储藏更改",
+				"behind": "落后于上游：请先拉取",
+				"noRemote": "请先添加 origin 远程",
+				"nothingToPush": "无可推送的提交",
+				"prOpen": "PR #{number} 已打开",
+				"prFromDefault": "在 {branch} 上：请先创建分支",
+				"nothingForPr": "无可建 PR 的提交"
+			},
+			"behind": "落后 {count}",
+			"ahead": "领先 {count}",
+			"changes": "{files} 个文件 · +{insertions} −{deletions}",
+			"changesOne": "1 个文件 · +{insertions} −{deletions}",
+			"hook": "正在运行 {hook}",
+			"unknownOutcome": "结果未知，请查看 T3 Code",
+			"running": "已在运行",
+			"holdTo": "长按确认",
+			"holdOnDefault": "长按推送到 {branch}",
+			"starting": "启动中…",
+			"pulled": "已拉取",
+			"upToDate": "已是最新",
+			"files": "{count} 个文件",
+			"fileOne": "1 个文件"
+		},
+		"needs": {
+			"paired": "已与 T3 Code 配对",
+			"operate": "可操作对话",
+			"thread": "已选中的对话",
+			"running": "进行中的轮次",
+			"pending": "待处理的请求",
+			"prompt": "已保存的提示词",
+			"scope": {
+				"sourceControl": "源代码管理权限",
+				"diagnostics": "用量权限",
+				"providers": "提供方权限",
+				"maintain": "更新权限（在该机器上更新 T3 Code）",
+				"terminal": "终端权限（在该机器上运行命令）",
+				"terminalRead": "终端状态权限",
+				"share": "访客链接权限（与外部人员分享对话）",
+				"other": "{scope} 权限"
+			},
+			"option": "对话模型的{option}",
+			"optionEffort": "推理强度",
+			"optionFast": "快速模式",
+			"optionPlan": "计划模式",
+			"pr": "一个拉取请求",
+			"branch": "一个分支",
+			"repo": "可操作的内容",
+			"editor": "该机器上的编辑器",
+			"limits": "会报告额度的提供方",
+			"snoozed": "已延后的对话",
+			"preview": "预览或 HTML 渲染",
+			"devices": "模拟器或仿真器",
+			"notAvailable": "不可用：{value}",
+			"problem": "{subject}：{text}",
+			"problemOn": "{subject}（{machine}）：{text}",
+			"fix": {
+				"openT3": "在这台电脑上打开 T3 Code，然后按下按键。",
+				"addMachine": "或在“添加机器”下粘贴配对链接。",
+				"pickMachine": "在下方另选一台机器。",
+				"pairLink": "在“添加机器”下粘贴来自 T3 Code 的配对链接。",
+				"reachable": "请检查该机器已开机且可访问。",
+				"pressRetry": "按下按键立即重试。",
+				"canAct": "使用可操作（而非只读）的链接重新配对。",
+				"openThread": "在 T3 Code 中打开一个对话。",
+				"selectThread": "或用“对话”按键或对话旋钮选择一个。",
+				"startTurn": "发送提示词以开始一个轮次。",
+				"waitForAgent": "等待智能体提出请求。",
+				"typePrompt": "在上方输入提示词。",
+				"newPairLink": "在 T3 Code 的 Settings → Sharing & access 中创建配对链接。",
+				"standardAccess": "保留其默认权限，然后用下方的新链接连接。",
+				"switchModel": "将对话切换到支持该功能的模型。",
+				"createPr": "用“创建 PR”或在 T3 Code 中创建一个。",
+				"checkoutBranch": "在对话中检出一个分支。",
+				"installEditor": "安装 T3 Code 支持的编辑器，例如 VS Code 或 Cursor。",
+				"signInProvider": "在 T3 Code 中登录 Codex 或 Claude；它们会报告订阅额度。",
+				"pickAnother": "在上方另选一个值。",
+				"noFindings": "它没有失败或未解决的问题。",
+				"providersInT3": "在 T3 Code 的 Settings → Providers 中修复。",
+				"queueMessage": "在对话工作时发送消息，它会在队列中等待。",
+				"addTask": "在 T3 Code 的 Settings → Scheduled tasks 中添加。",
+				"snoozeOne": "用“整理”按键或在 T3 Code 中延后一个对话。",
+				"openPreview": "在 T3 Code 中对话的预览面板里打开页面，或让智能体渲染 HTML。",
+				"turnOnDevices": "在 T3 Code 的 Device panel 中打开 Devices，并确保该机器上有 Xcode 或 Android Studio。",
+				"optInNext": "当这里的某个操作需要时，该机器下次配对时会申请此权限。",
+				"addScript": "在 T3 Code 中用项目的 Add action 按钮添加。",
+				"guestLinks": "在 T3 Code 的 Settings → Labs 中打开 Guest links，并运行 T3 Connect。",
+				"selfUpdate": "在该机器上手动更新 T3 Code。"
+			},
+			"findings": "待修复的问题",
+			"providers": "提供方就绪",
+			"queued": "排队中的消息",
+			"tasks": "定时任务",
+			"script": "对话项目中已保存的脚本",
+			"guestLinks": "已开启 Guest links",
+			"selfUpdate": "T3 Code 能自行更新"
+		},
+		"editor": {
+			"title": "在编辑器中打开",
+			"none": "此机器无编辑器",
+			"noFolder": "无文件夹",
+			"opensOn": "在 {machine} 上打开"
+		},
+		"devices": {
+			"title": "设备",
+			"ios": "iOS",
+			"android": "Android",
+			"open": "在此打开",
+			"running": "运行中",
+			"starting": "启动中…",
+			"stopped": "已停止",
+			"loading": "正在查找设备…",
+			"unreadable": "无法读取设备",
+			"off": "设备功能已关闭",
+			"turnOn": "在 T3 Code 中开启",
+			"hubStarting": "正在启动设备中心…",
+			"hubFailed": "设备中心启动失败。",
+			"none": "无模拟器或仿真器",
+			"touchToCheck": "触摸重新查找",
+			"pressToStart": "按下启动 · 触摸重新查找",
+			"pressToOpen": "按下打开 · 长按关机",
+			"holdToStartCloud": "长按启动：EAS 计费",
+			"physical": "无法关闭真机"
+		},
+		"openPreview": {
+			"title": "打开预览",
+			"none": "无预览",
+			"onlyOn": "仅限 {machine}",
+			"htmlRender": "HTML 渲染"
+		},
+		"inspector": {
+			"editor": {
+				"label": "编辑器",
+				"loading": "正在加载编辑器…",
+				"hint": "打开所选对话的工作树，或其项目文件夹。T3 Code 在它自己所在的机器上启动编辑器，那可能不是这台电脑。"
+			},
+			"devices": {
+				"hint": "列出对话所在机器及其设备主机上的模拟器和仿真器。按下在对话的 Device panel 中启动当前设备，若已运行则在那里打开；长按关机。云端（EAS）设备需长按启动，因为运行期间 Expo 会计费。开启 Devices 和添加主机需在 T3 Code 中进行。"
+			},
+			"preview": {
+				"hint": "在这台电脑的浏览器中打开对话预览面板显示的页面，否则打开对话最新的 HTML 渲染。其他机器 localhost 上的页面只能在那台机器上打开，按键会提示这一点；请在那里从 T3 Code 打开。"
+			},
+			"pr": {
+				"confirm": "发送方式",
+				"hold": "长按",
+				"tap": "轻触",
+				"fixHint": "将 T3 Code 针对所选对话拉取请求的“Fix findings”任务发送到该对话，忙碌时排队。评审评论和检查输出来自托管平台，作为不可信数据附加。",
+				"dialHint": "列出该机器上打开的拉取请求。按下在关联的对话（或新的工作树对话）中运行“Fix findings”；轻触在浏览器中打开；触摸并按住查看问题。",
+				"show": "显示",
+				"fix": "修复问题",
+				"explain": "解释",
+				"ask": "询问",
+				"guide": "评审指南"
+			},
+			"git": {
+				"action": "操作",
+				"commit": "提交",
+				"commitPush": "提交并推送",
+				"commitPushPr": "提交、推送并创建 PR",
+				"message": "提交信息",
+				"messagePlaceholder": "留空时由 T3 Code 生成",
+				"confirm": "运行方式",
+				"confirmDefault": "推送时长按，其他轻触",
+				"tap": "轻触",
+				"hold": "长按",
+				"hint": "作用于所选对话的工作树，或其项目文件夹。推送到默认分支始终需要长按；从默认分支创建 PR 会被拒绝，因为 T3 Code 会先建议新建分支。",
+				"pullHint": "当所选对话的分支落后时，从其上游拉取。",
+				"push": "推送",
+				"createPr": "创建 PR",
+				"pull": "拉取"
+			},
+			"card": {
+				"machine": "设备",
+				"machines": "设备列表",
+				"getLink": "获取配对链接",
+				"getLinkRow": "获取链接",
+				"pasteLink": "粘贴链接",
+				"looking": "正在本机上查找 T3 Code…",
+				"machineGroup": "此操作使用的机器",
+				"addMachine": "添加机器",
+				"linkPlaceholder": "粘贴来自 Settings → Sharing & access 的配对链接",
+				"connect": "连接",
+				"connecting": "连接中…",
+				"accessHelp": "Turnkey 会在链接允许的范围内请求读取和操作对话。可在 Settings → Sharing & access 中撤销。",
+				"notRunning": "本机未运行 T3 Code。请打开它，或在下方粘贴来自其他机器的配对链接。",
+				"howToPair": "在 T3 Code 中打开 Settings → Sharing & access，创建配对链接，并粘贴到下方。",
+				"allMachines": "所有机器",
+				"noneYet": "暂无",
+				"connectedCount": "{ready}/{total} 已连接",
+				"connected": "已连接",
+				"readOnly": "只读",
+				"signOut": "退出",
+				"tryAgain": "重试",
+				"needsPairing": "需要配对",
+				"remove": "移除",
+				"pasteFromMachine": "在下方粘贴来自这台机器的配对链接。",
+				"pairing": "正在使用配对链接连接…",
+				"needsTitle": "此操作所需条件",
+				"needsNotMet": " · {count} 项未满足",
+				"noMachines": "暂无机器",
+				"needsAllMet": " · 全部满足",
+				"needsMet": "已满足",
+				"needsUnmet": "未满足",
+				"needsChecking": "检查中",
+				"optInTitle": "额外权限",
+				"optInHeld": "已授予",
+				"optInPending": "下次配对",
+				"optInDrop": "不再询问",
+				"scopeProviders": "提供方账户（使用重置）",
+				"scopeMaintain": "更新（更新 T3）",
+				"scopeTerminal": "终端：运行命令（运行脚本）",
+				"scopeTerminalRead": "终端状态（运行脚本）",
+				"scopeShare": "访客链接（分享对话）",
+				"verboseUntil": "开启至 {time}，之后恢复正常日志。",
+				"verboseOff": "记录更详细的日志 24 小时，之后自动关闭。从不记录令牌。",
+				"diagnosticsFailed": "操作未成功。请打开日志文件夹自行查看。"
+			},
+			"diagnostics": {
+				"title": "诊断",
+				"verbose": "详细日志",
+				"verboseLabel": "开启 24 小时",
+				"logs": "日志",
+				"openLogs": "打开日志文件夹",
+				"report": "报告",
+				"export": "导出诊断信息",
+				"exportHint": "将版本、机器（仅主机、状态和权限）、操作计数和最近错误保存到日志文件夹中的文件并显示。令牌、配对链接和完整地址不包含在内，可放心附加到错误报告。"
+			},
+			"settings": {
+				"open": "Turnkey 设置…",
+				"blocked": "Stream Deck 没有打开窗口。",
+				"title": "Turnkey 设置",
+				"detached": "请从 Turnkey 操作中打开 Turnkey 设置。",
+				"appearance": "外观",
+				"behavior": "行为",
+				"about": "关于",
+				"machinesLede": "Turnkey 会连接你添加的每台机器上的 T3 Code。每个按键和旋钮可以跟随一台机器，或全部机器。",
+				"version": "版本",
+				"languages": "语言",
+				"languagesHint": "Turnkey 跟随 Stream Deck 的语言。",
+				"readme": "指南",
+				"openReadme": "打开 README"
+			},
+			"advanced": {
+				"appLink": "应用链接",
+				"appLinkHint": "使用 t3code-dev 在开发版中打开对话。",
+				"dialStrips": "旋钮触控条",
+				"stateLine": "状态线",
+				"stateLineLabel": "在每个触控条下显示彩色线",
+				"stateHint": "深色是近乎黑色的纯色，与 Stream Deck 自带的触控条一致。“流动”在相邻旋钮间绘制一整幅图案。“对话状态”在有未查看的已完成轮次时将触控条染成绿色，失败时为红色，需要你时为琥珀色。每个旋钮可在自己的设置中覆盖此项。",
+				"stripStyle": "触控条样式",
+				"styleHint": "“列表”像滚轮一样转动旋钮的项目，“轮播”将每项显示为夹在相邻项之间的卡片。“按旋钮默认”对对话旋钮使用“列表”，其他使用“经典”；“经典”将性能旋钮显示为滑块。旋钮停下后长文本会滚动两次然后停止；触摸并按住触控条可阅读全文，旋转可滚动。",
+				"motion": "动效",
+				"maxEffort": "颜色",
+				"maxEffortHint": "“渐变”按模型自身的颜色为各推理强度等级逐级上色，最高级趋向紫色，并为每个模型和“快速”使用其提供方的渐变。“纯色”和“模型颜色”只标记最高推理强度，分别使用紫色或模型颜色；“关”则不加颜色。Ultrathink 保留 T3 Code 的光谱色。",
+				"motionHint": "“完整”会旋转运行中的对话、脉动显示等待你的对话，并在完成和失败时闪烁。“减弱”缓慢旋转且不脉动。“关”让所有按键画面保持静止。",
+				"idlePet": "空闲宠物",
+				"previewPet": "预览宠物",
+				"idlePetHint": "两分钟内没有按下、旋转或触摸后，一个小机器人会走过你最长的一排相邻旋钮触控条，最多三次，每次间隔四分钟。在任何 Turnkey 操作上按下、旋转或触摸都会让它离开。它跟随“动效”设置：“减弱”时慢慢走，“关”时不出现。",
+				"confirm": "发送前确认",
+				"confirmHint": "适用于发送提示词、引导、运行技能、提示词旋钮和技能旋钮；模型、推理强度、速度、权限和性能旋钮始终立即生效。“预览”在第一次按下时显示发送内容和目标；10 秒内再按一次发送。“长按”在长按时发送，因此长按不会同时重启或新建对话。每个操作可覆盖此项。"
+			},
+			"field": {
+				"strip": "触控条",
+				"stripColor": "触控条颜色",
+				"style": "样式",
+				"longText": "长文本",
+				"show": "显示",
+				"project": "项目",
+				"prompt": "提示词",
+				"keyTitle": "按键标题",
+				"approvals": "审批",
+				"toAnswer": "回答方式",
+				"model": "模型",
+				"effort": "推理强度",
+				"access": "权限",
+				"confirm": "确认",
+				"does": "功能"
+			},
+			"background": {
+				"global": "使用全局设置",
+				"t3": "深色",
+				"flow": "流动",
+				"state": "对话状态",
+				"custom": "自定义颜色"
+			},
+			"style": {
+				"perDial": "按旋钮默认",
+				"classic": "经典",
+				"list": "列表",
+				"carousel": "轮播"
+			},
+			"motion": {
+				"full": "完整",
+				"reduced": "减弱",
+				"off": "关"
+			},
+			"idlePet": {
+				"off": "关",
+				"on": "开"
+			},
+			"maxEffort": {
+				"gradient": "渐变",
+				"solid": "纯色",
+				"model": "模型颜色",
+				"off": "关"
+			},
+			"confirm": {
+				"review": "预览，再按一次",
+				"hold": "长按发送",
+				"off": "立即发送"
+			},
+			"scroll": {
+				"horizontal": "横向滚动",
+				"vertical": "逐行向上滚动",
+				"off": "不滚动"
+			},
+			"loading": {
+				"projects": "正在加载项目…",
+				"models": "正在加载模型…",
+				"efforts": "正在加载推理强度…",
+				"providers": "正在加载提供方…",
+				"windows": "正在加载窗口…",
+				"threads": "正在加载对话…",
+				"tasks": "正在加载任务…",
+				"skills": "正在加载技能…",
+				"scripts": "正在加载脚本…"
+			},
+			"filter": {
+				"all": "所有对话",
+				"attention": "需要你：审批、问题、失败或未读结果",
+				"active": "工作中或排队中",
+				"unread": "未读"
+			},
+			"authority": {
+				"open": "在 T3 Code 中打开",
+				"once": "允许一次",
+				"session": "本会话允许",
+				"always": "始终允许"
+			},
+			"slot": {
+				"label": "位置",
+				"byPosition": "按按键位置",
+				"selected": "所选对话",
+				"first": "1（最紧急）",
+				"hint": "“按按键位置”从左到右、从上到下填充“对话”按键。对话排序：需要审批、有问题、运行中，然后是其余。轻触打开，长按选中。"
+			},
+			"activity": {
+				"hint": "显示最紧急的匹配对话。相同设置的更多“动态”按键按按键位置显示后续对话。"
+			},
+			"answer": {
+				"hold": "长按旋钮",
+				"press": "按下旋钮",
+				"hint": "在此选项和“拒绝”之间旋转切换。不提供此选项的请求会改为在 T3 Code 中打开。触摸并按住触控条可阅读完整的长请求。"
+			},
+			"send": {
+				"titlePlaceholder": "修复测试",
+				"promptPlaceholder": "运行测试并修复失败项",
+				"hint": "发送到 T3 Code 中所选的对话：开始一个轮次，或引导进行中的轮次、在其后排队。长按按键则中断并以它重新开始。",
+				"myText": "自定义文本",
+				"text": "文本"
+			},
+			"steer": {
+				"titlePlaceholder": "保持精简",
+				"promptPlaceholder": "保持改动精简，不要重构",
+				"hint": "追加到所选对话进行中的轮次。对话空闲时按键变暗。"
+			},
+			"quick": {
+				"continue": "继续",
+				"test": "运行测试并修复失败",
+				"fix": "诊断并修复",
+				"explain": "解释当前状态",
+				"commit": "提交你的更改"
+			},
+			"new": {
+				"createIn": "创建位置",
+				"selected": "所选对话的项目",
+				"scratch": "无项目",
+				"project": "指定项目",
+				"promptPlaceholder": "可选：评审打开的拉取请求",
+				"title": "对话标题",
+				"titlePlaceholder": "评审 PR",
+				"hint": "有提示词时，对话开始工作并被 Deck 选中。没有提示词时，在 T3 Code 中打开空对话。未选中对话时，以无项目方式开始。使用 T3 Code 的默认模型和权限。",
+				"startIn": "开始于",
+				"folder": "项目文件夹",
+				"worktree": "新工作树",
+				"worktreeHint": "新工作树从仓库的默认分支开始（与 T3 Code 输入框相同），分支名取自提示词；需要提示词和项目。"
+			},
+			"model": {
+				"nameColor": "名称颜色",
+				"nameModel": "模型颜色",
+				"nameWhite": "白色",
+				"hint": "循环会在 T3 Code 的收藏模型间切换（跨提供方），没有收藏时在对话提供方的模型间切换。选择其他提供方的模型会移交对话，与 T3 Code 的模型选择器相同。"
+			},
+			"effort": {
+				"hint": "循环会在所选对话的模型提供的推理强度间切换。若设定的推理强度不被其模型支持，按键会变暗。Ultrathink 不改变推理强度：与 T3 Code 一样，它会为 Deck 发送到该对话的提示词加上前缀，直到你选择其他推理强度。"
+			},
+			"permissions": {
+				"cycle": "循环访问模式",
+				"approvalRequired": "监督",
+				"autoAcceptEdits": "自动接受编辑",
+				"auto": "自动",
+				"fullAccess": "完全访问",
+				"hint": "从下一步起应用于所选对话。仅提供其提供方支持的模式。"
+			},
+			"approve": {
+				"hold": "长按按键",
+				"tap": "轻触按键",
+				"hint": "答复所选对话的审批。不提供此选项或 Deck 无法答复的请求会在 T3 Code 中打开。“拒绝”是单独的按键。"
+			},
+			"organize": {
+				"action": "操作",
+				"settle": "完结",
+				"pin": "置顶 / 取消置顶",
+				"snooze": "延后",
+				"archive": "归档",
+				"markUnread": "标为未读",
+				"wake": "唤醒最近延后的",
+				"snoozeFor": "延后时长",
+				"minutes15": "15 分钟",
+				"minutes30": "30 分钟",
+				"hour1": "1 小时",
+				"hours2": "2 小时",
+				"hours4": "4 小时",
+				"hours8": "8 小时",
+				"day1": "1 天",
+				"confirm": "确认",
+				"confirmReview": "预览，再按一次",
+				"confirmHold": "长按确认",
+				"confirmOff": "立即执行"
+			},
+			"prompts": {
+				"label": "提示词",
+				"placeholder": "每行一个提示词",
+				"templates": "模板",
+				"templatesLabel": "添加继续、修复测试、诊断、解释和提交",
+				"hint": "旋转选择，按下发送到所选对话，长按新建对话。"
+			},
+			"threads": {
+				"recency": "时间范围",
+				"noLimit": "不限",
+				"day": "24 小时",
+				"twoDays": "48 小时",
+				"threeDays": "3 天",
+				"week": "7 天",
+				"hint": "旋转浏览匹配的对话，最紧急的在前；旋钮停留的对话会成为 T3 Code 中的选中项。按下或轻触打开。"
+			},
+			"power": {
+				"controls": "此旋钮控制",
+				"bottomRow": "模型视图显示",
+				"showSpeed": "速度",
+				"showEffort": "思考强度",
+				"hint": "旋转预览，按下应用到所选对话。“模型”在 T3 Code 的收藏模型间切换（跨提供方）。无可应用内容时按下，或轻触，可在模型支持时切换速度。Ultrathink（Claude 支持时）会为 Deck 之后发送到该对话的提示词加上前缀。"
+			},
+			"limits": {
+				"provider": "提供方",
+				"window": "窗口",
+				"show": "显示",
+				"left": "剩余 %",
+				"used": "已用 %",
+				"resetAction": "长按以",
+				"open": "在 T3 Code 中打开 Usage",
+				"spend": "使用储备的重置",
+				"hint": "汇总所选机器上该提供方的所有账户，与 T3 Code 的“Limits”显示一致。轻触刷新。进度条上的刻度表示匀速使用时应处的位置。",
+				"spendHint": "长按会在 T3 Code 优先补充的账户上消耗一次重置额度。需要提供方权限：若配对缺少该权限，该机器的下一个配对链接会申请。"
+			},
+			"usage": {
+				"period": "时段",
+				"provider": "提供方",
+				"allProviders": "所有提供方",
+				"day": "过去 24 小时",
+				"week": "7 天",
+				"month": "30 天",
+				"quarter": "90 天",
+				"hint": "T3 Code 对该时段的 API 估算，汇总所选机器；两台机器共享的文件夹只计一次。轻触重新读取，长按同时重新加载模型价格。需要用量权限。",
+				"dialHint": "从该时段的总计开始，按费用依次旋转浏览每个模型。按下或轻触重新读取；长按同时重新加载模型价格。需要用量权限。"
+			},
+			"target": {
+				"label": "目标",
+				"selected": "所选对话",
+				"thread": "此对话",
+				"pick": "对话",
+				"hint": "即使选中了其他对话，按键也作用于此对话，并显示一个小图钉。若其被归档或删除，会显示为不可用，直到你另选一个。"
+			},
+			"queue": {
+				"hint": "跟随所选对话的队列。按下立即发送当前消息：在提供方支持引导时并入进行中的轮次，否则在空闲时作为下一轮次发送，这也会释放因“停止”而暂停的队列。长按移除。"
+			},
+			"task": {
+				"label": "任务",
+				"hint": "按下立即运行任务，与 T3 Code 的 Run now 相同；任务保留原有计划。任务来自 T3 Code 的 Settings → Scheduled tasks。",
+				"dialHint": "旋转浏览该机器的定时任务。按下立即运行当前任务；轻触停用，再次轻触重新启用。"
+			},
+			"skill": {
+				"label": "技能",
+				"extra": "附加",
+				"extraPlaceholder": "可选：技能后要告诉它的内容",
+				"titlePlaceholder": "技能名称",
+				"hint": "像 T3 Code 输入框那样将技能发送到对话（$name，然后是你的文本）。技能来自对话提供方针对其检出的列表：Codex、Claude 和 Antigravity 会列出技能。",
+				"dialHint": "旋转浏览对话提供方针对其检出的技能。按下或轻触运行当前技能，触摸并按住查看其描述。"
+			},
+			"workflow": {
+				"hint": "停止对话运行的工作流，与 T3 Code 的 Lineage 面板相同。只有 Claude 的工作流可以停止。长按按键停止；已停止的工作流无法恢复。"
+			},
+			"lineage": {
+				"forkHint": "从对话最新完成的回复处分叉出一个新对话，与 T3 Code 中该回复上的分叉按钮相同，然后打开分叉。",
+				"mergeHint": "将分叉的对话合并回其来源对话，与 T3 Code 的“Merge”相同，然后打开该对话。长按按键合并。",
+				"fork": "分叉",
+				"merge": "合并回去"
+			},
+			"update": {
+				"hint": "显示下方所选机器上的 T3 Code 版本（未选择时为本机）。长按更新到其渠道的最新版本；桌面应用会自行安装更新并重新启动。T3 Code 不会向 Deck 通知更新，因此按键无法显示有待安装的更新。",
+				"access": "需要更新权限，允许此 Deck 在那里更新并重启 T3 Code。按键第一次按下时，会在该机器下次配对时申请。"
+			},
+			"script": {
+				"label": "脚本",
+				"hint": "按下在对话的独立终端中运行脚本，位于其工作树，否则为项目文件夹，与 T3 Code 的脚本按钮相同。长按停止。按键显示脚本是否在运行；T3 Code 不报告脚本的退出码，只报告其终端的退出码。",
+				"access": "Shell 权限：这需要终端权限，允许此 Deck 在该机器上的 T3 Code 终端中运行任何命令。按键第一次按下时，会在该机器下次配对时申请。"
+			},
+			"share": {
+				"hint": "按下为对话生成访客链接并复制；持有链接的任何人都可以在 24 小时内查看对话，并提议由你发送或忽略的消息。长按停止分享。需要 Guest links（Settings → Labs）和 T3 Connect。",
+				"access": "需要访客链接权限，允许此 Deck 与外部人员分享对话。按键第一次按下时，会在该机器下次配对时申请。",
+				"link": "访客链接",
+				"linkHint": "仅在 Turnkey 运行期间显示：T3 Code 只在生成链接时显示一次。"
+			},
+			"stop": {
+				"stops": "停止对象",
+				"turn": "轮次",
+				"workflow": "工作流"
+			},
+			"open": {
+				"in": "打开方式",
+				"editor": "编辑器",
+				"preview": "预览"
+			}
+		},
+		"usage": {
+			"title": "用量",
+			"period": {
+				"day": "过去 24 小时",
+				"week": "7 天",
+				"month": "30 天",
+				"quarter": "90 天"
+			},
+			"allModels": "所有模型",
+			"tokens": "{tokens} token",
+			"sessions": "{count} 个会话",
+			"unpriced": "无价格",
+			"cacheHit": "缓存 {percent}",
+			"perMillion": "{cost}/M",
+			"updateT3": "更新 T3 Code 以读取用量",
+			"updateDeck": "更新 Turnkey 以读取用量"
+		},
+		"limits": {
+			"title": "额度",
+			"none": "无额度",
+			"noneDetail": "没有提供方报告额度",
+			"window": {
+				"hours": "{hours} 小时",
+				"session": "会话",
+				"weekly": "每周",
+				"monthly": "每月"
+			},
+			"resetsNow": "即将重置",
+			"resetsIn": "{time}后重置",
+			"resetOne": "1 次重置",
+			"resets": "{count} 次重置",
+			"pooled": "{count} 个账户",
+			"refreshing": "刷新中…",
+			"pressToRefresh": "按下刷新",
+			"holdToReset": "长按使用重置",
+			"noResets": "无储备重置",
+			"needsProviders": "需要提供方权限",
+			"outcome": {
+				"reset": "已重置",
+				"nothingToReset": "无需重置",
+				"noCredit": "无剩余重置",
+				"alreadyRedeemed": "已兑换"
+			}
+		},
+		"tasks": {
+			"title": "任务",
+			"now": "现在",
+			"in": "{time}后",
+			"running": "运行中",
+			"off": "已停用",
+			"onWebhook": "Webhook 触发",
+			"notScheduled": "未计划",
+			"lastFailed": "上次运行失败 · {when}",
+			"noTasks": "无定时任务",
+			"addInT3": "在 T3 Code 中添加",
+			"updateT3": "更新 T3 Code 以使用任务",
+			"loading": "正在加载任务…",
+			"pressToRun": "按下立即运行 · 轻触停用",
+			"pressToRunOff": "按下立即运行 · 轻触启用",
+			"pickTask": "选择任务",
+			"gone": "不可用：{task}",
+			"chooseTask": "选择任务…"
+		},
+		"skills": {
+			"title": "技能",
+			"pickSkill": "选择技能",
+			"none": "无技能",
+			"gone": "不可用：{skill}",
+			"chooseSkill": "选择技能…",
+			"aSkill": "对话提供方提供的技能"
+		},
+		"workflow": {
+			"stop": "停止工作流",
+			"none": "无运行中的工作流",
+			"notClaude": "此提供方不支持",
+			"option": "停止工作流（Claude）",
+			"holdToStop": "长按停止",
+			"notRunning": "已不在运行",
+			"unsupported": "提供方无法停止",
+			"unavailable": "无活动任务",
+			"stopFailed": "无法停止"
+		},
+		"lineage": {
+			"fork": "分叉",
+			"mergeBack": "合并回去",
+			"into": "合并到 {thread}",
+			"notFork": "不是分叉",
+			"finishRunFirst": "先完成一个轮次",
+			"finishTurn": "等待轮次完成",
+			"nothingToFork": "暂无可分叉内容",
+			"holdToMerge": "长按合并",
+			"aFork": "分叉的对话",
+			"aFinishedTurn": "已完成的回复"
+		},
+		"worktree": {
+			"newThread": "新工作树",
+			"noProject": "需要项目",
+			"needsPrompt": "需要提示词",
+			"notRepo": "不是 Git 仓库",
+			"noBranch": "无可用起始分支"
+		},
+		"update": {
+			"title": "更新 T3",
+			"version": "v{version}",
+			"noVersion": "版本未知",
+			"holdToUpdate": "长按更新",
+			"checking": "检查中…",
+			"downloading": "下载中…",
+			"installing": "安装中…",
+			"restarting": "重启中…",
+			"toVersion": "更新至 v{version}",
+			"upToDate": "已是最新",
+			"inProgress": "正在更新",
+			"manual": "手动更新",
+			"desktopTooOld": "请更新桌面应用",
+			"failed": "更新失败",
+			"noReturn": "未恢复运行",
+			"pickMachine": "选择机器",
+			"needsAccess": "需要更新权限"
+		},
+		"script": {
+			"title": "运行脚本",
+			"pick": "选择脚本",
+			"idle": "按下运行",
+			"starting": "启动中…",
+			"running": "运行中",
+			"finished": "已完成",
+			"stopped": "已停止",
+			"exited": "已退出 {code}",
+			"ended": "已退出",
+			"error": "终端出错",
+			"holdToStop": "长按停止",
+			"needsAccess": "需要终端权限"
+		},
+		"share": {
+			"title": "分享对话",
+			"shared": "已分享",
+			"guest": "{name} 已加入",
+			"unused": "链接尚未使用",
+			"pending": "{count} 条消息待处理",
+			"pendingOne": "1 条消息待处理",
+			"expired": "链接已过期",
+			"holdToClear": "长按清除",
+			"holdToStop": "长按停止分享",
+			"disabled": "开启 Guest links",
+			"noConnect": "需要 T3 Connect",
+			"unavailable": "无法分享此对话",
+			"copyFailed": "无法复制",
+			"needsAccess": "需要分享权限"
+		}
+	}
+}

@@ -1,0 +1,1248 @@
+{
+	"Name": "Turnkey for T3 Code",
+	"Description": "Suivez et pilotez les fils T3 Code depuis Stream Deck : état des fils, arrêt, prompts, options de modèle et réponses, pour tous les fournisseurs.",
+	"Category": "Turnkey for T3 Code",
+	"com.alejandrom2.turnkey.slot": {
+		"Name": "Fil",
+		"Tooltip": "Un fil du tableau, attribué selon la position de la touche : état, titre et minuteur. Un appui l'ouvre dans T3 Code ; maintenir le sélectionne."
+	},
+	"com.alejandrom2.turnkey.activity": {
+		"Name": "Activité",
+		"Tooltip": "Le fil le plus urgent correspondant à un filtre. Un appui l'ouvre dans T3 Code."
+	},
+	"com.alejandrom2.turnkey.new": {
+		"Name": "Nouveau fil",
+		"Tooltip": "Démarre un nouveau fil dans le projet du fil sélectionné, sans projet ou dans un projet choisi ; avec un prompt enregistré ou vide."
+	},
+	"com.alejandrom2.turnkey.send": {
+		"Name": "Envoyer prompt",
+		"Tooltip": "Envoie votre propre prompt, ou un prompt courant (continuer, corriger les tests, expliquer, faire un commit…), au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
+	},
+	"com.alejandrom2.turnkey.steer": {
+		"Name": "Orienter",
+		"Tooltip": "Ajoute une instruction enregistrée au tour en cours du fil sélectionné."
+	},
+	"com.alejandrom2.turnkey.skill": {
+		"Name": "Lancer skill",
+		"Tooltip": "Lance un des skills du fournisseur du fil, comme le choisir dans le compositeur de T3 Code puis l'envoyer."
+	},
+	"com.alejandrom2.turnkey.stop": {
+		"Name": "Arrêter",
+		"Tooltip": "Arrête le tour en cours du fil sélectionné ou, selon son réglage, les workflows qu'il exécute (Claude). Maintenir pour arrêter un workflow."
+	},
+	"com.alejandrom2.turnkey.model": {
+		"Name": "Modèle",
+		"Tooltip": "Passe le fil sélectionné à un modèle favori, ou au suivant des favoris de T3 Code."
+	},
+	"com.alejandrom2.turnkey.effort": {
+		"Name": "Effort",
+		"Tooltip": "Règle l'effort de raisonnement du fil sélectionné, ou parcourt ceux que propose son modèle."
+	},
+	"com.alejandrom2.turnkey.speed": {
+		"Name": "Vitesse",
+		"Tooltip": "Active ou désactive le mode rapide du fil sélectionné quand son modèle le propose."
+	},
+	"com.alejandrom2.turnkey.permissions": {
+		"Name": "Permissions",
+		"Tooltip": "Règle l'accès du fil sélectionné, de Supervisé à Accès complet, ou les parcourt."
+	},
+	"com.alejandrom2.turnkey.plan": {
+		"Name": "Plan",
+		"Tooltip": "Bascule le fil sélectionné entre Exécution et Plan."
+	},
+	"com.alejandrom2.turnkey.approve": {
+		"Name": "Approuver",
+		"Tooltip": "Répond à l'approbation du fil sélectionné autant que ses réglages le permettent, ou l'ouvre dans T3 Code."
+	},
+	"com.alejandrom2.turnkey.deny": {
+		"Name": "Refuser",
+		"Tooltip": "Refuse l'approbation du fil sélectionné."
+	},
+	"com.alejandrom2.turnkey.organize": {
+		"Name": "Organiser",
+		"Tooltip": "Classe, épingle, reporte, archive ou marque comme non lu le fil sélectionné, ou réveille le dernier fil reporté."
+	},
+	"com.alejandrom2.turnkey.fork": {
+		"Name": "Fork",
+		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork, ou fusionne un fork dans le fil dont il est issu (maintenir)."
+	},
+	"com.alejandrom2.turnkey.branch": {
+		"Name": "Branche",
+		"Tooltip": "La branche du fil sélectionné. Un appui ouvre le fil dans T3 Code."
+	},
+	"com.alejandrom2.turnkey.git": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.turnkey.pr": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.turnkey.task": {
+		"Name": "Lancer tâche",
+		"Tooltip": "Une des tâches planifiées de T3 Code : son nom et sa prochaine exécution. Un appui la lance maintenant."
+	},
+	"com.alejandrom2.turnkey.usage": {
+		"Name": "Consommation",
+		"Tooltip": "Coût estimé API, tokens et sessions d'une période, comme les affiche Usage dans T3 Code, sur une machine ou toutes. Un appui actualise ; maintenir recharge aussi les prix des modèles."
+	},
+	"com.alejandrom2.turnkey.limits": {
+		"Name": "Limites",
+		"Tooltip": "Une limite d'abonnement d'un fournisseur, regroupée comme dans Limits de T3 Code : % restant, prochaine réinitialisation et réinitialisations en réserve. Un appui actualise ; maintenir ouvre Usage dans T3 Code ou utilise une réinitialisation."
+	},
+	"com.alejandrom2.turnkey.open": {
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
+	},
+	"com.alejandrom2.turnkey.health": {
+		"Name": "Santé",
+		"Tooltip": "La connexion à T3 Code et à ses fournisseurs : le pire problème d'abord (hors ligne, association requise, non authentifié, version non prise en charge, indisponible). Un appui reconnecte."
+	},
+	"com.alejandrom2.turnkey.update": {
+		"Name": "MàJ T3",
+		"Tooltip": "La version de T3 Code sur une machine. Maintenir la met à jour vers la dernière version ; nécessite l'accès mise à jour, demandé à la prochaine association de cette machine."
+	},
+	"com.alejandrom2.turnkey.script": {
+		"Name": "Lancer script",
+		"Tooltip": "Lance un des scripts enregistrés du projet dans le terminal du fil ; maintenir l'arrête. Nécessite l'accès terminal (shell), demandé à la prochaine association de cette machine."
+	},
+	"com.alejandrom2.turnkey.share": {
+		"Name": "Partager le fil",
+		"Tooltip": "Crée un lien invité pour le fil et le copie ; affiche Partagé et son invité. Maintenir arrête le partage. Nécessite l'accès lien invité, demandé à la prochaine association de cette machine."
+	},
+	"com.alejandrom2.turnkey.dial.threads": {
+		"Name": "Molette fils",
+		"Tooltip": "Tournez pour parcourir les fils qui correspondent à son filtre, en les sélectionnant dans T3 Code ; appuyez ou touchez pour en ouvrir un.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir fil", "Push": "Ouvrir dans T3 Code", "Touch": "Ouvrir dans T3 Code" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.model": {
+		"Name": "Molette puissance",
+		"Tooltip": "Change le modèle, l'effort ou l'accès du fil sélectionné ; appuyer ou toucher bascule la Vitesse quand elle est proposée.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Aperçu", "Push": "Appliquer (ou vitesse)", "Touch": "Basculer vitesse" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.prompts": {
+		"Name": "Molette prompts",
+		"Tooltip": "Tournez pour parcourir vos prompts et modèles. Un appui envoie au fil sélectionné ; maintenir démarre un nouveau fil.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir prompt", "Push": "Envoyer (maintenir : nouveau fil)", "Touch": "Envoyer" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.answer": {
+		"Name": "Molette réponses",
+		"Tooltip": "Répond à la question d'un agent choix par choix, et aux approbations autant que ses réglages le permettent.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir réponse", "Push": "Répondre (maintenir par défaut)", "Touch": "Ouvrir le fil" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.queue": {
+		"Name": "Molette attente",
+		"Tooltip": "Tournez pour parcourir les messages en attente du fil sélectionné. Un appui en envoie un maintenant (en l'injectant, ou en le démarrant si rien ne tourne) ; maintenir le supprime.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir message", "Push": "Envoyer (maintenir : suppr.)", "Touch": "Ouvrir le fil" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.tasks": {
+		"Name": "Molette tâches",
+		"Tooltip": "Tournez pour parcourir les tâches planifiées de T3 Code, avec leur prochaine exécution. Un appui lance la tâche affichée maintenant ; toucher la désactive ou la réactive.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir tâche", "Push": "Lancer", "Touch": "Activer/désactiver" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.skills": {
+		"Name": "Molette skills",
+		"Tooltip": "Tournez pour parcourir les skills du fournisseur du fil. Appuyer ou toucher lance celui affiché ; un toucher maintenu lit sa description.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir skill", "Push": "Lancer skill", "Touch": "Lancer skill", "LongTouch": "Lire description" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.pr": {
+		"Name": "Molette PR",
+		"Tooltip": "Tournez pour parcourir les pull requests ouvertes. Un appui lance Fix findings, toucher l'ouvre dans le navigateur, un toucher maintenu lit ses retours.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir pull request", "Push": "Corriger (maintenir)", "Touch": "Ouvrir navigateur", "LongTouch": "Lire retours" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.limits": {
+		"Name": "Molette limites",
+		"Tooltip": "Tournez pour parcourir les fenêtres de limite de chaque fournisseur. Appuyer ou toucher actualise ; maintenir l'appui ouvre Usage dans T3 Code ou utilise une réinitialisation.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir fournisseur et fenêtre", "Push": "Actualiser (maintenir : réinit.)", "Touch": "Actualiser", "LongTouch": "Lire détails" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.usage": {
+		"Name": "Molette conso",
+		"Tooltip": "Tournez pour parcourir le total d'une période puis le coût, les tokens, le taux de cache et le coût par million de tokens de chaque modèle. Appuyer ou toucher actualise ; un appui long recharge les prix des modèles.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir modèle", "Push": "Actualiser (maintenir : prix)", "Touch": "Actualiser", "LongTouch": "Lire détails" }
+		}
+	},
+	"com.alejandrom2.turnkey.dial.devices": {
+		"Name": "Molette appareils",
+		"Tooltip": "Tournez pour parcourir les simulateurs et émulateurs de T3 Code. Un appui démarre celui affiché, ou l'ouvre, dans le Device panel du fil ; maintenir l'éteint. Toucher relance la recherche d'appareils.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choisir appareil", "Push": "Démarrer/ouvrir (maintenir : éteindre)", "Touch": "Rechercher" }
+		}
+	},
+	"com.alejandrom2.turnkey.git.commit": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.turnkey.git.push": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.turnkey.git.pr": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.turnkey.git.pull": {
+		"Name": "Git",
+		"Tooltip": "Fait un commit, un push, crée une PR ou fait un pull de la branche du fil sélectionné, selon son réglage Action. Maintenir pour pusher."
+	},
+	"com.alejandrom2.turnkey.pr.fix": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.turnkey.pr.explain": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.turnkey.pr.ask": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.turnkey.pr.guide": {
+		"Name": "Pull Request",
+		"Tooltip": "La pull request du fil sélectionné et son état ; un appui l'ouvre. Ou confiez-la à un agent : corriger les retours (maintenir), expliquer, poser une question ou guide de revue."
+	},
+	"com.alejandrom2.turnkey.quick": {
+		"Name": "Envoyer prompt",
+		"Tooltip": "Envoie votre propre prompt, ou un prompt courant (continuer, corriger les tests, expliquer, faire un commit…), au fil sélectionné. Maintenir pour interrompre et relancer avec ce prompt."
+	},
+	"com.alejandrom2.turnkey.workflow.stop": {
+		"Name": "Arrêter",
+		"Tooltip": "Arrête le tour en cours du fil sélectionné ou, selon son réglage, les workflows qu'il exécute (Claude). Maintenir pour arrêter un workflow."
+	},
+	"com.alejandrom2.turnkey.merge": {
+		"Name": "Fork",
+		"Tooltip": "Crée un fork du fil depuis sa dernière réponse terminée et ouvre le fork, ou fusionne un fork dans le fil dont il est issu (maintenir)."
+	},
+	"com.alejandrom2.turnkey.editor": {
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
+	},
+	"com.alejandrom2.turnkey.preview": {
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
+	},
+	"Localization": {
+		"result": {
+			"done": "Fait",
+			"opened": "Ouvert",
+			"sent": "Envoyé",
+			"started": "Démarré",
+			"loading": "Chargement…",
+			"holdToAllow": "Maintenir : autoriser",
+			"holdToAnswer": "Maintenir : répondre",
+			"holdToSend": "Maintenir : envoyer",
+			"holdToSettle": "Maintenir : classer",
+			"holdToSnooze": "Maintenir : reporter",
+			"notWebLink": "Pas un lien web",
+			"holdToRemove": "Maintenir : supprimer",
+			"cantSteerYet": "Injection pas encore possible"
+		},
+		"face": {
+			"noThread": "Aucun fil",
+			"allQuiet": "Tout est calme",
+			"model": "Modèle",
+			"effort": "Effort",
+			"access": "Accès",
+			"plan": "Plan",
+			"build": "Exécution",
+			"deny": "Refuser",
+			"pullRequest": "Pull request",
+			"branch": "Branche",
+			"needsYou": "Vous attend",
+			"prompt": "Prompt"
+		},
+		"review": {
+			"send": "Envoyer ?",
+			"restart": "Relancer avec ?",
+			"steer": "Orienter ?",
+			"newThread": "Nouveau fil ?",
+			"settle": "Classer ?",
+			"snooze": "Reporter {duration} ?",
+			"pressAgain": "Rappuyer",
+			"pressToSend": "Rappuyer pour envoyer",
+			"to": "À {thread}",
+			"runSkill": "Lancer skill ?"
+		},
+		"organize": {
+			"settle": "Classer",
+			"pin": "Épingler",
+			"unpin": "Désépingler",
+			"snooze": "Reporter",
+			"snoozeFor": "Reporter {duration}",
+			"archive": "Archiver",
+			"markUnread": "Non lu",
+			"wake": "Réveiller fil",
+			"nothingSnoozed": "Rien de reporté"
+		},
+		"notice": {
+			"openT3Code": "Ouvrez T3 Code",
+			"thenPress": "puis appuyez",
+			"notFound": "T3 Code introuvable",
+			"openThenPress": "Ouvrez-le, puis appuyez",
+			"machineRemoved": "Machine retirée",
+			"pickAnother": "Choisir une autre",
+			"pickAnotherMachine": "Choisir une autre machine",
+			"pickAnotherInSettings": "Changer dans les réglages",
+			"pairDeck": "Associer Turnkey",
+			"pastePairLink": "Collez un lien dans les réglages",
+			"connecting": "Connexion…",
+			"pressToRetry": "Appui : réessayer"
+		},
+		"health": {
+			"allConnected": "Tout connecté",
+			"offline": "Hors ligne",
+			"someOffline": "Certains hors ligne",
+			"readyCount": "{ready} sur {total} prêts",
+			"connected": "Connecté",
+			"readOnly": "Lecture seule",
+			"connecting": "Connexion…",
+			"needsPairing": "Association requise",
+			"notFound": "Introuvable",
+			"unavailable": "Indisponible",
+			"unauthenticated": "Non authentifié",
+			"unsupported": "Version non prise en charge",
+			"broken": "Version défectueuse connue",
+			"needsAttention": "À vérifier",
+			"updateAvailable": "Mise à jour dispo",
+			"disabled": "Désactivé",
+			"providerUpdate": "MàJ {provider} dispo",
+			"providerOff": "{provider} désactivé",
+			"more": "+{count} autres"
+		},
+		"reason": {
+			"noPrompt": "Aucun prompt",
+			"readOnly": "Lecture seule",
+			"nothingPending": "Rien en attente",
+			"noThread": "Aucun fil",
+			"noPr": "Aucune PR",
+			"noBranch": "Aucune branche",
+			"notRunning": "Inactif",
+			"pinned": "Épinglé",
+			"notPinned": "Non épinglé",
+			"pickProject": "Choisir un projet",
+			"noProject": "Aucun projet",
+			"unavailable": "Indisponible",
+			"noModels": "Aucun modèle",
+			"noEffort": "Aucun effort",
+			"noModes": "Aucun mode",
+			"notOffered": "Non proposé",
+			"noFastMode": "Pas de mode rapide",
+			"noPlanMode": "Pas de mode plan",
+			"pickThread": "Choisir un fil",
+			"targetGone": "Indisponible : {thread}"
+		},
+		"failure": {
+			"readOnly": "Lecture seule",
+			"offline": "Hors ligne",
+			"updateT3": "Mettre à jour T3 Code",
+			"noModel": "Aucun modèle",
+			"noMachine": "Aucune machine",
+			"timedOut": "Délai dépassé",
+			"failed": "Échec"
+		},
+		"status": {
+			"needsApproval": "Approbation requise",
+			"hasQuestion": "A une question",
+			"running": "En cours {time}",
+			"queued": "En attente",
+			"done": "Terminé",
+			"failed": "Échec",
+			"stopped": "Arrêté",
+			"idle": "Inactif",
+			"queuedCount": "+{count} en attente",
+			"subagent": "{count} sous-agent",
+			"subagents": "{count} sous-agents"
+		},
+		"filter": {
+			"all": "Fils",
+			"attention": "Vous attend",
+			"active": "Actifs",
+			"unread": "Non lus"
+		},
+		"strip": {
+			"done": "Terminé",
+			"notNow": "Pas maintenant",
+			"noThread": "Aucun fil",
+			"noThreads": "Aucun fil",
+			"allQuiet": "Tout est calme",
+			"default": "Par défaut",
+			"pressToApply": "Appui : appliquer",
+			"speed": "Vitesse : {speed}",
+			"prompts": "Prompts",
+			"noPrompts": "Aucun prompt",
+			"addPrompts": "Ajoutez-en dans les réglages",
+			"answer": "Réponse",
+			"nothingPending": "Rien en attente",
+			"approvals": "Approbations : {authority}",
+			"approval": "Approbation",
+			"question": "Question",
+			"pressToOpen": "Appuyer pour ouvrir dans T3 Code",
+			"openInT3Code": "Ouvrir dans T3 Code",
+			"withHold": "{label} · maintenir",
+			"queue": "File",
+			"nothingQueued": "Rien en attente",
+			"queuedMessage": "Message en attente",
+			"queueHeld": "Suspendue · appui : envoyer",
+			"queueSendNow": "Appui : envoyer · maintenir : suppr.",
+			"queueSteer": "Appui : injecter · maintenir : suppr.",
+			"queueRemoveOnly": "Maintenir : supprimer"
+		},
+		"power": {
+			"quicker": "Plus rapide",
+			"deeper": "Plus poussé",
+			"asksFirst": "Demande avant",
+			"handsOff": "Autonome"
+		},
+		"approval": {
+			"open": "Ouvrir dans T3",
+			"once": "Autoriser 1 fois",
+			"session": "Pour la session",
+			"always": "Toujours autoriser",
+			"deny": "Refuser",
+			"needsYou": "Vous attend dans T3 Code",
+			"command": "Approbation de commande",
+			"fileRead": "Approbation de lecture",
+			"fileChange": "Approbation de modification",
+			"permission": "Approbation d'autorisation",
+			"mcpElicitation": "Approbation d'accès app"
+		},
+		"mode": {
+			"approvalRequired": "Supervisé",
+			"autoAcceptEdits": "Modifs auto-acceptées",
+			"auto": "Auto",
+			"fullAccess": "Accès complet"
+		},
+		"option": {
+			"off": "Désactivé",
+			"on": "Activé",
+			"fast": "Rapide",
+			"normal": "Normal"
+		},
+		"quick": {
+			"continue": "Continuer",
+			"test": "Corriger tests",
+			"fix": "Diagnostiquer",
+			"explain": "Expliquer",
+			"commit": "Commit"
+		},
+		"time": {
+			"minutes": "{minutes} min",
+			"hours": "{hours} h",
+			"days": "{days} j"
+		},
+		"datasource": {
+			"cycleFavorites": "Parcourir les favoris",
+			"cycleModels": "Parcourir les modèles",
+			"cycleEfforts": "Parcourir les efforts",
+			"anyProject": "Tout projet",
+			"noProject": "Aucun projet",
+			"defaultEditor": "Par défaut de T3 Code",
+			"firstProvider": "Premier avec limites",
+			"firstWindow": "Fenêtre la plus courte",
+			"chooseThread": "Choisir un fil…",
+			"chooseScript": "Choisir un script…"
+		},
+		"machine": {
+			"thisMachine": "Cette machine",
+			"pairingExpired": "Cette association a expiré. Collez un nouveau lien d'association.",
+			"cannotRead": "Cette association ne peut pas lire les fils. Collez un nouveau lien d'association."
+		},
+		"pairing": {
+			"notALink": "Ce n'est pas un lien d'association T3 Code. Copiez-le depuis « Settings → Sharing & access ».",
+			"unreachable": "Impossible de joindre T3 Code à {host}. Vérifiez qu'il tourne et qu'il est joignable depuis cet ordinateur.",
+			"notT3": "{host} ne semble pas être un serveur T3 Code.",
+			"tooOld": "T3 Code sur cette machine est trop ancien pour Turnkey. Mettez à jour T3 Code.",
+			"tooNew": "Ce T3 Code est plus récent que ce que Turnkey comprend. Mettez à jour Turnkey.",
+			"linkUsed": "Ce lien d'association a déjà servi ou a expiré. Créez-en un nouveau dans « Settings → Sharing & access ».",
+			"noAccess": "Ce lien d'association ne donne pas accès aux fils. Créez-en un qui le permet.",
+			"refused": "T3 Code a refusé le lien d'association ({status}).",
+			"noRead": "Ce lien d'association ne permet pas de lire les fils. Créez-en un qui le permet.",
+			"different": "Un autre T3 Code répond désormais à {host}.",
+			"ended": "T3 Code a mis fin à cette association. Collez un nouveau lien d'association pour vous reconnecter.",
+			"cannotOpen": "T3 Code n'a pas pu ouvrir de connexion ({status})."
+		},
+		"connection": {
+			"noAnswer": "T3 Code n'a pas répondu à temps.",
+			"closed": "La connexion à T3 Code s'est fermée.",
+			"failed": "La connexion à T3 Code a échoué.",
+			"silent": "T3 Code a cessé de répondre.",
+			"feedEnded": "T3 Code a mis fin au flux des fils.",
+			"disconnected": "Déconnecté de T3 Code."
+		},
+		"access": {
+			"sourceControl": "Accès gestion de code requis — réassocier",
+			"diagnostics": "Accès consommation requis — réassocier",
+			"providers": "Accès fournisseurs requis — réassocier pour activer",
+			"maintain": "Accès mise à jour requis — réassocier pour activer",
+			"terminal": "Accès terminal requis — réassocier pour activer",
+			"share": "Accès partage requis — réassocier pour activer",
+			"other": "Plus d'accès requis — réassocier",
+			"rePair": "Réassocier pour activer"
+		},
+		"pr": {
+			"open": "Ouverte",
+			"merged": "Fusionnée",
+			"closed": "Fermée",
+			"draft": "Brouillon",
+			"face": {
+				"failing": "{count} checks en échec",
+				"failingOne": "1 check en échec",
+				"findings": "{count} retours",
+				"findingsOne": "1 retour",
+				"running": "Checks en cours",
+				"changesRequested": "Modifs demandées",
+				"approved": "Approuvée",
+				"passing": "Checks réussis"
+			},
+			"fix": {
+				"title": "Corriger retours",
+				"none": "Aucun retour",
+				"threads": "{count} discussions",
+				"threadOne": "1 discussion",
+				"remarks": "{count} remarques",
+				"remarkOne": "1 remarque",
+				"checks": "{count} checks",
+				"checkOne": "1 check",
+				"named": "{findings} : {names}"
+			},
+			"explain": {
+				"title": "Expliquer {term}"
+			},
+			"ask": {
+				"title": "Question {term}"
+			},
+			"guide": {
+				"title": "Guide de revue",
+				"write": "Appuyer pour rédiger",
+				"writing": "Rédaction…",
+				"ready": "Prêt : appuyer pour ouvrir",
+				"failed": "Échec : appuyer pour réessayer"
+			},
+			"dial": {
+				"title": "Pull requests",
+				"none": "Aucune pull request ouverte"
+			},
+			"result": {
+				"queued": "En attente",
+				"offHead": "Démarré, hors du head de la PR"
+			}
+		},
+		"repo": {
+			"action": {
+				"commit": "Commit",
+				"commitPush": "Commit et push",
+				"commitPushPr": "Commit, push et PR",
+				"push": "Push",
+				"createPr": "Créer PR",
+				"pull": "Pull"
+			},
+			"reason": {
+				"notRepo": "Pas un dépôt Git",
+				"detached": "HEAD détachée : faites un checkout de branche",
+				"noUpstream": "Pas de branche upstream",
+				"diverged": "Divergence : rebase ou merge d'abord",
+				"upToDate": "À jour",
+				"clean": "Rien à commiter",
+				"uncommitted": "Commitez ou stashez d'abord",
+				"behind": "En retard : pull d'abord",
+				"noRemote": "Ajoutez d'abord un remote origin",
+				"nothingToPush": "Aucun commit à pusher",
+				"prOpen": "PR #{number} ouverte",
+				"prFromDefault": "Sur {branch} : créez une branche",
+				"nothingForPr": "Aucun commit pour une PR"
+			},
+			"behind": "{count} en retard",
+			"ahead": "{count} en avance",
+			"changes": "{files} fichiers · +{insertions} −{deletions}",
+			"changesOne": "1 fichier · +{insertions} −{deletions}",
+			"hook": "{hook} en cours",
+			"unknownOutcome": "Résultat inconnu, voir T3 Code",
+			"running": "Déjà en cours",
+			"holdTo": "Maintenir : confirmer",
+			"holdOnDefault": "Maintenir : push sur {branch}",
+			"starting": "Démarrage…",
+			"pulled": "Pull effectué",
+			"upToDate": "À jour",
+			"files": "{count} fichiers",
+			"fileOne": "1 fichier"
+		},
+		"needs": {
+			"paired": "Associé à T3 Code",
+			"operate": "Peut agir sur les fils",
+			"thread": "Un fil sélectionné",
+			"running": "Un tour en cours",
+			"pending": "Une demande en attente",
+			"prompt": "Un prompt enregistré",
+			"scope": {
+				"sourceControl": "Accès gestion de code",
+				"diagnostics": "Accès consommation",
+				"providers": "Accès fournisseurs",
+				"maintain": "Accès mise à jour (met à jour T3 Code sur cette machine)",
+				"terminal": "Accès terminal (exécute des commandes sur cette machine)",
+				"terminalRead": "Accès état du terminal",
+				"share": "Accès lien invité (partage des fils avec des personnes extérieures)",
+				"other": "Accès {scope}"
+			},
+			"option": "{option} sur le modèle du fil",
+			"optionEffort": "Effort de raisonnement",
+			"optionFast": "Mode rapide",
+			"optionPlan": "Mode plan",
+			"pr": "Une pull request",
+			"branch": "Une branche",
+			"repo": "Quelque chose sur quoi agir",
+			"editor": "Un éditeur sur la machine",
+			"limits": "Un fournisseur qui indique ses limites",
+			"snoozed": "Un fil reporté",
+			"preview": "Un aperçu ou un rendu HTML",
+			"devices": "Un simulateur ou un émulateur",
+			"notAvailable": "Indisponible : {value}",
+			"problem": "{subject} : {text}",
+			"problemOn": "{subject} ({machine}) : {text}",
+			"fix": {
+				"openT3": "Ouvrez T3 Code sur cet ordinateur, puis appuyez sur la touche.",
+				"addMachine": "Ou collez un lien d'association sous Ajouter une machine.",
+				"pickMachine": "Choisissez une autre machine ci-dessous.",
+				"pairLink": "Collez un lien d'association de T3 Code sous Ajouter une machine.",
+				"reachable": "Vérifiez que la machine est allumée et joignable.",
+				"pressRetry": "Appuyez sur la touche pour réessayer maintenant.",
+				"canAct": "Réassociez avec un lien qui peut agir, pas en lecture seule.",
+				"openThread": "Ouvrez un fil dans T3 Code.",
+				"selectThread": "Ou sélectionnez-en un avec une touche Fil ou la Molette fils.",
+				"startTurn": "Envoyez un prompt pour démarrer un tour.",
+				"waitForAgent": "Attend qu'un agent pose une question.",
+				"typePrompt": "Saisissez un prompt ci-dessus.",
+				"newPairLink": "Créez un lien d'association dans T3 Code sous « Settings → Sharing & access ».",
+				"standardAccess": "Gardez son accès par défaut, puis connectez-vous avec le nouveau lien ci-dessous.",
+				"switchModel": "Passez le fil à un modèle qui le propose.",
+				"createPr": "Créez-en une avec Créer PR ou dans T3 Code.",
+				"checkoutBranch": "Faites un checkout d'une branche dans le fil.",
+				"installEditor": "Installez un éditeur pris en charge par T3 Code, comme VS Code ou Cursor.",
+				"signInProvider": "Connectez-vous à Codex ou Claude dans T3 Code ; ils indiquent leurs limites d'abonnement.",
+				"pickAnother": "Choisissez une autre valeur ci-dessus.",
+				"noFindings": "Rien n'y est en échec ou non résolu.",
+				"providersInT3": "Corrigez-les dans T3 Code sous « Settings → Providers ».",
+				"queueMessage": "Envoyez un message pendant que le fil travaille ; il attend dans sa file d'attente.",
+				"addTask": "Ajoutez-en une dans T3 Code sous « Settings → Scheduled tasks ».",
+				"snoozeOne": "Reportez-en un avec une touche Organiser ou dans T3 Code.",
+				"openPreview": "Ouvrez une page dans le panneau d'aperçu du fil dans T3 Code, ou demandez à l'agent un rendu HTML.",
+				"turnOnDevices": "Activez « Devices » dans le « Device panel » de T3 Code, avec Xcode ou Android Studio sur cette machine.",
+				"optInNext": "La prochaine association de cette machine le demande dès qu'une action ici en a besoin.",
+				"addScript": "Ajoutez-en un dans T3 Code avec le bouton « Add action » du projet.",
+				"guestLinks": "Activez « Guest links » dans T3 Code sous « Settings → Labs », avec T3 Connect en marche.",
+				"selfUpdate": "Mettez à jour T3 Code manuellement sur cette machine."
+			},
+			"findings": "Des retours à corriger",
+			"providers": "Fournisseurs prêts",
+			"queued": "Un message en attente",
+			"tasks": "Une tâche planifiée",
+			"script": "Un script enregistré dans le projet du fil",
+			"guestLinks": "« Guest links » activé",
+			"selfUpdate": "T3 Code peut se mettre à jour"
+		},
+		"editor": {
+			"title": "Ouvrir dans l'éditeur",
+			"none": "Aucun éditeur sur cette machine",
+			"noFolder": "Aucun dossier",
+			"opensOn": "S'ouvre sur {machine}"
+		},
+		"devices": {
+			"title": "Appareils",
+			"ios": "iOS",
+			"android": "Android",
+			"open": "Ouvrir ici",
+			"running": "En marche",
+			"starting": "Démarrage…",
+			"stopped": "Arrêté",
+			"loading": "Recherche d'appareils…",
+			"unreadable": "Appareils illisibles",
+			"off": "Appareils désactivés",
+			"turnOn": "Activer dans T3 Code",
+			"hubStarting": "Démarrage du hub…",
+			"hubFailed": "Le hub d'appareils n'a pas pu démarrer.",
+			"none": "Aucun simulateur ni émulateur",
+			"touchToCheck": "Toucher pour rechercher",
+			"pressToStart": "Appui : démarrer · toucher : rechercher",
+			"pressToOpen": "Appui : ouvrir · maintenir : éteindre",
+			"holdToStartCloud": "Maintenir : démarrer (facturé EAS)",
+			"physical": "Appareil réel : extinction impossible"
+		},
+		"openPreview": {
+			"title": "Ouvrir l'aperçu",
+			"none": "Aucun aperçu",
+			"onlyOn": "Seulement sur {machine}",
+			"htmlRender": "Rendu HTML"
+		},
+		"inspector": {
+			"editor": {
+				"label": "Éditeur",
+				"loading": "Chargement des éditeurs…",
+				"hint": "Ouvre le worktree du fil sélectionné, ou le dossier de son projet. T3 Code lance l'éditeur sur sa propre machine, qui n'est pas forcément celle-ci."
+			},
+			"devices": {
+				"hint": "Liste les simulateurs et émulateurs de la machine du fil et de ses hôtes d'appareils. Un appui démarre l'appareil affiché dans le « Device panel » du fil, ou l'y ouvre s'il tourne ; maintenir l'éteint. Un appareil cloud (EAS) doit être maintenu pour démarrer, car Expo facture tant qu'il tourne. L'activation de « Devices » et l'ajout d'hôtes se font dans T3 Code."
+			},
+			"preview": {
+				"hint": "Ouvre la page affichée dans le panneau d'aperçu du fil dans le navigateur de cet ordinateur, sinon le dernier rendu HTML du fil. Une page sur le localhost d'une autre machine ne s'ouvre que sur cette machine, la touche l'indique alors ; ouvrez-la depuis T3 Code là-bas."
+			},
+			"pr": {
+				"confirm": "Pour envoyer",
+				"hold": "Maintenir",
+				"tap": "Appuyer",
+				"fixHint": "Envoie la tâche Fix findings de T3 Code pour la pull request du fil sélectionné à ce fil, en attente s'il est occupé. Les commentaires de revue et la sortie des checks viennent de l'hébergeur et sont joints comme données non fiables.",
+				"dialHint": "Liste les pull requests ouvertes sur la machine. Un appui lance Fix findings dans le fil qui y est lié, ou dans un nouveau fil worktree ; toucher l'ouvre dans le navigateur ; un toucher maintenu lit ses retours.",
+				"show": "Afficher",
+				"fix": "Corriger les retours",
+				"explain": "Expliquer",
+				"ask": "Poser une question",
+				"guide": "Guide de revue"
+			},
+			"git": {
+				"action": "Action",
+				"commit": "Commit",
+				"commitPush": "Commit et push",
+				"commitPushPr": "Commit, push et création de PR",
+				"message": "Message de commit",
+				"messagePlaceholder": "Rédigé par T3 Code si vide",
+				"confirm": "Pour exécuter",
+				"confirmDefault": "Maintenir pour les push, appuyer sinon",
+				"tap": "Appuyer",
+				"hold": "Maintenir",
+				"hint": "Agit sur le worktree du fil sélectionné, ou le dossier de son projet. Un push sur la branche par défaut demande toujours un maintien ; une PR depuis celle-ci est refusée, car T3 Code proposerait d'abord une nouvelle branche.",
+				"pullHint": "Fait un pull de la branche du fil sélectionné depuis son upstream quand elle est en retard.",
+				"push": "Push",
+				"createPr": "Créer une PR",
+				"pull": "Pull"
+			},
+			"card": {
+				"machine": "Machine",
+				"machines": "Machines",
+				"getLink": "Obtenir un lien",
+				"getLinkRow": "Obtenir le lien",
+				"pasteLink": "Coller le lien",
+				"looking": "Recherche de T3 Code sur cette machine…",
+				"machineGroup": "Machine pour cette action",
+				"addMachine": "Ajouter une machine",
+				"linkPlaceholder": "Collez un lien d'association depuis « Settings → Sharing & access »",
+				"connect": "Connecter",
+				"connecting": "Connexion…",
+				"accessHelp": "Turnkey demande à lire les fils et à agir dessus, dans les limites du lien. Révoquez-le dans « Settings → Sharing & access ».",
+				"notRunning": "T3 Code ne tourne pas sur cette machine. Ouvrez-le, ou collez ci-dessous un lien d'association d'une autre machine.",
+				"howToPair": "Dans T3 Code, ouvrez « Settings → Sharing & access », créez un lien d'association et collez-le ci-dessous.",
+				"allMachines": "Toutes les machines",
+				"noneYet": "Aucune pour l'instant",
+				"connectedCount": "{ready} sur {total} connectées",
+				"connected": "Connectée",
+				"readOnly": "Lecture seule",
+				"signOut": "Se déconnecter",
+				"tryAgain": "Réessayer",
+				"needsPairing": "Association requise",
+				"remove": "Retirer",
+				"pasteFromMachine": "Collez ci-dessous un lien d'association de cette machine.",
+				"pairing": "Connexion avec le lien d'association…",
+				"needsTitle": "Ce dont cette action a besoin",
+				"needsNotMet": " · {count} non remplis",
+				"noMachines": "Aucune machine pour l'instant",
+				"needsAllMet": " · tout est rempli",
+				"needsMet": "Rempli",
+				"needsUnmet": "Non rempli",
+				"needsChecking": "Vérification",
+				"optInTitle": "Accès supplémentaire",
+				"optInHeld": "Accordé",
+				"optInPending": "Prochaine association",
+				"optInDrop": "Ne pas demander",
+				"scopeProviders": "Comptes fournisseurs (utilise des réinitialisations)",
+				"scopeMaintain": "Mises à jour (Mettre à jour T3)",
+				"scopeTerminal": "Terminal : exécute des commandes (Lancer script)",
+				"scopeTerminalRead": "État du terminal (Lancer script)",
+				"scopeShare": "Liens invités (Partager le fil)",
+				"verboseUntil": "Activé jusqu'à {time}, puis retour à la journalisation normale.",
+				"verboseOff": "Journalise plus de détails pendant 24 heures, puis se désactive. Ne journalise jamais les tokens.",
+				"diagnosticsFailed": "Cela n'a pas fonctionné. Ouvrez le dossier des logs pour vérifier vous-même."
+			},
+			"diagnostics": {
+				"title": "Diagnostic",
+				"verbose": "Journalisation détaillée",
+				"verboseLabel": "Activée pendant 24 heures",
+				"logs": "Logs",
+				"openLogs": "Ouvrir le dossier des logs",
+				"report": "Rapport",
+				"export": "Exporter le diagnostic",
+				"exportHint": "Enregistre les versions, les machines (hôte, état et accès uniquement), le nombre d'actions et les erreurs récentes dans un fichier du dossier des logs, puis l'affiche. Les tokens, liens d'association et adresses complètes sont exclus : il peut donc être joint sans risque à un rapport de bug."
+			},
+			"settings": {
+				"open": "Réglages Turnkey…",
+				"blocked": "Stream Deck n'a pas ouvert la fenêtre.",
+				"title": "Réglages Turnkey",
+				"detached": "Ouvrez les réglages Turnkey depuis une action Turnkey.",
+				"appearance": "Apparence",
+				"behavior": "Comportement",
+				"about": "À propos",
+				"machinesLede": "Turnkey se connecte à T3 Code sur chaque machine ajoutée. Chaque touche et molette peut suivre une machine, ou toutes.",
+				"version": "Version",
+				"languages": "Langues",
+				"languagesHint": "Turnkey suit la langue de Stream Deck.",
+				"readme": "Guide",
+				"openReadme": "Ouvrir le README"
+			},
+			"advanced": {
+				"appLink": "Lien de l'app",
+				"appLinkHint": "Utilisez t3code-dev pour ouvrir les fils dans une build de développement.",
+				"dialStrips": "Bandeaux des molettes",
+				"stateLine": "Ligne d'état",
+				"stateLineLabel": "Afficher la ligne colorée sous chaque bandeau",
+				"stateHint": "Sombre est un quasi-noir uni, comme les bandeaux de Stream Deck. Flux dessine une seule image sur les molettes voisines. État du fil teinte un bandeau en vert quand un tour non vu est terminé, en rouge en cas d'échec et en ambre quand il vous attend. Chaque molette peut remplacer ce choix dans ses propres réglages.",
+				"stripStyle": "Style des bandeaux",
+				"styleHint": "Liste fait défiler les éléments d'une molette comme une roue, Carrousel affiche chacun comme une tuile entre ses voisins. Défaut par molette utilise Liste pour la Molette fils et Classique pour les autres ; Classique affiche la Molette puissance comme un curseur. Le texte long défile une fois la molette au repos, deux fois, puis s'arrête ; touchez longuement le bandeau pour tout lire, et tournez pour faire défiler.",
+				"motion": "Animation",
+				"maxEffort": "Couleurs",
+				"maxEffortHint": "Dégradé colore chaque niveau d'effort le long d'une échelle dans la couleur du modèle, virant au violet en haut, et donne à chaque modèle et à Rapide le dégradé de son fournisseur. Uni et Couleur du modèle ne marquent que le niveau d'effort le plus haut, en violet ou dans la couleur du modèle ; Désactivé les laisse neutres. Ultrathink garde le spectre de T3 Code.",
+				"motionHint": "Complète fait tourner les fils en cours, fait pulser les fils qui vous attendent et fait clignoter les fins et les échecs. Réduite tourne lentement et ne pulse pas. Désactivée garde chaque touche immobile.",
+				"idlePet": "Compagnon au repos",
+				"previewPet": "Aperçu du compagnon",
+				"idlePetHint": "Après deux minutes sans appui, rotation ni toucher, un petit robot traverse votre plus longue rangée de bandeaux de molettes voisines, jusqu'à trois fois, à quatre minutes d'intervalle. Tout appui, rotation ou toucher sur une action Turnkey le fait partir. Il suit Animation : Réduite le fait marcher calmement, Désactivée le tient à l'écart.",
+				"confirm": "Confirmer avant d'envoyer",
+				"confirmHint": "S'applique à Envoyer prompt, Orienter, Lancer skill, la Molette prompts et la Molette skills ; Modèle, Effort, Vitesse, Accès et la Molette puissance s'appliquent toujours immédiatement. Vérifier montre quoi va où au premier appui ; rappuyez dans les 10 secondes pour envoyer. Maintenir envoie sur un appui maintenu, donc maintenir ne peut plus aussi relancer ou démarrer un fil. Chaque action peut remplacer ce choix."
+			},
+			"field": {
+				"strip": "Bandeau",
+				"stripColor": "Couleur du bandeau",
+				"style": "Style",
+				"longText": "Texte long",
+				"show": "Afficher",
+				"project": "Projet",
+				"prompt": "Prompt",
+				"keyTitle": "Titre de la touche",
+				"approvals": "Approbations",
+				"toAnswer": "Pour répondre",
+				"model": "Modèle",
+				"effort": "Effort",
+				"access": "Accès",
+				"confirm": "Confirmer",
+				"does": "Action"
+			},
+			"background": {
+				"global": "Réglage global",
+				"t3": "Sombre",
+				"flow": "Flux",
+				"state": "État du fil",
+				"custom": "Couleur personnalisée"
+			},
+			"style": {
+				"perDial": "Défaut par molette",
+				"classic": "Classique",
+				"list": "Liste",
+				"carousel": "Carrousel"
+			},
+			"motion": {
+				"full": "Complète",
+				"reduced": "Réduite",
+				"off": "Désactivée"
+			},
+			"idlePet": {
+				"off": "Désactivé",
+				"on": "Activé"
+			},
+			"maxEffort": {
+				"gradient": "Dégradé",
+				"solid": "Uni",
+				"model": "Couleur du modèle",
+				"off": "Désactivé"
+			},
+			"confirm": {
+				"review": "Vérifier, puis rappuyer",
+				"hold": "Maintenir pour envoyer",
+				"off": "Envoyer immédiatement"
+			},
+			"scroll": {
+				"horizontal": "Défiler latéralement",
+				"vertical": "Défiler ligne par ligne",
+				"off": "Ne pas défiler"
+			},
+			"loading": {
+				"projects": "Chargement des projets…",
+				"models": "Chargement des modèles…",
+				"efforts": "Chargement des efforts…",
+				"providers": "Chargement des fournisseurs…",
+				"windows": "Chargement des fenêtres…",
+				"threads": "Chargement des fils…",
+				"tasks": "Chargement des tâches…",
+				"skills": "Chargement des skills…",
+				"scripts": "Chargement des scripts…"
+			},
+			"filter": {
+				"all": "Tous les fils",
+				"attention": "Vous attend : approbation, question, échec ou résultat non lu",
+				"active": "Actifs ou en attente",
+				"unread": "Non lus"
+			},
+			"authority": {
+				"open": "Ouvrir dans T3 Code",
+				"once": "Autoriser une fois",
+				"session": "Autoriser pour la session",
+				"always": "Toujours autoriser"
+			},
+			"slot": {
+				"label": "Emplacement",
+				"byPosition": "Selon la position de la touche",
+				"selected": "Fil sélectionné",
+				"first": "1 (le plus urgent)",
+				"hint": "Selon la position de la touche remplit les touches Fil de gauche à droite, de haut en bas. Les fils sont triés : approbation requise, question, en cours, puis le reste. Un appui ouvre, maintenir sélectionne."
+			},
+			"activity": {
+				"hint": "Affiche le fil correspondant le plus urgent. D'autres touches Activité avec les mêmes réglages affichent les suivants, selon la position de la touche."
+			},
+			"answer": {
+				"hold": "Maintenir la molette",
+				"press": "Appuyer sur la molette",
+				"hint": "Tournez entre ce choix et Refuser. Une demande qui ne propose pas ce choix s'ouvre dans T3 Code à la place. Touchez longuement le bandeau pour lire une longue demande en entier."
+			},
+			"send": {
+				"titlePlaceholder": "Corriger tests",
+				"promptPlaceholder": "Lance les tests et corrige ce qui échoue",
+				"hint": "Va au fil sélectionné dans T3 Code : démarre un tour, ou oriente ou attend derrière un tour en cours. Maintenez la touche pour interrompre et relancer avec ce prompt.",
+				"myText": "Mon texte",
+				"text": "Texte"
+			},
+			"steer": {
+				"titlePlaceholder": "Rester simple",
+				"promptPlaceholder": "Garde la modification minime et laisse tomber le refactoring",
+				"hint": "S'ajoute au tour en cours du fil sélectionné. Grisé tant que le fil est inactif."
+			},
+			"quick": {
+				"continue": "Continuer",
+				"test": "Lancer les tests et corriger les échecs",
+				"fix": "Diagnostiquer et corriger",
+				"explain": "Expliquer l'état actuel",
+				"commit": "Faire un commit de vos modifications"
+			},
+			"new": {
+				"createIn": "Créer dans",
+				"selected": "Projet du fil sélectionné",
+				"scratch": "Aucun projet",
+				"project": "Projet choisi",
+				"promptPlaceholder": "Facultatif : relis la pull request ouverte",
+				"title": "Titre du fil",
+				"titlePlaceholder": "Revue de PR",
+				"hint": "Avec un prompt, le fil se met au travail et le deck le sélectionne. Sans prompt, il s'ouvre vide dans T3 Code. Si aucun fil n'est sélectionné, il démarre sans projet. Il utilise le modèle et l'accès par défaut de T3 Code.",
+				"startIn": "Démarrer dans",
+				"folder": "Dossier du projet",
+				"worktree": "Nouveau worktree",
+				"worktreeHint": "Un nouveau worktree part de la branche par défaut du dépôt, comme le fait le compositeur de T3 Code, et tire son nom de branche du prompt ; il nécessite un prompt et un projet."
+			},
+			"model": {
+				"nameColor": "Couleur du nom",
+				"nameModel": "Couleur du modèle",
+				"nameWhite": "Blanc",
+				"hint": "Le parcours passe par les modèles favoris de T3 Code, tous fournisseurs confondus, ou par les modèles du fournisseur du fil si vous n'en avez pas. Choisir le modèle d'un autre fournisseur lui transfère le fil, comme le sélecteur de modèle de T3 Code."
+			},
+			"effort": {
+				"hint": "Le parcours passe par les efforts que propose le modèle du fil sélectionné. Un effort défini que son modèle ne propose pas grise la touche. Ultrathink ne change pas l'effort : comme T3 Code, il préfixe les prompts que le deck envoie à ce fil jusqu'à ce que vous choisissiez un autre effort."
+			},
+			"permissions": {
+				"cycle": "Parcourir les modes d'accès",
+				"approvalRequired": "Supervisé",
+				"autoAcceptEdits": "Modifs auto-acceptées",
+				"auto": "Auto",
+				"fullAccess": "Accès complet",
+				"hint": "S'applique au fil sélectionné à partir de sa prochaine étape. Seuls les modes pris en charge par son fournisseur sont proposés."
+			},
+			"approve": {
+				"hold": "Maintenir la touche",
+				"tap": "Appuyer sur la touche",
+				"hint": "Répond à l'approbation du fil sélectionné. Une demande qui ne propose pas ce choix, ou à laquelle le deck ne peut pas répondre, s'ouvre dans T3 Code. Refuser a sa propre touche."
+			},
+			"organize": {
+				"action": "Action",
+				"settle": "Classer",
+				"pin": "Épingler / Désépingler",
+				"snooze": "Reporter",
+				"archive": "Archiver",
+				"markUnread": "Marquer non lu",
+				"wake": "Réveiller le dernier reporté",
+				"snoozeFor": "Reporter de",
+				"minutes15": "15 minutes",
+				"minutes30": "30 minutes",
+				"hour1": "1 heure",
+				"hours2": "2 heures",
+				"hours4": "4 heures",
+				"hours8": "8 heures",
+				"day1": "1 jour",
+				"confirm": "Confirmer",
+				"confirmReview": "Vérifier, puis rappuyer",
+				"confirmHold": "Maintenir pour confirmer",
+				"confirmOff": "Immédiatement"
+			},
+			"prompts": {
+				"label": "Prompts",
+				"placeholder": "Un prompt par ligne",
+				"templates": "Modèles",
+				"templatesLabel": "Ajouter Continuer, Corriger tests, Diagnostiquer, Expliquer et Commit",
+				"hint": "Tournez pour choisir, appuyez pour envoyer au fil sélectionné, maintenez pour démarrer un nouveau fil."
+			},
+			"threads": {
+				"recency": "Depuis",
+				"noLimit": "Sans limite",
+				"day": "24 heures",
+				"twoDays": "48 heures",
+				"threeDays": "3 jours",
+				"week": "7 jours",
+				"hint": "Tournez pour parcourir les fils correspondants, les plus urgents d'abord ; celui sur lequel la molette s'arrête devient la sélection de T3 Code. Appuyer ou toucher l'ouvre."
+			},
+			"power": {
+				"controls": "Cette molette contrôle",
+				"bottomRow": "La vue modèle affiche",
+				"showSpeed": "Vitesse",
+				"showEffort": "Effort",
+				"hint": "Tournez pour prévisualiser, appuyez pour appliquer au fil sélectionné. Modèle parcourt les modèles favoris de T3 Code, tous fournisseurs confondus. Appuyez sans rien à appliquer, ou touchez, pour basculer la Vitesse quand le modèle la propose. Ultrathink, là où Claude le propose, préfixe les prochains prompts du deck au fil."
+			},
+			"limits": {
+				"provider": "Fournisseur",
+				"window": "Fenêtre",
+				"show": "Afficher",
+				"left": "% restant",
+				"used": "% utilisé",
+				"resetAction": "Maintenir pour",
+				"open": "Ouvrir « Usage » dans T3 Code",
+				"spend": "Utiliser une réinitialisation en réserve",
+				"hint": "Regroupé sur les comptes du fournisseur des machines choisies, comme l'affiche Limits dans T3 Code. Un appui actualise. Le repère sur la barre indique où serait un rythme régulier.",
+				"spendHint": "Maintenir dépense un crédit de réinitialisation sur le compte que T3 Code rechargerait en premier. Nécessite l'accès fournisseurs : si l'association ne l'a pas, le prochain lien d'association de la machine le demande."
+			},
+			"usage": {
+				"period": "Période",
+				"provider": "Fournisseur",
+				"allProviders": "Tous les fournisseurs",
+				"day": "Dernières 24 h",
+				"week": "7 jours",
+				"month": "30 jours",
+				"quarter": "90 jours",
+				"hint": "L'estimation API de T3 Code pour la période, sur les machines choisies ; un dossier partagé par deux machines compte une fois. Un appui relit, maintenir recharge aussi les prix des modèles. Nécessite l'accès consommation.",
+				"dialHint": "Tournez pour passer du total de la période à chaque modèle, par coût. Appuyer ou toucher relit ; un appui long recharge aussi les prix des modèles. Nécessite l'accès consommation."
+			},
+			"target": {
+				"label": "Cible",
+				"selected": "Fil sélectionné",
+				"thread": "Ce fil",
+				"pick": "Fil",
+				"hint": "La touche agit sur ce fil même quand un autre est sélectionné, et affiche une petite épingle. Archivé ou supprimé, il apparaît comme indisponible jusqu'à ce que vous en choisissiez un autre."
+			},
+			"queue": {
+				"hint": "Suit la file d'attente du fil sélectionné. Un appui envoie le message affiché maintenant : dans le tour en cours quand le fournisseur accepte l'orientation, ou comme tour suivant si rien ne tourne, ce qui libère aussi une file suspendue par Arrêter. Maintenir le supprime."
+			},
+			"task": {
+				"label": "Tâche",
+				"hint": "Un appui lance la tâche maintenant, comme « Run now » dans T3 Code ; elle garde sa planification. Les tâches viennent de « Settings → Scheduled tasks » dans T3 Code.",
+				"dialHint": "Tournez pour parcourir les tâches planifiées de la machine. Un appui lance celle affichée maintenant ; toucher la désactive, et toucher à nouveau la réactive."
+			},
+			"skill": {
+				"label": "Skill",
+				"extra": "Avec",
+				"extraPlaceholder": "Facultatif : quoi lui dire, après le skill",
+				"titlePlaceholder": "Nom du skill",
+				"hint": "Envoie le skill au fil comme le compositeur de T3 Code ($name, puis votre texte). Les skills viennent du fournisseur du fil pour son checkout : Codex, Claude et Antigravity les listent.",
+				"dialHint": "Tournez pour parcourir les skills du fournisseur du fil pour son checkout. Appuyer ou toucher lance celui affiché, un toucher maintenu lit sa description."
+			},
+			"workflow": {
+				"hint": "Arrête les workflows exécutés par le fil, comme le panneau Lineage de T3 Code. Seuls les workflows de Claude peuvent être arrêtés. Maintenez la touche pour arrêter ; un workflow arrêté ne peut pas reprendre."
+			},
+			"lineage": {
+				"forkHint": "Crée un fork du fil depuis sa dernière réponse terminée dans un nouveau fil, comme le bouton fork de T3 Code sur cette réponse, puis ouvre le fork.",
+				"mergeHint": "Fusionne un fil forké dans le fil dont il est issu, comme Merge dans T3 Code, puis ouvre ce fil. Maintenez la touche pour fusionner.",
+				"fork": "Créer un fork",
+				"merge": "Fusionner"
+			},
+			"update": {
+				"hint": "Affiche la version de T3 Code sur la machine choisie ci-dessous (celle de cet ordinateur sinon). Maintenir la met à jour vers la dernière version de son canal ; une app de bureau installe sa propre mise à jour et redémarre. T3 Code n'annonce pas les mises à jour au deck, donc la touche ne peut pas indiquer qu'une mise à jour attend.",
+				"access": "Nécessite l'accès mise à jour, qui permet à ce deck de mettre à jour et redémarrer T3 Code là-bas. Le premier appui sur la touche le demande à la prochaine association de la machine."
+			},
+			"script": {
+				"label": "Script",
+				"hint": "Un appui lance le script dans son propre terminal sur le fil, dans son worktree ou sinon le dossier du projet, comme le bouton de script de T3 Code. Maintenir l'arrête. La touche indique s'il tourne ; T3 Code ne rapporte pas le code de sortie d'un script, seulement celui de son terminal.",
+				"access": "Accès shell : nécessite l'accès terminal, qui permet à ce deck d'exécuter n'importe quelle commande dans les terminaux T3 Code de cette machine. Le premier appui sur la touche le demande à la prochaine association de la machine."
+			},
+			"share": {
+				"hint": "Un appui crée un lien invité pour le fil et le copie ; quiconque l'a peut suivre le fil pendant 24 heures et proposer des messages que vous envoyez ou écartez. Maintenir arrête le partage. Nécessite « Guest links » (« Settings → Labs ») et T3 Connect.",
+				"access": "Nécessite l'accès lien invité, qui permet à ce deck de partager des fils avec des personnes extérieures. Le premier appui sur la touche le demande à la prochaine association de la machine.",
+				"link": "Lien invité",
+				"linkHint": "Affiché seulement pendant que Turnkey tourne : T3 Code n'affiche un lien qu'une fois, à sa création."
+			},
+			"stop": {
+				"stops": "Arrête",
+				"turn": "Le tour",
+				"workflow": "Le workflow"
+			},
+			"open": {
+				"in": "Ouvrir dans",
+				"editor": "Éditeur",
+				"preview": "Aperçu"
+			}
+		},
+		"usage": {
+			"title": "Conso",
+			"period": {
+				"day": "24 h",
+				"week": "7 jours",
+				"month": "30 jours",
+				"quarter": "90 jours"
+			},
+			"allModels": "Tous les modèles",
+			"tokens": "{tokens} tokens",
+			"sessions": "{count} sessions",
+			"unpriced": "Sans prix",
+			"cacheHit": "{percent} cache",
+			"perMillion": "{cost}/M",
+			"updateT3": "MàJ T3 Code pour la conso",
+			"updateDeck": "MàJ Turnkey pour la conso"
+		},
+		"limits": {
+			"title": "Limites",
+			"none": "Aucune limite",
+			"noneDetail": "Aucun fournisseur n'indique de limite",
+			"window": {
+				"hours": "{hours} h",
+				"session": "Session",
+				"weekly": "Hebdo",
+				"monthly": "Mensuelle"
+			},
+			"resetsNow": "Réinit. maintenant",
+			"resetsIn": "réinit. {time}",
+			"resetOne": "1 réinit.",
+			"resets": "{count} réinit.",
+			"pooled": "{count} comptes",
+			"refreshing": "Actualisation…",
+			"pressToRefresh": "Appui : actualiser",
+			"holdToReset": "Maintenir : réinit.",
+			"noResets": "Aucune réinit. dispo",
+			"needsProviders": "Accès fournisseurs requis",
+			"outcome": {
+				"reset": "Réinitialisé",
+				"nothingToReset": "Rien à réinitialiser",
+				"noCredit": "Plus de réinit.",
+				"alreadyRedeemed": "Déjà utilisée"
+			}
+		},
+		"tasks": {
+			"title": "Tâches",
+			"now": "Maintenant",
+			"in": "dans {time}",
+			"running": "En cours",
+			"off": "Désactivée",
+			"onWebhook": "Sur webhook",
+			"notScheduled": "Non planifiée",
+			"lastFailed": "Échec dernier lancement · {when}",
+			"noTasks": "Aucune tâche planifiée",
+			"addInT3": "Ajoutez-en dans T3 Code",
+			"updateT3": "MàJ T3 Code pour les tâches",
+			"loading": "Chargement des tâches…",
+			"pressToRun": "Appui : lancer · toucher : désactiver",
+			"pressToRunOff": "Appui : lancer · toucher : activer",
+			"pickTask": "Choisir une tâche",
+			"gone": "Indisponible : {task}",
+			"chooseTask": "Choisir une tâche…"
+		},
+		"skills": {
+			"title": "Skills",
+			"pickSkill": "Choisir un skill",
+			"none": "Aucun skill",
+			"gone": "Indisponible : {skill}",
+			"chooseSkill": "Choisir un skill…",
+			"aSkill": "Un skill proposé par le fournisseur du fil"
+		},
+		"workflow": {
+			"stop": "Arrêter workflow",
+			"none": "Aucun workflow actif",
+			"notClaude": "Pas sur ce fournisseur",
+			"option": "Arrêt des workflows (Claude)",
+			"holdToStop": "Maintenir : arrêter",
+			"notRunning": "N'est plus actif",
+			"unsupported": "Arrêt non pris en charge",
+			"unavailable": "Aucune tâche active",
+			"stopFailed": "Arrêt impossible"
+		},
+		"lineage": {
+			"fork": "Fork",
+			"mergeBack": "Fusionner",
+			"into": "Dans {thread}",
+			"notFork": "Pas un fork",
+			"finishRunFirst": "Terminez d'abord un tour",
+			"finishTurn": "Attendez la fin du tour",
+			"nothingToFork": "Rien à forker",
+			"holdToMerge": "Maintenir : fusionner",
+			"aFork": "Un fil forké",
+			"aFinishedTurn": "Une réponse terminée"
+		},
+		"worktree": {
+			"newThread": "Nouveau worktree",
+			"noProject": "Projet requis",
+			"needsPrompt": "Prompt requis",
+			"notRepo": "Pas un dépôt Git",
+			"noBranch": "Aucune branche de départ"
+		},
+		"update": {
+			"title": "MàJ T3",
+			"version": "v{version}",
+			"noVersion": "Version inconnue",
+			"holdToUpdate": "Maintenir : MàJ",
+			"checking": "Vérification…",
+			"downloading": "Téléchargement…",
+			"installing": "Installation…",
+			"restarting": "Redémarrage…",
+			"toVersion": "Vers v{version}",
+			"upToDate": "À jour",
+			"inProgress": "Déjà en cours",
+			"manual": "MàJ manuelle",
+			"desktopTooOld": "MàJ l'app de bureau",
+			"failed": "Échec de la MàJ",
+			"noReturn": "Pas revenu",
+			"pickMachine": "Choisir une machine",
+			"needsAccess": "Accès MàJ requis"
+		},
+		"script": {
+			"title": "Lancer script",
+			"pick": "Choisir un script",
+			"idle": "Appui : lancer",
+			"starting": "Démarrage…",
+			"running": "En cours",
+			"finished": "Terminé",
+			"stopped": "Arrêté",
+			"exited": "Sorti {code}",
+			"ended": "Sorti",
+			"error": "Échec du terminal",
+			"holdToStop": "Maintenir : arrêter",
+			"needsAccess": "Accès terminal requis"
+		},
+		"share": {
+			"title": "Partager le fil",
+			"shared": "Partagé",
+			"guest": "{name} a rejoint",
+			"unused": "Lien pas encore utilisé",
+			"pending": "{count} messages en attente",
+			"pendingOne": "1 message en attente",
+			"expired": "Lien expiré",
+			"holdToClear": "Maintenir : effacer",
+			"holdToStop": "Maintenir : arrêter le partage",
+			"disabled": "Activez les liens invités",
+			"noConnect": "T3 Connect requis",
+			"unavailable": "Partage impossible",
+			"copyFailed": "Copie impossible",
+			"needsAccess": "Accès partage requis"
+		}
+	}
+}

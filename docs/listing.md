@@ -13,7 +13,9 @@ Kept here so the listing, the README and the plugin say the same thing. The plug
 
 **Name:** Turnkey for T3 Code (final once submitted: Maker Console can't rename a product)
 
-**Category:** Turnkey
+**Category:** Turnkey for T3 Code (the Marketplace asks for the plugin's own name)
+
+**URL:** add https://github.com/alejandrom2/turnkey to the manifest once the repo is public (validate checks it answers).
 
 **Short description:**
 > Control T3 Code from your Stream Deck: see every agent thread, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without leaving your flow.

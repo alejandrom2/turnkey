@@ -18,7 +18,7 @@ import { deck } from "../deck.js";
 import { canOperate, connectionFace, DeckAction, pressWhileDisconnected, selectThread, sendToThread } from "./base.js";
 import { threadNeeds } from "./needs.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 
 type TargetedSettings = { machine?: string; target?: string; thread?: string; threadTitle?: string; mode?: string };
 

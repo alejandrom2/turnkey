@@ -156,7 +156,7 @@ export function tokenExchangeBody(code: string, platform: NodeJS.Platform = proc
 		subject_token_type: "urn:t3:params:oauth:token-type:environment-bootstrap",
 		requested_token_type: "urn:ietf:params:oauth:token-type:access_token",
 		scope: scopes.join(" "),
-		client_label: "T3 Deck",
+		client_label: "Turnkey",
 		client_device_type: "desktop",
 		client_os: CLIENT_OS[platform] ?? platform,
 	});

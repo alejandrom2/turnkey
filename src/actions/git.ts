@@ -29,7 +29,7 @@ import { deck } from "../deck.js";
 import { canOperate, connectionFace, DeckAction, pressWhileDisconnected, selectedThread } from "./base.js";
 import { threadNeeds } from "./needs.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("git");
 
 /** The checkout a git key acts on: the selected thread's worktree, else its project's root. */

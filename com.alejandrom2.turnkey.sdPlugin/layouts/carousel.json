@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+	"id": "com.alejandrom2.turnkey.carousel",
+	"items": [
+		{ "key": "canvas", "type": "pixmap", "rect": [0, 0, 200, 100], "zOrder": 0 },
+		{ "key": "art", "type": "pixmap", "rect": [0, 0, 200, 100], "zOrder": 1 },
+		{
+			"key": "title",
+			"type": "text",
+			"rect": [8, 76, 184, 20],
+			"font": { "size": 15, "weight": 700 },
+			"alignment": "center",
+			"color": "#FFFFFF",
+			"text-overflow": "ellipsis",
+			"zOrder": 2
+		},
+		{ "key": "titleArt", "type": "pixmap", "rect": [8, 76, 184, 20], "zOrder": 3 }
+	]
+}
