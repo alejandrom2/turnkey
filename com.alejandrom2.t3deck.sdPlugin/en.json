@@ -374,6 +374,7 @@
 		"access": {
 			"sourceControl": "Needs source control access — re-pair",
 			"diagnostics": "Needs usage access — re-pair",
+			"providers": "Needs provider access — re-pair to enable",
 			"other": "Needs more access — re-pair"
 		},
 		"pr": {
@@ -470,6 +471,7 @@
 			"scope": {
 				"sourceControl": "Source control access",
 				"diagnostics": "Usage access",
+				"providers": "Provider access",
 				"other": "{scope} access"
 			},
 			"option": "{option} on the thread's model",

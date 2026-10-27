@@ -12,6 +12,8 @@ export const READ_SCOPE = "orchestration:read";
 export const OPERATE_SCOPE = "orchestration:operate";
 export const DIAGNOSTICS_SCOPE = "diagnostics:read";
 export const SOURCE_CONTROL_SCOPE = "source-control:write";
+/** Spending a banked limits reset; asked for only on a machine where the user turned that on. */
+export const PROVIDERS_SCOPE = "providers:manage";
 /**
  * What every pairing asks for. The server grants the overlap with what the pair link allows and drops names it
  * doesn't know, so asking for more never fails a pairing; T3 Code's standard links grant all four.

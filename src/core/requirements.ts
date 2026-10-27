@@ -3,7 +3,7 @@
  * up to a few fixes. Built from the same facts the keys' availability uses, so the two never disagree.
  */
 import { type MessageKey, t } from "./i18n.js";
-import { DIAGNOSTICS_SCOPE, SOURCE_CONTROL_SCOPE } from "./t3/pairing.js";
+import { DIAGNOSTICS_SCOPE, PROVIDERS_SCOPE, SOURCE_CONTROL_SCOPE } from "./t3/pairing.js";
 
 /** Why the action's machine can't be used: none found, removed, unpaired or unreachable (base.ts `ConnectionProblem`). */
 export type Connection = "ready" | "none" | "missing" | "pair" | "offline";
@@ -32,7 +32,11 @@ export type Requirement = { id: string; label: string; state: RequirementState; 
 /** At most this many fixes per condition. */
 export const MAX_FIXES = 4;
 
-const SCOPE_LABEL: Record<string, MessageKey> = { [SOURCE_CONTROL_SCOPE]: "needs.scope.sourceControl", [DIAGNOSTICS_SCOPE]: "needs.scope.diagnostics" };
+const SCOPE_LABEL: Record<string, MessageKey> = {
+	[SOURCE_CONTROL_SCOPE]: "needs.scope.sourceControl",
+	[DIAGNOSTICS_SCOPE]: "needs.scope.diagnostics",
+	[PROVIDERS_SCOPE]: "needs.scope.providers",
+};
 
 const CONNECTION_FIX: Record<Exclude<Connection, "ready">, MessageKey[]> = {
 	none: ["needs.fix.openT3", "needs.fix.addMachine"],
