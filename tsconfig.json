@@ -2,6 +2,8 @@
 	"extends": "@tsconfig/node20/tsconfig.json",
 	"compilerOptions": {
 		"customConditions": ["node"],
+		// esbuild transpiles each file on its own.
+		"isolatedModules": true,
 		"module": "ES2022",
 		"moduleResolution": "Bundler",
 		"noImplicitOverride": true,
