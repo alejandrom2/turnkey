@@ -3,10 +3,9 @@
 ## [0.9.1](https://github.com/alejandrom2/turnkey/compare/v0.9.0...v0.9.1) (2026-10-27)
 
 
-### Chores
+### Maintenance
 
-* release 0.10.0 ([bb0a0d1](https://github.com/alejandrom2/turnkey/commit/bb0a0d1b5e338f6d06b7c58f771ef270ddd0ac29))
-* release 0.9.1 ([021589b](https://github.com/alejandrom2/turnkey/commit/021589b8480e79a586801f1dfc72e116c6c10f7b))
+* Releases now come from a tag: merging a release PR tags the version, and every `v*` tag publishes the GitHub Release with the packed plugin.
 
 ## 0.9.0 (2026-10-27)
 
