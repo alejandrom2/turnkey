@@ -55,8 +55,7 @@
 					"section": "Chores",
 					"hidden": true
 				}
-			],
-			"release-as": "0.9.1"
+			]
 		}
 	}
 }
