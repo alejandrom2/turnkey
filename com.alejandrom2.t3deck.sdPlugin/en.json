@@ -173,7 +173,6 @@
 			"allQuiet": "All quiet",
 			"model": "Model",
 			"effort": "Effort",
-			"speed": "Speed",
 			"access": "Access",
 			"plan": "Plan",
 			"build": "Build",
@@ -294,6 +293,8 @@
 			"withHold": "{label} · hold"
 		},
 		"power": {
+			"faster": "Faster",
+			"smarter": "Smarter",
 			"quicker": "Quicker",
 			"deeper": "Deeper",
 			"asksFirst": "Asks first",

@@ -5,8 +5,8 @@ import { type ActionKind, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
-import { bareModelName, findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
-import { dialControl, type DialControl, effortChange, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
+import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
+import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
 import { spinAngle } from "../core/motion.js";
@@ -145,6 +145,17 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 type PowerSettings = DialSettings & { dialControls?: string };
 
 /** "Press to apply" in the previewed model's color (white for white marks), else amber. */
+/** The thread's effort as `model` would carry it: dimmed, in the model's color at its top level, the spectrum for Ultrathink. */
+function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): SliderInput["suffix"] {
+	const value = currentEffort(findModel(thread.machine.modelConfig, thread.model), thread.model, armed);
+	const choices = effortChoices(model);
+	const choice = choices.find((candidate) => candidate.key === String(value));
+	if (choice === undefined) return undefined;
+	if (choice.ultrathink) return { text: choice.label, spectrum: true };
+	const top = choices.filter((candidate) => !candidate.ultrathink).at(-1);
+	return { text: choice.label, color: choice.key === top?.key ? (modelColor(model) ?? COLORS.text) : undefined };
+}
+
 const pendingColor = (pending: PowerChoice): string => (pending.kind === "model" ? (modelColor(pending.model) ?? COLORS.text) : COLORS.attention);
 
 const CONTROL: Record<DialControl, { label: MessageKey; kind: ActionKind; glyph: GlyphName }> = {
@@ -254,11 +265,12 @@ export class ModelDial extends StripDial<PowerSettings> {
 				? [t("power.quicker"), t("power.deeper")]
 				: control === "permissions"
 					? [t("power.asksFirst"), t("power.handsOff")]
-					: [index >= 0 ? `${index + 1}/${state.choices.length}` : "", shown?.kind === "model" ? shown.model.providerName : ""];
+					: [t("power.faster"), t("power.smarter")];
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
 		return {
-			// The badge and the end label already name the provider.
+			// The badge and the color already name the provider.
 			label: shown?.kind === "model" ? bareModelName(shown.model) : (shown?.label ?? thread.model.model),
+			suffix: shown?.kind === "model" ? modelEffort(shown.model, thread, context.armed) : undefined,
 			labelColor: shown?.kind === "model" ? modelColor(shown.model) : pending || fullAccess ? COLORS.attention : undefined,
 			stops: state.choices.length,
 			current: at(state.current),

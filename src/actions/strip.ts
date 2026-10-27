@@ -7,7 +7,7 @@ import type { CatalogModel } from "../core/models.js";
 import { powerArt } from "../core/power.js";
 import { type DialPlace, dialRuns, type Run } from "../core/flow.js";
 import { BLANK_ART, COLORS, glyphArt, type MarkPainter, resolveAppearance, type StripAppearance, stripCanvas } from "../core/render.js";
-import { type SliderInput, sliderArt, sliderLabelSlot } from "../core/slider.js";
+import { type SliderInput, sliderArt, sliderLabelSlot, sliderLabelText } from "../core/slider.js";
 import { Slides } from "../core/slides.js";
 import { readingLength, scrollLine, scrollingLine, type StripContent, stripFeedback } from "../core/strip.js";
 import {
@@ -154,7 +154,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		if (presentation === "slider") {
 			const canvas = stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
 			if (reading?.lines) return this.setFeedback(action, carouselFeedback(content, listFromContent(content), { appearance, scroll: "off", reading: { lines: reading.lines, top: reading.top } }));
-			const line = scroll === "off" ? undefined : scrollLine(slider!.label, sliderLabelSlot(slider!), "horizontal", "slider");
+			const line = scroll === "off" ? undefined : scrollLine(sliderLabelText(slider!), sliderLabelSlot(slider!), "horizontal", "slider");
 			const labelOffset = marquee.offset(action.id, reading === undefined ? line : undefined);
 			return this.setFeedback(action, { canvas, art: sliderArt({ ...slider!, labelOffset }), title: { value: "", color: "#FFFFFF" }, titleArt: BLANK_ART });
 		}
