@@ -32,6 +32,9 @@ import { deck } from "./deck.js";
 streamDeck.logger.setLevel("info");
 setTranslator((key) => streamDeck.i18n.translate(key));
 
+// A stray rejection (a request the app never answered) would otherwise take every key and dial down with it.
+process.on("unhandledRejection", (reason) => streamDeck.logger.warn(`Unhandled rejection: ${reason instanceof Error ? reason.message : String(reason)}`));
+
 for (const instance of [
 	new Activity(),
 	new NewThread(),
