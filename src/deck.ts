@@ -4,6 +4,7 @@ import type { JsonValue } from "@elgato/utils";
 import { ThreadBoard } from "./core/board.js";
 import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
+import { Animator, motionMode, nextMinute, Transitions } from "./core/motion.js";
 import { UltrathinkArming } from "./core/ultrathink.js";
 import { type CredentialStore, Machine } from "./core/t3/machine.js";
 import { type Credential, findLocalEnvironment, normalizeEnvironmentUrl, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
@@ -22,10 +23,22 @@ type GlobalSettings = {
 	stripHairline?: boolean;
 	stripStyle?: string;
 	textScroll?: string;
+	/** Full (default), Reduced or Off. */
+	motion?: string;
+	/** Confirm before sending: review (default), hold or off; actions can override it. */
+	confirmSend?: string;
 	auth?: Record<string, JsonValue>;
 };
 
-const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll }: GlobalSettings) => ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll });
+const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll, motion, confirmSend }: GlobalSettings) => ({
+	stripBackground,
+	stripColor,
+	stripHairline,
+	stripStyle,
+	textScroll,
+	motion,
+	confirmSend,
+});
 
 const logger = streamDeck.logger.createScope("deck");
 
@@ -96,13 +109,15 @@ class Deck implements CredentialStore {
 	readonly board = new ThreadBoard(() => this.machines);
 	readonly acpIcons = new AcpIcons(fetch, () => this.repaint());
 	readonly ultrathink = new UltrathinkArming(() => this.repaint());
+	readonly animator = new Animator();
+	readonly transitions = new Transitions();
 	readonly #machines = new Map<string, Machine>();
 	readonly #visible = new Set<string>();
 	readonly #painters = new Set<() => void>();
 	#settings: GlobalSettings = {};
 	#auth: Record<string, Credential> = {};
 	#authLoaded = false;
-	#clock: ReturnType<typeof setInterval> | undefined;
+	#clock: ReturnType<typeof setTimeout> | undefined;
 	#statusSent: string | undefined;
 	#machineStates = "";
 	#pairing: PairingStatus = { state: "idle" };
@@ -114,7 +129,10 @@ class Deck implements CredentialStore {
 			void this.refreshConfigs();
 		});
 		streamDeck.system.onSystemDidWakeUp(() => void this.retry());
-		this.board.subscribe(() => this.repaint());
+		this.board.subscribe(() => {
+			this.transitions.update(this.board.threads);
+			this.repaint();
+		});
 		await this.#apply(await streamDeck.settings.getGlobalSettings<GlobalSettings>());
 	}
 
@@ -195,7 +213,7 @@ class Deck implements CredentialStore {
 		void this.pushStatus();
 	}
 
-	/** Actions call this from onWillAppear/onWillDisappear; it only drives the elapsed-time clock now. */
+	/** Actions call this from onWillAppear/onWillDisappear; it only drives the elapsed-time clock. */
 	setVisible(id: string, visible: boolean): void {
 		if (visible) this.#visible.add(id);
 		else this.#visible.delete(id);
@@ -228,14 +246,13 @@ class Deck implements CredentialStore {
 		await streamDeck.ui.sendToPropertyInspector(status);
 	}
 
-	/** Elapsed timers need a once-a-second repaint, but only while a visible turn is running. */
+	/** Elapsed labels change once a minute per running turn: repaint at the soonest boundary, only while something shows. */
 	#syncClock(): void {
-		const needed = this.#visible.size > 0 && this.board.threads.some((thread) => thread.active);
-		if (needed && this.#clock === undefined) this.#clock = setInterval(() => this.repaint(), 1000);
-		if (!needed && this.#clock !== undefined) {
-			clearInterval(this.#clock);
-			this.#clock = undefined;
-		}
+		clearTimeout(this.#clock);
+		this.#clock = undefined;
+		const starts = this.#visible.size === 0 ? [] : this.board.threads.flatMap((thread) => (thread.active && thread.activeSince !== undefined ? [thread.activeSince] : []));
+		const wait = nextMinute(starts, Date.now());
+		if (wait !== undefined) this.#clock = setTimeout(() => this.repaint(), wait + 50);
 	}
 
 	/** Machine updates arrive per streamed row; repaint only when a connection state, the config or a shown field changed. */
@@ -256,15 +273,19 @@ class Deck implements CredentialStore {
 	}
 
 	async #apply(settings: GlobalSettings): Promise<void> {
+		// The Elgato gradient option is gone; its users get T3 Code's background.
+		const migrated = settings.stripBackground === "elgato";
+		if (migrated) settings = { ...settings, stripBackground: "t3" };
 		const restyled = JSON.stringify(appearanceOf(settings)) !== JSON.stringify(appearanceOf(this.#settings));
 		this.#settings = settings;
+		this.animator.mode = motionMode(settings.motion);
 		if (restyled) this.repaint();
 		// The inspector writes from its own copy of global settings; keep our tokens authoritative.
 		if (!this.#authLoaded) {
 			this.#authLoaded = true;
 			this.#auth = readCredentials(settings.auth);
-			if (JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth)) await this.#persist();
-		} else if (JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth)) await this.#persist();
+			if (migrated || JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth)) await this.#persist();
+		} else if (migrated || JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth)) await this.#persist();
 
 		// This machine joins the list whenever T3 Code runs here, and stays once paired; a retry or a wake looks again.
 		const localReady = this.machines.some((machine) => isLoopbackUrl(machine.url) && machine.state.kind === "ready");

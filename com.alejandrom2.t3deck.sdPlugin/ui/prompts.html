@@ -108,11 +108,19 @@
 				<sdpi-checkbox setting="templates" default="true" label="Add Continue, Fix tests, Diagnose, Explain and Commit" data-i18n-label="inspector.prompts.templatesLabel"></sdpi-checkbox>
 			</sdpi-item>
 			<p class="hint" data-i18n="inspector.prompts.hint">Rotate to choose, press to send to the selected thread, hold to start a new thread.</p>
+			<sdpi-item label="Confirm" data-i18n-label="inspector.field.confirm">
+				<sdpi-select setting="confirmSend" default="">
+					<option value="" data-i18n="inspector.background.global">Use global</option>
+					<option value="review" data-i18n="inspector.confirm.review">Review, then press again</option>
+					<option value="hold" data-i18n="inspector.confirm.hold">Hold to send</option>
+					<option value="off" data-i18n="inspector.confirm.off">Send right away</option>
+				</sdpi-select>
+			</sdpi-item>
 			<sdpi-item label="Strip" data-i18n-label="inspector.field.strip">
 				<sdpi-select setting="background" default="">
 					<option value="" data-i18n="inspector.background.global">Use global</option>
 					<option value="t3" data-i18n="inspector.background.t3">T3 Code</option>
-					<option value="elgato" data-i18n="inspector.background.elgato">Elgato gradient</option>
+					<option value="flow" data-i18n="inspector.background.flow">Flow</option>
 					<option value="state" data-i18n="inspector.background.state">Thread state</option>
 					<option value="custom" data-i18n="inspector.background.custom">Custom color</option>
 				</sdpi-select>
@@ -161,7 +169,7 @@
 				<sdpi-item label="Dial strips" data-i18n-label="inspector.advanced.dialStrips">
 					<sdpi-select setting="stripBackground" global default="t3">
 						<option value="t3" data-i18n="inspector.background.t3">T3 Code</option>
-						<option value="elgato" data-i18n="inspector.background.elgato">Elgato gradient</option>
+						<option value="flow" data-i18n="inspector.background.flow">Flow</option>
 						<option value="state" data-i18n="inspector.background.state">Thread state</option>
 						<option value="custom" data-i18n="inspector.background.custom">Custom color</option>
 					</sdpi-select>
@@ -172,9 +180,10 @@
 				<sdpi-item label="State line" data-i18n-label="inspector.advanced.stateLine">
 					<sdpi-checkbox setting="stripHairline" global default="true" label="Show the colored line under each strip" data-i18n-label="inspector.advanced.stateLineLabel"></sdpi-checkbox>
 				</sdpi-item>
-				<p class="hint" data-i18n="inspector.advanced.stateHint">Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
+				<p class="hint" data-i18n="inspector.advanced.stateHint">Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
 				<sdpi-item label="Strip style" data-i18n-label="inspector.advanced.stripStyle">
-					<sdpi-select setting="stripStyle" global default="classic">
+					<sdpi-select setting="stripStyle" global default="">
+						<option value="" data-i18n="inspector.style.perDial">Per dial default</option>
 						<option value="classic" data-i18n="inspector.style.classic">Classic</option>
 						<option value="list" data-i18n="inspector.style.list">List</option>
 						<option value="carousel" data-i18n="inspector.style.carousel">Carousel</option>
@@ -187,7 +196,23 @@
 						<option value="off" data-i18n="inspector.scroll.off">Don't scroll</option>
 					</sdpi-select>
 				</sdpi-item>
-				<p class="hint" data-i18n="inspector.advanced.styleHint">List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.</p>
+				<p class="hint" data-i18n="inspector.advanced.styleHint">List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Per dial default uses List for the Threads dial, Classic for the others; Classic shows the Power dial as a slider. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.</p>
+				<sdpi-item label="Motion" data-i18n-label="inspector.advanced.motion">
+					<sdpi-select setting="motion" global default="full">
+						<option value="full" data-i18n="inspector.motion.full">Full</option>
+						<option value="reduced" data-i18n="inspector.motion.reduced">Reduced</option>
+						<option value="off" data-i18n="inspector.motion.off">Off</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.motionHint">Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.</p>
+				<sdpi-item label="Confirm before sending" data-i18n-label="inspector.advanced.confirm">
+					<sdpi-select setting="confirmSend" global default="review">
+						<option value="review" data-i18n="inspector.confirm.review">Review, then press again</option>
+						<option value="hold" data-i18n="inspector.confirm.hold">Hold to send</option>
+						<option value="off" data-i18n="inspector.confirm.off">Send right away</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.advanced.confirmHint">Applies to prompts and to the Model, Effort, Speed and Power controls. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this.</p>
 			</details>
 		</main>
 		<script>

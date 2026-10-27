@@ -59,9 +59,9 @@ describe("strip lines", () => {
 describe("strip appearance", () => {
 	it("defaults to T3 Code's card with the hairline on, and lets a dial override the global setting", () => {
 		expect(resolveAppearance({})).toEqual({ background: "t3", hairline: true });
-		expect(resolveAppearance({ stripBackground: "elgato", stripHairline: false })).toEqual({ background: "elgato", hairline: false });
-		expect(resolveAppearance({ stripBackground: "elgato" }, { background: "state" }).background).toBe("state");
-		expect(resolveAppearance({ stripBackground: "elgato" }, { background: "" }).background).toBe("elgato");
+		expect(resolveAppearance({ stripBackground: "flow", stripHairline: false })).toEqual({ background: "flow", hairline: false });
+		expect(resolveAppearance({ stripBackground: "flow" }, { background: "state" }).background).toBe("state");
+		expect(resolveAppearance({ stripBackground: "flow" }, { background: "" }).background).toBe("flow");
 	});
 
 	it("accepts only #rrggbb custom colors, the dial's own when it overrides", () => {
@@ -72,7 +72,7 @@ describe("strip appearance", () => {
 
 	it("draws each background, tints by thread state, and can drop the hairline", () => {
 		expect(svg(stripCanvas("#5B8CFF"))).toContain(`fill="#121212"`);
-		expect(svg(stripCanvas("#5B8CFF", { background: "elgato", hairline: true }))).toContain("#241640");
+		expect(svg(stripCanvas("#5B8CFF", { background: "flow", hairline: true, run: { length: 2, position: 1 } }))).toContain(`translate(-200 0)`);
 		expect(svg(stripCanvas("#5B8CFF", { background: "custom", color: "#336699", hairline: true }))).toContain(`fill="#336699"`);
 		expect(svg(stripCanvas("#5B8CFF", { background: "state", hairline: true }, toneOf("failed")))).toContain("#FF6764");
 		expect(svg(stripCanvas("#5B8CFF", { background: "state", hairline: true }, toneOf("running")))).not.toContain("stop-opacity");
@@ -80,7 +80,14 @@ describe("strip appearance", () => {
 		expect(svg(stripCanvas("#5B8CFF", DEFAULT_APPEARANCE, "neutral", true))).toContain(`stroke="url(#ultrathink)"`);
 	});
 
-	it("maps thread states to tones", () => {
+	it("maps thread states to tones, a seen done one neutral like its key", () => {
 		expect([toneOf("done"), toneOf("failed"), toneOf("approval"), toneOf("question"), toneOf("running"), toneOf("idle")]).toEqual(["done", "failed", "attention", "attention", "neutral", "neutral"]);
+		expect([toneOf("done", true), toneOf("done", false)]).toEqual(["done", "neutral"]);
+	});
+
+	it("reads the retired Elgato gradient as T3 Code's background", () => {
+		expect(resolveAppearance({ stripBackground: "elgato" }).background).toBe("t3");
+		expect(resolveAppearance({}, { background: "elgato" }).background).toBe("t3");
+		expect(resolveAppearance({ stripBackground: "flow" }).background).toBe("flow");
 	});
 });

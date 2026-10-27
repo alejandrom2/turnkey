@@ -5,7 +5,8 @@ import { t } from "../core/i18n.js";
 import { Marquee } from "../core/marquee.js";
 import type { CatalogModel } from "../core/models.js";
 import { powerArt } from "../core/power.js";
-import { COLORS, glyphArt, type MarkPainter, resolveAppearance } from "../core/render.js";
+import { type DialPlace, dialRuns, type Run } from "../core/flow.js";
+import { BLANK_ART, COLORS, glyphArt, type MarkPainter, resolveAppearance, type StripAppearance, stripCanvas } from "../core/render.js";
 import { Slides } from "../core/slides.js";
 import { readingLength, scrollingLine, type StripContent, stripFeedback } from "../core/strip.js";
 import {
@@ -14,6 +15,7 @@ import {
 	listFromContent,
 	listReading,
 	READING,
+	readingLines,
 	resolveStripStyle,
 	scrollReading,
 	STRIP_LAYOUTS,
@@ -23,16 +25,35 @@ import {
 	styleLine,
 } from "../core/styles.js";
 import { deck } from "../deck.js";
-import { connectionProblem, DeckAction } from "./base.js";
+import { connectionProblem, DeckAction, type ReviewCard } from "./base.js";
 
 /** Every dial's appearance overrides: "" follows the global setting. */
-export type DialSettings = { machine?: string; background?: string; backgroundColor?: string; stripStyle?: string; textScroll?: string };
+export type DialSettings = { machine?: string; background?: string; backgroundColor?: string; stripStyle?: string; textScroll?: string; confirmSend?: string };
+
+/** How a dial presents itself: a strip style, or the Power dial's slider, which takes the place of the classic layout. */
+type Presentation = StripStyle | "slider";
+
+/** The slider draws everything but the background in one picture, on the carousel's layout (a canvas, a picture and a title). */
+const LAYOUT: Record<Presentation, string> = { ...STRIP_LAYOUTS, slider: STRIP_LAYOUTS.carousel };
 
 /** How long the reading view a long touch opens stays without a turn. */
 export const READING_IDLE_MS = 5_000;
 
 const painters = new Map<string, () => void>();
 const repaint = (owner: string) => painters.get(owner)?.();
+
+/** Where every visible dial of this plugin sits, for Flow runs across adjacent dials of every dial action. */
+const places = new Map<string, DialPlace>();
+let runs = new Map<string, Run>();
+
+function placeDial(id: string, place: DialPlace | undefined): void {
+	if (place === undefined) places.delete(id);
+	else places.set(id, place);
+	const next = dialRuns([...places.values()]);
+	const changed = [...new Set([...runs.keys(), ...next.keys()])].filter((key) => JSON.stringify(runs.get(key)) !== JSON.stringify(next.get(key)));
+	runs = next;
+	for (const key of changed) if (key !== id) repaint(key);
+}
 const marquee = new Marquee(repaint);
 const slides = new Slides(repaint);
 
@@ -67,10 +88,15 @@ type Reading = { text?: string; lines?: string[]; top: number; timer?: ReturnTyp
  */
 export abstract class StripDial<T extends DialSettings & JsonObject> extends DeckAction<T> {
 	readonly #reading = new Map<string, Reading>();
-	/** The layout set on each dial; none means the manifest's, Elgato's. */
-	readonly #layouts = new Map<string, StripStyle>();
+	/** The presentation set on each dial; none means the manifest's layout, the classic one. */
+	readonly #layouts = new Map<string, Presentation>();
 
 	protected abstract face(action: Action<T>): StripContent;
+
+	/** A picture that replaces the classic layout: the Power dial's slider; undefined keeps the classic face. */
+	protected slider(_action: Action<T>): string | undefined {
+		return undefined;
+	}
 
 	/** What the list and carousel turn through; undefined shows the face as one item. */
 	protected list(_action: Action<T>): StripList | undefined {
@@ -83,29 +109,52 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 
 	protected tapped(_action: DialAction<T>): void | Promise<void> {}
 
-	#appearance(action: Action<T>) {
-		return resolveAppearance(deck.appearance, this.settingsOf(action));
+	#appearance(action: Action<T>): StripAppearance {
+		const appearance = resolveAppearance(deck.appearance, this.settingsOf(action));
+		return appearance.background === "flow" ? { ...appearance, run: runs.get(action.id) } : appearance;
+	}
+
+	protected override migrateSettings(settings: T): T | undefined {
+		return settings.background === "elgato" ? { ...settings, background: "t3" } : undefined;
+	}
+
+	/** The style this dial takes when neither it nor the global setting picks one. */
+	protected get defaultStyle(): StripStyle {
+		return "classic";
 	}
 
 	#style(action: Action<T>) {
-		return resolveStripStyle(deck.appearance, this.settingsOf(action));
+		return resolveStripStyle(deck.appearance, this.settingsOf(action), this.defaultStyle);
+	}
+
+	/** The strip style this dial resolves to now. */
+	protected styleOf(action: Action<T>): StripStyle {
+		return this.#style(action).style;
 	}
 
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isDial()) return;
 		painters.set(action.id, () => void this.paint(action));
 		const { style, scroll } = this.#style(action);
-		if ((this.#layouts.get(action.id) ?? "classic") !== style) {
-			this.#layouts.set(action.id, style);
+		const slider = style === "classic" ? this.slider(action) : undefined;
+		const presentation: Presentation = slider === undefined ? style : "slider";
+		if ((this.#layouts.get(action.id) ?? "classic") !== presentation) {
+			this.#layouts.set(action.id, presentation);
 			this.#close(action.id, false);
 			slides.stop(action.id);
 			marquee.stop(action.id, false);
-			await action.setFeedbackLayout(STRIP_LAYOUTS[style]);
+			await action.setFeedbackLayout(LAYOUT[presentation]);
 			this.forgetSent(action.id);
 		}
 		const appearance = this.#appearance(action);
 		const content = this.face(action);
 		const reading = this.#reading.get(action.id);
+		this.animate(action, content.moving === true && reading === undefined);
+		if (presentation === "slider") {
+			const canvas = stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
+			if (reading?.lines) return this.setFeedback(action, carouselFeedback(content, listFromContent(content), { appearance, scroll: "off", reading: { lines: reading.lines, top: reading.top } }));
+			return this.setFeedback(action, { canvas, art: slider!, title: { value: "", color: "#FFFFFF" }, titleArt: BLANK_ART });
+		}
 		if (style === "classic") {
 			const line = scrollingLine(content, scroll);
 			const offset = marquee.offset(action.id, reading !== undefined || scroll === "off" ? undefined : line);
@@ -123,14 +172,28 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 
 	protected override flashFeedback(action: Action<T>, ok: boolean, label: string): FeedbackPayload {
 		marquee.stop(action.id, false);
-		const style = this.#layouts.get(action.id) ?? "classic";
-		if (style !== "classic") return styleFlash(style, ok, label, this.#appearance(action));
+		const presentation = this.#layouts.get(action.id) ?? "classic";
+		if (presentation !== "classic") return styleFlash(presentation === "slider" ? "carousel" : presentation, ok, label, this.#appearance(action));
 		const color = ok ? COLORS.done : COLORS.error;
 		const content: StripContent = { header: ok ? t("strip.done") : t("strip.notNow"), icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
 		return stripFeedback(content, { appearance: this.#appearance(action), full: label });
 	}
 
+	/** A review card in the dial's presentation: the value to send or apply, its target thread, and how to go ahead. */
+	protected override reviewFeedback(action: Action<T>, card: ReviewCard): FeedbackPayload {
+		marquee.stop(action.id, false);
+		const appearance = this.#appearance(action);
+		const presentation = this.#layouts.get(action.id) ?? "classic";
+		const content: StripContent = { header: card.verb, icon: glyphArt(card.glyph, COLORS.accent), accent: COLORS.accent, value: card.body ?? card.target, detail: card.footer, detailColor: COLORS.accent };
+		const target = t("review.to", { thread: card.target });
+		if (presentation === "classic") return stripFeedback({ ...content, detail: `${card.footer} · ${target}` }, { appearance });
+		if (presentation === "list") return listFeedback(content, { heading: card.verb, items: [{ key: "review", label: content.value, art: content.icon }], index: 0, note: { text: card.footer, color: COLORS.accent } }, { appearance, scroll: "off" });
+		const lines = readingLines([card.body, target, card.footer]);
+		return carouselFeedback(content, listFromContent(content), { appearance, scroll: "off", reading: { lines, top: 0 } });
+	}
+
 	override async onDialRotate(ev: DialRotateEvent<T>): Promise<void> {
+		this.cancelReview(ev.action);
 		const reading = this.#reading.get(ev.action.id);
 		if (reading !== undefined) {
 			const [count, visible] = reading.lines ? [reading.lines.length, READING.visible] : [readingLength(reading.text ?? ""), 2];
@@ -166,6 +229,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 
 	override onWillAppear(ev: WillAppearEvent<T>): void {
 		this.#layouts.delete(ev.action.id);
+		if (ev.action.isDial()) placeDial(ev.action.id, { id: ev.action.id, device: ev.action.device.id, column: ev.action.coordinates.column });
 		super.onWillAppear(ev);
 	}
 
@@ -175,6 +239,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		slides.stop(ev.action.id);
 		this.#layouts.delete(ev.action.id);
 		painters.delete(ev.action.id);
+		placeDial(ev.action.id, undefined);
 		super.onWillDisappear(ev);
 	}
 
@@ -183,7 +248,11 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		const { style } = this.#style(action);
 		const content = this.face(action);
 		let reading: Reading;
-		if (style === "classic") {
+		if (this.#layouts.get(action.id) === "slider") {
+			const lines = readingLines([content.value, content.detail]);
+			if (lines.length < 2) return;
+			reading = { lines, top: 0 };
+		} else if (style === "classic") {
 			const line = scrollingLine(content);
 			if (line === undefined) return;
 			reading = { text: line.text, top: 0 };

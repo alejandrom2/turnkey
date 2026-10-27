@@ -110,7 +110,12 @@ describe("t", () => {
 
 	it("formats elapsed time", () => {
 		expect(elapsed(undefined, 0)).toBe("");
-		expect(elapsed(0, 65_000)).toBe("1:05");
-		expect(elapsed(0, 3_725_000)).toBe("1h02");
+		expect(elapsed(0, 59_999)).toBe("0m");
+		expect(elapsed(0, 4 * 60_000 + 5_000)).toBe("4m");
+		expect(elapsed(0, 59 * 60_000)).toBe("59m");
+		expect(elapsed(0, 90 * 60_000)).toBe("1.5h");
+		expect(elapsed(0, 2 * 3_600_000)).toBe("2h");
+		expect(elapsed(0, 47 * 3_600_000)).toBe("47h");
+		expect(elapsed(0, 60 * 3_600_000)).toBe("2.5d");
 	});
 });

@@ -3,7 +3,7 @@
  * A line wider than its slot is drawn as a picture (`valueArt`/`detailArt`) so the marquee can scroll it.
  */
 import type { MarqueeLine } from "./marquee.js";
-import { BLANK_ART, lineArt, type MarkPainter, rollArt, type StripAppearance, stripCanvas, stripMarkIcon, type StripTone, textWidth, wrapText } from "./render.js";
+import { BLANK_ART, lineArt, type MarkPainter, rollArt, type StripAppearance, stripCanvas, stripMarkIcon, type StripTone, svgDataUrl, textWidth, wrapText } from "./render.js";
 
 export type StripLine = "value" | "detail";
 
@@ -23,6 +23,10 @@ export type StripContent = {
 	ultrathink?: boolean;
 	/** The lines that may scroll, in order of preference; both by default, the value first. */
 	scroll?: StripLine[];
+	/** The face moves (a spinner) and wants animation frames. */
+	moving?: boolean;
+	/** The detail is still loading: a placeholder bar stands in for it. */
+	loading?: boolean;
 };
 
 /** A text item's box and font. */
@@ -100,6 +104,12 @@ export type StripOptions = {
 	top?: number;
 };
 
+/** A static placeholder bar `width` px long in a `slot`-sized picture: data on its way. */
+export const skeletonBar = (slot: Pick<TextSlot, "width" | "height">, width: number, x = 0): string =>
+	svgDataUrl(
+		`<svg xmlns="http://www.w3.org/2000/svg" width="${slot.width}" height="${slot.height}" viewBox="0 0 ${slot.width} ${slot.height}"><rect x="${x}" y="${(slot.height - 12) / 2}" width="${width}" height="12" rx="6" fill="#FFFFFF" fill-opacity=".12"/></svg>`,
+	);
+
 export function stripFeedback(content: StripContent, options: StripOptions): Record<string, string | { value: string; color: string }> {
 	const base = {
 		canvas: stripCanvas(content.accent, options.appearance, content.tone ?? "neutral", content.ultrathink === true),
@@ -114,6 +124,8 @@ export function stripFeedback(content: StripContent, options: StripOptions): Rec
 	const line = (which: StripLine, text: string, color: string) =>
 		slotItems(text, STRIP_LINES[which], color, scrolling?.line === which ? scrolling : undefined, options.offset);
 	const value = line("value", content.value, STRIP_LINES.value.color);
-	const detail = line("detail", content.detail ?? "", content.detailColor ?? STRIP_LINES.detail.color);
+	const detail = content.loading
+		? { text: { value: "", color: STRIP_LINES.detail.color }, art: skeletonBar(STRIP_LINES.detail, 84) }
+		: line("detail", content.detail ?? "", content.detailColor ?? STRIP_LINES.detail.color);
 	return { ...base, value: value.text, detail: detail.text, valueArt: value.art, detailArt: detail.art };
 }

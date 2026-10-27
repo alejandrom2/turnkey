@@ -48,12 +48,15 @@ export function messageTable(prefix: string): Record<string, string> {
 	return table;
 }
 
-/** A running turn's elapsed time: `m:ss`, or `h` + `mm` past an hour. */
+/** One decimal under ten (`1.5`, `2`), whole numbers above. */
+const short = (value: number): string => (value < 10 ? String(Math.round(value * 10) / 10) : String(Math.round(value)));
+
+/** A running turn's elapsed time, coarse like T3 Code's sidebar: `4m`, `1.5h` (under two days), `2d`. */
 export const elapsed = (since: number | undefined, now: number): string => {
 	if (since === undefined) return "";
-	const seconds = Math.max(0, Math.floor((now - since) / 1000));
-	const minutes = Math.floor(seconds / 60);
-	return minutes >= 60
-		? t("time.hours", { hours: Math.floor(minutes / 60), minutes: String(minutes % 60).padStart(2, "0") })
-		: t("time.minutes", { minutes, seconds: String(seconds % 60).padStart(2, "0") });
+	const minutes = Math.floor(Math.max(0, now - since) / 60_000);
+	if (minutes < 60) return t("time.minutes", { minutes });
+	const hours = Math.floor(minutes / 6) / 10;
+	if (hours < 48) return t("time.hours", { hours: short(hours) });
+	return t("time.days", { days: short(Math.floor(hours / 2.4) / 10) });
 };
