@@ -776,3 +776,50 @@ describe("Machine usage and limits", () => {
 		await expect(h.machine.consumeResetCredit({ instanceId: "codex" })).rejects.toMatchObject({ requiredPermission: "providers:manage" });
 	});
 });
+
+describe("Machine live streams", () => {
+	it("holds a stream only while connected, opens it again on the next connection, and stops it on release", async () => {
+		const h = setup();
+		const values: unknown[] = [];
+		const opened = vi.fn();
+		const release = h.machine.live("subscribeDeviceState", {}, (value) => values.push(value), opened);
+		expect(opened).not.toHaveBeenCalled();
+
+		const first = await connect(h);
+		const stream = first.request("subscribeDeviceState");
+		expect(opened).toHaveBeenCalledTimes(1);
+		first.receive({ _tag: "Chunk", requestId: stream.id, values: [{ revision: 1 }] });
+		expect(values).toEqual([{ revision: 1 }]);
+
+		h.machine.stop();
+		const second = await connect(h);
+		expect(second).not.toBe(first);
+		expect(second.request("subscribeDeviceState").payload).toEqual({});
+		expect(opened).toHaveBeenCalledTimes(2);
+
+		release();
+		expect(second.sent.some((frame) => frame._tag === "Interrupt" && frame.requestId === second.request("subscribeDeviceState").id)).toBe(true);
+	});
+
+	it("finds the thread's newest HTML render, reading withheld output by id", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const found = h.machine.htmlRender(row(h.machine));
+		await flush();
+		const snapshot = socket.request("orchestration.subscribeThread");
+		socket.receive({
+			_tag: "Chunk",
+			requestId: snapshot.id,
+			values: [{ kind: "snapshot", projection: { turnItems: [{ id: "i-1", type: "dynamic_tool", status: "completed", toolName: "mcp__t3-code__html_render", outputOmitted: true }] } }],
+		});
+		await flush();
+		expect(socket.request("orchestration.getTurnItem").payload).toEqual({ threadId: THREAD.id, itemId: "i-1" });
+		socket.reply("orchestration.getTurnItem", { item: { id: "i-1", type: "dynamic_tool", status: "completed", toolName: "mcp__t3-code__html_render", output: { structuredContent: { htmlRender: { attachmentId: "att-1", title: "Chart", height: 300 } } } } });
+		expect(await found).toEqual({ itemId: "i-1", attachmentId: "att-1", title: "Chart" });
+
+		const url = h.machine.assetUrl({ _tag: "attachment", attachmentId: "att-1" });
+		await flush();
+		socket.reply("assets.createUrl", { relativeUrl: "/api/assets/abc.def/Chart.html", expiresAt: 0 });
+		expect(await url).toBe("http://studio:3773/api/assets/abc.def/Chart.html");
+	});
+});
