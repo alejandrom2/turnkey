@@ -97,10 +97,11 @@ class PrStore {
 
 const store = new PrStore();
 
-/** The selected thread's pull request: its open one, else its first. */
+/** The selected thread's pull request: the open one for its branch (not another layer of a stack), else any open one, else its first. */
 export function threadPr(machine?: string): { thread: DeckThread; pr: ThreadPullRequest; ref: PullRequestRef | undefined } | undefined {
 	const thread = selectedThread(machine);
-	const pr = thread?.pullRequests.find((link) => link.state === "open") ?? thread?.pullRequests[0];
+	const open = thread?.pullRequests.filter((link) => link.state === "open") ?? [];
+	const pr = open.find((link) => link.headBranch !== undefined && link.headBranch === thread?.branch) ?? open[0] ?? thread?.pullRequests[0];
 	if (thread === undefined || pr === undefined) return undefined;
 	return { thread, pr, ref: threadPullRequestRef(thread.projectId, pr) };
 }
@@ -148,12 +149,12 @@ export function pullRequestKeyFace(thread: DeckThread, pr: ThreadPullRequest): s
 	});
 }
 
-const linksPr = (thread: DeckThread, ref: PullRequestRef): boolean =>
-	thread.projectId === ref.projectId && thread.pullRequests.some((link) => link.number === ref.number && link.repository === ref.repository);
+const linksPr = (thread: DeckThread, machine: Machine, ref: PullRequestRef): boolean =>
+	thread.machine === machine && thread.projectId === ref.projectId && thread.pullRequests.some((link) => link.number === ref.number && link.repository === ref.repository);
 
 /** The listed thread a pull request's work goes to: `prefer` when it links it (T3 Code's own panel thread), else a linked, unarchived one. */
 async function linkedThread(machine: Machine, ref: PullRequestRef, prefer: DeckThread | undefined): Promise<DeckThread | undefined> {
-	if (prefer !== undefined && linksPr(prefer, ref)) return prefer;
+	if (prefer !== undefined && linksPr(prefer, machine, ref)) return prefer;
 	const linked = await prRequests.linkedThreads(machine, ref).catch(() => ({ threads: [] }));
 	for (const candidate of linked.threads) {
 		if (candidate.archivedAt !== null) continue;
@@ -198,7 +199,7 @@ export async function explainPr(machine: Machine, ref: PullRequestRef, prefer?: 
 	if (!machine.canOperate) throw new Error("This pairing is read-only.");
 	const detail = await prRequests.detail(machine, ref);
 	const message = handoffMessage(buildExplainPullRequestHandoff(detail));
-	if (prefer !== undefined && linksPr(prefer, ref)) return sendTo(prefer, message);
+	if (prefer !== undefined && linksPr(prefer, machine, ref)) return sendTo(prefer, message);
 	const { threadId } = await machine.launch({ projectId: detail.projectId }, message.text, { context: message.context });
 	if (machine.environmentId !== undefined) selectThread({ key: `${machine.environmentId}/${threadId}`, machine });
 	return t("result.started");
@@ -251,6 +252,8 @@ abstract class PrHandoffKey extends DeckAction<PrKeySettings> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const check = prCheck(this.machineOf(ev.action), this.operates);
 		if (!check.ok) return void (await this.flash(ev.action, false, check.reason));
+		const detail = this.detail(check.thread, check.pr, check.ref);
+		if (!detail.available) return void (await this.flash(ev.action, false, detail.text ?? t("strip.notNow")));
 		const confirm = this.settingsOf(ev.action).confirm;
 		const hold = confirm === "hold" || (confirm !== "tap" && this.holdByDefault);
 		if (hold && held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("repo.holdTo")));
@@ -378,7 +381,9 @@ export class ReviewGuideKey extends PrHandoffKey {
 
 	protected async act(thread: DeckThread, ref: PullRequestRef): Promise<string> {
 		const entry = this.#entry(thread, ref);
-		const state = entry.result && guideState(entry.result);
+		// New commits make a written guide stale, so the press decides on a fresh read.
+		entry.result = await prRequests.reviewGuide(thread.machine, ref);
+		const state = guideState(entry.result);
 		if (state === "ready") {
 			await openThread(thread);
 			return t("result.opened");
