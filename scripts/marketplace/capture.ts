@@ -99,7 +99,7 @@ try {
 		});
 		const frames = Math.round(length * FPS);
 		for (let frame = 0; frame < frames; frame++) {
-			await evaluate(`render(${frame / FPS}); window.ready()`);
+			await evaluate(`render(${frame / FPS})`);
 			if (!ffmpeg.stdin.write(await shot("jpeg"))) await new Promise((resolve) => ffmpeg.stdin.once("drain", resolve));
 		}
 		ffmpeg.stdin.end();
