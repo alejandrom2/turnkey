@@ -35,18 +35,24 @@ const entry = (seed: string, placed: Placed) => ({
 /** Without a number a Thread key fills by its position; the second page continues the board from slot 5. */
 const slot = (n?: number): Placed => ({ action: "slot", name: "Thread", ...(n === undefined ? {} : { settings: { slot: String(n) } }) });
 
+const power = (control: string): Placed => ({ action: "dial.model", name: "Power Dial", settings: { dialControls: control } });
+
 const DIALS: Placed[] = [
 	{ action: "dial.threads", name: "Threads Dial", settings: { filter: "attention" } },
-	{ action: "dial.model", name: "Power Dial", settings: { dialControls: "model" } },
+	power("model"),
 	{ action: "dial.prompts", name: "Prompts Dial", settings: { prompts: ["Review your changes for bugs", "Summarize what you changed"].join("\n") } },
 	{ action: "dial.answer", name: "Answer Dial" },
 ];
+
+const quick = (template: string): Placed => ({ action: "quick", name: "Quick Prompt", settings: { template } });
+const organize = (which: string): Placed => ({ action: "organize", name: "Organize", settings: { organize: which } });
 
 /** A page's dials replace the shared ones when set. */
 type Page = { name: string; keys: Placed[][]; dials?: Placed[] };
 
 type Profile = { file: string; name: string; deviceModel: string; deviceType: number; columns: number; pages: Page[]; dials: boolean };
 
+/** Every action appears at least once, so the profile doubles as a tour of what the deck can do. */
 const PROFILES: Profile[] = [
 	{
 		file: "t3-deck-plus",
@@ -62,9 +68,9 @@ const PROFILES: Profile[] = [
 					[slot(), slot(), slot(), slot()],
 					[
 						{ action: "activity", name: "Activity" },
-						{ action: "stop", name: "Stop" },
+						{ action: "new", name: "New Thread" },
 						{ action: "send", name: "Send Prompt", settings: { prompt: "Continue", title: "Continue" } },
-						{ action: "approve", name: "Approve" },
+						{ action: "stop", name: "Stop" },
 					],
 				],
 			},
@@ -74,6 +80,7 @@ const PROFILES: Profile[] = [
 					[slot(5), slot(6), slot(7), slot(8)],
 					[slot(9), slot(10), slot(11), slot(12)],
 				],
+				dials: [{ action: "dial.threads", name: "Threads Dial", settings: { filter: "all" } }, { action: "dial.threads", name: "Threads Dial", settings: { filter: "active" } }, { action: "dial.threads", name: "Threads Dial", settings: { filter: "unread" } }, DIALS[3]!],
 			},
 			{
 				name: "CONTROLS",
@@ -87,10 +94,19 @@ const PROFILES: Profile[] = [
 					[
 						{ action: "plan", name: "Plan" },
 						{ action: "steer", name: "Steer", settings: { title: "Keep it small", prompt: "Keep the change small and focused." } },
+						{ action: "approve", name: "Approve" },
 						{ action: "deny", name: "Deny" },
-						{ action: "health", name: "Health" },
 					],
 				],
+				dials: [power("model"), power("effort"), power("permissions"), DIALS[3]!],
+			},
+			{
+				name: "PROMPTS",
+				keys: [
+					[quick("continue"), quick("test"), quick("fix"), quick("explain")],
+					[quick("commit"), organize("settle"), organize("pin"), organize("snooze")],
+				],
+				dials: [DIALS[0]!, DIALS[2]!, power("model"), DIALS[3]!],
 			},
 			{
 				name: "GIT",
@@ -102,13 +118,31 @@ const PROFILES: Profile[] = [
 						{ action: "git.pull", name: "Pull" },
 					],
 					[
-						{ action: "pr.fix", name: "Fix Findings" },
-						{ action: "pr.explain", name: "Explain PR" },
+						{ action: "branch", name: "Branch" },
 						{ action: "editor", name: "Open in Editor" },
-						{ action: "pr", name: "Pull Request" },
+						organize("archive"),
+						{ action: "health", name: "Health" },
 					],
 				],
-				dials: [DIALS[0]!, { action: "dial.pr", name: "PR Dial" }, DIALS[1]!, DIALS[3]!],
+				dials: [DIALS[0]!, { action: "dial.pr", name: "PR Dial" }, power("model"), DIALS[3]!],
+			},
+			{
+				name: "PULL REQUESTS",
+				keys: [
+					[
+						{ action: "pr", name: "Pull Request" },
+						{ action: "pr.fix", name: "Fix Findings" },
+						{ action: "pr.explain", name: "Explain PR" },
+						{ action: "pr.ask", name: "Ask about PR" },
+					],
+					[
+						{ action: "pr.guide", name: "Review Guide" },
+						{ action: "git.pr", name: "Create PR" },
+						{ action: "editor", name: "Open in Editor" },
+						{ action: "stop", name: "Stop" },
+					],
+				],
+				dials: [{ action: "dial.pr", name: "PR Dial" }, DIALS[0]!, DIALS[2]!, DIALS[3]!],
 			},
 		],
 	},
