@@ -3,23 +3,21 @@
  * a stepped track with the current value filled and a previewed one as a hollow thumb, and what the ends mean (or
  * what pressing does) along the bottom.
  */
-import { COLORS, escapeXml, FONT_FAMILY, type MarkPainter, spectrumStops, svgDataUrl, svgText, textWidth } from "./render.js";
+import { COLORS, escapeXml, FONT_FAMILY, type MarkPainter, type Paint, paintFill, svgDataUrl, svgText, textWidth } from "./render.js";
 
 export type SliderInput = {
 	label: string;
 	labelColor?: string;
-	/** After the label, dimmed unless colored: the model's effort, in the spectrum while Ultrathink is armed. */
-	suffix?: { text: string; color?: string; spectrum?: boolean };
+	/** After the label, dimmed unless painted: the model's effort, in the spectrum while Ultrathink is armed. */
+	suffix?: { text: string; paint?: Paint };
 	/** How many stops the track has, at least two. */
 	stops: number;
 	/** The thread's value, filled up to; -1 when it isn't on the track. */
 	current: number;
 	/** The value the dial points at before a press applies it. */
 	preview?: number;
-	/** Fill with T3 Code's Ultrathink spectrum instead of the accent. */
-	spectrum?: boolean;
-	/** The fill's color instead of the accent. */
-	fill?: string;
+	/** The fill instead of the accent: a model's color, the top effort's paint or T3 Code's Ultrathink spectrum. */
+	fill?: Paint;
 	/** What each end of the track means. */
 	ends: [string, string];
 	/** Replaces the ends with a mark and a word at the left: the model slider's Speed. */
@@ -82,8 +80,7 @@ export function sliderArt(input: SliderInput): string {
 	const labelColor = input.labelColor ?? COLORS.text;
 	const overflow = textWidth(sliderLabelText(input), 16) - labelRoom;
 	const suffix = input.suffix;
-	const suffixFill = suffix?.spectrum ? `fill="url(#slider-suffix)"` : suffix?.color ? `fill="${suffix.color}"` : `fill="#FFFFFF" fill-opacity=".5"`;
-	if (suffix?.spectrum) parts.push(`<defs><linearGradient id="slider-suffix" gradientUnits="userSpaceOnUse" x1="${start}" y1="0" x2="${start + labelRoom}" y2="0">${spectrumStops()}</linearGradient></defs>`);
+	const suffixFill = suffix?.paint === undefined ? `fill="#FFFFFF" fill-opacity=".5"` : `fill="${paintFill(suffix.paint, "slider-suffix", start, start + labelRoom, parts)}"`;
 	const label = (x: number, extra = "") => {
 		if (suffix === undefined) return `<g${extra}>${svgText(input.label, x, 26, 16, 650, labelColor)}</g>`;
 		// One text run, as Elgato's slider draws it, so the space between name and effort comes from the font itself.
@@ -103,8 +100,7 @@ export function sliderArt(input: SliderInput): string {
 	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
 	if (current !== undefined) {
-		const fill = input.spectrum ? "url(#slider-spectrum)" : (input.fill ?? COLORS.accent);
-		if (input.spectrum) track.push(`<defs><linearGradient id="slider-spectrum" gradientUnits="userSpaceOnUse" x1="${SLIDER.x}" y1="0" x2="${SLIDER.x + SLIDER.width}" y2="0">${spectrumStops()}</linearGradient></defs>`);
+		const fill = paintFill(input.fill ?? COLORS.accent, "slider-fill", SLIDER.x, SLIDER.x + SLIDER.width, track);
 		track.push(`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${+(stopX(current, stops) - SLIDER.x + SLIDER.height / 2).toFixed(2)}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="${fill}"/>`);
 	}
 	for (let index = 0; index < stops; index++) track.push(`<circle cx="${stopX(index, stops)}" cy="${cy}" r="2" fill="#FFFFFF" fill-opacity="${current !== undefined && index <= current ? ".5" : ".28"}"/>`);
