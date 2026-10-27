@@ -5,6 +5,7 @@ import { t } from "../core/i18n.js";
 import { Marquee } from "../core/marquee.js";
 import type { CatalogModel } from "../core/models.js";
 import { motionMode } from "../core/motion.js";
+import { FEATURES } from "../core/features.js";
 import { Pet, petArt } from "../core/pet.js";
 import { powerArt } from "../core/power.js";
 import { dialGroups, type DialPlace, dialRuns, type Run } from "../core/flow.js";
@@ -52,9 +53,11 @@ let groups: string[][] = [];
 
 /** Walks the longest run of adjacent dials once the deck sits idle; only our own actions' input sends it away. */
 const pet = new Pet({ runs: () => groups, changed: (ids) => ids.forEach(repaint) });
-deck.onRepaint(() => pet.configure(deck.appearance.idlePet === "on", motionMode(deck.appearance.motion)));
+deck.onRepaint(() => pet.configure(FEATURES.idlePet && deck.appearance.idlePet === "on", motionMode(deck.appearance.motion)));
 const leave = () => pet.input();
-deck.previewPet = () => pet.preview();
+deck.previewPet = () => {
+	if (FEATURES.idlePet) pet.preview();
+};
 streamDeck.actions.onKeyDown(leave);
 streamDeck.actions.onDialDown(leave);
 streamDeck.actions.onDialRotate(leave);
