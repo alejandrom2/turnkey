@@ -210,7 +210,9 @@ abstract class GitKey extends DeckAction<GitSettings> {
 			this.#busy.delete(action.id);
 		}
 		void statuses.refresh(target).catch(() => undefined);
-		await this.flash(action, ok, label);
+		// A success shows on the live face (changes, ahead and behind); only a failure says why.
+		if (ok) await this.paint(action);
+		else await this.flash(action, false, label);
 	}
 
 	/** The inspector's checklist: a paired machine that may act, a thread, source control access and a checkout ready for it. */

@@ -149,23 +149,14 @@
 		"result": {
 			"done": "Done",
 			"opened": "Opened",
-			"selected": "Selected",
-			"stopped": "Stopped",
 			"sent": "Sent",
-			"steered": "Steered",
-			"restarted": "Restarted",
 			"started": "Started",
-			"denied": "Denied",
-			"allowed": "Allowed",
-			"answered": "Answered",
-			"reconnecting": "Reconnecting",
 			"loading": "Loading…",
 			"holdToAllow": "Hold to allow",
 			"holdToAnswer": "Hold to answer",
 			"holdToSend": "Hold to send",
 			"holdToSettle": "Hold to settle",
 			"holdToSnooze": "Hold to snooze",
-			"resumed": "Resumed",
 			"notWebLink": "Not a web link"
 		},
 		"face": {

@@ -114,9 +114,8 @@ export class ThreadSlot extends DeckAction<SlotSettings> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const thread = this.#threadFor(ev.action);
 		if (!(await this.allowed(ev.action, availability("open", { thread, canOperate: true })))) return;
-		if (!long) return void (await this.run(ev.action, () => openThread(thread!), t("result.opened")));
+		if (!long) return void (await this.run(ev.action, () => openThread(thread!)));
 		selectThread(thread!);
-		await this.flash(ev.action, true, t("result.selected"));
 	}
 }
 
@@ -148,7 +147,7 @@ export class Activity extends DeckAction<ActivitySettings> {
 	override async onKeyUp(ev: KeyUpEvent<ActivitySettings>): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const target = this.#threadFor(ev.action);
-		if (await this.allowed(ev.action, availability("open", { thread: target, canOperate: true }))) await this.run(ev.action, () => openThread(target!), t("result.opened"));
+		if (await this.allowed(ev.action, availability("open", { thread: target, canOperate: true }))) await this.run(ev.action, () => openThread(target!));
 	}
 }
 
@@ -196,7 +195,7 @@ export class Stop extends DeckAction {
 		const resumable = this.#resumable(ev.action);
 		if (resumable !== undefined) {
 			this.#endResume(ev.action.id);
-			return void (await this.run(ev.action, () => sendToThread(resumable, QUICK_PROMPTS.continue.text, "auto"), t("result.resumed")));
+			return void (await this.run(ev.action, () => sendToThread(resumable, QUICK_PROMPTS.continue.text, "auto")));
 		}
 		const { thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
@@ -215,7 +214,6 @@ export class Stop extends DeckAction {
 					}, RESUME_MS),
 				});
 			},
-			t("result.stopped"),
 		);
 	}
 
@@ -280,7 +278,7 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 		});
 		if (mode === undefined) return;
 		const sent = mode as SendMode;
-		await this.run(ev.action, () => sendToThread(thread!, text, sent), t(sent === "steer" ? "result.steered" : sent === "restart" ? "result.restarted" : "result.sent"));
+		await this.run(ev.action, () => sendToThread(thread!, text, sent));
 	}
 }
 
@@ -394,7 +392,6 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 					await openExternal(threadDeepLink({ environmentId: target.environmentId, threadId: created.threadId }, deck.scheme));
 				}
 			},
-			t(prompt ? "result.started" : "result.opened"),
 		);
 	}
 }
@@ -476,7 +473,7 @@ export class Organize extends DeckAction<OrganizeSettings> {
 			}),
 		});
 		if (go === undefined) return;
-		await this.apply(ev.action, () => organize(thread!, which, minutes));
+		await this.run(ev.action, () => organize(thread!, which, minutes));
 	}
 }
 
@@ -505,7 +502,7 @@ abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const { check, apply } = this.state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
-		if (apply !== undefined) await this.apply(ev.action, apply);
+		if (apply !== undefined) await this.run(ev.action, apply);
 	}
 }
 
@@ -712,9 +709,9 @@ export class Approve extends DeckAction<ApproveSettings> {
 		const { thread, check, request, press, confirm } = this.#state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		if (request === undefined) return void (await this.flash(ev.action, false, t("result.loading")));
-		if (press === undefined || press.kind === "open" || request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!), t("result.opened")));
+		if (press === undefined || press.kind === "open" || request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!)));
 		if (!confirmed(press, confirm, held)) return void (await this.flash(ev.action, false, t("result.holdToAllow")));
-		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, press.decision), press.label);
+		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, press.decision));
 	}
 }
 
@@ -741,8 +738,8 @@ export class Deny extends DeckAction {
 		const { thread, check, request } = this.#state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		if (request === undefined) return void (await this.flash(ev.action, false, t("result.loading")));
-		if (request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!), t("result.opened")));
-		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, "decline"), t("result.denied"));
+		if (request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!)));
+		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, "decline"));
 	}
 }
 
@@ -782,7 +779,6 @@ export class Health extends DeckAction {
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		await deck.retry(this.machineOf(ev.action));
-		await this.flash(ev.action, true, t("result.reconnecting"));
 	}
 }
 
@@ -809,7 +805,7 @@ export class PullRequest extends DeckAction {
 		const { pr, check } = this.#state(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		if (!URL.canParse(pr!.url) || new URL(pr!.url).protocol !== "https:") return void (await this.flash(ev.action, false, t("result.notWebLink")));
-		await this.run(ev.action, () => streamDeck.system.openUrl(pr!.url), t("result.opened"));
+		await this.run(ev.action, () => streamDeck.system.openUrl(pr!.url));
 	}
 }
 
@@ -830,6 +826,6 @@ export class Branch extends DeckAction {
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const thread = selectedThread(this.machineOf(ev.action));
-		if (await this.allowed(ev.action, availability("branch", { thread, canOperate: true }))) await this.run(ev.action, () => openThread(thread!), t("result.opened"));
+		if (await this.allowed(ev.action, availability("branch", { thread, canOperate: true }))) await this.run(ev.action, () => openThread(thread!));
 	}
 }
