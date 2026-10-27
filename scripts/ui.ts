@@ -138,6 +138,25 @@ const confirmField = `
 				</sdpi-select>
 			</sdpi-item>`;
 
+/** "What this action needs": each condition met (✓), not met (✗) or being checked (⋯), with its fixes. */
+const needsStyle = `
+		<style>
+			details.needs > summary .unmet { color: #f87171; text-transform: none; letter-spacing: 0; }
+			.needs ul { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 6px; }
+			.needs li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 6px; font-size: 9pt; line-height: 1.35; color: #d8d8d8; }
+			.needs li .mark { font-weight: 700; text-align: center; }
+			.needs li[data-state="met"] .mark { color: #34d399; }
+			.needs li[data-state="unmet"] .mark { color: #f87171; }
+			.needs li[data-state="checking"] .mark { color: #a8a8a8; }
+			.needs li .fix { grid-column: 2; color: #a8a8a8; }
+		</style>`;
+
+const needs = `
+			<details class="group needs" id="needs" hidden>
+				<summary><span${text("inspector.card.needsTitle")}</span><span class="unmet" id="needs-unmet"></span></summary>
+				<ul id="needs-list"></ul>
+			</details>`;
+
 const card = `
 			<section class="t3" id="t3" aria-live="polite">
 				<p class="eyebrow">T3 Code</p>
@@ -329,8 +348,27 @@ const script = (extra = "") => `
 				return actions;
 			}
 
+			const MARKS = { met: "✓", unmet: "✗", checking: "⋯" };
+			const STATES = { met: "inspector.card.needsMet", unmet: "inspector.card.needsUnmet", checking: "inspector.card.needsChecking" };
+			function renderNeeds(checklist) {
+				const items = checklist?.items ?? [];
+				$("needs").hidden = items.length === 0;
+				$("needs-unmet").textContent = checklist?.unmet > 0 ? s("inspector.card.needsNotMet", { count: checklist.unmet }) : "";
+				$("needs-list").replaceChildren(...items.map((item) => {
+					const row = el("li");
+					row.dataset.state = item.state;
+					const mark = el("span", "mark", MARKS[item.state] ?? "");
+					mark.setAttribute("aria-hidden", "true");
+					row.append(mark, el("span", "label", item.label));
+					for (const fix of item.fixes ?? []) row.append(el("span", "fix", fix));
+					row.setAttribute("aria-label", [item.label + ": " + s(STATES[item.state] ?? ""), ...(item.fixes ?? [])].join(". "));
+					return row;
+				}));
+			}
+
 			let lastStatus;
 			function renderStatus(payload) {
+				renderNeeds(payload.requirements);
 				const environments = payload.environments ?? [];
 				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
 				const ready = environments.filter((env) => env.state === "ready");
@@ -423,10 +461,10 @@ const page = (title: string, fields = "", extra = "") => `<!doctype html>
 	<head>
 		<meta charset="utf-8" />
 		<title>${title}</title>
-		<script src="sdpi-components.js"></script>${style}
+		<script src="sdpi-components.js"></script>${style}${needsStyle}
 	</head>
 	<body>
-		<main>${fields}${card}
+		<main>${fields}${needs}${card}
 		</main>${script(extra)}
 	</body>
 </html>
@@ -447,6 +485,16 @@ const authorityOptions = `
 					<option value="session"${text("inspector.authority.session")}</option>
 					<option value="always"${text("inspector.authority.always")}</option>
 				</sdpi-select>`;
+
+/** Hold or tap for git keys; by default only actions that push need a hold. */
+const gitConfirm = `
+			<sdpi-item ${attr("label", "inspector.git.confirm")}>
+				<sdpi-select setting="confirm" default="">
+					<option value=""${text("inspector.git.confirmDefault")}</option>
+					<option value="tap"${text("inspector.git.tap")}</option>
+					<option value="hold"${text("inspector.git.hold")}</option>
+				</sdpi-select>
+			</sdpi-item>`;
 
 const pages: Record<string, string> = {
 	"environments.html": page("T3 Deck"),
@@ -657,6 +705,65 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<p class="hint"${text("inspector.power.hint")}</p>${confirmField}${dialAppearance}`,
 		dialAppearanceScript,
+	),
+	"git-commit.html": page(
+		"Commit",
+		`
+			<sdpi-item ${attr("label", "inspector.git.action")}>
+				<sdpi-select setting="gitAction" default="commit">
+					<option value="commit"${text("inspector.git.commit")}</option>
+					<option value="commit_push"${text("inspector.git.commitPush")}</option>
+					<option value="commit_push_pr"${text("inspector.git.commitPushPr")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.git.message")}>
+				<sdpi-textfield setting="commitMessage" ${attr("placeholder", "inspector.git.messagePlaceholder")}></sdpi-textfield>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title"></sdpi-textfield>
+			</sdpi-item>${gitConfirm}
+			<p class="hint"${text("inspector.git.hint")}</p>`,
+	),
+	"git.html": page(
+		"Git",
+		`${gitConfirm}
+			<p class="hint"${text("inspector.git.hint")}</p>`,
+	),
+	"git-pull.html": page(
+		"Pull",
+		`${gitConfirm}
+			<p class="hint"${text("inspector.git.pullHint")}</p>`,
+	),
+	"pr-fix.html": page(
+		"Fix Findings",
+		`
+			<sdpi-item ${attr("label", "inspector.pr.confirm")}>
+				<sdpi-select setting="confirm" default="hold">
+					<option value="hold"${text("inspector.pr.hold")}</option>
+					<option value="tap"${text("inspector.pr.tap")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint"${text("inspector.pr.fixHint")}</p>`,
+	),
+	"pr-dial.html": page(
+		"PR Dial",
+		`
+			<sdpi-item ${attr("label", "inspector.pr.confirm")}>
+				<sdpi-select setting="confirm" default="hold">
+					<option value="hold"${text("inspector.pr.hold")}</option>
+					<option value="tap"${text("inspector.pr.tap")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint"${text("inspector.pr.dialHint")}</p>${dialAppearance}`,
+		dialAppearanceScript,
+	),
+	"editor.html": page(
+		"Open in Editor",
+		`
+			<sdpi-item ${attr("label", "inspector.editor.label")}>
+				<sdpi-select setting="editor" datasource="getEditors" hot-reload ${attr("loading", "inspector.editor.loading")} default=""></sdpi-select>
+			</sdpi-item>
+			<p class="hint"${text("inspector.editor.hint")}</p>`,
 	),
 };
 

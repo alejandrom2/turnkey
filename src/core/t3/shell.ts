@@ -17,10 +17,12 @@ export type DeckState = "approval" | "question" | "running" | "queued" | "done" 
 export type PendingRequestSummary = { id: string; kind: string; createdAt: string; blocking?: boolean };
 
 type PullRequestLink = {
+	host?: string;
+	repository?: string;
 	number: number;
 	url: string;
 	source?: string;
-	snapshot?: { state?: "open" | "closed" | "merged"; additions?: number; deletions?: number } | null;
+	snapshot?: { state?: "open" | "closed" | "merged"; title?: string; headBranch?: string; baseBranch?: string; isDraft?: boolean; additions?: number; deletions?: number } | null;
 };
 
 /** The `OrchestrationV2ThreadShell` fields the deck reads. Absent and null mean the same unless noted. */
@@ -48,6 +50,7 @@ export type ThreadShell = {
 	runtimeMode: RuntimeMode;
 	interactionMode: InteractionMode;
 	branch?: string | null;
+	worktreePath?: string | null;
 	pullRequests?: PullRequestLink[];
 	updatedAt: string;
 	settledOverride?: "settled" | "active" | null;
@@ -208,6 +211,21 @@ export function nextSnoozeWake(state: ShellState, now: number): number | undefin
 	return next;
 }
 
+/** A pull request linked to a thread: enough to name it to `pullRequests.*` (with the thread's project) and to draw it. */
+export type ThreadPullRequest = {
+	url: string;
+	number: number;
+	host?: string;
+	repository?: string;
+	state: "open" | "closed" | "merged" | undefined;
+	title?: string;
+	headBranch?: string;
+	baseBranch?: string;
+	isDraft?: boolean;
+	additions?: number;
+	deletions?: number;
+};
+
 /** One deck row, before the board adds which machine it came from. */
 export type ShellRow = {
 	threadId: string;
@@ -226,7 +244,9 @@ export type ShellRow = {
 	runtimeMode: RuntimeMode;
 	interactionMode: InteractionMode;
 	branch: string | undefined;
-	pullRequests: { url: string; number: number; state: "open" | "closed" | "merged" | undefined; additions?: number; deletions?: number }[];
+	/** The thread's own checkout, when it has one; git actions run here, else in the project's root. */
+	worktreePath?: string;
+	pullRequests: ThreadPullRequest[];
 	/** What blocks this thread. `threadId` owns the request: a delegated child's when it was lifted. */
 	pendingRequest: { id: string; kind: string; createdAt: string; threadId: string } | undefined;
 	parentThreadId: string | null;
@@ -300,12 +320,19 @@ export function shellRows(state: ShellState, capabilities: ThreadCapabilities, n
 			runtimeMode: thread.runtimeMode,
 			interactionMode: thread.interactionMode,
 			branch: thread.branch ?? undefined,
+			worktreePath: thread.worktreePath ?? undefined,
 			pullRequests: (thread.pullRequests ?? [])
 				.filter((link) => link.source !== "stack-dismissed")
 				.map((link) => ({
 					url: link.url,
 					number: link.number,
+					host: link.host,
+					repository: link.repository,
 					state: link.snapshot?.state,
+					title: link.snapshot?.title,
+					headBranch: link.snapshot?.headBranch,
+					baseBranch: link.snapshot?.baseBranch,
+					isDraft: link.snapshot?.isDraft,
 					additions: link.snapshot?.additions,
 					deletions: link.snapshot?.deletions,
 				})),
