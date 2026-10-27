@@ -360,6 +360,31 @@ describe("Machine commands", () => {
 		});
 	});
 
+	it("sends and launches a handoff with its composer context, into an existing worktree under a chosen id", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const context = { version: 1 as const, records: [{ version: 1, kind: "review-comment", contextId: "review-comment_x" }] };
+		expect(await dispatched(socket, () => h.machine.send(row(h.machine), "Fix it [a.ts L1](t3-context://v1/review-comment/review-comment_x)", "queue", context))).toMatchObject({
+			type: "message.dispatch",
+			context,
+			dispatchMode: { type: "queue_after_active" },
+		});
+		const launched = h.machine.launch({ projectId: "p-1" }, "Fix the findings", {
+			threadId: "thr_new",
+			context,
+			workspaceStrategy: { type: "existing_worktree", worktreePath: "/w/app-pr-42", branch: "feat/page" },
+		});
+		await flush();
+		const request = socket.request("orchestration.launchThread");
+		socket.reply("orchestration.launchThread", { threadId: "thr_new", projection: {}, resumed: false });
+		expect(await launched).toEqual({ threadId: "thr_new" });
+		expect(request.payload).toMatchObject({
+			threadId: "thr_new",
+			workspaceStrategy: { type: "existing_worktree", worktreePath: "/w/app-pr-42", branch: "feat/page" },
+			initialMessage: { text: "Fix the findings", context, attachments: [] },
+		});
+	});
+
 	it("launches into the scratch project after ensuring it", async () => {
 		const h = setup();
 		const socket = await connect(h);

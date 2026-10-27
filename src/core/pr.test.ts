@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import fixtures from "./fixtures/pr-handoffs.json";
-import { buildExplainPullRequestHandoff, buildFixFindingsHandoff, changeRequestLabel, classifyChecks, findings, handoffMessage, threadPullRequestRef } from "./pr.js";
+import {
+	buildExplainPullRequestHandoff,
+	buildFixFindingsHandoff,
+	changeRequestLabel,
+	classifyChecks,
+	findings,
+	guideState,
+	handoffMessage,
+	type PrMachine,
+	prRequests,
+	threadPullRequestRef,
+} from "./pr.js";
 
 type FixInput = Parameters<typeof buildFixFindingsHandoff>[0];
 type ExplainInput = Parameters<typeof buildExplainPullRequestHandoff>[0];
@@ -41,5 +52,36 @@ describe("pull request helpers", () => {
 	it("name a thread's pull request only when the server sent its repository", () => {
 		expect(threadPullRequestRef("p-1", { host: "github.com", repository: "a/b", number: 3 })).toEqual({ projectId: "p-1", host: "github.com", repository: "a/b", number: 3 });
 		expect(threadPullRequestRef("p-1", { number: 3 })).toBeUndefined();
+	});
+});
+
+describe("pull request requests", () => {
+	const ref = { projectId: "p-1", host: "github.com", repository: "pingdotgg/t3code", number: 42 };
+
+	it("name the pull request by reference and ask for each call's scope", async () => {
+		const calls: unknown[][] = [];
+		const machine: PrMachine = { call: async (tag, payload, scope) => void calls.push([tag, payload, scope]) as never };
+		await prRequests.detail(machine, ref);
+		await prRequests.activity(machine, ref);
+		await prRequests.linkedThreads(machine, ref);
+		await prRequests.list(machine);
+		await prRequests.generateReviewGuide(machine, ref);
+		await prRequests.prepareWorktree(machine, { cwd: "/w/app", url: "https://github.com/pingdotgg/t3code/pull/42", threadId: "thr_new" });
+		expect(calls).toEqual([
+			["pullRequests.detail", ref, undefined],
+			["pullRequests.activity", ref, undefined],
+			["pullRequests.linkedThreads", ref, undefined],
+			["pullRequests.list", { state: "open", limit: 50 }, undefined],
+			["pullRequests.generateReviewGuide", ref, "orchestration:operate"],
+			["git.preparePullRequestThread", { cwd: "/w/app", reference: "https://github.com/pingdotgg/t3code/pull/42", mode: "worktree", threadId: "thr_new" }, "source-control:write"],
+		]);
+	});
+
+	it("tell a guide for the current head from a stale, running or failed one", () => {
+		const guide = { headSha: "abc" };
+		expect(guideState({ guide, run: null, currentHeadSha: "abc" })).toBe("ready");
+		expect(guideState({ guide, run: null, currentHeadSha: "def" })).toBe("none");
+		expect(guideState({ guide: null, run: { _tag: "Running", headSha: "def" }, currentHeadSha: "def" })).toBe("running");
+		expect(guideState({ guide: null, run: { _tag: "Failed", headSha: "def", detail: "x" }, currentHeadSha: "def" })).toBe("failed");
 	});
 });
