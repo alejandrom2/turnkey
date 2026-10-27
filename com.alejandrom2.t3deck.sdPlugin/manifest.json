@@ -172,6 +172,87 @@
 			"States": [{ "Image": "imgs/actions/branch/key", "ShowTitle": false }]
 		},
 		{
+			"Name": "Commit",
+			"UUID": "com.alejandrom2.t3deck.git.commit",
+			"Icon": "imgs/actions/git-commit/icon",
+			"Tooltip": "Commits the selected thread's changes, or also pushes them or opens a PR, with T3 Code's commit message unless you set one.",
+			"PropertyInspectorPath": "ui/git-commit.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-commit/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Push",
+			"UUID": "com.alejandrom2.t3deck.git.push",
+			"Icon": "imgs/actions/git-push/icon",
+			"Tooltip": "Pushes the selected thread's branch. Hold to push.",
+			"PropertyInspectorPath": "ui/git.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-push/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Create PR",
+			"UUID": "com.alejandrom2.t3deck.git.pr",
+			"Icon": "imgs/actions/git-pr/icon",
+			"Tooltip": "Pushes the selected thread's branch and opens a pull request for it. Hold to create.",
+			"PropertyInspectorPath": "ui/git.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-pr/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Pull",
+			"UUID": "com.alejandrom2.t3deck.git.pull",
+			"Icon": "imgs/actions/git-pull/icon",
+			"Tooltip": "Pulls the selected thread's branch when it is behind its upstream.",
+			"PropertyInspectorPath": "ui/git-pull.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-pull/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Fix Findings",
+			"UUID": "com.alejandrom2.t3deck.pr.fix",
+			"Icon": "imgs/actions/pr-fix/icon",
+			"Tooltip": "Sends T3 Code's Fix findings task for the selected thread's pull request: unresolved reviews and failing checks. Hold to send.",
+			"PropertyInspectorPath": "ui/pr-fix.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-fix/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Explain PR",
+			"UUID": "com.alejandrom2.t3deck.pr.explain",
+			"Icon": "imgs/actions/pr-explain/icon",
+			"Tooltip": "Asks the selected thread to walk through its pull request, as T3 Code's Explain does.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-explain/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Ask about PR",
+			"UUID": "com.alejandrom2.t3deck.pr.ask",
+			"Icon": "imgs/actions/pr-ask/icon",
+			"Tooltip": "Opens the thread that holds the pull request in T3 Code, to ask about it there.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-ask/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Review Guide",
+			"UUID": "com.alejandrom2.t3deck.pr.guide",
+			"Icon": "imgs/actions/pr-guide/icon",
+			"Tooltip": "Writes T3 Code's review guide for the selected thread's pull request, then opens the thread.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-guide/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Open in Editor",
+			"UUID": "com.alejandrom2.t3deck.editor",
+			"Icon": "imgs/actions/editor/icon",
+			"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on.",
+			"PropertyInspectorPath": "ui/editor.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/editor/key", "ShowTitle": false }]
+		},
+		{
 			"Name": "Health",
 			"UUID": "com.alejandrom2.t3deck.health",
 			"Icon": "imgs/actions/health/icon",
@@ -235,6 +316,20 @@
 				"TriggerDescription": { "Rotate": "Choose answer", "Push": "Answer (hold by default)", "Touch": "Open thread" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-answer/key" }]
+		},
+		{
+			"Name": "PR Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.pr",
+			"Icon": "imgs/actions/dial-pr/icon",
+			"Tooltip": "Rotate through open pull requests. Press runs Fix findings, tap opens it in the browser, touch and hold reads its findings.",
+			"PropertyInspectorPath": "ui/pr-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-pr/icon",
+				"TriggerDescription": { "Rotate": "Choose pull request", "Push": "Fix findings (hold)", "Touch": "Open in browser", "LongTouch": "Read findings" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-pr/key" }]
 		}
 	]
 }

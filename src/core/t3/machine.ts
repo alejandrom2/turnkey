@@ -1,6 +1,6 @@
 import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
-import { type Credential, OPERATE_SCOPE, PairingError, redeemPairingCode, socketUrl } from "./pairing.js";
+import { type Credential, OPERATE_SCOPE, PairingError, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
 	applyShellItem,
@@ -54,7 +54,15 @@ type ServerConfig = {
 	shellThreadFamilies?: boolean;
 	shellOlderSettled?: boolean;
 	scratchWorkspaceRoot?: string;
+	/** Editor ids this machine can launch (packages/contracts/src/editor.ts); newer ids may appear. */
+	availableEditors?: string[];
 };
+
+/** Composer context sent with a message (`OrchestrationMessageContext`): review comments a handoff attaches. */
+export type MessageContext = { version: 1; records: Record<string, unknown>[] };
+
+/** Where a launched thread works (`OrchestrationV2ThreadLaunchWorkspaceStrategy`). */
+export type WorkspaceStrategy = { type: "root"; branch?: string } | { type: "existing_worktree"; worktreePath: string; branch?: string };
 
 export type Decision = "accept" | "acceptForSession" | "acceptAlways" | "decline" | "cancel";
 export type Question = {
@@ -151,6 +159,56 @@ export class Machine {
 		return [...(this.#shell?.projects.values() ?? [])];
 	}
 
+	project(projectId: string): ProjectShell | undefined {
+		return this.#shell?.projects.get(projectId);
+	}
+
+	/** The scopes this machine's token was granted at pairing. */
+	get scopes(): readonly string[] {
+		return this.credential?.scopes ?? [];
+	}
+
+	/** Editors T3 Code found on this machine, in its order. */
+	get editors(): readonly string[] {
+		return this.#config?.availableEditors ?? [];
+	}
+
+	/**
+	 * One request under `scope`. Without the scope it fails here the way T3 Code would (`requiredPermission`), so
+	 * callers handle both alike; T3 Code checks every request anyway.
+	 */
+	call<T>(tag: string, payload: unknown, scope: string = READ_SCOPE): Promise<T> {
+		try {
+			return this.#rpcForScope(scope).request<T>(tag, payload);
+		} catch (error) {
+			return Promise.reject(error);
+		}
+	}
+
+	/**
+	 * A streaming request under `scope`, until it ends. It is never re-sent after a reconnect: a dropped socket
+	 * fails it, so a commit or push can't run twice.
+	 */
+	stream(tag: string, payload: unknown, onValue: (value: unknown) => void, scope: string = READ_SCOPE): Promise<void> {
+		let rpc: RpcSocket;
+		try {
+			rpc = this.#rpcForScope(scope);
+		} catch (error) {
+			return Promise.reject(error);
+		}
+		return new Promise((resolve, reject) => {
+			rpc.subscribe(tag, () => payload, onValue, { onEnd: (error) => (error === undefined ? resolve() : reject(error)) });
+		});
+	}
+
+	#rpcForScope(scope: string): RpcSocket {
+		const rpc = this.#rpcFor(scope === OPERATE_SCOPE);
+		if (scope !== READ_SCOPE && scope !== OPERATE_SCOPE && !this.scopes.includes(scope)) {
+			throw new RpcError("EnvironmentAuthorizationError", `This pairing is missing ${scope}.`, undefined, scope);
+		}
+		return rpc;
+	}
+
 	/** True when `projectId` is the "no project" scratch project. */
 	isScratch(projectId: string): boolean {
 		const root = this.#config?.scratchWorkspaceRoot;
@@ -197,12 +255,13 @@ export class Machine {
 	}
 
 	/** Spends a pair link's one-time code. The current connection keeps running if it fails. */
-	async pair(code: string): Promise<void> {
-		const credential = await redeemPairingCode(this.url, code, this.deps.fetch, this.#now());
+	async pair(code: string, extraScopes: readonly string[] = []): Promise<Credential> {
+		const credential = await redeemPairingCode(this.url, code, this.deps.fetch, this.#now(), extraScopes);
 		this.stop();
 		await this.store.save(this.url, credential);
 		this.#reset();
 		this.start();
+		return credential;
 	}
 
 	/** Forgets the token here. T3 Code keeps listing the session until it is revoked in Settings → Sharing & access. */
@@ -369,7 +428,7 @@ export class Machine {
 	}
 
 	/** The server picks steer, queue or restart for `auto` from the provider's abilities. */
-	async send(thread: ThreadRef, text: string, mode: SendMode = "auto"): Promise<void> {
+	async send(thread: ThreadRef, text: string, mode: SendMode = "auto", context?: MessageContext): Promise<void> {
 		this.#require("serverResolvedCommandContext", "take messages from the deck");
 		await this.#dispatch({
 			type: "message.dispatch",
@@ -378,6 +437,7 @@ export class Machine {
 			threadId: thread.threadId,
 			messageId: this.#uuid(),
 			text,
+			...(context === undefined ? {} : { context }),
 			attachments: [],
 			...(mode === "queue" ? { dispatchMode: { type: "queue_after_active" } } : { dispatchMode: { type: "start_immediately" }, deliveryIntent: mode }),
 		});
@@ -391,7 +451,7 @@ export class Machine {
 	async launch(
 		target: { projectId: string } | { scratch: true },
 		message: string,
-		options: { title?: string; fallbackModel?: ModelSelection } = {},
+		options: { title?: string; fallbackModel?: ModelSelection; threadId?: string; workspaceStrategy?: WorkspaceStrategy; context?: MessageContext } = {},
 	): Promise<{ threadId: string }> {
 		const rpc = this.#rpcFor(true);
 		let projectId: string;
@@ -408,7 +468,7 @@ export class Machine {
 			options.fallbackModel ??
 			this.#firstDefaultModel();
 		if (modelSelection === undefined) throw new Error("Pick a default model in T3 Code first.");
-		const threadId = this.#uuid();
+		const threadId = options.threadId ?? this.#uuid();
 		const title = options.title?.trim();
 		const text = message.trim();
 		await rpc.request("orchestration.launchThread", {
@@ -421,8 +481,8 @@ export class Machine {
 			modelSelection,
 			runtimeMode: override?.defaultRuntimeMode ?? settings?.defaultRuntimeMode ?? "full-access",
 			interactionMode: "default",
-			workspaceStrategy: { type: "root" },
-			...(text === "" ? {} : { initialMessage: { messageId: this.#uuid(), text: message, attachments: [] } }),
+			workspaceStrategy: options.workspaceStrategy ?? { type: "root" },
+			...(text === "" ? {} : { initialMessage: { messageId: this.#uuid(), text: message, ...(options.context === undefined ? {} : { context: options.context }), attachments: [] } }),
 		});
 		return { threadId };
 	}

@@ -56,6 +56,13 @@ const NAME = {
   modeFullAccess: "lock-open",
   modeBuild: "bot",
   modePlan: "pencil-ruler",
+  gitCommit: "git-commit-horizontal", // T3's GitCommitIcon
+  gitPush: "cloud-upload", // T3's push
+  gitPull: "cloud-download", // T3's pull
+  gitPrCreate: "git-pull-request-create", // closest: T3 shows the host's mark
+  hammer: "hammer", // T3's Fix findings
+  book: "book-open", // T3's Explain
+  editor: "code", // closest: T3 shows each editor's brand mark
 } as const;
 
 const dir = process.argv[2];

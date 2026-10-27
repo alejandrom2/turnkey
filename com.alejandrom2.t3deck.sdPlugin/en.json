@@ -70,6 +70,42 @@
 		"Name": "Branch",
 		"Tooltip": "The selected thread's branch. Tap opens the thread in T3 Code."
 	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Commit",
+		"Tooltip": "Commits the selected thread's changes, or also pushes them or opens a PR, with T3 Code's commit message unless you set one."
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Push",
+		"Tooltip": "Pushes the selected thread's branch. Hold to push."
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Create PR",
+		"Tooltip": "Pushes the selected thread's branch and opens a pull request for it. Hold to create."
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Pull",
+		"Tooltip": "Pulls the selected thread's branch when it is behind its upstream."
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "Fix Findings",
+		"Tooltip": "Sends T3 Code's Fix findings task for the selected thread's pull request: unresolved reviews and failing checks. Hold to send."
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "Explain PR",
+		"Tooltip": "Asks the selected thread to walk through its pull request, as T3 Code's Explain does."
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "Ask about PR",
+		"Tooltip": "Opens the thread that holds the pull request in T3 Code, to ask about it there."
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "Review Guide",
+		"Tooltip": "Writes T3 Code's review guide for the selected thread's pull request, then opens the thread."
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "Open in Editor",
+		"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on."
+	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Health",
 		"Tooltip": "The connection to T3 Code: ready, connecting, needs pairing or failing. Tap reconnects."
@@ -100,6 +136,13 @@
 		"Tooltip": "Answers an agent's question choice by choice, and approvals as far as its settings allow.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choose answer", "Push": "Answer (hold by default)", "Touch": "Open thread" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.pr": {
+		"Name": "PR Dial",
+		"Tooltip": "Rotate through open pull requests. Press runs Fix findings, tap opens it in the browser, touch and hold reads its findings.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose pull request", "Push": "Fix findings (hold)", "Touch": "Open in browser", "LongTouch": "Read findings" }
 		}
 	},
 	"Localization": {
@@ -190,11 +233,6 @@
 			"readOnly": "Read only",
 			"connecting": "Connecting…",
 			"needsPairing": "Needs pairing"
-		},
-		"pr": {
-			"open": "Open",
-			"merged": "Merged",
-			"closed": "Closed"
 		},
 		"reason": {
 			"noPrompt": "No prompt",
@@ -310,7 +348,8 @@
 			"cycleModels": "Cycle models",
 			"cycleEfforts": "Cycle efforts",
 			"anyProject": "Any project",
-			"noProject": "No project"
+			"noProject": "No project",
+			"defaultEditor": "T3 Code's default"
 		},
 		"machine": {
 			"thisMachine": "This machine",
@@ -339,7 +378,173 @@
 			"feedEnded": "T3 Code ended the thread feed.",
 			"disconnected": "Disconnected from T3 Code."
 		},
+		"access": {
+			"sourceControl": "Needs source control access — re-pair",
+			"diagnostics": "Needs usage access — re-pair",
+			"other": "Needs more access — re-pair"
+		},
+		"pr": {
+			"open": "Open",
+			"merged": "Merged",
+			"closed": "Closed",
+			"draft": "Draft",
+			"face": {
+				"failing": "{count} checks failing",
+				"failingOne": "1 check failing",
+				"findings": "{count} findings",
+				"findingsOne": "1 finding",
+				"running": "Checks running",
+				"changesRequested": "Changes requested",
+				"approved": "Approved",
+				"passing": "Checks passing"
+			},
+			"fix": {
+				"title": "Fix findings",
+				"none": "No findings",
+				"threads": "{count} threads",
+				"threadOne": "1 thread",
+				"remarks": "{count} remarks",
+				"remarkOne": "1 remark",
+				"checks": "{count} checks",
+				"checkOne": "1 check"
+			},
+			"explain": {
+				"title": "Explain {term}"
+			},
+			"ask": {
+				"title": "Ask about {term}"
+			},
+			"guide": {
+				"title": "Review guide",
+				"write": "Press to write",
+				"writing": "Writing guide…",
+				"ready": "Ready: press to open",
+				"failed": "Failed: press to retry"
+			},
+			"dial": {
+				"title": "Pull requests",
+				"none": "No open pull requests"
+			},
+			"result": {
+				"queued": "Queued",
+				"offHead": "Started, off the PR head"
+			}
+		},
+		"repo": {
+			"action": {
+				"commit": "Commit",
+				"commitPush": "Commit & push",
+				"commitPushPr": "Commit, push & PR",
+				"push": "Push",
+				"createPr": "Create PR",
+				"pull": "Pull"
+			},
+			"reason": {
+				"notRepo": "Not a git repository",
+				"detached": "Detached HEAD: check out a branch",
+				"noUpstream": "No upstream branch",
+				"diverged": "Diverged: rebase or merge first",
+				"upToDate": "Up to date",
+				"clean": "Nothing to commit",
+				"uncommitted": "Commit or stash changes first",
+				"behind": "Behind upstream: pull first",
+				"noRemote": "Add an origin remote first",
+				"nothingToPush": "No commits to push",
+				"prOpen": "PR #{number} is open",
+				"prFromDefault": "On {branch}: create a branch first",
+				"nothingForPr": "No commits for a PR"
+			},
+			"behind": "{count} behind",
+			"ahead": "{count} ahead",
+			"changes": "{files} files · +{insertions} −{deletions}",
+			"changesOne": "1 file · +{insertions} −{deletions}",
+			"hook": "Running {hook}",
+			"unknownOutcome": "Result unknown, check T3 Code",
+			"running": "Already running",
+			"holdTo": "Hold to confirm",
+			"holdOnDefault": "Hold to push to {branch}",
+			"starting": "Starting…",
+			"pulled": "Pulled",
+			"upToDate": "Up to date"
+		},
+		"needs": {
+			"paired": "Paired with T3 Code",
+			"operate": "Can act on threads",
+			"thread": "A selected thread",
+			"running": "A running turn",
+			"pending": "A pending request",
+			"prompt": "A saved prompt",
+			"scope": {
+				"sourceControl": "Source control access",
+				"diagnostics": "Usage access",
+				"other": "{scope} access"
+			},
+			"option": "{option} on the thread's model",
+			"optionEffort": "Reasoning effort",
+			"optionFast": "Fast mode",
+			"optionPlan": "Plan mode",
+			"pr": "A pull request",
+			"branch": "A branch",
+			"repo": "Something to act on",
+			"editor": "An editor on the machine",
+			"notAvailable": "Not available: {value}",
+			"fix": {
+				"openT3": "Open T3 Code on this computer, then press the key.",
+				"addMachine": "Or paste a pair link under Add a machine.",
+				"pickMachine": "Pick another machine below.",
+				"pairLink": "Paste a pair link from T3 Code under Add a machine.",
+				"reachable": "Check that the machine is on and reachable.",
+				"pressRetry": "Press the key to retry now.",
+				"canAct": "Pair again with a link that can act, not read only.",
+				"openThread": "Open a thread in T3 Code.",
+				"selectThread": "Or select one with a Thread key or the Threads dial.",
+				"startTurn": "Send a prompt to start a turn.",
+				"waitForAgent": "Waits for an agent to ask.",
+				"typePrompt": "Type a prompt above.",
+				"newPairLink": "Create a pair link in T3 Code under Settings → Sharing & access.",
+				"standardAccess": "Keep its default access, then connect with the new link below.",
+				"switchModel": "Switch the thread to a model that offers it.",
+				"createPr": "Create one with Create PR or in T3 Code.",
+				"checkoutBranch": "Check out a branch in the thread.",
+				"installEditor": "Install an editor T3 Code supports, like VS Code or Cursor.",
+				"pickAnother": "Pick another value above.",
+				"noFindings": "Nothing is failing or unresolved on it."
+			},
+			"findings": "Findings to fix"
+		},
+		"editor": {
+			"title": "Open in editor",
+			"none": "No editor on this machine",
+			"noFolder": "No folder",
+			"opensOn": "Opens on {machine}"
+		},
 		"inspector": {
+			"editor": {
+				"label": "Editor",
+				"loading": "Loading editors…",
+				"hint": "Opens the selected thread's worktree, or its project's folder. T3 Code launches the editor on its own machine, which may not be this one."
+			},
+			"pr": {
+				"confirm": "To send",
+				"hold": "Hold",
+				"tap": "Tap",
+				"fixHint": "Sends T3 Code's Fix findings task for the selected thread's pull request to that thread, queued if it is busy. Review comments and check output come from the host and are attached as untrusted data.",
+				"dialHint": "Lists open pull requests on the machine. Press runs Fix findings in the thread linked to it, or in a new worktree thread; tap opens it in the browser; touch and hold reads its findings."
+			},
+			"git": {
+				"action": "Action",
+				"commit": "Commit",
+				"commitPush": "Commit & push",
+				"commitPushPr": "Commit, push & create PR",
+				"message": "Commit message",
+				"messagePlaceholder": "Written by T3 Code when empty",
+				"confirm": "To run",
+				"confirmDefault": "Hold for pushes, tap otherwise",
+				"tap": "Tap",
+				"hold": "Hold",
+				"hint": "Acts on the selected thread's worktree, or its project's folder. Pushing to the default branch always needs a hold; a PR from it is refused, as T3 Code would offer a new branch first.",
+				"pullHint": "Pulls the selected thread's branch from its upstream when it is behind."
+			},
 			"card": {
 				"choose": "Choose a machine",
 				"looking": "Looking for T3 Code on this machine…",
@@ -365,7 +570,12 @@
 				"needsPairing": "Needs pairing",
 				"remove": "Remove",
 				"pasteFromMachine": "Paste a pair link from this machine below.",
-				"pairing": "Connecting with the pair link…"
+				"pairing": "Connecting with the pair link…",
+				"needsTitle": "What this action needs",
+				"needsNotMet": " · {count} not met",
+				"needsMet": "Met",
+				"needsUnmet": "Not met",
+				"needsChecking": "Checking"
 			},
 			"advanced": {
 				"title": "Advanced",

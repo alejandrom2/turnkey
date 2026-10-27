@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type Credential, socketUrl } from "./pairing.js";
-import { RpcError, RpcSocket, type RpcState, retryDelayMs } from "./rpc.js";
+import { causeError, RpcError, RpcSocket, type RpcState, retryDelayMs } from "./rpc.js";
 import { environmentRoute, fakeFetch, fakeSockets } from "./testing.js";
 
 beforeEach(() => {
@@ -201,5 +201,14 @@ describe("RpcSocket keepalive and reconnect", () => {
 		await flush();
 		expect(sockets.sockets).toHaveLength(1);
 		rpc.stop();
+	});
+});
+
+describe("causeError", () => {
+	it("keeps requiredPermission and falls back to an error's own detail for its reason", () => {
+		const denied = causeError([{ _tag: "Fail", error: { _tag: "EnvironmentAuthorizationError", message: "missing", requiredPermission: "source-control:write" } }]);
+		expect(denied).toMatchObject({ tag: "EnvironmentAuthorizationError", requiredPermission: "source-control:write", reason: undefined });
+		const off = causeError([{ _tag: "Fail", error: { _tag: "PullRequestOperationError", detail: "Review guides are off. Turn them on in Settings → Source Control." } }]);
+		expect(off.reason).toBe("Review guides are off. Turn them on in Settings → Source Control.");
 	});
 });
