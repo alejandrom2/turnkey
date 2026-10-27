@@ -31,7 +31,7 @@ import { connectionProblem, DeckAction, type ReviewCard } from "./base.js";
 /** Every dial's appearance overrides: "" follows the global setting. */
 export type DialSettings = { machine?: string; background?: string; backgroundColor?: string; stripStyle?: string; textScroll?: string; confirmSend?: string };
 
-/** How a dial presents itself: a strip style, or the Power dial's slider, which takes the place of the classic layout. */
+/** How a dial presents itself: a strip style, or a picture (the Power dial's slider, a gauge) in place of the classic layout. */
 type Presentation = StripStyle | "slider";
 
 /** The slider draws everything but the background in one picture, on the carousel's layout (a canvas, a picture and a title). */
@@ -99,7 +99,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		return undefined;
 	}
 
-	/** A still picture that replaces the classic layout, as on the Threads dial; undefined keeps the classic face. */
+	/** A whole-strip picture that replaces the classic layout, as on the Threads and Limits dials; undefined keeps the classic face. */
 	protected picture(_action: Action<T>): string | undefined {
 		return undefined;
 	}

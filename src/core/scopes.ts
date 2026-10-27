@@ -1,5 +1,5 @@
 import { t } from "./i18n.js";
-import { DIAGNOSTICS_SCOPE, isOptInScope, OPERATE_SCOPE, type OptInScope, SOURCE_CONTROL_SCOPE } from "./t3/pairing.js";
+import { DIAGNOSTICS_SCOPE, isOptInScope, OPERATE_SCOPE, type OptInScope, PROVIDERS_SCOPE, SOURCE_CONTROL_SCOPE } from "./t3/pairing.js";
 
 /**
  * Per machine (its URL), the broader scopes the user turned on an action for. The machine's next pairing asks for
@@ -41,6 +41,8 @@ export function needsAccessLabel(scope: string): string {
 			return t("access.sourceControl");
 		case DIAGNOSTICS_SCOPE:
 			return t("access.diagnostics");
+		case PROVIDERS_SCOPE:
+			return t("access.providers");
 		case OPERATE_SCOPE:
 			return t("failure.readOnly");
 		default:

@@ -41,6 +41,8 @@ const GLYPHS = {
 	/** Lucide's check and message-circle: a thread key's done and idle marks. */
 	checkBare: `<path d="M20 6 9 17l-5-5" />`,
 	chatRound: `<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />`,
+	/** Lucide's chart-no-axes-column, T3 Code's Usage icon. */
+	usage: `<path d="M5 21v-6" /><path d="M12 21V3" /><path d="M19 21V9" />`,
 	/** Lucide's zap, filled: Speed while fast. */
 	speedFilled: `<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" fill="currentColor" />`,
 } as const;

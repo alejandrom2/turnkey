@@ -6,6 +6,7 @@
 import { type MessageKey, t } from "./i18n.js";
 import { initialsBadgeSvg, PROVIDER_MARKS, providerInstanceInitials } from "./providerIcons.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
+import type { LimitProvider, ServerProviderUsageLimits } from "./usage/types.js";
 
 export type ProviderOptionDescriptor =
 	| { id: string; label: string; type: "select"; options: { id: string; label: string; isDefault?: boolean }[]; currentValue?: string; promptInjectedValues?: string[] }
@@ -36,6 +37,9 @@ export type ConfigProvider = {
 	showInteractionModeToggle?: boolean;
 	requiresNewThreadForModelChange?: boolean;
 	models: ConfigModel[];
+	installed?: boolean;
+	auth?: LimitProvider["auth"];
+	usageLimits?: ServerProviderUsageLimits;
 };
 
 /** `ServerSettings` model preferences: `favorites` null means unmigrated, empty means none (settings.ts:1105). */
