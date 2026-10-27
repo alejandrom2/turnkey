@@ -15,6 +15,7 @@ export type Need =
 	| { kind: "thread"; ok: boolean }
 	| { kind: "running"; ok: boolean }
 	| { kind: "pending"; ok: boolean }
+	| { kind: "queued"; ok: boolean | undefined }
 	| { kind: "prompt"; ok: boolean }
 	| { kind: "scope"; scope: string; ok: boolean }
 	| { kind: "option"; option: string; ok: boolean }
@@ -68,6 +69,8 @@ function describe(need: Need): Requirement {
 			return make("running", t("needs.running"), need.ok, ["needs.fix.startTurn"]);
 		case "pending":
 			return make("pending", t("needs.pending"), need.ok, ["needs.fix.waitForAgent"]);
+		case "queued":
+			return make("queued", t("needs.queued"), need.ok, ["needs.fix.queueMessage"]);
 		case "prompt":
 			return make("prompt", t("needs.prompt"), need.ok, ["needs.fix.typePrompt"]);
 		case "scope":

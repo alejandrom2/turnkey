@@ -59,6 +59,7 @@ import {
 	LONG_PRESS_MS,
 	openThread,
 	pressWhileDisconnected,
+	queuedCount,
 	selectedThread,
 	selectThread,
 	sendToThread,
@@ -81,6 +82,7 @@ function threadFace(thread: DeckThread | undefined, emptyLabel: string, selected
 		unseen: thread.unseen,
 		selected: selected === undefined ? undefined : thread.key === selected.key,
 		motion,
+		queued: queuedCount(thread),
 	});
 	return { face, moving };
 }

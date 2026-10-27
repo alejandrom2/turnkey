@@ -2,6 +2,7 @@ import streamDeck, { type Action } from "@elgato/streamdeck";
 import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
+import { QueueStore } from "./core/queues.js";
 import { readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
 import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
@@ -117,6 +118,8 @@ class Deck implements CredentialStore {
 	readonly ultrathink = new UltrathinkArming(() => this.repaint());
 	readonly animator = new Animator();
 	readonly transitions = new Transitions();
+	/** Queues of the threads visible faces show, read only when one changes. */
+	readonly queues = new QueueStore(() => this.repaint());
 	readonly #machines = new Map<string, Machine>();
 	readonly #visible = new Set<string>();
 	readonly #painters = new Set<() => void>();

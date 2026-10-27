@@ -10,7 +10,7 @@ import { type Connection, type Need, requirements } from "../core/requirements.j
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 import { pinnedName } from "../core/target.js";
-import { canOperate, connectionProblem, deckActions, targetOf } from "./base.js";
+import { canOperate, connectionProblem, deckActions, queueOf, targetOf } from "./base.js";
 
 const ID = "com.alejandrom2.t3deck.";
 
@@ -96,6 +96,10 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 			const opensOnly = kind === "approve" && (settings.approvalAuthority ?? "open") === "open";
 			const pending = thread?.pendingRequest !== undefined && (thread.deck === "approval" || (kind === "dial.answer" && thread.deck === "question"));
 			return [...needsFor(machine, thread, !opensOnly), { kind: "pending", ok: pending }];
+		}
+		case "dial.queue": {
+			const queue = thread && queueOf(thread);
+			return [...needsFor(machine, thread), { kind: "queued", ok: queue === undefined ? (thread === undefined ? false : undefined) : queue.items.length > 0 }];
 		}
 		case "pr":
 			return [...needsFor(machine, thread, false), { kind: "pr", ok: (thread?.pullRequests.length ?? 0) > 0 }];
