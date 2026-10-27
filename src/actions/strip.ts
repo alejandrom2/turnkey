@@ -31,7 +31,7 @@ import { connectionProblem, DeckAction, type ReviewCard } from "./base.js";
 /** Every dial's appearance overrides: "" follows the global setting. */
 export type DialSettings = { machine?: string; background?: string; backgroundColor?: string; stripStyle?: string; textScroll?: string; confirmSend?: string };
 
-/** How a dial presents itself: a strip style, or the Power dial's slider, which takes the place of the classic layout. */
+/** How a dial presents itself: a strip style, or a picture (the Power dial's slider, a gauge) in place of the classic layout. */
 type Presentation = StripStyle | "slider";
 
 /** The slider draws everything but the background in one picture, on the carousel's layout (a canvas, a picture and a title). */
@@ -99,6 +99,11 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		return undefined;
 	}
 
+	/** A whole-strip picture that replaces the classic layout, as on the Limits dial; undefined keeps the classic face. */
+	protected picture(_action: Action<T>): string | undefined {
+		return undefined;
+	}
+
 	/** What the list and carousel turn through; undefined shows the face as one item. */
 	protected list(_action: Action<T>): StripList | undefined {
 		return undefined;
@@ -138,7 +143,8 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		painters.set(action.id, () => void this.paint(action));
 		const { style, scroll } = this.#style(action);
 		const slider = style === "classic" ? this.slider(action) : undefined;
-		const presentation: Presentation = slider === undefined ? style : "slider";
+		const picture = style === "classic" && slider === undefined ? this.picture(action) : undefined;
+		const presentation: Presentation = slider === undefined && picture === undefined ? style : "slider";
 		if ((this.#layouts.get(action.id) ?? "classic") !== presentation) {
 			this.#layouts.set(action.id, presentation);
 			this.#close(action.id, false);
@@ -154,6 +160,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		if (presentation === "slider") {
 			const canvas = stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
 			if (reading?.lines) return this.setFeedback(action, carouselFeedback(content, listFromContent(content), { appearance, scroll: "off", reading: { lines: reading.lines, top: reading.top } }));
+			if (picture !== undefined) return this.setFeedback(action, { canvas, art: picture, title: { value: "", color: "#FFFFFF" }, titleArt: BLANK_ART });
 			const line = scroll === "off" ? undefined : scrollLine(slider!.label, sliderLabelSlot(slider!), "horizontal", "slider");
 			const labelOffset = marquee.offset(action.id, reading === undefined ? line : undefined);
 			return this.setFeedback(action, { canvas, art: sliderArt({ ...slider!, labelOffset }), title: { value: "", color: "#FFFFFF" }, titleArt: BLANK_ART });

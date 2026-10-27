@@ -262,6 +262,15 @@
 			"States": [{ "Image": "imgs/actions/health/key", "ShowTitle": false }]
 		},
 		{
+			"Name": "Limits",
+			"UUID": "com.alejandrom2.t3deck.limits",
+			"Icon": "imgs/actions/limits/icon",
+			"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset.",
+			"PropertyInspectorPath": "ui/limits.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/limits/key", "ShowTitle": false }]
+		},
+		{
 			"Name": "Threads Dial",
 			"UUID": "com.alejandrom2.t3deck.dial.threads",
 			"Icon": "imgs/actions/dial-threads/icon",
@@ -330,6 +339,20 @@
 				"TriggerDescription": { "Rotate": "Choose pull request", "Push": "Fix findings (hold)", "Touch": "Open in browser", "LongTouch": "Read findings" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-pr/key" }]
+		},
+		{
+			"Name": "Limits Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.limits",
+			"Icon": "imgs/actions/dial-limits/icon",
+			"Tooltip": "Rotate through every provider's limit windows. Press or tap refreshes; hold the press to open T3 Code's Usage or use a reset.",
+			"PropertyInspectorPath": "ui/limits-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-limits/icon",
+				"TriggerDescription": { "Rotate": "Choose provider and window", "Push": "Refresh (hold: reset)", "Touch": "Refresh", "LongTouch": "Read details" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-limits/key" }]
 		}
 	]
 }
