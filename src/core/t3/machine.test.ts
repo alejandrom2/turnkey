@@ -591,6 +591,47 @@ describe("Machine workflows", () => {
 	});
 });
 
+describe("Machine lineage", () => {
+	/** Answers the bounded thread snapshot a verb reads first with these runs. */
+	const snapshotWith = async (socket: FakeSocket, runs: object[]) => {
+		await flush();
+		socket.receive({ _tag: "Chunk", requestId: socket.request("orchestration.subscribeThread").id, values: [{ kind: "snapshot", projection: { runs } }] });
+		await flush();
+	};
+
+	it("forks from the newest finished run under an id it picks, named as T3 Code names forks", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const forking = h.machine.fork(row(h.machine));
+		await snapshotWith(socket, [{ id: "run:3", status: "completed", ordinal: 3 }, { id: "run:4", status: "running", ordinal: 4 }]);
+		expect(socket.request("orchestration.dispatchCommand").payload).toMatchObject({
+			type: "thread.fork",
+			createdBy: "user",
+			creationSource: "mobile",
+			sourceThreadId: "thr_123",
+			targetThreadId: "uuid-1",
+			sourcePoint: { type: "run", runId: "run:3" },
+			title: "Fix flaky shell resume test fork",
+		});
+		socket.reply("orchestration.dispatchCommand", { sequence: 4813 });
+		expect(await forking).toEqual({ threadId: "uuid-1" });
+	});
+
+	it("merges back from the latest finished run, and refuses while there is none", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const merging = h.machine.mergeBack(row(h.machine), "parent");
+		await snapshotWith(socket, [{ id: "run:2", status: "waiting", ordinal: 2 }]);
+		expect(socket.request("orchestration.dispatchCommand").payload).toMatchObject({ type: "thread.merge_back", sourceThreadId: "thr_123", targetThreadId: "parent", sourcePoint: { type: "run", runId: "run:2" } });
+		socket.reply("orchestration.dispatchCommand", { sequence: 4813 });
+		await merging;
+
+		const refused = expect(h.machine.mergeBack(row(h.machine), "parent")).rejects.toMatchObject({ reason: "Finish a turn first" });
+		await snapshotWith(socket, [{ id: "run:5", status: "running", ordinal: 5 }]);
+		await refused;
+	});
+});
+
 describe("Machine skills", () => {
 	const skill = (name: string) => ({ name, path: `/skills/${name}`, enabled: true });
 	const withSkills = { ...CONFIG, providers: [{ ...CONFIG.providers[0], skills: [skill("global")] }] };

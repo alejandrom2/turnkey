@@ -2,6 +2,7 @@ import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun } from "../lineage.js";
 import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
 import { type ProjectedSubagent, type RunningWorkflow, runningWorkflows, stopWorkflowFailure } from "../workflows.js";
@@ -927,6 +928,44 @@ export class Machine {
 		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		return threadQueue(projection as QueueProjection);
+	}
+
+	/**
+	 * Forks the thread from its newest finished run into a new thread, as T3 Code's fork button on the latest reply
+	 * does; the fork's id is chosen here so the caller can open it.
+	 */
+	async fork(thread: ThreadRef & { title: string }): Promise<{ threadId: string }> {
+		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[] } | undefined;
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		const run = forkSourceRun(projection.runs ?? []);
+		if (run === undefined) throw new RpcError("NothingToFork", "No finished run to fork from.", t("lineage.nothingToFork"));
+		const threadId = this.#uuid();
+		await this.#dispatch({
+			type: "thread.fork",
+			createdBy: "user",
+			creationSource: DECK_CREATION_SOURCE,
+			sourceThreadId: thread.threadId,
+			targetThreadId: threadId,
+			sourcePoint: { type: "run", runId: run.id },
+			title: forkTitle(thread.title),
+		});
+		return { threadId };
+	}
+
+	/** Merges a fork back into the thread it came from, from its latest finished run, as T3 Code's Merge does. */
+	async mergeBack(thread: ThreadRef, into: string): Promise<void> {
+		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[] } | undefined;
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		const run = latestMergeBackRun(projection.runs ?? []);
+		if (run === undefined) throw new RpcError("NothingToMerge", "No finished run to merge back.", t("lineage.finishRunFirst"));
+		await this.#dispatch({
+			type: "thread.merge_back",
+			createdBy: "user",
+			creationSource: DECK_CREATION_SOURCE,
+			sourceThreadId: thread.threadId,
+			targetThreadId: into,
+			sourcePoint: { type: "run", runId: run.id },
+		});
 	}
 
 	/** The thread's running workflows, from one bounded snapshot: the shell doesn't carry them. */

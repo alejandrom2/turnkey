@@ -774,6 +774,18 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.workflow.hint")}</p>`,
 		targetScript,
 	),
+	"fork.html": page(
+		"Fork",
+		`${targetField}
+			<p class="hint"${text("inspector.lineage.forkHint")}</p>`,
+		targetScript,
+	),
+	"merge.html": page(
+		"Merge Back",
+		`${targetField}
+			<p class="hint"${text("inspector.lineage.mergeHint")}</p>`,
+		targetScript,
+	),
 	"tasks-dial.html": page(
 		"Tasks Dial",
 		`
