@@ -32,6 +32,8 @@ const ACTIONS: Record<string, GlyphName> = {
 	"dial-queue": "queued",
 	task: "task",
 	"dial-tasks": "task",
+	skill: "skill",
+	"dial-skills": "skill",
 	"git-commit": "gitCommit",
 	"git-push": "gitPush",
 	"git-pr": "gitPrCreate",

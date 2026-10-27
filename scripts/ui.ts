@@ -747,6 +747,27 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<p class="hint"${text("inspector.task.hint")}</p>`,
 	),
+	"skill.html": page(
+		"Run Skill",
+		`${targetField}
+			<sdpi-item ${attr("label", "inspector.skill.label")}>
+				<sdpi-select setting="skill" datasource="getSkills" hot-reload ${attr("loading", "inspector.loading.skills")}></sdpi-select>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.skill.extra")}>
+				<sdpi-textarea setting="prompt" rows="3" ${attr("placeholder", "inspector.skill.extraPlaceholder")}></sdpi-textarea>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
+				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.skill.titlePlaceholder")}></sdpi-textfield>
+			</sdpi-item>
+			<p class="hint"${text("inspector.skill.hint")}</p>${confirmField}`,
+		targetScript,
+	),
+	"skills-dial.html": page(
+		"Skills Dial",
+		`${targetField}
+			<p class="hint"${text("inspector.skill.dialHint")}</p>${confirmField}${dialAppearance}`,
+		targetScript + dialAppearanceScript,
+	),
 	"tasks-dial.html": page(
 		"Tasks Dial",
 		`

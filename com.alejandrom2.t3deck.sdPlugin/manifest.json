@@ -271,6 +271,15 @@
 			"States": [{ "Image": "imgs/actions/task/key" }]
 		},
 		{
+			"Name": "Run Skill",
+			"UUID": "com.alejandrom2.t3deck.skill",
+			"Icon": "imgs/actions/skill/icon",
+			"Tooltip": "Runs one of the thread's provider skills, the way picking it in T3 Code's composer and sending does.",
+			"PropertyInspectorPath": "ui/skill.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/skill/key" }]
+		},
+		{
 			"Name": "Limits",
 			"UUID": "com.alejandrom2.t3deck.limits",
 			"Icon": "imgs/actions/limits/icon",
@@ -371,6 +380,20 @@
 				"TriggerDescription": { "Rotate": "Choose task", "Push": "Run now", "Touch": "Turn on or off" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-tasks/key" }]
+		},
+		{
+			"Name": "Skills Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.skills",
+			"Icon": "imgs/actions/dial-skills/icon",
+			"Tooltip": "Rotate through the thread's provider skills. Press or tap runs the shown one; touch and hold reads its description.",
+			"PropertyInspectorPath": "ui/skills-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-skills/icon",
+				"TriggerDescription": { "Rotate": "Choose skill", "Push": "Run skill", "Touch": "Run skill", "LongTouch": "Read description" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-skills/key" }]
 		},
 		{
 			"Name": "PR Dial",
