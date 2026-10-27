@@ -15,25 +15,30 @@ T3 Deck asks to read threads and act on them. A link that only grants reading gi
 
 ## Actions
 
+Most actions act on the **selected thread**: the one you opened last in T3 Code, on the action's machine or across all of them. Opening a thread from the deck, holding a Thread key or turning the Threads dial selects it too, by visiting it in T3 Code. The selected thread's key has a white outline.
+
 | Action | Controller | What it does |
 |---|---|---|
-| Thread | key | Board slot N (or the focused thread). Shows status, title and timer, with a dot when a finished turn is unseen. Tap opens it in T3 Code, hold focuses it. |
-| Activity | key | The thread that needs you most. Tap opens it. |
-| Stop | key | Stops the focused running turn, or the most urgent one. |
-| Send Prompt | key | Sends a saved prompt to the focused thread (starts, steers or queues). Hold to interrupt and restart with it. |
-| New Thread | key | Starts a thread with a saved prompt in the focused thread's project, or with no project when the board is empty. It uses T3 Code's default model and access mode. |
+| Thread | key | A board thread. Keys fill by position, left to right and top to bottom, unless a slot is set (or **Selected thread**). Shows status, title and timer, with a dot when a finished turn is unseen. Tap opens it in T3 Code, hold selects it. |
+| Activity | key | The most urgent thread matching a filter (all, needs you, working, unread) and optional project. More Activity keys with the same settings show the next ones. Tap opens it. |
+| Stop | key | Stops the selected thread's running turn. |
+| Send Prompt | key | Sends a saved prompt to the selected thread (starts, steers or queues). Hold to interrupt and restart with it. |
+| New Thread | key | Starts a thread with a saved prompt in the selected thread's project, or with no project when the board is empty. It uses T3 Code's default model and access mode. |
 | Organize | key | Settle, pin, unpin, snooze, archive or mark unread. |
-| Threads Dial | dial | Rotate moves focus, press or tap opens. Every other action follows focus. |
+| Threads Dial | dial | Rotate selects a thread (it settles after a short pause), press or tap opens it. |
 | Model Dial | dial | Tap picks a setting: the model, its options as the provider reports them (effort, speed, …), access (Supervised … Full access) and Build/Plan. Rotate previews a value, press applies it. |
 | Prompts Dial | dial | Rotate through saved prompts, press sends, hold starts a new thread. |
-| Answer Dial | dial | Approvals: rotate between Allow once, Allow for session and Deny, press to answer. Questions: pick a choice per question. Tap opens the thread. Requests the deck can't answer open in T3 Code. |
+| Answer Dial | dial | Approvals: rotate between the dial's **Approvals** setting and Deny, then hold (or press, if set) to answer. **Approvals** defaults to opening the request in T3 Code; it can allow once, for the session, or always. Questions: pick a choice per question. Tap opens the thread. Requests the deck can't answer open in T3 Code. |
+
+A key that can't act right now is dimmed, and pressing it says why. After a press, the key shows what happened for a moment.
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
 ## Limits
 
 - **Free-text answers and approval feedback** need T3 Code; the dials pick from the offered choices.
-- **Opening a thread** uses the desktop app's `t3code://threads/<environment>/<thread>` link. Set **App link** to `t3code-dev` for a dev build. It opens on the machine running Stream Deck.
+- **Opening a thread** uses the desktop app's `t3code://threads/<environment>/<thread>` link. Set **App link** to `t3code-dev` for a dev build. It opens on the machine running Stream Deck. Selecting with the dial or a hold doesn't switch the app's window.
+- **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.
 
 ## Development
 

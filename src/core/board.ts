@@ -13,6 +13,11 @@ export type DeckThread = ShellRow & {
 	environmentId: string;
 };
 
+/** A dial that stops turning for this long selects the thread it rests on. */
+export const SELECT_DEBOUNCE_MS = 300;
+/** How long the deck's own visit may take to come back as a newer open stamp. */
+const ECHO_MS = 5_000;
+
 /** Board order: what needs you, what runs, unseen results, then the rest by recency. */
 function rank(thread: DeckThread): number {
 	switch (thread.deck) {
@@ -40,17 +45,39 @@ export function orderThreads(threads: DeckThread[]): DeckThread[] {
 	return threads.sort((a, b) => rank(a) - rank(b) || recency(b) - recency(a) || a.key.localeCompare(b.key));
 }
 
-/** What a key can show of a row; a change outside these fields does not repaint the deck. */
-const signature = (threads: readonly DeckThread[]): string => JSON.stringify(threads.map(({ machine: _machine, updatedAt: _updatedAt, ...shown }) => shown));
+const newestOpened = (threads: readonly DeckThread[]): DeckThread | undefined =>
+	threads.reduce<DeckThread | undefined>(
+		(best, thread) => (thread.openedAt !== undefined && (best === undefined || thread.openedAt > best.openedAt!) ? thread : best),
+		undefined,
+	);
 
-/** Merges the live threads of every ready machine into one ordered list with a shared focus. */
+/** What keys show; a change outside these fields does not repaint the deck. */
+const signature = (threads: readonly DeckThread[], selection: unknown): string =>
+	JSON.stringify([threads.map(({ machine: _machine, updatedAt: _updatedAt, openedAt: _openedAt, ...shown }) => shown), selection]);
+
+/** One machine's selection; `seq` orders selections across machines in the order the deck saw them. */
+type Selection = { key: string; seq: number; openedAt: number | undefined };
+
+/**
+ * Merges the live threads of every ready machine into one ordered list, and follows T3 Code's selection: the
+ * thread opened last. Open stamps are compared only within a machine, in the order they arrive, so clock skew
+ * between machines never matters; the deck's own picks join the same order.
+ */
 export class ThreadBoard {
 	threads: DeckThread[] = [];
-	#focusKey: string | undefined;
-	#signature = "[]";
+	#signature = "";
 	readonly #listeners = new Set<() => void>();
+	readonly #selected = new Map<string, Selection>();
+	/** Per machine: the newest open stamp seen so far. */
+	readonly #newest = new Map<string, number>();
+	readonly #echoes = new Map<string, number>();
+	#seq = 0;
+	#pending: { key: string; timer: ReturnType<typeof setTimeout> } | undefined;
 
-	constructor(private readonly machines: () => readonly BoardMachine[]) {}
+	constructor(
+		private readonly machines: () => readonly BoardMachine[],
+		private readonly now: () => number = Date.now,
+	) {}
 
 	subscribe(listener: () => void): () => void {
 		this.#listeners.add(listener);
@@ -60,20 +87,37 @@ export class ThreadBoard {
 	/** Rebuilds from the machines; listeners hear about it only when something a key shows changed. */
 	update(): void {
 		const threads: DeckThread[] = [];
+		const byMachine = new Map<string, DeckThread[]>();
 		for (const machine of this.machines()) {
 			if (machine.state.kind !== "ready") continue;
 			const environmentId = machine.state.environmentId;
-			for (const row of machine.rows) threads.push({ ...row, key: `${environmentId}/${row.threadId}`, machine: machine as Machine, environmentId });
+			const own = machine.rows.map((row): DeckThread => ({ ...row, key: `${environmentId}/${row.threadId}`, machine: machine as Machine, environmentId }));
+			byMachine.set(machine.url, own);
+			threads.push(...own);
 		}
+		const now = this.now();
+		for (const [key, until] of this.#echoes) if (until <= now) this.#echoes.delete(key);
+		for (const [url, own] of byMachine) this.#follow(url, own);
 		this.threads = orderThreads(threads);
-		const next = signature(this.threads);
-		if (next === this.#signature) return;
-		this.#signature = next;
-		this.#emit();
+		this.#refresh();
 	}
 
-	get focused(): DeckThread | undefined {
-		return this.focusedOn();
+	/** An open stamp newer than any seen on the machine is a selection made in T3 Code. */
+	#follow(url: string, threads: readonly DeckThread[]): void {
+		const top = newestOpened(threads);
+		const newest = this.#newest.get(url);
+		if (top === undefined) {
+			// Listed but never opened (a server that just gained open stamps): the first open is a selection.
+			if (threads.length > 0 && newest === undefined) this.#newest.set(url, -Infinity);
+			return;
+		}
+		this.#newest.set(url, Math.max(newest ?? top.openedAt!, top.openedAt!));
+		if (newest === undefined) {
+			if (!this.#selected.has(url)) this.#selected.set(url, { key: top.key, seq: 0, openedAt: top.openedAt });
+			return;
+		}
+		const fresh = newestOpened(threads.filter((thread) => thread.openedAt! > newest && !this.#echoes.has(thread.key)));
+		if (fresh !== undefined) this.#selected.set(url, { key: fresh.key, seq: ++this.#seq, openedAt: fresh.openedAt });
 	}
 
 	/** Threads of one machine (its URL), or of every machine when `machine` is empty. */
@@ -81,33 +125,70 @@ export class ThreadBoard {
 		return machine ? this.threads.filter((thread) => thread.machine.url === machine) : this.threads;
 	}
 
-	/** Focus is shared across the deck; an action pinned to a machine sees that machine's first thread instead. */
-	focusedOn(machine?: string): DeckThread | undefined {
+	/**
+	 * The thread selected in T3 Code on one machine, or the latest selection across machines. When it is not
+	 * listed (settled, snoozed, archived), the newest-opened listed thread stands in, then the most urgent.
+	 */
+	selectedOn(machine?: string): DeckThread | undefined {
 		const threads = this.threadsOn(machine);
-		return threads.find((thread) => thread.key === this.#focusKey) ?? threads[0];
+		if (threads.length === 0) return undefined;
+		const selections = machine
+			? [this.#selected.get(machine)]
+			: [...this.#selected.values()].sort((a, b) => b.seq - a.seq || (b.openedAt ?? -Infinity) - (a.openedAt ?? -Infinity));
+		for (const selection of selections) {
+			const thread = selection && threads.find((candidate) => candidate.key === selection.key);
+			if (thread !== undefined) return thread;
+		}
+		return newestOpened(threads) ?? threads[0];
 	}
 
-	focus(key: string): void {
-		this.#focusKey = key;
-		this.#emit();
+	/**
+	 * Selects a thread the way opening it in T3 Code does: a visit with `opened`, which also marks it read. The
+	 * deck follows at once, since T3 Code keeps the old stamp for a reopen within 10 minutes and a read-only
+	 * pairing can't visit. `key` may name a thread the shell has not listed yet, such as one just launched.
+	 */
+	async select(key: string, machineUrl: string): Promise<void> {
+		this.#clearPending();
+		this.#selected.set(machineUrl, { key, seq: ++this.#seq, openedAt: undefined });
+		this.#refresh();
+		const thread = this.threads.find((candidate) => candidate.key === key);
+		if (thread === undefined) return;
+		this.#echoes.set(key, this.now() + ECHO_MS);
+		await thread.machine.visit(thread, { opened: true });
 	}
 
-	/** Moves focus by `steps` through one machine's threads (or all), clamped at both ends. */
-	moveFocus(steps: number, machine?: string): void {
+	/** The thread a turning dial points at before selecting it; undefined when it is not on `machine`. */
+	pendingOn(machine?: string): DeckThread | undefined {
+		const key = this.#pending?.key;
+		return key === undefined ? undefined : this.threadsOn(machine).find((thread) => thread.key === key);
+	}
+
+	/** Moves the pending choice by `steps` through one machine's threads (or all), clamped; it selects once the dial rests. */
+	step(steps: number, machine?: string): void {
 		const threads = this.threadsOn(machine);
 		if (threads.length === 0) return;
-		const current = Math.max(0, threads.indexOf(this.focusedOn(machine)!));
-		const next = Math.min(threads.length - 1, Math.max(0, current + steps));
-		this.focus(threads[next].key);
+		const selected = this.selectedOn(machine);
+		const from = Math.max(0, threads.indexOf((this.pendingOn(machine) ?? selected)!));
+		const next = threads[Math.min(threads.length - 1, Math.max(0, from + steps))];
+		this.#clearPending();
+		if (next.key !== selected?.key) {
+			const timer = setTimeout(() => void this.select(next.key, next.machine.url).catch(() => undefined), SELECT_DEBOUNCE_MS);
+			this.#pending = { key: next.key, timer };
+		}
+		this.#refresh();
 	}
 
-	/** Marks an unseen result read in T3 Code too; the shell echo then clears the dot on every client. */
-	async markSeen(key: string): Promise<void> {
-		const thread = this.threads.find((candidate) => candidate.key === key);
-		if (thread?.unseen) await thread.machine.visit(thread);
+	#clearPending(): void {
+		clearTimeout(this.#pending?.timer);
+		this.#pending = undefined;
 	}
 
-	#emit(): void {
+	#refresh(): void {
+		const urls = [...new Set(this.threads.map((thread) => thread.machine.url))];
+		const selection = [this.selectedOn()?.key, this.#pending?.key, ...urls.map((url) => this.selectedOn(url)?.key)];
+		const next = signature(this.threads, selection);
+		if (next === this.#signature) return;
+		this.#signature = next;
 		for (const listener of this.#listeners) listener();
 	}
 }

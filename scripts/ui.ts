@@ -293,12 +293,48 @@ const pages: Record<string, string> = {
 		"Thread",
 		`
 			<sdpi-item label="Slot">
-				<sdpi-select setting="slot" default="1">
-					<option value="0">Focused thread</option>
+				<sdpi-select setting="slot" default="">
+					<option value="">By key position</option>
+					<option value="0">Selected thread</option>
 					${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}${i === 0 ? " (most urgent)" : ""}</option>`).join("\n\t\t\t\t\t")}
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Threads are ordered: needs approval, has a question, running, then the rest.</p>`,
+			<p class="hint">By key position fills Thread keys left to right, top to bottom. Threads are ordered: needs approval, has a question, running, then the rest. Tap opens, hold selects.</p>`,
+	),
+	"activity.html": page(
+		"Activity",
+		`
+			<sdpi-item label="Show">
+				<sdpi-select setting="filter" default="all">
+					<option value="all">All threads</option>
+					<option value="attention">Needs you: approval, question, failure or unread result</option>
+					<option value="active">Working or queued</option>
+					<option value="unread">Unread</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Project">
+				<sdpi-select setting="project" datasource="getProjects" hot-reload loading="Loading projects…" default=""></sdpi-select>
+			</sdpi-item>
+			<p class="hint">Shows the most urgent matching thread. More Activity keys with the same settings show the next ones, by key position.</p>`,
+	),
+	"answer.html": page(
+		"Answer Dial",
+		`
+			<sdpi-item label="Approvals">
+				<sdpi-select setting="approvalAuthority" default="open">
+					<option value="open">Open in T3 Code</option>
+					<option value="once">Allow once</option>
+					<option value="session">Allow for the session</option>
+					<option value="always">Always allow</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="To answer">
+				<sdpi-select setting="approvalConfirm" default="hold">
+					<option value="hold">Hold the dial</option>
+					<option value="tap">Press the dial</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint">Turn between this choice and Deny. A request that doesn't offer the choice opens in T3 Code instead.</p>`,
 	),
 	"send.html": page(
 		"Send Prompt",
@@ -309,7 +345,7 @@ const pages: Record<string, string> = {
 			<sdpi-item label="Key label">
 				<sdpi-textfield setting="label" placeholder="Fix tests"></sdpi-textfield>
 			</sdpi-item>
-			<p class="hint">Goes to the focused thread. Hold the key to interrupt and restart with it.</p>`,
+			<p class="hint">Goes to the thread selected in T3 Code. Hold the key to interrupt and restart with it.</p>`,
 	),
 	"new.html": page(
 		"New Thread",
@@ -320,7 +356,7 @@ const pages: Record<string, string> = {
 			<sdpi-item label="Thread title">
 				<sdpi-textfield setting="title" placeholder="Review PR"></sdpi-textfield>
 			</sdpi-item>
-			<p class="hint">Starts in the focused thread's project.</p>`,
+			<p class="hint">Starts in the selected thread's project.</p>`,
 	),
 	"organize.html": page(
 		"Organize",
@@ -345,7 +381,7 @@ const pages: Record<string, string> = {
 			<sdpi-item label="Prompts">
 				<sdpi-textarea setting="prompts" rows="6" placeholder="One prompt per line"></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint">Rotate to choose, press to send to the focused thread, hold to start a new thread.</p>`,
+			<p class="hint">Rotate to choose, press to send to the selected thread, hold to start a new thread.</p>`,
 	),
 };
 
