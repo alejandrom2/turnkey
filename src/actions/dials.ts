@@ -264,6 +264,8 @@ export class ModelDial extends StripDial<PowerSettings> {
 			current: at(state.current),
 			preview: pending ? index : undefined,
 			spectrum: shown?.kind === "effort" && shown.ultrathink,
+			// White marks fill gray, so the white thumb still stands out.
+			fill: state.current?.kind === "model" ? (modelColor(state.current.model) ?? "#8E9199") : undefined,
 			ends,
 			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending) } : undefined,
 			badges,
