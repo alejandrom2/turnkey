@@ -70,7 +70,7 @@ function threadFace(thread: DeckThread | undefined, emptyLabel: string, selected
 	const face = renderThreadKey({
 		state: thread.deck,
 		title: thread.title,
-		meta: thread.active ? elapsed(thread.activeSince, now) : undefined,
+		meta: elapsed(thread.active ? thread.activeSince : thread.updatedAt, now),
 		diff: thread.active ? undefined : thread.machine.turnDiff(thread),
 		unseen: thread.unseen,
 		selected: selected === undefined ? undefined : thread.key === selected.key,
