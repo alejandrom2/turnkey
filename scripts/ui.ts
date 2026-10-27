@@ -716,7 +716,9 @@ const pages: Record<string, string> = {
 	"target.html": page("Target", targetField, targetScript),
 	"organize.html": page(
 		"Organize",
-		`${targetField}
+		`
+			<div id="organize-target">${targetField}
+			</div>
 			<sdpi-item ${attr("label", "inspector.organize.action")}>
 				<sdpi-select setting="organize" default="settle">
 					<option value="settle"${text("inspector.organize.settle")}</option>
@@ -724,6 +726,7 @@ const pages: Record<string, string> = {
 					<option value="snooze"${text("inspector.organize.snooze")}</option>
 					<option value="archive"${text("inspector.organize.archive")}</option>
 					<option value="mark_unread"${text("inspector.organize.markUnread")}</option>
+					<option value="wake"${text("inspector.organize.wake")}</option>
 				</sdpi-select>
 			</sdpi-item>
 			<sdpi-item ${attr("label", "inspector.organize.snoozeFor")} id="snooze-for">
@@ -744,7 +747,9 @@ const pages: Record<string, string> = {
 					<option value="off"${text("inspector.organize.confirmOff")}</option>
 				</sdpi-select>
 			</sdpi-item>`,
-		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) + targetScript,
+		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) +
+			showWhen("organize", "organize-target", `value !== "wake"`) +
+			targetScript,
 	),
 	"task.html": page(
 		"Run Task",

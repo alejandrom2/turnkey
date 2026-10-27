@@ -204,6 +204,20 @@ function listed(thread: ThreadShell, childAsks: boolean, capabilities: ThreadCap
 	return !(capabilities.threadSnooze === true && effectiveSnoozed(thread, childAsks, now));
 }
 
+/** When a thread that still sleeps was snoozed (its last change, for a snooze from before T3 Code stamped it). */
+function sleepingSince(thread: ThreadShell, childAsks: boolean, capabilities: ThreadCapabilities, now: number): number | undefined {
+	if (capabilities.threadSnooze !== true || !effectiveSnoozed(thread, childAsks, now)) return undefined;
+	const at = time(thread.snoozedAt);
+	return Number.isNaN(at) ? time(thread.updatedAt) : at;
+}
+
+/** The thread snoozed most recently among those still asleep: what "Wake latest" wakes. */
+export const latestSnoozed = <Row extends Pick<ShellRow, "snoozedAt">>(rows: Iterable<Row>): Row | undefined => {
+	let latest: Row | undefined;
+	for (const row of rows) if (row.snoozedAt !== undefined && (latest === undefined || row.snoozedAt > latest.snoozedAt!)) latest = row;
+	return latest;
+};
+
 /** The earliest snooze that ends after `now`: the server sends nothing then, so the caller re-derives at that time. */
 export function nextSnoozeWake(state: ShellState, now: number): number | undefined {
 	let next: number | undefined;
@@ -260,6 +274,8 @@ export type ShellRow = {
 	mergeInto: string | undefined;
 	/** The thread's newest run; null before its first turn. */
 	latestRunId: string | null;
+	/** When the thread was snoozed, while it still sleeps; undefined for a thread that is awake. */
+	snoozedAt: number | undefined;
 	/** Subagents the thread's turn started that are still out (`pendingBackgroundTasks`), as T3 Code's banner counts them. */
 	subagents: number;
 	/** Changes whenever the thread's runs move: the shell carries no queue, so the deck reads it again then. */
@@ -359,6 +375,7 @@ export function shellRows(state: ShellState, capabilities: ThreadCapabilities, n
 			openedAt: openedAt(thread),
 			mergeInto: mergeBackTarget(thread),
 			latestRunId: thread.latestRunId,
+			snoozedAt: sleepingSince(thread, child !== undefined, capabilities, now),
 			subagents: (thread.pendingBackgroundTasks ?? []).filter((task) => task.kind === "subagent").length,
 			runStamp: [thread.status, thread.latestRunId, thread.activeRunId, thread.activityRunStatus ?? ""].join("|"),
 			mayQueue: thread.status === "queued" || thread.status === "interrupted",
