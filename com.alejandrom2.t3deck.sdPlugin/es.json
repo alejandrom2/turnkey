@@ -119,12 +119,16 @@
 		"Tooltip": "Escribe la guía de revisión de T3 Code para el pull request del hilo seleccionado y luego abre el hilo."
 	},
 	"com.alejandrom2.t3deck.editor": {
-		"Name": "Abrir en editor",
-		"Tooltip": "Abre el worktree o el proyecto del hilo seleccionado en un editor, en la máquina donde corre T3 Code."
+		"Name": "Abrir",
+		"Tooltip": "Abre el worktree del hilo seleccionado en un editor o, según su ajuste, su página de vista previa en el navegador de este equipo."
 	},
 	"com.alejandrom2.t3deck.preview": {
-		"Name": "Abrir vista previa",
-		"Tooltip": "Abre la página de vista previa del hilo, o su render HTML más reciente, en el navegador de este equipo."
+		"Name": "Abrir",
+		"Tooltip": "Abre el worktree del hilo seleccionado en un editor o, según su ajuste, su página de vista previa en el navegador de este equipo."
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "Abrir",
+		"Tooltip": "Abre el worktree del hilo seleccionado en un editor o, según su ajuste, su página de vista previa en el navegador de este equipo."
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Estado",
@@ -1078,6 +1082,11 @@
 				"stops": "Detiene",
 				"turn": "El turno",
 				"workflow": "El workflow"
+			},
+			"open": {
+				"in": "Abrir en",
+				"editor": "Editor",
+				"preview": "Vista previa"
 			}
 		},
 		"usage": {

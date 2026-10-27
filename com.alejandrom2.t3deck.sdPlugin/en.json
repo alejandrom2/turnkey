@@ -119,12 +119,16 @@
 		"Tooltip": "Writes T3 Code's review guide for the selected thread's pull request, then opens the thread."
 	},
 	"com.alejandrom2.t3deck.editor": {
-		"Name": "Open in Editor",
-		"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on."
+		"Name": "Open",
+		"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks."
 	},
 	"com.alejandrom2.t3deck.preview": {
-		"Name": "Open Preview",
-		"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser."
+		"Name": "Open",
+		"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks."
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "Open",
+		"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks."
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Health",
@@ -1078,6 +1082,11 @@
 				"stops": "Stops",
 				"turn": "The turn",
 				"workflow": "The workflow"
+			},
+			"open": {
+				"in": "In",
+				"editor": "Editor",
+				"preview": "Preview"
 			}
 		},
 		"usage": {
