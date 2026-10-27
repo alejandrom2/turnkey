@@ -133,6 +133,12 @@
 			<sdpi-item label="Model" data-i18n-label="inspector.field.model">
 				<sdpi-select setting="model" datasource="getModels" hot-reload loading="Loading models…" data-i18n-loading="inspector.loading.models" default=""></sdpi-select>
 			</sdpi-item>
+			<sdpi-item label="Name color" data-i18n-label="inspector.model.nameColor">
+				<sdpi-select setting="nameColor" default="model">
+					<option value="model" data-i18n="inspector.model.nameModel">Model color</option>
+					<option value="white" data-i18n="inspector.model.nameWhite">White</option>
+				</sdpi-select>
+			</sdpi-item>
 			<p class="hint" data-i18n="inspector.model.hint">Cycling steps through T3 Code's favorite models, across providers, or the thread's provider's models when you have none. Picking another provider's model hands the thread over, as T3 Code's model picker does.</p>
 			<details class="group needs" id="needs" hidden>
 				<summary><span data-i18n="inspector.card.needsTitle">What this action needs</span><span class="unmet" id="needs-unmet"></span></summary>
