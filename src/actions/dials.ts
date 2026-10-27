@@ -5,7 +5,7 @@ import { type ActionKind, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
-import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
+import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, switchSelection, withOptionValue, runtimeModes } from "../core/models.js";
 import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, effortToneOf, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
@@ -16,6 +16,8 @@ import {
 	glyphArt,
 	type GlyphName,
 	type MarkPainter,
+	accessTone,
+	MODE_GLYPH,
 	modelFill,
 	type Paint,
 	paintedGlyphArt,
@@ -196,10 +198,13 @@ function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): {
 	return { text: choice.label, paint: effortToneOf(choices, choice.key, colorStyle(), modelColor(model))?.text };
 }
 
-/** What a previewed choice reads in: the model's color, or its effort level's; amber for other settings. */
+/** What a previewed choice reads in: the model's color, its effort level's, or its access mode's. */
 function pendingColor(pending: PowerChoice, thread: DeckThread): string {
 	if (pending.kind === "model") return modelColor(pending.model) ?? COLORS.text;
-	if (pending.kind !== "effort") return COLORS.attention;
+	if (pending.kind === "mode") {
+		const modes = runtimeModes(thread.machine.modelConfig, thread.model.instanceId).map((mode) => mode.value);
+		return accessTone(modes.length > 1 ? Math.max(0, modes.indexOf(pending.mode)) / (modes.length - 1) : 1).text;
+	}
 	const model = findModel(thread.machine.modelConfig, thread.model);
 	return effortToneOf(effortChoices(model), pending.key, colorStyle(), model && modelColor(model))?.text ?? COLORS.attention;
 }
@@ -316,25 +321,29 @@ export class ModelDial extends StripDial<PowerSettings> {
 				: control === "permissions"
 					? [t("power.asksFirst"), t("power.handsOff")]
 					: ["", ""];
-		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
 		// The model's effort sits on the bottom row beside Speed, under its own icon in its level's paint.
 		const effort = shown?.kind === "model" ? modelEffort(shown.model, thread, context.armed) : undefined;
 		const { showSpeed, showEffort } = this.settingsOf(action);
 		const start = showSpeed === false ? undefined : speed;
 		const end = showEffort === false || effort === undefined ? undefined : { mark: paintedGlyphArt(CONTROL.effort.glyph, effort.paint ?? COLORS.muted), text: effort.text, paint: effort.paint };
 		const footer = start || end ? { start, end } : undefined;
-		const tone = shown?.kind === "effort" ? effortToneOf(effortChoices(model), shown.key, colorStyle(), model && modelColor(model)) : undefined;
+		const tone =
+			shown?.kind === "effort"
+				? effortToneOf(effortChoices(model), shown.key, colorStyle(), model && modelColor(model))
+				: shown?.kind === "mode"
+					? accessTone(state.choices.length > 1 ? Math.max(0, at(shown)) / (state.choices.length - 1) : 1)
+					: undefined;
 		return {
 			// The badge and the color already name the provider.
 			label: shown?.kind === "model" ? bareModelName(shown.model) : (shown?.label ?? thread.model.model),
-			labelColor: shown?.kind === "model" ? modelColor(shown.model) : shown?.kind === "effort" ? (tone?.text ?? (pending ? COLORS.attention : undefined)) : pending || fullAccess ? COLORS.attention : undefined,
+			labelColor: shown?.kind === "model" ? modelColor(shown.model) : (tone?.text ?? (pending ? COLORS.attention : undefined)),
 			stops: state.choices.length,
 			current: at(state.current),
 			preview: pending ? index : undefined,
 			fill:
 				shown?.kind === "effort" && shown.ultrathink
 					? { gradient: SPECTRUM }
-					: shown?.kind === "effort"
+					: shown?.kind === "effort" || shown?.kind === "mode"
 						? tone?.fill
 						: state.current?.kind === "model"
 							? modelFill(colorStyle(), modelColor(state.current.model))
@@ -346,7 +355,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending, thread) } : undefined,
 			badges,
 			footer,
-			lead: shown?.kind === "effort" && tone ? glyphArt(CONTROL.effort.glyph, tone.text) : shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph),
+			lead: shown?.kind === "effort" && tone ? glyphArt(CONTROL.effort.glyph, tone.text) : shown?.kind === "mode" && tone ? glyphArt(MODE_GLYPH[shown.mode], tone.text) : shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph),
 			dim: !check.available,
 		};
 	}

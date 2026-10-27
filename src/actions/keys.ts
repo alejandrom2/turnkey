@@ -34,13 +34,13 @@ import {
 	COLORS,
 	dotsCue,
 	type GlyphName,
+	accessTone,
 	ladderCue,
 	type MarkPainter,
 	maxEffortStyle,
 	modelFill,
 	MODE_GLYPH,
 	paintedGlyphArt,
-	pillCue,
 	renderControlKey,
 	renderDecisionKey,
 	renderInfoKey,
@@ -708,11 +708,14 @@ export class Permissions extends SettingKey<PermissionSettings> {
 		const check = availability("permissions", { thread, gone, canOperate: canOperate(thread), missing });
 		const labelOf = (value: RuntimeMode | undefined) => (value === undefined ? t("face.access") : modeLabel(value));
 		const full = shown === "full-access" && (thread !== undefined || fixed !== undefined);
-		// The pill is filled when the mode shown is the thread's; outlined when this key would switch to it.
-		const cue = thread ? pillCue(fixed === undefined || fixed === current, full ? COLORS.attention : COLORS.accent) : undefined;
+		// A track like Effort's: the modes the provider offers, from asking first to hands-off, filled up to the one shown.
+		const step = values.indexOf(shown);
+		const tone = step >= 0 ? accessTone(values.length > 1 ? step / (values.length - 1) : 1) : undefined;
+		const cue = thread && values.length > 1 && step >= 0 ? ladderCue(values.length, step, false, tone!.fill) : undefined;
 		const face = renderControlKey({
 			glyph: MODE_GLYPH[shown],
-			glyphColor: full ? COLORS.attention : undefined,
+			glyphColor: tone?.text,
+			labelColor: tone?.text,
 			wash: full && current === "full-access" ? COLORS.attention : undefined,
 			label: thread || fixed ? labelOf(shown) : t("face.access"),
 			available: check.available,

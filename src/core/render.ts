@@ -175,6 +175,17 @@ export function effortTone(style: MaxEffortStyle, t: number, top: boolean, model
 	}
 }
 
+/** Access modes run from asking first (T3 blue) to hands-off (the amber Full access already wears). */
+const ACCESS_GRADIENT: Stops = [
+	[0, COLORS.accent],
+	// Through violet: blue and amber alone mix to gray in the middle.
+	[0.5, MAX_VIOLET],
+	[1, COLORS.attention],
+];
+
+/** An access mode `t` of the way from the most supervised to the most hands-off: its text color and the track's fill. */
+export const accessTone = (t: number): { text: string; fill: Paint } => ({ text: sampleStops(ACCESS_GRADIENT, t), fill: { gradient: ACCESS_GRADIENT } });
+
 /** A model's track fill: its provider's gradient, or its color; gray for white marks, so the white thumb stands out. */
 export const modelFill = (style: MaxEffortStyle, color: string | undefined): Paint => (style === "gradient" ? { gradient: providerGradient(color) } : (color ?? "#8E9199"));
 
@@ -539,10 +550,6 @@ export function dotsCue(count: number, index: number, paint: Paint = "#FFFFFF"):
 	}
 	return parts.join("");
 }
-
-/** A small mode pill: filled when the key's mode is the thread's, outlined when it only applies it. */
-export const pillCue = (filled: boolean, color: string = COLORS.accent): string =>
-	filled ? `<rect x="16" y="119" width="24" height="7" rx="3.5" fill="${color}"/>` : `<rect x="16.75" y="119.75" width="22.5" height="5.5" rx="2.75" fill="none" stroke="${color}" stroke-width="1.5"/>`;
 
 const CAPTION = { x: 72, maxWidth: 124 } as const;
 
