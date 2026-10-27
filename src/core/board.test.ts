@@ -31,6 +31,7 @@ function row(threadId: string, patch: Partial<ShellRow> = {}): ShellRow {
 		subagents: 0,
 		mergeInto: undefined,
 		latestRunId: null,
+		snoozedAt: undefined,
 		...patch,
 	};
 }

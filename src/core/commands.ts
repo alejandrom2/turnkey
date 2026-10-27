@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import type { DeckThread } from "./board.js";
 import type { Question } from "./t3/machine.js";
 
-export type OrganizeAction = "settle" | "pin" | "unpin" | "snooze" | "archive" | "mark_unread";
+export type OrganizeAction = "settle" | "pin" | "unpin" | "snooze" | "archive" | "mark_unread" | "wake";
 
 /** `t3code://threads/<environmentId>/<threadId>`, handled by T3 Code desktop (`packages/shared/src/promptLinks.ts`). */
 export function threadDeepLink(thread: Pick<DeckThread, "environmentId" | "threadId">, scheme = "t3code"): string {
@@ -31,6 +31,8 @@ export function organize(thread: DeckThread, action: OrganizeAction, snoozeMinut
 			return machine.archive(thread);
 		case "mark_unread":
 			return machine.markUnread(thread);
+		case "wake":
+			return machine.unsnooze(thread);
 	}
 }
 

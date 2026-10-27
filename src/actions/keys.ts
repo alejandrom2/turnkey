@@ -49,7 +49,7 @@ import {
 import type { Need } from "../core/requirements.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
-import type { RuntimeMode } from "../core/t3/shell.js";
+import { latestSnoozed, type RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
 import { gitTarget, statuses } from "./git.js";
 import { connectionOf } from "./needs.js";
@@ -424,6 +424,7 @@ const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey]> = {
 	snooze: ["moon", "organize.snooze"],
 	archive: ["archive", "organize.archive"],
 	mark_unread: ["chat", "organize.markUnread"],
+	wake: ["moon", "organize.wake"],
 };
 
 const asksFirst = (which: OrganizeAction) => which === "settle" || which === "snooze";
@@ -437,11 +438,31 @@ const snoozeLabel = (settings: OrganizeSettings) => {
 	return elapsed(0, minutes * 60_000);
 };
 
-/** Settle, pin or unpin, snooze, archive or mark the selected thread unread. Pin toggles; the rest are undone in T3 Code. */
+/** The thread snoozed last on `url`'s machine (or any), while it still sleeps: what Wake brings back. */
+function latestAsleep(url: string | undefined): DeckThread | undefined {
+	const asleep: DeckThread[] = [];
+	for (const machine of deck.machines) {
+		const environmentId = machine.environmentId;
+		if (machine.state.kind !== "ready" || environmentId === undefined || (url !== undefined && machine.url !== url)) continue;
+		const row = latestSnoozed(machine.everyRow);
+		if (row !== undefined) asleep.push({ ...row, key: `${environmentId}/${row.threadId}`, machine, environmentId });
+	}
+	return latestSnoozed(asleep);
+}
+
+/**
+ * Settle, pin or unpin, snooze, archive or mark the selected thread unread, or wake the thread snoozed last. Pin
+ * toggles and Wake undoes a Snooze; the rest are undone in T3 Code.
+ */
 @action({ UUID: `${ID}.organize` })
 export class Organize extends DeckAction<OrganizeSettings> {
 	#check(action: Action<OrganizeSettings>) {
 		const setting = this.settingsOf(action).organize ?? "settle";
+		if (setting === "wake") {
+			const thread = latestAsleep(this.machineOf(action));
+			const check: Availability = thread === undefined ? { available: false, reason: t("organize.nothingSnoozed") } : availability("organize", { thread, canOperate: canOperate(thread) });
+			return { which: setting, pinned: false, targeted: false, thread, check };
+		}
 		const { thread, gone, pinned: targeted } = this.target(action);
 		const pinning = setting === "pin" || setting === "unpin";
 		const pin = thread?.pinned ? "unpin" : "pin";
@@ -452,10 +473,26 @@ export class Organize extends DeckAction<OrganizeSettings> {
 
 	protected override async paint(action: Action<OrganizeSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const { which, pinned, targeted, check } = this.#check(action);
+		const { which, pinned, targeted, thread, check } = this.#check(action);
 		const [glyph, label] = ORGANIZE_FACE[which];
+		if (which === "wake") {
+			const detail = check.available ? thread?.title : check.reason;
+			return void (await this.setImage(action, renderInfoKey({ glyph, title: t(label), detail, available: check.available })));
+		}
 		const text = which === "snooze" ? t("organize.snoozeFor", { duration: snoozeLabel(this.settingsOf(action)) }) : t(label);
 		await this.setImage(action, renderControlKey({ glyph, label: text, available: check.available, active: pinned, pinned: targeted }));
+	}
+
+	/** Wake reads no target, so it lists its own needs; the others use the shared table. */
+	override needs(action: Action<OrganizeSettings>): Need[] {
+		const { which, thread } = this.#check(action);
+		if (which !== "wake") return [];
+		const url = this.machineOf(action);
+		return [
+			{ kind: "paired", connection: connectionOf(url) },
+			{ kind: "operate", ok: thread?.machine.canOperate ?? deck.machines.some((machine) => machine.canOperate && (url === undefined || machine.url === url)) },
+			{ kind: "snoozed", ok: thread !== undefined },
+		];
 	}
 
 	/** Settle and Snooze ask first (Review by default): both take the thread off the board. */
