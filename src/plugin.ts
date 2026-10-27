@@ -3,6 +3,8 @@ import streamDeck from "@elgato/streamdeck";
 import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.js";
 import { OpenInEditor } from "./actions/editor.js";
 import { CommitKey, CreatePrKey, PullKey, PushKey } from "./actions/git.js";
+import { LimitsDial, LimitsKey } from "./actions/limits.js";
+import { UsageDial, UsageKey } from "./actions/usage.js";
 import "./actions/needs.js";
 import { AskPrKey, ExplainPrKey, FixFindingsKey, PrDial, ReviewGuideKey } from "./actions/pr.js";
 import {
@@ -63,11 +65,15 @@ for (const instance of [
 	new AskPrKey(),
 	new ReviewGuideKey(),
 	new OpenInEditor(),
+	new LimitsKey(),
+	new UsageKey(),
 	new ThreadDial(),
 	new ModelDial(),
 	new PromptDial(),
 	new AnswerDial(),
 	new PrDial(),
+	new LimitsDial(),
+	new UsageDial(),
 ]) {
 	streamDeck.actions.registerAction(instance);
 }
