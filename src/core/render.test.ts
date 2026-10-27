@@ -73,7 +73,7 @@ describe("renderThreadKey", () => {
 });
 
 describe("renderControlKey", () => {
-	it("dims unavailable controls with opacity rather than colour", () => {
+	it("dims unavailable controls with opacity rather than color", () => {
 		expect(svg(renderControlKey({ glyph: "send", primary: true, available: false }))).toContain(`<g opacity=".5">`);
 		expect(svg(renderControlKey({ glyph: "send", primary: true }))).not.toContain(`opacity=".5"`);
 		expect(svg(renderControlKey({ glyph: "compose", label: "New chat", available: false }))).toContain(`<g opacity=".5">`);
