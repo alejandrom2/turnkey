@@ -26,6 +26,8 @@ export type SliderInput = {
 	note?: { text: string; color?: string };
 	/** Up to two 20 px badges at the top right, rightmost first. */
 	badges?: MarkPainter[];
+	/** A 20 px mark before the label: the provider, effort or mode icon. */
+	lead?: MarkPainter;
 	/** Dims the track: the dial can't act. */
 	dim?: boolean;
 	/** How far an overflowing label has scrolled left, in px. */
@@ -52,8 +54,10 @@ function fit(text: string, width: number, size: number): string {
 export const sliderLabelText = (input: Pick<SliderInput, "label" | "suffix">): string => (input.suffix ? `${input.label} ${input.suffix.text}` : input.label);
 
 /** The room the label has beside the badges, as a text slot the marquee can scroll. */
-export const sliderLabelSlot = (input: Pick<SliderInput, "badges">) => ({
-	width: SLIDER.width - Math.min(2, input.badges?.length ?? 0) * (BADGE + 6) - 4,
+const LEAD = BADGE + 6;
+
+export const sliderLabelSlot = (input: Pick<SliderInput, "badges" | "lead">) => ({
+	width: SLIDER.width - Math.min(2, input.badges?.length ?? 0) * (BADGE + 6) - (input.lead ? LEAD : 0) - 4,
 	height: 22,
 	size: 16,
 	weight: 650,
@@ -68,27 +72,29 @@ export function sliderArt(input: SliderInput): string {
 	badges.forEach((badge, index) => parts.push(badge(SLIDER.x + SLIDER.width - BADGE - index * (BADGE + 6), 9, BADGE)));
 
 	const labelRoom = sliderLabelSlot(input).width;
+	const start = SLIDER.x + (input.lead ? LEAD : 0);
+	if (input.lead) parts.push(input.lead(SLIDER.x, 9, BADGE));
 	const labelColor = input.labelColor ?? COLORS.text;
 	const overflow = textWidth(sliderLabelText(input), 16) - labelRoom;
 	const suffix = input.suffix;
 	const suffixFill = suffix?.spectrum ? `fill="url(#slider-suffix)"` : suffix?.color ? `fill="${suffix.color}"` : `fill="#FFFFFF" fill-opacity=".5"`;
-	if (suffix?.spectrum) parts.push(`<defs><linearGradient id="slider-suffix" gradientUnits="userSpaceOnUse" x1="${SLIDER.x}" y1="0" x2="${SLIDER.x + labelRoom}" y2="0">${spectrumStops()}</linearGradient></defs>`);
+	if (suffix?.spectrum) parts.push(`<defs><linearGradient id="slider-suffix" gradientUnits="userSpaceOnUse" x1="${start}" y1="0" x2="${start + labelRoom}" y2="0">${spectrumStops()}</linearGradient></defs>`);
 	const label = (x: number, extra = "") => {
 		const name = svgText(input.label, x, 26, 16, 650, labelColor);
 		if (suffix === undefined) return `<g${extra}>${name}</g>`;
-		const after = +(x + textWidth(input.label, 16) + 5).toFixed(1);
+		const after = +(x + textWidth(input.label, 16) + 2).toFixed(1);
 		return `<g${extra}>${name}<text x="${after}" y="26" font-family="${FONT_FAMILY}" font-size="16" font-weight="650" ${suffixFill}>${escapeXml(suffix.text)}</text></g>`;
 	};
 	if (overflow > 0) {
-		const end = SLIDER.x + labelRoom;
+		const end = start + labelRoom;
 		const offset = Math.min(Math.max(0, input.labelOffset ?? 0), overflow + 4);
 		// At rest the tail fades out; while it scrolls the label is clipped to its room instead.
 		const shape =
 			offset === 0
 				? `<linearGradient id="slider-label-fade" gradientUnits="userSpaceOnUse" x1="${end - 22}" y1="0" x2="${end}" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="slider-label" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="34"><rect width="200" height="34" fill="url(#slider-label-fade)"/></mask>`
-				: `<clipPath id="slider-label"><rect x="${SLIDER.x}" y="0" width="${labelRoom}" height="34"/></clipPath>`;
-		parts.push(`<defs>${shape}</defs>`, label(+(SLIDER.x - offset).toFixed(1), offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
-	} else parts.push(label(SLIDER.x));
+				: `<clipPath id="slider-label"><rect x="${start}" y="0" width="${labelRoom}" height="34"/></clipPath>`;
+		parts.push(`<defs>${shape}</defs>`, label(+(start - offset).toFixed(1), offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
+	} else parts.push(label(start));
 
 	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
