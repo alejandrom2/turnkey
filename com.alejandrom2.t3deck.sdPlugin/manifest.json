@@ -472,6 +472,20 @@
 				"TriggerDescription": { "Rotate": "Choose model", "Push": "Refresh (hold: prices too)", "Touch": "Refresh", "LongTouch": "Read details" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-usage/key" }]
+		},
+		{
+			"Name": "Devices Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.devices",
+			"Icon": "imgs/actions/dial-devices/icon",
+			"Tooltip": "Rotate through T3 Code's simulators and emulators. Press starts the shown one, or opens it, in the thread's Device panel; hold powers it off. Touch looks for devices again.",
+			"PropertyInspectorPath": "ui/devices-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-devices/icon",
+				"TriggerDescription": { "Rotate": "Choose device", "Push": "Start or open (hold: power off)", "Touch": "Look again" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-devices/key" }]
 		}
 	]
 }

@@ -205,6 +205,13 @@
 		"Name": "Usage",
 		"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices."
 	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "Devices Dial",
+		"Tooltip": "Rotate through T3 Code's simulators and emulators. Press starts the shown one, or opens it, in the thread's Device panel; hold powers it off. Touch looks for devices again.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose device", "Push": "Start or open (hold: power off)", "Touch": "Look again" }
+		}
+	},
 	"com.alejandrom2.t3deck.dial.usage": {
 		"Name": "Usage Dial",
 		"Tooltip": "Rotate through a period's total and each model's cost, tokens, cache hit rate and cost per million tokens. Press or tap refreshes; a long press reloads model prices.",
@@ -575,6 +582,7 @@
 			"limits": "A provider that reports limits",
 			"snoozed": "A snoozed thread",
 			"preview": "A preview or HTML render",
+			"devices": "A simulator or emulator",
 			"notAvailable": "Not available: {value}",
 			"fix": {
 				"openT3": "Open T3 Code on this computer, then press the key.",
@@ -602,7 +610,8 @@
 				"queueMessage": "Send a message while the thread works; it waits in its queue.",
 				"addTask": "Add one in T3 Code under Settings → Scheduled tasks.",
 				"snoozeOne": "Snooze one with an Organize key or in T3 Code.",
-				"openPreview": "Open a page in the thread's preview panel in T3 Code, or ask the agent to render HTML."
+				"openPreview": "Open a page in the thread's preview panel in T3 Code, or ask the agent to render HTML.",
+				"turnOnDevices": "Turn on Devices in T3 Code's Device panel, with Xcode or Android Studio on that machine."
 			},
 			"findings": "Findings to fix",
 			"providers": "Providers ready",
@@ -615,6 +624,26 @@
 			"noFolder": "No folder",
 			"opensOn": "Opens on {machine}"
 		},
+		"devices": {
+			"title": "Devices",
+			"ios": "iOS",
+			"android": "Android",
+			"open": "Open here",
+			"running": "Running",
+			"starting": "Starting…",
+			"stopped": "Stopped",
+			"loading": "Looking for devices…",
+			"off": "Devices are off",
+			"turnOn": "Turn on in T3 Code",
+			"hubStarting": "Starting device hub…",
+			"hubFailed": "The device hub failed to start.",
+			"none": "No simulators or emulators",
+			"touchToCheck": "Touch to look again",
+			"pressToStart": "Press starts it · touch looks again",
+			"pressToOpen": "Press opens it · hold powers off",
+			"holdToStartCloud": "Hold to start: EAS bills",
+			"physical": "Can't power off a real device"
+		},
 		"openPreview": {
 			"title": "Open preview",
 			"none": "No preview",
@@ -626,6 +655,9 @@
 				"label": "Editor",
 				"loading": "Loading editors…",
 				"hint": "Opens the selected thread's worktree, or its project's folder. T3 Code launches the editor on its own machine, which may not be this one."
+			},
+			"devices": {
+				"hint": "Lists the simulators and emulators of the thread's machine and its device hosts. Press starts the shown device in the thread's Device panel, or opens it there if it runs; hold powers it off. A cloud (EAS) device needs a hold to start, since Expo bills while it runs. Turning Devices on and adding hosts happens in T3 Code."
 			},
 			"preview": {
 				"hint": "Opens the page the thread's preview panel shows in this computer's browser, else the thread's newest HTML render. A page on another machine's localhost only opens on that machine, so the key says so; open it from T3 Code there."
