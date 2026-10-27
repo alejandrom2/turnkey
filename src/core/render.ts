@@ -419,7 +419,12 @@ export type ControlKeyInput = {
 	ultrathink?: boolean;
 	/** A position cue drawn along the bottom (y 110 to 128): the label keeps to one line above it. */
 	cue?: string;
+	/** The key acts on one thread picked in its settings, not the selection: a small pin top-right. */
+	pinned?: boolean;
 };
+
+/** The mark of a key aimed at one thread: a small muted pin in the top-right corner. */
+const pinMark = () => glyph("pin", 114, 12, 18, COLORS.muted, 2);
 
 const TONE_COLOR: Record<ControlTone, string> = { default: "#FFFFFF", approve: COLORS.done, deny: COLORS.error };
 const LABEL = { x: 16.7, maxWidth: 112 } as const;
@@ -458,6 +463,7 @@ export function renderControlKey(input: ControlKeyInput): string {
 	} else {
 		content.push(glyph(input.glyph, 38, 38, 68, accent));
 	}
+	if (input.pinned) content.push(pinMark());
 	const body = input.available === false ? `<g opacity=".5">${content.join("")}</g>` : content.join("");
 	const wash = input.wash ? overlay(input.wash, 0.14) : "";
 	return keySvg(background(input.active ? COLORS.keyActive : COLORS.key) + wash + body + (input.ultrathink ? ultrathinkFrame(144, 144, 16, 3) : ""));
@@ -505,13 +511,14 @@ export function renderResultKey(input: { ok: boolean; label: string }): string {
 }
 
 /** Approve and Deny, drawn as a pair: a circled check or cross, white while there is something to answer, then what a press does. */
-export function renderDecisionKey(input: { kind: "approve" | "deny"; armed: boolean; caption: string; detail?: string }): string {
+export function renderDecisionKey(input: { kind: "approve" | "deny"; armed: boolean; caption: string; detail?: string; pinned?: boolean }): string {
 	const ring = glyph(input.kind === "approve" ? "check" : "denyCircle", 42, input.detail ? 14 : 20, 60, "#FFFFFF", 1.6);
 	const parts = [input.armed ? ring : `<g opacity=".45">${ring}</g>`];
 	const opacity = input.armed ? undefined : 0.6;
 	const size = [16, 14].find((candidate) => textWidth(input.caption, candidate) <= CAPTION.maxWidth) ?? 13;
 	parts.push(textBlock(wrapText(input.caption, CAPTION.maxWidth, size, 1, { cut: true }), { ...CAPTION, size, lineHeight: 18, firstBaseline: input.detail ? 104 : 112, anchor: "middle", opacity }));
 	if (input.detail) parts.push(textBlock(wrapText(input.detail, CAPTION.maxWidth, 13, 1, { cut: true }), { ...CAPTION, size: 13, lineHeight: 15, firstBaseline: 124, anchor: "middle", opacity: 0.5 }));
+	if (input.pinned) parts.push(pinMark());
 	return keySvg(background(COLORS.key) + parts.join(""));
 }
 

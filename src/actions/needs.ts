@@ -9,17 +9,21 @@ import { dialPrompts, quickPrompt } from "../core/prompts.js";
 import { type Connection, type Need, requirements } from "../core/requirements.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
-import { canOperate, connectionProblem, deckActions, selectedThread } from "./base.js";
+import { pinnedName } from "../core/target.js";
+import { canOperate, connectionProblem, deckActions, targetOf } from "./base.js";
 
 const ID = "com.alejandrom2.t3deck.";
 
 export const connectionOf = (machine: string | undefined): Connection => connectionProblem(machine) ?? "ready";
 
-/** The needs every selected-thread action starts with: a paired machine, a thread, and a pairing that may act. */
-export function threadNeeds(machine: string | undefined, thread: DeckThread | undefined, operate = true): Need[] {
+/**
+ * The needs every thread action starts with: a paired machine, a thread (the selection, or the one its Target pins,
+ * by name), and a pairing that may act.
+ */
+export function threadNeeds(machine: string | undefined, thread: DeckThread | undefined, operate = true, pinned?: string): Need[] {
 	return [
 		{ kind: "paired", connection: connectionOf(machine) },
-		{ kind: "thread", ok: thread !== undefined },
+		pinned === undefined ? { kind: "thread", ok: thread !== undefined } : { kind: "value", value: thread?.title ?? pinned, ok: thread !== undefined },
 		...(operate ? [{ kind: "operate", ok: canOperate(thread) } satisfies Need] : []),
 	];
 }
@@ -35,7 +39,10 @@ const modelLabel = (thread: DeckThread | undefined) => thread && findModel(threa
  */
 export function defaultNeeds(manifestId: string, settings: Record<string, unknown>, machine: string | undefined): Need[] {
 	const kind = manifestId.startsWith(ID) ? manifestId.slice(ID.length) : manifestId;
-	const thread = selectedThread(machine);
+	const target = targetOf(settings, machine);
+	const thread = target.thread;
+	const pinned = target.pinned ? pinnedName(settings) : undefined;
+	const needsFor = (machine: string | undefined, thread: DeckThread | undefined, operate = true) => threadNeeds(machine, thread, operate, pinned);
 	const paired: Need = { kind: "paired", connection: connectionOf(machine) };
 	const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 	const project = text(settings.project);
@@ -51,51 +58,51 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 			return [paired, { kind: "operate", ok: deck.machines.some((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine)) }, ...(settings.destination === "project" ? projectNeed : [])];
 		case "send":
 		case "steer":
-			return [...threadNeeds(machine, thread), ...(kind === "steer" ? [{ kind: "running", ok: thread?.active === true } satisfies Need] : []), { kind: "prompt", ok: text(settings.prompt) !== "" }];
+			return [...needsFor(machine, thread), ...(kind === "steer" ? [{ kind: "running", ok: thread?.active === true } satisfies Need] : []), { kind: "prompt", ok: text(settings.prompt) !== "" }];
 		case "quick":
-			return [...threadNeeds(machine, thread), { kind: "prompt", ok: quickPrompt(settings).text !== "" }];
+			return [...needsFor(machine, thread), { kind: "prompt", ok: quickPrompt(settings).text !== "" }];
 		case "dial.prompts":
-			return [...threadNeeds(machine, thread), { kind: "prompt", ok: dialPrompts(settings).length > 0 }];
+			return [...needsFor(machine, thread), { kind: "prompt", ok: dialPrompts(settings).length > 0 }];
 		case "stop":
-			return [...threadNeeds(machine, thread), { kind: "running", ok: thread?.active === true }];
+			return [...needsFor(machine, thread), { kind: "running", ok: thread?.active === true }];
 		case "model": {
 			const fixed = parseModelKey(settings.model);
 			const known = fixed && deck.machines.some((candidate) => pickableModels(candidate.modelConfig).some((model) => model.key === modelKey(fixed.instanceId, fixed.model)));
-			return [...threadNeeds(machine, thread), ...(fixed && connectionOf(machine) === "ready" ? [{ kind: "value", value: fixed.model, ok: known === true } satisfies Need] : [])];
+			return [...needsFor(machine, thread), ...(fixed && connectionOf(machine) === "ready" ? [{ kind: "value", value: fixed.model, ok: known === true } satisfies Need] : [])];
 		}
 		case "effort": {
 			const values = effortChoices(modelLabel(thread)).map((choice) => String(choice.value));
 			const fixed = text(settings.effort);
 			return [
-				...threadNeeds(machine, thread),
+				...needsFor(machine, thread),
 				{ kind: "option", option: t("needs.optionEffort"), ok: values.length > 0 },
 				...(fixed && thread ? [{ kind: "value", value: fixed, ok: values.includes(fixed) } satisfies Need] : []),
 			];
 		}
 		case "speed":
-			return [...threadNeeds(machine, thread), { kind: "option", option: t("needs.optionFast"), ok: thread !== undefined && speedToggle(modelLabel(thread), thread.model) !== undefined }];
+			return [...needsFor(machine, thread), { kind: "option", option: t("needs.optionFast"), ok: thread !== undefined && speedToggle(modelLabel(thread), thread.model) !== undefined }];
 		case "permissions": {
 			const fixed = RUNTIME_MODES.find((mode) => mode === settings.mode);
 			const offered = thread ? runtimeModes(thread.machine.modelConfig, thread.model.instanceId).map((mode) => mode.value) : [];
-			return [...threadNeeds(machine, thread), ...(fixed && thread ? [{ kind: "value", value: fixed, ok: offered.includes(fixed) } satisfies Need] : [])];
+			return [...needsFor(machine, thread), ...(fixed && thread ? [{ kind: "value", value: fixed, ok: offered.includes(fixed) } satisfies Need] : [])];
 		}
 		case "plan": {
 			const toggle = thread?.machine.modelConfig?.providers?.find((provider) => provider.instanceId === thread.model.instanceId)?.showInteractionModeToggle;
-			return [...threadNeeds(machine, thread), { kind: "option", option: t("needs.optionPlan"), ok: thread !== undefined && toggle !== false }];
+			return [...needsFor(machine, thread), { kind: "option", option: t("needs.optionPlan"), ok: thread !== undefined && toggle !== false }];
 		}
 		case "approve":
 		case "deny":
 		case "dial.answer": {
 			const opensOnly = kind === "approve" && (settings.approvalAuthority ?? "open") === "open";
 			const pending = thread?.pendingRequest !== undefined && (thread.deck === "approval" || (kind === "dial.answer" && thread.deck === "question"));
-			return [...threadNeeds(machine, thread, !opensOnly), { kind: "pending", ok: pending }];
+			return [...needsFor(machine, thread, !opensOnly), { kind: "pending", ok: pending }];
 		}
 		case "pr":
-			return [...threadNeeds(machine, thread, false), { kind: "pr", ok: (thread?.pullRequests.length ?? 0) > 0 }];
+			return [...needsFor(machine, thread, false), { kind: "pr", ok: (thread?.pullRequests.length ?? 0) > 0 }];
 		case "branch":
-			return [...threadNeeds(machine, thread, false), { kind: "branch", ok: thread?.branch !== undefined }];
+			return [...needsFor(machine, thread, false), { kind: "branch", ok: thread?.branch !== undefined }];
 		default:
-			return threadNeeds(machine, thread);
+			return needsFor(machine, thread);
 	}
 }
 

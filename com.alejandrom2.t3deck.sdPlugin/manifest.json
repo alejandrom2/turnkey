@@ -68,7 +68,7 @@
 			"UUID": "com.alejandrom2.t3deck.stop",
 			"Icon": "imgs/actions/stop/icon",
 			"Tooltip": "Stops the running turn of the thread selected in T3 Code.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"PropertyInspectorPath": "ui/target.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/stop/key", "ShowTitle": false }]
 		},
@@ -113,7 +113,7 @@
 			"UUID": "com.alejandrom2.t3deck.plan",
 			"Icon": "imgs/actions/plan/icon",
 			"Tooltip": "Switches the selected thread between Build and Plan.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"PropertyInspectorPath": "ui/target.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/plan/key", "ShowTitle": false }]
 		},
@@ -131,7 +131,7 @@
 			"UUID": "com.alejandrom2.t3deck.deny",
 			"Icon": "imgs/actions/deny/icon",
 			"Tooltip": "Declines the selected thread's approval.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"PropertyInspectorPath": "ui/target.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/deny/key", "ShowTitle": false }]
 		},

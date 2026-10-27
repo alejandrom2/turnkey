@@ -1,10 +1,11 @@
+import type { PinnedLookup } from "./target.js";
 import type { Machine } from "./t3/machine.js";
 import type { ShellRow } from "./t3/shell.js";
 
 export type { DeckState } from "./t3/shell.js";
 
 /** The slice of a Machine the board reads; tests pass plain objects. */
-export type BoardMachine = Pick<Machine, "url" | "state" | "rows" | "visit">;
+export type BoardMachine = Pick<Machine, "url" | "state" | "rows" | "visit" | "threadRow">;
 
 export type DeckThread = ShellRow & {
 	/** `${environmentId}/${threadId}`: stable across machines and reconnects. */
@@ -75,6 +76,8 @@ export class ThreadBoard {
 	readonly #echoes = new Map<string, number>();
 	#seq = 0;
 	#pending: { key: string; timer: ReturnType<typeof setTimeout> } | undefined;
+	/** Per action instance, the thread its settings pin: those rows repaint the deck even while settled or snoozed. */
+	readonly #pinned = new Map<string, string>();
 
 	constructor(
 		private readonly machines: () => readonly BoardMachine[],
@@ -120,6 +123,28 @@ export class ThreadBoard {
 		}
 		const fresh = newestOpened(threads.filter((thread) => thread.openedAt! > newest && !this.#echoes.has(thread.key)));
 		if (fresh !== undefined) this.#selected.set(url, { key: fresh.key, seq: ++this.#seq, openedAt: fresh.openedAt });
+	}
+
+	/**
+	 * A thread by key wherever it is: listed, or settled or snoozed on its machine. Gone once its machine no longer has
+	 * it (archived or deleted); unknown while that machine is offline or has no thread list yet.
+	 */
+	lookup(key: string): PinnedLookup<DeckThread> {
+		const listed = this.threads.find((thread) => thread.key === key);
+		if (listed !== undefined) return { state: "found", thread: listed };
+		const split = key.indexOf("/");
+		const environmentId = key.slice(0, split);
+		const machine = this.machines().find((candidate) => candidate.state.kind === "ready" && candidate.state.environmentId === environmentId);
+		const row = split < 0 ? null : machine?.threadRow(key.slice(split + 1));
+		if (row === undefined || (row === null && machine === undefined)) return { state: "unknown" };
+		if (row === null) return { state: "gone" };
+		return { state: "found", thread: { ...row, key, machine: machine as Machine, environmentId } };
+	}
+
+	/** Follows (or, with undefined, stops following) the thread an action instance pins. */
+	pin(owner: string, key: string | undefined): void {
+		if (key === undefined || key === "") this.#pinned.delete(owner);
+		else this.#pinned.set(owner, key);
 	}
 
 	/** Threads of one machine (its URL), or of every machine when `machine` is empty. */
@@ -194,7 +219,9 @@ export class ThreadBoard {
 	#refresh(): void {
 		const urls = [...new Set(this.threads.map((thread) => thread.machine.url))];
 		const selection = [this.selectedOn()?.key, this.#pending?.key, ...urls.map((url) => this.selectedOn(url)?.key)];
-		const next = signature(this.threads, selection);
+		const listed = new Set(this.threads.map((thread) => thread.key));
+		const hidden = [...new Set(this.#pinned.values())].filter((key) => !listed.has(key)).map((key) => this.lookup(key));
+		const next = signature(this.threads, [selection, hidden.map((found) => (found.state === "found" ? signature([found.thread], undefined) : found.state))]);
 		if (next === this.#signature) return;
 		this.#signature = next;
 		for (const listener of this.#listeners) listener();

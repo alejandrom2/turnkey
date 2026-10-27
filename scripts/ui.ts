@@ -538,6 +538,20 @@ const usageProviderField = `
 				<sdpi-select setting="provider" datasource="getUsageProviders" hot-reload ${attr("loading", "inspector.loading.providers")} default=""></sdpi-select>
 			</sdpi-item>`;
 
+/** Which thread the action acts on: the selection, or one thread picked from the machine's threads. */
+const targetField = `
+			<sdpi-item ${attr("label", "inspector.target.label")}>
+				<sdpi-select setting="target" default="selected">
+					<option value="selected"${text("inspector.target.selected")}</option>
+					<option value="thread"${text("inspector.target.thread")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.target.pick")} id="target-thread" hidden>
+				<sdpi-select setting="thread" datasource="getThreads" hot-reload ${attr("loading", "inspector.loading.threads")}></sdpi-select>
+			</sdpi-item>
+			<p class="hint" id="target-hint" hidden${text("inspector.target.hint")}</p>`;
+const targetScript = showWhen("target", "target-thread", `value === "thread"`) + showWhen("target", "target-hint", `value === "thread"`);
+
 const pages: Record<string, string> = {
 	"environments.html": page("T3 Deck"),
 	"slot.html": page(
@@ -578,7 +592,7 @@ const pages: Record<string, string> = {
 	),
 	"send.html": page(
 		"Send Prompt",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
 				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.send.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
@@ -586,10 +600,11 @@ const pages: Record<string, string> = {
 				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.send.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
 			<p class="hint"${text("inspector.send.hint")}</p>${confirmField}`,
+		targetScript,
 	),
 	"steer.html": page(
 		"Steer",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
 				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.steer.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
@@ -597,10 +612,11 @@ const pages: Record<string, string> = {
 				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.steer.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
 			<p class="hint"${text("inspector.steer.hint")}</p>${confirmField}`,
+		targetScript,
 	),
 	"quick.html": page(
 		"Quick Prompt",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.field.keyTitle")}>
 				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.quick.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
@@ -618,7 +634,7 @@ const pages: Record<string, string> = {
 				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.quick.customPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
 			<p class="hint"${text("inspector.quick.hint")}</p>${confirmField}`,
-		showWhen("template", "custom", `value === "custom"`),
+		showWhen("template", "custom", `value === "custom"`) + targetScript,
 	),
 	"new.html": page(
 		"New Thread",
@@ -644,23 +660,25 @@ const pages: Record<string, string> = {
 	),
 	"model.html": page(
 		"Model",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.field.model")}>
 				<sdpi-select setting="model" datasource="getModels" hot-reload ${attr("loading", "inspector.loading.models")} default=""></sdpi-select>
 			</sdpi-item>
 			<p class="hint"${text("inspector.model.hint")}</p>`,
+		targetScript,
 	),
 	"effort.html": page(
 		"Effort",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.field.effort")}>
 				<sdpi-select setting="effort" datasource="getEfforts" hot-reload ${attr("loading", "inspector.loading.efforts")} default=""></sdpi-select>
 			</sdpi-item>
 			<p class="hint"${text("inspector.effort.hint")}</p>`,
+		targetScript,
 	),
 	"permissions.html": page(
 		"Permissions",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.field.access")}>
 				<sdpi-select setting="mode" default="">
 					<option value=""${text("inspector.permissions.cycle")}</option>
@@ -671,10 +689,11 @@ const pages: Record<string, string> = {
 				</sdpi-select>
 			</sdpi-item>
 			<p class="hint"${text("inspector.permissions.hint")}</p>`,
+		targetScript,
 	),
 	"approve.html": page(
 		"Approve",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.field.approvals")}>${authorityOptions}
 			</sdpi-item>
 			<sdpi-item ${attr("label", "inspector.field.toAnswer")}>
@@ -684,11 +703,13 @@ const pages: Record<string, string> = {
 				</sdpi-select>
 			</sdpi-item>
 			<p class="hint"${text("inspector.approve.hint")}</p>`,
+		targetScript,
 	),
-	"speed.html": page("Speed", ""),
+	"speed.html": page("Speed", targetField, targetScript),
+	"target.html": page("Target", targetField, targetScript),
 	"organize.html": page(
 		"Organize",
-		`
+		`${targetField}
 			<sdpi-item ${attr("label", "inspector.organize.action")}>
 				<sdpi-select setting="organize" default="settle">
 					<option value="settle"${text("inspector.organize.settle")}</option>
@@ -716,7 +737,7 @@ const pages: Record<string, string> = {
 					<option value="off"${text("inspector.organize.confirmOff")}</option>
 				</sdpi-select>
 			</sdpi-item>`,
-		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`),
+		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) + targetScript,
 	),
 	"prompts.html": page(
 		"Prompts Dial",
