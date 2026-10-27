@@ -50,6 +50,9 @@ function fit(text: string, width: number, size: number): string {
 	return `${chars.join("").trimEnd()}…`;
 }
 
+/** Provider labels can carry stray or doubled spaces; the label keeps whitespace as written, so collapse them. */
+const tidy = (text: string) => text.replace(/\s+/g, " ").trim();
+
 /** The label line as the marquee measures it. */
 export const sliderLabelText = (input: Pick<SliderInput, "label" | "suffix">): string => (input.suffix ? `${input.label} ${input.suffix.text}` : input.label);
 
@@ -82,7 +85,7 @@ export function sliderArt(input: SliderInput): string {
 	const label = (x: number, extra = "") => {
 		if (suffix === undefined) return `<g${extra}>${svgText(input.label, x, 26, 16, 650, labelColor)}</g>`;
 		// One text run, so the space between name and effort comes from the font itself.
-		return `<g${extra}><text x="${x}" y="26" font-family="${FONT_FAMILY}" font-size="16" font-weight="650" xml:space="preserve"><tspan fill="${labelColor}">${escapeXml(input.label)} </tspan><tspan ${suffixFill}>${escapeXml(suffix.text)}</tspan></text></g>`;
+		return `<g${extra}><text x="${x}" y="26" font-family="${FONT_FAMILY}" font-size="16" font-weight="650" xml:space="preserve"><tspan fill="${labelColor}">${escapeXml(tidy(input.label))} </tspan><tspan ${suffixFill}>${escapeXml(tidy(suffix.text))}</tspan></text></g>`;
 	};
 	if (overflow > 0) {
 		const end = start + labelRoom;
