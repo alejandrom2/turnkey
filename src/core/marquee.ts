@@ -1,6 +1,7 @@
 /**
  * Scrolls one overflowing strip line on the dial in use: it waits after the last turn or touch, slides to the end at
- * a reading pace, rests, slides back, twice, then stops. Frames are due only while the text moves.
+ * a reading pace, rests, slides back, twice, then stops. Frames are due only while the text moves. A line set to roll
+ * instead wraps, and rolls up one line at a time with a rest on each, twice round, back to the first.
  */
 export const MARQUEE = {
 	delayMs: 1_000,
@@ -28,8 +29,25 @@ export function marqueeFrame(elapsed: number, overflow: number): { offset: numbe
 	return { offset: 0, next: due(period, false) };
 }
 
-/** A line that may scroll: `key` names its text, so a change of text stops the scroll. */
-export type MarqueeLine = { key: string; overflow: number };
+/** Vertical text scroll: each line rolls up in a short eased move at up to 15 frames a second, then rests. */
+export const ROLL = { rollMs: 330, lineMs: 1_200, passes: 2, frameMs: 67 } as const;
+
+const easeInOut = (t: number) => 0.5 - Math.cos(Math.PI * t) / 2;
+
+/** How far `lines` wrapped lines of `height` px have rolled `elapsed` ms after they start moving; it ends back on the first line. */
+export function rollFrame(elapsed: number, lines: number, height: number): { offset: number; next: number | undefined } {
+	if (lines < 2) return { offset: 0, next: undefined };
+	const step = ROLL.rollMs + ROLL.lineMs;
+	if (elapsed >= ROLL.passes * lines * step - ROLL.lineMs) return { offset: 0, next: undefined };
+	const index = Math.floor(elapsed / step);
+	const t = elapsed - index * step;
+	if (t >= ROLL.rollMs) return { offset: ((index + 1) % lines) * height, next: Math.max(1, Math.ceil(step - t)) };
+	const offset = Math.round(((index % lines) + easeInOut(t / ROLL.rollMs)) * height);
+	return { offset, next: Math.max(1, Math.ceil(Math.min(ROLL.frameMs, ROLL.rollMs - t))) };
+}
+
+/** A line that may scroll: `key` names its text, so a change of text stops the scroll. `roll` makes it roll up instead. */
+export type MarqueeLine = { key: string; overflow: number; roll?: { lines: readonly string[]; height: number } };
 
 /**
  * One marquee for the whole deck: only the last dial turned or touched scrolls. `repaint` redraws an owner, which
@@ -103,7 +121,9 @@ export class Marquee {
 	#tick(): void {
 		const owner = this.#owner;
 		if (owner === undefined || this.#line === undefined || this.#startedAt === undefined) return;
-		const frame = marqueeFrame(this.now() - this.#startedAt, this.#line.overflow);
+		const elapsed = this.now() - this.#startedAt;
+		const roll = this.#line.roll;
+		const frame = roll ? rollFrame(elapsed, roll.lines.length, roll.height) : marqueeFrame(elapsed, this.#line.overflow);
 		const changed = frame.offset !== this.#offset;
 		this.#offset = frame.offset;
 		if (frame.next === undefined) this.#startedAt = undefined;

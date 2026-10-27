@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { BLANK_ART, DEFAULT_APPEARANCE, resolveAppearance, stripCanvas, toneOf } from "./render.js";
-import { overflowOf, scrollingLine, type StripContent, stripFeedback, twoLines } from "./strip.js";
+import { overflowOf, readingLength, scrollingLine, STRIP_LINES, type StripContent, stripFeedback, twoLines } from "./strip.js";
 
 const svg = (dataUrl: unknown) => Buffer.from(String(dataUrl).replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
 
 const LONG = "Refactor the websocket reconnect logic so tunnels survive sleep";
-const content = (patch: Partial<StripContent> = {}): StripContent => ({ header: "Threads", icon: BLANK_ART, accent: "#5B8CFF", value: "Short", detail: "Done", ...patch });
+const content = (patch: Partial<StripContent> = {}): StripContent => ({ header: "Threads", icon: () => "", accent: "#5B8CFF", value: "Short", detail: "Done", ...patch });
 
 describe("strip lines", () => {
 	it("measures overflow only for text wider than its slot", () => {
@@ -36,6 +36,23 @@ describe("strip lines", () => {
 		expect(overflowOf(first, "value")).toBe(0);
 		const full = stripFeedback(content({ value: LONG }), { appearance: DEFAULT_APPEARANCE, full: LONG });
 		expect(full).toMatchObject({ value: first, detail: { value: rest }, valueArt: BLANK_ART });
+	});
+
+	it("starts the long-touch view at a later wrapped line as the dial scrolls it", () => {
+		const count = readingLength(LONG);
+		expect(count).toBeGreaterThan(2);
+		const [, rest] = twoLines(LONG);
+		const [second, after] = twoLines(LONG, 1);
+		expect(rest.startsWith(second)).toBe(true);
+		expect(`${second} ${after}`).toBe(rest);
+		expect(twoLines(LONG, 99)[1]).toBe("");
+	});
+
+	it("rolls an overflowing line up through its wrapped lines when set to vertical", () => {
+		const line = scrollingLine(content({ value: LONG }), "vertical");
+		expect(line?.roll?.lines.join(" ")).toBe(LONG);
+		const rolled = stripFeedback(content({ value: LONG }), { appearance: DEFAULT_APPEARANCE, scroll: "vertical", offset: STRIP_LINES.value.height });
+		expect(svg(rolled.valueArt)).toContain(line!.roll!.lines[1]!);
 	});
 });
 
