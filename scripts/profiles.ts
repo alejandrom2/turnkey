@@ -2,7 +2,7 @@
 // Format follows Stream Deck 7.5+ exports: package.json beside Profiles/<id>.sdProfile, zipped.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -340,6 +340,13 @@ for (const profile of PROFILES) {
 		const output = join(pluginDir, "profiles", `${profile.file}.streamDeckProfile`);
 		mkdirSync(join(output, ".."), { recursive: true });
 		rmSync(output, { force: true });
+		// A fixed time on every entry keeps a rebuilt zip byte-identical, so regenerating causes no diff.
+		const stamp = new Date("2026-01-01T00:00:00Z");
+		const touch = (path: string) => {
+			if (statSync(path).isDirectory()) for (const name of readdirSync(path)) touch(join(path, name));
+			utimesSync(path, stamp, stamp);
+		};
+		touch(staging);
 		execFileSync("/usr/bin/zip", ["-X", "-q", "-r", output, "package.json", "Profiles"], { cwd: staging });
 		console.log(`wrote ${output}`);
 	} finally {
