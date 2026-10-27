@@ -48,6 +48,9 @@ export function messageTable(prefix: string): Record<string, string> {
 	return table;
 }
 
+/** Stream Deck's language code as an HTML `lang` tag (`zh_CN` → `zh-CN`), so inspectors pick the right CJK glyphs. */
+export const htmlLang = (language: string): string => language.replace("_", "-");
+
 /** One decimal under ten (`1.5`, `2`), whole numbers above. */
 const short = (value: number): string => (value < 10 ? String(Math.round(value * 10) / 10) : String(Math.round(value)));
 
