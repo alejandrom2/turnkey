@@ -572,7 +572,7 @@
 				"styleHint": "List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Per dial default uses List for the Threads dial, Classic for the others; Classic shows the Power dial as a slider. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.",
 				"motion": "Motion",
 				"maxEffort": "Colors",
-				"maxEffortHint": "Gradient colors every effort level along a blue-to-violet ladder and gives each model and Fast its provider's gradient. Solid and Model color mark only the top effort level, in violet or the model's color; Off leaves them plain. Ultrathink keeps T3 Code's spectrum.",
+				"maxEffortHint": "Gradient colors every effort level along a ladder in the model's own color, turning toward violet at the top, and gives each model and Fast its provider's gradient. Solid and Model color mark only the top effort level, in violet or the model's color; Off leaves them plain. Ultrathink keeps T3 Code's spectrum.",
 				"motionHint": "Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.",
 				"confirm": "Confirm before sending",
 				"confirmHint": "Applies to Send Prompt, Steer, Quick Prompt and the Prompts dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."

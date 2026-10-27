@@ -3,6 +3,7 @@ import {
 	dotsCue,
 	fitSize,
 	ladderCue,
+	effortGradient,
 	effortTone,
 	maxEffortStyle,
 	providerGradient,
@@ -215,10 +216,13 @@ describe("ultrathink frame", () => {
 });
 
 describe("effortTone", () => {
-	it("colors every level along the gradient, and only the top one otherwise", () => {
+	it("colors every level along the model's gradient (Elgato's without a color), and only the top one otherwise", () => {
 		expect(effortTone("gradient", 0, false, undefined)?.text).toBe("#648FFD");
 		expect(effortTone("gradient", 0.55, false, undefined)?.text).toBe("#AD7BF9");
 		expect(effortTone("gradient", 0, false, undefined)?.fill).toEqual({ gradient: expect.any(Array) });
+		const claude = effortTone("gradient", 0.55, false, "#D97757");
+		expect(claude?.text).toBe("#D97757");
+		expect(claude?.fill).toEqual({ gradient: effortGradient("#D97757") });
 		expect(effortTone("solid", 0.5, false, undefined)).toBeUndefined();
 		expect(effortTone("solid", 1, true, undefined)).toEqual({ text: "#AD7BF9", fill: "#AD7BF9" });
 		expect(effortTone("model", 1, true, "#D97757")).toEqual({ text: "#D97757", fill: "#D97757" });

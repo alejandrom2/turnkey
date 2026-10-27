@@ -108,6 +108,26 @@ const hex = (color: string) => [1, 3, 5].map((at) => Number.parseInt(color.slice
 const toHex = (rgb: number[]) => `#${rgb.map((value) => Math.round(Math.max(0, Math.min(255, value))).toString(16).padStart(2, "0")).join("").toUpperCase()}`;
 const mix = (a: string, b: string, t: number) => toHex(hex(a).map((value, index) => value + (hex(b)[index]! - value) * t));
 
+/** `color` with its hue turned `degrees` toward violet (270°) along the shorter way, and its saturation raised a little. */
+function towardViolet(color: string, degrees: number): string {
+	const [r, g, b] = hex(color).map((value) => value / 255) as [number, number, number];
+	const max = Math.max(r, g, b);
+	const min = Math.min(r, g, b);
+	const light = (max + min) / 2;
+	const chroma = max - min;
+	if (chroma === 0) return color;
+	const saturation = chroma / (1 - Math.abs(2 * light - 1));
+	const hue = 60 * (max === r ? ((g - b) / chroma + 6) % 6 : max === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4);
+	const delta = ((270 - hue + 540) % 360) - 180;
+	const turned = (hue + Math.sign(delta) * Math.min(Math.abs(delta), degrees) + 360) % 360;
+	const s = Math.min(1, saturation * 1.1);
+	const c = (1 - Math.abs(2 * light - 1)) * s;
+	const x = c * (1 - Math.abs(((turned / 60) % 2) - 1));
+	const m = light - c / 2;
+	const [r1, g1, b1] = turned < 60 ? [c, x, 0] : turned < 120 ? [x, c, 0] : turned < 180 ? [0, c, x] : turned < 240 ? [0, x, c] : turned < 300 ? [x, 0, c] : [c, 0, x];
+	return toHex([r1 + m, g1 + m, b1 + m].map((value) => value * 255));
+}
+
 /** The color `t` (0 to 1) of the way along `stops`. */
 export function sampleStops(stops: Stops, t: number): string {
 	const at = Math.max(0, Math.min(1, t));
@@ -124,11 +144,26 @@ export const providerGradient = (color: string | undefined): Stops => [
 	[1, color ?? "#8E9199"],
 ];
 
+/**
+ * The effort ladder in a model's own color: a light tint up to the color, turning toward violet at the top, as
+ * Elgato's blue ends in violet. Without a color (white marks) it is Elgato's blue to violet.
+ */
+export const effortGradient = (modelColor: string | undefined): Stops =>
+	modelColor === undefined
+		? EFFORT_GRADIENT
+		: [
+				[0, mix(modelColor, "#FFFFFF", 0.5)],
+				[0.55, modelColor],
+				[1, towardViolet(modelColor, 40)],
+			];
+
 /** An effort level `t` of the way up its model's ladder: its text color and the track's fill; undefined leaves them as usual. */
 export function effortTone(style: MaxEffortStyle, t: number, top: boolean, modelColor: string | undefined): { text: string; fill: Paint } | undefined {
 	switch (style) {
-		case "gradient":
-			return { text: sampleStops(EFFORT_GRADIENT, t), fill: { gradient: EFFORT_GRADIENT } };
+		case "gradient": {
+			const gradient = effortGradient(modelColor);
+			return { text: sampleStops(gradient, t), fill: { gradient } };
+		}
 		case "solid":
 			return top ? { text: MAX_VIOLET, fill: MAX_VIOLET } : undefined;
 		case "model":
