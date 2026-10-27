@@ -40,6 +40,9 @@ export type ConfigProvider = {
 	installed?: boolean;
 	auth?: LimitProvider["auth"];
 	usageLimits?: ServerProviderUsageLimits;
+	/** CLI version checks, for Health (`ServerProviderVersionAdvisory`, `ServerProviderCompatibilityAdvisory`). */
+	versionAdvisory?: { status?: string } | null;
+	compatibilityAdvisory?: { status?: string } | null;
 };
 
 /** `ServerSettings` model preferences: `favorites` null means unmigrated, empty means none (settings.ts:1105). */

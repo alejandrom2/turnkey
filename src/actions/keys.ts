@@ -1,10 +1,11 @@
-import streamDeck, { type Action, action, type KeyDownEvent, type KeyUpEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { type Action, action, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confirmed } from "../core/approvals.js";
 import { type Availability, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, organize, type OrganizeAction, threadDeepLink } from "../core/commands.js";
+import { type HealthMachine, healthIssues, summarizeHealth } from "../core/health.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import {
 	type CatalogModel,
@@ -44,10 +45,12 @@ import {
 	renderSkeletonKey,
 	renderThreadKey,
 } from "../core/render.js";
+import type { Need } from "../core/requirements.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
+import { connectionOf } from "./needs.js";
 import { pullRequestKeyFace } from "./pr.js";
 import {
 	canOperate,
@@ -762,35 +765,88 @@ export class Deny extends DeckAction {
 const machineName = (machine: Machine): string =>
 	machine.state.kind === "ready" ? machine.state.label : machine.credential?.label || new URL(machine.url).host;
 
-/** The connection to the action's machine (or all of them): ready, connecting, needs pairing or failing. Tap reconnects. */
+/** A machine as Health weighs it: its connection, and its providers once connected. */
+export const healthMachine = (machine: Machine): HealthMachine => ({
+	name: machineName(machine),
+	state: machine.state.kind,
+	canOperate: machine.canOperate,
+	message: machine.state.kind === "error" ? machine.state.message : undefined,
+	providers: machine.modelConfig?.providers,
+});
+
+const HEALTH_COLOR = { error: COLORS.error, attention: COLORS.attention, note: COLORS.done, ok: COLORS.done, connecting: COLORS.muted } as const;
+
+/**
+ * The connections to the action's machine (or all of them) and their providers: the worst problem first (offline,
+ * needs pairing, a provider signed out, needing an update or failing its check), how many more, else that all is
+ * ready. Tap reconnects.
+ */
 @action({ UUID: `${ID}.health` })
 export class Health extends DeckAction {
+	/** Provider statuses stay live only while a Health key shows them. */
+	readonly #shown = new Map<string, string | undefined>();
+	readonly #watches = new Map<string, () => void>();
+
+	constructor() {
+		super();
+		deck.onRepaint(() => this.#sync());
+	}
+
+	#machines(action: Action<JsonObject>): Machine[] {
+		const url = this.machineOf(action);
+		return deck.machines.filter((machine) => url === undefined || machine.url === url);
+	}
+
+	#sync(): void {
+		const urls = [...this.#shown.values()];
+		const wanted = new Set(deck.machines.filter((machine) => urls.some((url) => url === undefined || url === machine.url)).map((machine) => machine.url));
+		for (const [url, release] of this.#watches) {
+			if (wanted.has(url)) continue;
+			release();
+			this.#watches.delete(url);
+		}
+		for (const machine of deck.machines) if (wanted.has(machine.url) && !this.#watches.has(machine.url)) this.#watches.set(machine.url, machine.watchConfig());
+	}
+
+	override needs(action: Action<JsonObject>): Need[] {
+		const machines = this.#machines(action);
+		const problems = healthIssues(machines.filter((machine) => machine.state.kind === "ready").map(healthMachine)).map((issue) =>
+			machines.length > 1 ? `${issue.subject} (${issue.machine}): ${issue.text}` : `${issue.subject}: ${issue.text}`,
+		);
+		return [{ kind: "paired", connection: connectionOf(this.machineOf(action)) }, { kind: "providers", problems }];
+	}
+
 	protected override async paint(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
 		const url = this.machineOf(action);
-		const machines = deck.machines.filter((machine) => url === undefined || machine.url === url);
+		const machines = this.#machines(action);
 		if (machines.length === 0) {
 			const title = url === undefined ? t("notice.notFound") : t("notice.machineRemoved");
 			return void (await this.setImage(action, renderInfoKey({ glyph: "plug", title, detail: url === undefined ? t("notice.openThenPress") : t("notice.pickAnother"), available: false })));
 		}
-		if (machines.length > 1) {
-			const ready = machines.filter((machine) => machine.state.kind === "ready").length;
-			const color = ready === machines.length ? COLORS.done : ready === 0 ? COLORS.error : COLORS.attention;
-			const title = t(ready === machines.length ? "health.allConnected" : ready === 0 ? "health.offline" : "health.someOffline");
-			return void (await this.setImage(action, renderInfoKey({ glyph: "health", color, title, detail: t("health.readyCount", { ready, total: machines.length }) })));
-		}
-		const [machine] = machines;
-		const name = machineName(machine);
-		switch (machine.state.kind) {
-			case "ready":
-				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.done, title: name, detail: t(machine.state.canOperate ? "health.connected" : "health.readOnly") })));
-			case "connecting":
-				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.muted, title: name, detail: t("health.connecting") })));
-			case "signed-out":
-				return void (await this.setImage(action, renderInfoKey({ glyph: "key", color: COLORS.attention, tint: COLORS.attention, title: name, detail: t("health.needsPairing") })));
-			case "error":
-				return void (await this.setImage(action, renderInfoKey({ glyph: "health", color: COLORS.error, tint: COLORS.error, title: name, detail: machine.state.message })));
-		}
+		const summary = summarizeHealth(machines.map(healthMachine));
+		const color = HEALTH_COLOR[summary.level];
+		const loud = summary.level === "error" || summary.level === "attention";
+		const pairing = machines.length === 1 && machines[0]!.state.kind === "signed-out";
+		await this.setImage(action, renderInfoKey({ glyph: pairing ? "key" : "health", color, tint: loud ? color : undefined, title: summary.title, detail: summary.detail }));
+	}
+
+	override onWillAppear(ev: WillAppearEvent<JsonObject>): void {
+		super.onWillAppear(ev);
+		this.#shown.set(ev.action.id, this.machineOf(ev.action));
+		this.#sync();
+	}
+
+	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<JsonObject>): void {
+		super.onDidReceiveSettings(ev);
+		this.#shown.set(ev.action.id, this.machineOf(ev.action));
+		this.#sync();
+	}
+
+	override onWillDisappear(ev: WillDisappearEvent<JsonObject>): void {
+		this.#shown.delete(ev.action.id);
+		this.#sync();
+		super.onWillDisappear(ev);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {

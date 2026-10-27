@@ -108,7 +108,7 @@
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Health",
-		"Tooltip": "The connection to T3 Code: ready, connecting, needs pairing or failing. Tap reconnects."
+		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, signed out, update required, check failed). Tap reconnects."
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Threads Dial",
@@ -237,7 +237,17 @@
 			"connected": "Connected",
 			"readOnly": "Read only",
 			"connecting": "Connecting…",
-			"needsPairing": "Needs pairing"
+			"needsPairing": "Needs pairing",
+			"notFound": "Not installed",
+			"checkFailed": "Check failed",
+			"signedOut": "Signed out",
+			"updateRequired": "Update required",
+			"needsAttention": "Needs attention",
+			"updateAvailable": "Update available",
+			"disabled": "Disabled",
+			"providerUpdate": "{provider} update available",
+			"providerOff": "{provider} is off",
+			"more": "+{count} more"
 		},
 		"reason": {
 			"noPrompt": "No prompt",
@@ -521,9 +531,11 @@
 				"installEditor": "Install an editor T3 Code supports, like VS Code or Cursor.",
 				"signInProvider": "Sign in to Codex or Claude in T3 Code; they report subscription limits.",
 				"pickAnother": "Pick another value above.",
-				"noFindings": "Nothing is failing or unresolved on it."
+				"noFindings": "Nothing is failing or unresolved on it.",
+				"providersInT3": "Fix them in T3 Code under Settings → Providers."
 			},
-			"findings": "Findings to fix"
+			"findings": "Findings to fix",
+			"providers": "Providers ready"
 		},
 		"editor": {
 			"title": "Open in editor",

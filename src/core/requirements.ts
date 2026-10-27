@@ -24,6 +24,8 @@ export type Need =
 	| { kind: "repo"; ok: boolean | undefined; reason?: string }
 	| { kind: "editor"; ok: boolean }
 	| { kind: "limits"; ok: boolean }
+	/** Every provider ready; `problems` names what isn't ("Claude: Signed out"). */
+	| { kind: "providers"; problems: string[] }
 	/** A saved setting that no longer matches anything: a model, effort, mode, project or editor. */
 	| { kind: "value"; value: string; ok: boolean };
 
@@ -84,6 +86,8 @@ function describe(need: Need): Requirement {
 			return make("editor", t("needs.editor"), need.ok, ["needs.fix.installEditor"]);
 		case "limits":
 			return make("limits", t("needs.limits"), need.ok, ["needs.fix.signInProvider"]);
+		case "providers":
+			return make("providers", t("needs.providers"), need.problems.length === 0, ["needs.fix.providersInT3"], need.problems);
 		case "value":
 			return make(`value:${need.value}`, need.ok ? need.value : t("needs.notAvailable", { value: need.value }), need.ok, ["needs.fix.pickAnother"]);
 	}
