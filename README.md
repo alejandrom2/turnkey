@@ -165,7 +165,7 @@ npx streamdeck pack com.alejandrom2.turnkey.sdPlugin
 - `src/core/` has no Stream Deck dependency: the client API in `t3/` (pairing, RPC socket, shell reducer, `Machine`), the thread board, commands, and SVG rendering.
 - `src/actions/` maps SDK events onto it.
 - `node scripts/icons.ts` and `node scripts/ui.ts` regenerate the manifest images and property inspectors.
-- The marketplace icon is a PNG rendered from `imgs/plugin/marketplace.svg`.
+- The marketplace icon is a PNG rendered from `imgs/plugin/marketplace.svg`. Turnkey's mark (three stacked keys, the front one turning with a prompt whose cursor is a spark in T3 Code's blue) is drawn by `scripts/icons.ts`; the category icon is the same mark in plain white.
 - Logs are in `com.alejandrom2.turnkey.sdPlugin/logs/`. Keep the log level below `trace`, because trace would log access tokens.
 
 The visual style follows Stream Deck's native agent plugins: flat near-black keys, one white line glyph, a single status accent, and a gradient touch strip. The glyphs and art are drawn for this plugin.
