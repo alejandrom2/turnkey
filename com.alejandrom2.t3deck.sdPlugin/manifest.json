@@ -297,22 +297,33 @@
 			"States": [{ "Image": "imgs/actions/pr-guide/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Open in Editor",
+			"Name": "Open",
 			"UUID": "com.alejandrom2.t3deck.editor",
 			"Icon": "imgs/actions/editor/icon",
-			"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on.",
-			"PropertyInspectorPath": "ui/editor.html",
+			"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks.",
+			"PropertyInspectorPath": "ui/open.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/editor/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/editor/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Open Preview",
+			"Name": "Open",
 			"UUID": "com.alejandrom2.t3deck.preview",
 			"Icon": "imgs/actions/preview/icon",
-			"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser.",
+			"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks.",
 			"PropertyInspectorPath": "ui/preview.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/preview/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/preview/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Open",
+			"UUID": "com.alejandrom2.t3deck.open",
+			"Icon": "imgs/actions/open/icon",
+			"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks.",
+			"PropertyInspectorPath": "ui/open.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/open/key", "ShowTitle": false }]
 		},
 		{
 			"Name": "Health",

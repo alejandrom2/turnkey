@@ -826,6 +826,26 @@ const forkPage = (fallback: string) =>
 		targetScript + inModes("mode", "fork-hint", fallback, ["fork"]) + inModes("mode", "merge-hint", fallback, ["merge"]),
 	);
 
+/** Open's panel, starting in `fallback`: the editor picker for Editor, the Target for Preview. */
+const openPage = (fallback: string) =>
+	page(
+		"Open",
+		`${modeField("mode", "inspector.open.in", fallback, [
+			["editor", "inspector.open.editor"],
+			["preview", "inspector.open.preview"],
+		])}
+			<div id="open-editor" hidden>
+				<sdpi-item ${attr("label", "inspector.editor.label")}>
+					<sdpi-select setting="editor" datasource="getEditors" hot-reload ${attr("loading", "inspector.editor.loading")} default=""></sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.editor.hint")}</p>
+			</div>
+			<div id="open-preview" hidden>${targetField}
+				<p class="hint"${text("inspector.preview.hint")}</p>
+			</div>`,
+		inModes("mode", "open-editor", fallback, ["editor"]) + inModes("mode", "open-preview", fallback, ["preview"]) + targetScript,
+	);
+
 /** Git's panel, starting in `fallback`: the message only for commits, and Pull's own hint. */
 const gitPage = (fallback: string) =>
 	page(
@@ -1227,12 +1247,8 @@ const pages: Record<string, string> = {
 			<p class="hint"${text("inspector.devices.hint")}</p>${dialAppearance}`,
 		targetScript + dialAppearanceScript,
 	),
-	"preview.html": page(
-		"Open Preview",
-		`${targetField}
-			<p class="hint"${text("inspector.preview.hint")}</p>`,
-		targetScript,
-	),
+	"open.html": openPage("editor"),
+	"preview.html": openPage("preview"),
 	"update.html": page(
 		"Update T3",
 		`
@@ -1273,14 +1289,6 @@ const pages: Record<string, string> = {
 				client.didReceiveSettings.subscribe(() => send("getShareLink"));
 				send("getShareLink");
 			}`,
-	),
-	"editor.html": page(
-		"Open in Editor",
-		`
-			<sdpi-item ${attr("label", "inspector.editor.label")}>
-				<sdpi-select setting="editor" datasource="getEditors" hot-reload ${attr("loading", "inspector.editor.loading")} default=""></sdpi-select>
-			</sdpi-item>
-			<p class="hint"${text("inspector.editor.hint")}</p>`,
 	),
 };
 

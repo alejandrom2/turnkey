@@ -73,7 +73,8 @@ const model = key("model", "Model");
 const effort = key("effort", "Effort");
 const speed = key("speed", "Speed");
 const health = key("health", "Health");
-const editor = key("editor", "Open in Editor");
+const editor = key("open", "Open");
+const preview = key("open", "Open", { mode: "preview" });
 const branch = key("branch", "Branch");
 /** Git starts on Commit; other keys pick their action. */
 const git = (gitAction?: string): Placed => key("git", "Git", gitAction ? { gitAction } : undefined);
@@ -121,7 +122,7 @@ const PAGES_8: Page[] = [
 	},
 	{
 		name: "DEVICES",
-		keys: [key("preview", "Open Preview"), editor, quick("test"), stop, organize("snooze"), organize("wake"), approve, health],
+		keys: [preview, editor, quick("test"), stop, organize("snooze"), organize("wake"), approve, health],
 		dials: [{ action: "dial.devices", name: "Devices Dial" }, DIALS[0]!, queueDial, DIALS[3]!],
 	},
 	{ name: "TASKS", keys: [task(), task(), task(), task(), quick("continue"), stop, approve, health], dials: [{ action: "dial.tasks", name: "Tasks Dial" }, queueDial, DIALS[0]!, DIALS[3]!] },
@@ -152,7 +153,7 @@ const PAGES_15: Page[] = [
 		name: "CONTROLS",
 		keys: [key("permissions", "Permissions"), key("plan", "Plan"), quick("continue"), quick("test"), quick("fix"), quick("explain"), quick("commit"), stopWorkflow, key("fork", "Fork"), key("fork", "Fork", { mode: "merge" }), organize("wake"), organize("archive"), health],
 	},
-	{ name: "SKILLS", keys: [skill(), skill(), skill(), skill(), task(), task(), task(), task(), editor, key("preview", "Open Preview"), key("update", "Update T3"), key("share", "Share Thread"), stop] },
+	{ name: "SKILLS", keys: [skill(), skill(), skill(), skill(), task(), task(), task(), task(), editor, preview, key("update", "Update T3"), key("share", "Share Thread"), stop] },
 	{
 		name: "GIT",
 		keys: [git(), git("push"), createPr, git("pull"), branch, key("pr", "Pull Request"), key("pr.fix", "Fix Findings"), key("pr.explain", "Explain PR"), key("pr.ask", "Ask about PR"), key("pr.guide", "Review Guide"), editor, stop, health],
@@ -177,7 +178,7 @@ const XL_HOME: Placed[] = [
 	key("plan", "Plan"),
 	health,
 	editor,
-	key("preview", "Open Preview"),
+	preview,
 	git(),
 	git("push"),
 	createPr,

@@ -3,11 +3,10 @@ import streamDeck from "@elgato/streamdeck";
 import { RunScriptKey, ShareKey, UpdateKey } from "./actions/admin.js";
 import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.js";
 import { DevicesDial } from "./actions/devices.js";
-import { OpenInEditor } from "./actions/editor.js";
 import { CommitKey, CreatePrKey, GitKey, PullKey, PushKey } from "./actions/git.js";
 import { LimitsDial, LimitsKey } from "./actions/limits.js";
 import { ForkKey, MergeBackKey, Stop, StopWorkflowKey } from "./actions/lineage.js";
-import { OpenPreview } from "./actions/preview.js";
+import { OpenInEditor, OpenKey, OpenPreview } from "./actions/open.js";
 import { QueueDial } from "./actions/queue.js";
 import { RunSkillKey, SkillsDial } from "./actions/skills.js";
 import { RunTaskKey, TasksDial } from "./actions/tasks.js";
@@ -74,6 +73,7 @@ for (const instance of [
 	new ExplainPrKey(),
 	new AskPrKey(),
 	new ReviewGuideKey(),
+	new OpenKey(),
 	new OpenInEditor(),
 	new OpenPreview(),
 	new LimitsKey(),
