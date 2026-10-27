@@ -505,6 +505,34 @@ const gitConfirm = `
 				</sdpi-select>
 			</sdpi-item>`;
 
+/** What the Limits key and dial show, and what holding them does. */
+const limitsFields = `
+			<sdpi-item ${attr("label", "inspector.limits.show")}>
+				<sdpi-select setting="show" default="left">
+					<option value="left"${text("inspector.limits.left")}</option>
+					<option value="used"${text("inspector.limits.used")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.limits.resetAction")}>
+				<sdpi-select setting="resetAction" default="open">
+					<option value="open"${text("inspector.limits.open")}</option>
+					<option value="spend"${text("inspector.limits.spend")}</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint" id="spend-hint" hidden${text("inspector.limits.spendHint")}</p>`;
+const limitsScript = showWhen("resetAction", "spend-hint", `value === "spend"`);
+
+/** T3 Code's Usage periods; its page opens on 30 days. */
+const periodField = `
+			<sdpi-item ${attr("label", "inspector.usage.period")}>
+				<sdpi-select setting="period" default="30">
+					<option value="1"${text("inspector.usage.day")}</option>
+					<option value="7"${text("inspector.usage.week")}</option>
+					<option value="30"${text("inspector.usage.month")}</option>
+					<option value="90"${text("inspector.usage.quarter")}</option>
+				</sdpi-select>
+			</sdpi-item>`;
+
 const pages: Record<string, string> = {
 	"environments.html": page("T3 Deck"),
 	"slot.html": page(
@@ -779,6 +807,35 @@ const pages: Record<string, string> = {
 				</sdpi-select>
 			</sdpi-item>
 			<p class="hint"${text("inspector.pr.dialHint")}</p>${dialAppearance}`,
+		dialAppearanceScript,
+	),
+	"limits.html": page(
+		"Limits",
+		`
+			<sdpi-item ${attr("label", "inspector.limits.provider")}>
+				<sdpi-select setting="provider" datasource="getLimitProviders" hot-reload ${attr("loading", "inspector.loading.providers")} default=""></sdpi-select>
+			</sdpi-item>
+			<sdpi-item ${attr("label", "inspector.limits.window")}>
+				<sdpi-select setting="window" datasource="getLimitWindows" hot-reload ${attr("loading", "inspector.loading.windows")} default=""></sdpi-select>
+			</sdpi-item>${limitsFields}
+			<p class="hint"${text("inspector.limits.hint")}</p>`,
+		limitsScript,
+	),
+	"limits-dial.html": page(
+		"Limits Dial",
+		`${limitsFields}
+			<p class="hint"${text("inspector.limits.hint")}</p>${dialAppearance}`,
+		dialAppearanceScript + limitsScript,
+	),
+	"usage.html": page(
+		"Usage",
+		`${periodField}
+			<p class="hint"${text("inspector.usage.hint")}</p>`,
+	),
+	"usage-dial.html": page(
+		"Usage Dial",
+		`${periodField}
+			<p class="hint"${text("inspector.usage.dialHint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
 	),
 	"editor.html": page(

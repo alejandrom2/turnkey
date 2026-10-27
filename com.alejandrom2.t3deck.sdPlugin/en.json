@@ -145,6 +145,28 @@
 			"TriggerDescription": { "Rotate": "Choose pull request", "Push": "Fix findings (hold)", "Touch": "Open in browser", "LongTouch": "Read findings" }
 		}
 	},
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "Limits",
+		"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset."
+	},
+	"com.alejandrom2.t3deck.dial.limits": {
+		"Name": "Limits Dial",
+		"Tooltip": "Rotate through every provider's limit windows. Press or tap refreshes; hold the press to open T3 Code's Usage or use a reset.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose provider and window", "Push": "Refresh (hold: reset)", "Touch": "Refresh", "LongTouch": "Read details" }
+		}
+	},
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "Usage",
+		"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices."
+	},
+	"com.alejandrom2.t3deck.dial.usage": {
+		"Name": "Usage Dial",
+		"Tooltip": "Rotate through a period's total and each model's cost, tokens, cache hit rate and cost per million tokens. Press or tap refreshes; a long press reloads model prices.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose model", "Push": "Refresh (hold: prices too)", "Touch": "Refresh", "LongTouch": "Read details" }
+		}
+	},
 	"Localization": {
 		"result": {
 			"done": "Done",
@@ -332,7 +354,9 @@
 			"cycleEfforts": "Cycle efforts",
 			"anyProject": "Any project",
 			"noProject": "No project",
-			"defaultEditor": "T3 Code's default"
+			"defaultEditor": "T3 Code's default",
+			"firstProvider": "First with limits",
+			"firstWindow": "Shortest window"
 		},
 		"machine": {
 			"thisMachine": "This machine",
@@ -364,6 +388,7 @@
 		"access": {
 			"sourceControl": "Needs source control access — re-pair",
 			"diagnostics": "Needs usage access — re-pair",
+			"providers": "Needs provider access — re-pair to enable",
 			"other": "Needs more access — re-pair"
 		},
 		"pr": {
@@ -460,6 +485,7 @@
 			"scope": {
 				"sourceControl": "Source control access",
 				"diagnostics": "Usage access",
+				"providers": "Provider access",
 				"other": "{scope} access"
 			},
 			"option": "{option} on the thread's model",
@@ -470,6 +496,7 @@
 			"branch": "A branch",
 			"repo": "Something to act on",
 			"editor": "An editor on the machine",
+			"limits": "A provider that reports limits",
 			"notAvailable": "Not available: {value}",
 			"fix": {
 				"openT3": "Open T3 Code on this computer, then press the key.",
@@ -490,6 +517,7 @@
 				"createPr": "Create one with Create PR or in T3 Code.",
 				"checkoutBranch": "Check out a branch in the thread.",
 				"installEditor": "Install an editor T3 Code supports, like VS Code or Cursor.",
+				"signInProvider": "Sign in to Codex or Claude in T3 Code; they report subscription limits.",
 				"pickAnother": "Pick another value above.",
 				"noFindings": "Nothing is failing or unresolved on it."
 			},
@@ -630,7 +658,9 @@
 			"loading": {
 				"projects": "Loading projects…",
 				"models": "Loading models…",
-				"efforts": "Loading efforts…"
+				"efforts": "Loading efforts…",
+				"providers": "Loading providers…",
+				"windows": "Loading windows…"
 			},
 			"filter": {
 				"all": "All threads",
@@ -749,6 +779,71 @@
 			"power": {
 				"controls": "This dial controls",
 				"hint": "Rotate to preview, press to apply to the selected thread. Model turns through T3 Code's favorite models across providers. Press with nothing to apply, or tap, to switch Speed when the model offers it. Ultrathink, where Claude offers it, prefixes the deck's next prompts to the thread."
+			},
+			"limits": {
+				"provider": "Provider",
+				"window": "Window",
+				"show": "Show",
+				"left": "% left",
+				"used": "% used",
+				"resetAction": "Hold to",
+				"open": "Open Usage in T3 Code",
+				"spend": "Use a banked reset",
+				"hint": "Pooled across the provider's accounts on the chosen machines, as T3 Code's Limits shows it. Tap refreshes. The tick on the bar is where even pace would be.",
+				"spendHint": "Holding spends one reset credit on the account T3 Code would refill first. It needs provider access: if the pairing lacks it, the machine's next pair link asks for it."
+			},
+			"usage": {
+				"period": "Period",
+				"day": "Past 24h",
+				"week": "7 days",
+				"month": "30 days",
+				"quarter": "90 days",
+				"hint": "T3 Code's API estimate for the period, across the chosen machines; a folder two machines share counts once. Tap reads again, hold also reloads model prices. Needs usage access.",
+				"dialHint": "Rotate from the period's total through each model, by cost. Press or tap reads again; a long press also reloads model prices. Needs usage access."
+			}
+		},
+		"usage": {
+			"title": "Usage",
+			"period": {
+				"day": "Past 24h",
+				"week": "7 days",
+				"month": "30 days",
+				"quarter": "90 days"
+			},
+			"allModels": "All models",
+			"tokens": "{tokens} tokens",
+			"sessions": "{count} sessions",
+			"unpriced": "Unpriced",
+			"cacheHit": "{percent} cache",
+			"perMillion": "{cost}/M",
+			"updateT3": "Update T3 Code to read usage",
+			"updateDeck": "Update T3 Deck to read usage"
+		},
+		"limits": {
+			"title": "Limits",
+			"none": "No limits",
+			"noneDetail": "No provider reports limits",
+			"window": {
+				"hours": "{hours}-hour",
+				"session": "Session",
+				"weekly": "Weekly",
+				"monthly": "Monthly"
+			},
+			"resetsNow": "Resets now",
+			"resetsIn": "resets {time}",
+			"resetOne": "1 reset",
+			"resets": "{count} resets",
+			"pooled": "{count} accounts",
+			"refreshing": "Refreshing…",
+			"pressToRefresh": "Press to refresh",
+			"holdToReset": "Hold to use reset",
+			"noResets": "No resets banked",
+		"needsProviders": "Needs provider access",
+			"outcome": {
+				"reset": "Reset applied",
+				"nothingToReset": "Nothing to reset",
+				"noCredit": "No reset left",
+				"alreadyRedeemed": "Already redeemed"
 			}
 		}
 	}

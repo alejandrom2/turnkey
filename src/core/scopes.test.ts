@@ -27,6 +27,7 @@ describe("denials", () => {
 		const denial = (permission: string) => new RpcError("EnvironmentAuthorizationError", "missing", undefined, permission);
 		expect(failureLabel(denial("source-control:write"))).toBe("Needs source control access — re-pair");
 		expect(failureLabel(denial("diagnostics:read"))).toBe("Needs usage access — re-pair");
+		expect(failureLabel(denial("providers:manage"))).toBe("Needs provider access — re-pair to enable");
 		expect(failureLabel(denial("orchestration:operate"))).toBe("Read only");
 		expect(failureLabel(denial("terminal:operate"))).toBe("Needs more access — re-pair");
 	});

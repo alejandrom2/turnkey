@@ -39,6 +39,10 @@ const ACTIONS: Record<string, GlyphName> = {
 	"pr-guide": "spark",
 	editor: "editor",
 	"dial-pr": "pullRequest",
+	limits: "gauge",
+	"dial-limits": "gauge",
+	usage: "usage",
+	"dial-usage": "usage",
 };
 
 const svg = (size: number, body: string, background?: string) =>

@@ -46,10 +46,14 @@ Most actions act on the **selected thread**: the one you opened last in T3 Code,
 | Review Guide | key | Writes T3 Code's review guide for the selected thread's pull request, shows its progress, then opens the thread. Needs **Review guides** on in T3 Code. |
 | Open in Editor | key | Opens the selected thread's worktree, or its project's folder, in an editor T3 Code found on that machine: the one you pick, or T3 Code's default. A key on a remote machine says where it opens. |
 | Health | key | The connection to the action's machine (or all): connected, read only, connecting, needs pairing or the error. Tap reconnects. |
+| Usage | key | A period's API-estimate cost (Past 24h, 7, 30 or 90 days, as on T3 Code's Usage page), with its tokens and sessions, on the key's machine or all of them merged. Tap reads it again; hold also reloads T3 Code's model prices. |
+| Limits | key | One provider's subscription limit window (5-hour, Weekly, Monthly…), pooled across its accounts like T3 Code's **Usage → Limits**: % left (or used) with a bar, a tick where even pace would be, the next reset and the resets banked. Tap refreshes; hold opens T3 Code or uses a reset (see below). |
 | Threads Dial | dial | Like Activity: the threads matching a filter (all, needs you, working, unread), project and **From the last** (no limit, 24 hours … 7 days), most urgent first. Rotate selects one (it settles after a short pause), press or tap opens it. The strip shows its provider, title, status and timer or diff. |
 | Power Dial | dial | Controls one setting of the selected thread, picked in its settings: the **model** (your favorites across providers, with each provider's mark), the **effort** (with Ultrathink) or **access** (with T3 Code's mode icons). Rotate previews, press applies; when T3 Code refuses, the strip shows why. Press with nothing to apply, or tap, switches Speed where the model has it. |
 | Prompts Dial | dial | Rotate through your prompts, then Quick Prompt's templates (turn them off in settings). Press or tap sends to the selected thread, hold starts a new thread. |
 | PR Dial | dial | The open pull requests T3 Code lists, with their checks. Rotate picks one; press runs Fix findings (a hold by default) in the thread linked to it, or in a new thread on a worktree checked out at it; tap opens it in the browser; touch and hold reads its findings. |
+| Limits Dial | dial | Every provider's limit windows, with their marks: rotate through them; press or tap refreshes, and holding the press does what the Limits key's hold does. |
+| Usage Dial | dial | A period's total, then each model by cost: its provider's mark, cost with its share of the period, tokens, cache hit rate and cost per million tokens. Rotate through them; press or tap reads again, a long press also reloads model prices. |
 | Answer Dial | dial | Approvals: the strip shows the request; rotate between the dial's **Approvals** setting and Deny, then hold (or press, if set) to answer. **Approvals** defaults to opening the request in T3 Code; it can allow once, for the session, or always. Questions: pick a choice per question. Tap opens the thread. Requests the deck can't answer open in T3 Code. |
 
 A key that can't act right now is dimmed, and pressing it says why. A press that works shows no confirmation: the key or strip just shows the new state. Each action's settings list **What this action needs**: every condition it checks (paired, can act, a selected thread, access, what the thread's model offers, a pull request…), met or not, with how to fix what isn't; a saved choice that no longer exists shows as **Not available**. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Effort shows where it sits on its model's ladder, Model where it sits among your favorites, and Permissions a small pill (filled when the key's mode is the thread's) with Full access in amber. Models and favorites are read again whenever a key's settings open.
@@ -72,6 +76,17 @@ Each dial's strip has a style, set under **Advanced → Strip style** in any act
 
 Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Advanced → Dial strips** in any action's settings: T3 Code (default), Flow (one picture across neighboring dials), the thread's state (green unseen done, red failed, amber approval, indigo question) or a color of your own, with or without the colored state line. Each dial can override it.
 
+### Usage and limits
+
+Usage keys and dials need T3 Code's usage access, which standard pair links grant; without it they say **Needs usage access**. T3 Code scans its agents' history folders for every read, so the deck reads a period when a key shows it (unless it did in the last minute), every five minutes while one shows, and when you press it; a history folder two machines share counts once, as in T3 Code.
+
+Limits come from T3 Code's live server config: the same pooled figures as **Usage → Limits**, with an account signed in on several machines or through a hub counted once. While a Limits key or dial shows, the deck asks T3 Code to read limits again when it appears, when the figures go stale (15 minutes after the last read, or at a reset, as T3 Code's widget judges it; the face then says **Press to refresh**) and when you press it, at most every five minutes on its own. Nothing is read while none shows.
+
+**Hold to** sets what holding a Limits key (or the dial's press) does:
+
+- **Open Usage in T3 Code** (default): brings T3 Code forward to use a reset there.
+- **Use a banked reset**: spends one reset credit on the account T3 Code would refill first, then says which account and what happened. A tap says **Hold to use reset** when there is one to use. This needs T3 Code's provider access, which the deck doesn't ask for by default: choosing it on a machine whose pairing lacks it shows **Needs provider access — re-pair to enable**, and that machine's next pair link asks for it.
+
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
 ## Limits
@@ -82,6 +97,7 @@ Board order: needs approval, has a question, running, queued, then unseen failur
 - **Git keys** act on the selected thread's checkout. Pushing to the default branch always needs a hold, and a pull request from it is refused, where T3 Code would offer a new branch first. Servers from before T3 Code's source control access treat git as plain thread access; the deck still asks for source control access there.
 - **Pull request handoffs** are sent straight away: T3 Code puts them in the composer for you to read first, but the composer lives in the app. That's why Fix Findings needs a hold by default, and why **Ask about PR** only opens the thread. The **Review Guide** opens the thread, since there is no link to the guide itself.
 - **Open in Editor** uses T3 Code's first available editor as the default; T3 Code also remembers the last one you picked, per browser, which the deck can't see.
+- **Usage links**: T3 Code's desktop app has no link to its Usage page yet, so **Open Usage in T3 Code** only brings the app forward.
 - **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.
 
 ## Development
