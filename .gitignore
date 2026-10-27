@@ -6,3 +6,6 @@ node_modules/
 *.sdPlugin/logs
 # Local logs
 logs/
+
+# macOS Finder metadata
+.DS_Store
