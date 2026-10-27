@@ -25,6 +25,7 @@ import type { SendMode } from "../core/t3/machine.js";
 import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
+import { exportDiagnostics, openLogsFolder } from "../diagnostics.js";
 
 export const LONG_PRESS_MS = 500;
 /** At most one animation write per instance in this long. */
@@ -50,6 +51,9 @@ export type Guard = { scope: string; detail?: string; held: number; card: () => 
 
 /** Every registered action, so the open inspector's checklist can ask the one it belongs to. */
 export const deckActions = new Set<DeckAction<JsonObject>>();
+
+/** How many instances of each action are on the deck right now, for the diagnostics export. */
+const visibleActions = (): Record<string, number> => Object.fromEntries([...deckActions].map((owner) => [owner.manifestId ?? "", [...owner.actions].length]));
 
 /** Shared lifecycle: visibility drives the clock, every board change repaints visible instances. */
 export abstract class DeckAction<T extends JsonObject = JsonObject> extends SingletonAction<T> {
@@ -258,8 +262,14 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	}
 
 	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, T>): Promise<void> {
-		const payload = ev.payload as { event?: string; url?: string; link?: string } | null;
+		const payload = ev.payload as { event?: string; url?: string; link?: string; on?: boolean } | null;
 		switch (payload?.event) {
+			case "verbose":
+				return deck.setVerbose(payload.on === true);
+			case "openLogs":
+				return this.#diagnostics(() => openLogsFolder());
+			case "exportDiagnostics":
+				return this.#diagnostics(() => exportDiagnostics(visibleActions()));
 			case "retry":
 				return deck.retry(payload.url);
 			case "signOut":
@@ -293,6 +303,17 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				return this.#sendEfforts(ev.action);
 			case "getThreads":
 				return this.#sendThreads(ev.action);
+		}
+	}
+
+	/** Runs an inspector's diagnostics button; a failure is logged and shown under the buttons. */
+	async #diagnostics(work: () => Promise<void>): Promise<void> {
+		try {
+			await work();
+			await streamDeck.ui.sendToPropertyInspector({ event: "diagnostics", ok: true });
+		} catch (error) {
+			logger.warn(`Diagnostics failed: ${message(error)}`);
+			await streamDeck.ui.sendToPropertyInspector({ event: "diagnostics", ok: false });
 		}
 	}
 
@@ -474,6 +495,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	protected async run(action: Action<T>, work: () => Promise<unknown>): Promise<void> {
 		try {
 			await work();
+			logger.debug(`${this.manifestId} done`);
 			await this.paint(action);
 		} catch (error) {
 			// The message only: errors never carry tokens or ticket URLs, but their causes might.
