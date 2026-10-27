@@ -24,11 +24,11 @@
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Detener",
-		"Tooltip": "Detiene el turno en curso del hilo seleccionado en T3 Code."
+		"Tooltip": "Detiene el turno en curso del hilo seleccionado o, según su ajuste, los workflows que ejecuta (Claude). Mantén para detener un workflow."
 	},
 	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Detener workflow",
-		"Tooltip": "Detiene los workflows que ejecuta el hilo (Claude). Mantén para detener."
+		"Name": "Detener",
+		"Tooltip": "Detiene el turno en curso del hilo seleccionado o, según su ajuste, los workflows que ejecuta (Claude). Mantén para detener un workflow."
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Bifurcar",
@@ -1070,6 +1070,11 @@
 				"access": "Requiere acceso a enlaces de invitado, que permite a este deck compartir hilos con personas de fuera. La primera pulsación de la tecla lo pide en la próxima vinculación de la máquina.",
 				"link": "Enlace de invitado",
 				"linkHint": "Solo se muestra mientras T3 Deck está en marcha: T3 Code muestra un enlace una sola vez, al crearlo."
+			},
+			"stop": {
+				"stops": "Detiene",
+				"turn": "El turno",
+				"workflow": "El workflow"
 			}
 		},
 		"usage": {

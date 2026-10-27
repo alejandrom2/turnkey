@@ -24,11 +24,11 @@
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Stop",
-		"Tooltip": "Stops the running turn of the thread selected in T3 Code."
+		"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow."
 	},
 	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Stop Workflow",
-		"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop."
+		"Name": "Stop",
+		"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow."
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "Fork",
@@ -1070,6 +1070,11 @@
 				"access": "Needs guest link access, which lets this deck share threads with people outside. The key's first press asks for it at the machine's next pairing.",
 				"link": "Guest link",
 				"linkHint": "Shown only while T3 Deck runs: T3 Code shows a link once, when it is made."
+			},
+			"stop": {
+				"stops": "Stops",
+				"turn": "The turn",
+				"workflow": "The workflow"
 			}
 		},
 		"usage": {
