@@ -2,7 +2,9 @@ import streamDeck, { type Action, action, type DialAction, type KeyDownEvent, ty
 
 import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { DeckThread } from "../core/board.js";
+import { availability } from "../core/availability.js";
 import { type MessageKey, t } from "../core/i18n.js";
+import { modeOf } from "../core/modes.js";
 import {
 	buildExplainPullRequestHandoff,
 	buildFixFindingsHandoff,
@@ -204,9 +206,9 @@ export async function explainPr(machine: Machine, ref: PullRequestRef, prefer?: 
 	return t("result.started");
 }
 
-type PrKeySettings = { machine?: string; confirm?: string };
+type PrKeySettings = { machine?: string; confirm?: string; mode?: string };
 
-/** What the selected thread's pull request lets a handoff key do, and why not when it can't. */
+/** What the selected thread's pull request lets a handoff do, and why not when it can't. */
 function prCheck(machine: string | undefined, operate: boolean): { ok: true; thread: DeckThread; pr: ThreadPullRequest; ref: PullRequestRef } | { ok: false; reason: string } {
 	const found = threadPr(machine);
 	if (selectedThread(machine) === undefined) return { ok: false, reason: t("reason.noThread") };
@@ -216,30 +218,168 @@ function prCheck(machine: string | undefined, operate: boolean): { ok: true; thr
 	return { ok: true, thread: found.thread, pr: found.pr, ref: found.ref };
 }
 
-/** A key that hands the selected thread's pull request to an agent, as T3 Code's pull request menu does. */
-abstract class PrHandoffKey extends DeckAction<PrKeySettings> {
-	protected abstract readonly glyph: GlyphName;
-	protected abstract label(url: string): string;
-	/** Whether a press needs a hold unless set to tap. */
-	protected readonly holdByDefault: boolean = false;
-	protected readonly operates: boolean = true;
+/** What a face line says about the pull request, and whether the handoff can go ahead. */
+type HandoffDetail = { text?: string; available: boolean; tint?: string };
 
-	protected detail(_thread: DeckThread, pr: ThreadPullRequest, _ref: PullRequestRef): { text?: string; available: boolean; tint?: string } {
-		return { text: `#${pr.number} ${pr.title ?? ""}`.trim(), available: true };
+/** Handing the selected thread's pull request to an agent, as T3 Code's pull request menu does. */
+type Handoff = {
+	glyph: GlyphName;
+	label: (url: string) => string;
+	/** Whether the pairing must be able to act, not just read. */
+	operates: boolean;
+	detail?: (thread: DeckThread, pr: ThreadPullRequest, ref: PullRequestRef) => HandoffDetail;
+	act: (thread: DeckThread, ref: PullRequestRef) => Promise<string>;
+};
+
+/** Each pull request's review guide as last read, shared by every key that shows it. */
+const guides = new Map<string, { result?: ReviewGuideResult; loading: boolean; polling: boolean }>();
+
+function guideEntry(thread: DeckThread, ref: PullRequestRef) {
+	const key = `${thread.machine.url}|${ref.projectId}|${ref.repository}#${ref.number}`;
+	let entry = guides.get(key);
+	if (entry === undefined) {
+		entry = { loading: true, polling: false };
+		guides.set(key, entry);
+		const created = entry;
+		void prRequests
+			.reviewGuide(thread.machine, ref)
+			.then((result) => (created.result = result))
+			.catch(() => undefined)
+			.finally(() => {
+				created.loading = false;
+				deck.repaint();
+			});
+	}
+	return entry;
+}
+
+/** Re-reads the guide while it is being written, for at most a few minutes, then opens the thread once it is done. */
+async function pollGuide(thread: DeckThread, ref: PullRequestRef, entry: { result?: ReviewGuideResult; polling: boolean }): Promise<void> {
+	if (entry.polling) return;
+	entry.polling = true;
+	try {
+		for (let attempt = 0; attempt < 45 && entry.result && guideState(entry.result) === "running"; attempt++) {
+			await new Promise((resolve) => setTimeout(resolve, 4_000));
+			entry.result = await prRequests.reviewGuide(thread.machine, ref);
+			deck.repaint();
+		}
+		if (entry.result && guideState(entry.result) === "ready") await openThread(thread);
+	} catch (error) {
+		logger.warn(`Review guide polling stopped: ${error instanceof Error ? error.message : String(error)}`);
+	} finally {
+		entry.polling = false;
+	}
+}
+
+/** The findings Fix findings would send, once the pull request's activity is read. */
+function prFindings(thread: DeckThread, ref: PullRequestRef) {
+	const info = store.get(thread.machine, ref);
+	return info.activity && findings({ ...info.activity, checks: info.checks ?? [] });
+}
+
+const HANDOFFS: Record<"fix" | "explain" | "ask" | "guide", Handoff> = {
+	/** T3 Code's Fix findings, sent to the selected thread. Hold to send by default. */
+	fix: {
+		glyph: "hammer",
+		label: () => t("pr.fix.title"),
+		operates: true,
+		detail: (thread, _pr, ref) => {
+			const found = prFindings(thread, ref);
+			if (found === undefined) return { available: true };
+			if (found.total === 0) return { text: t("pr.fix.none"), available: false };
+			const parts = [
+				found.threads.length > 0 ? counted(found.threads.length, "pr.fix.threadOne", "pr.fix.threads") : undefined,
+				found.remarks.length > 0 ? counted(found.remarks.length, "pr.fix.remarkOne", "pr.fix.remarks") : undefined,
+				found.checks.length > 0 ? counted(found.checks.length, "pr.fix.checkOne", "pr.fix.checks") : undefined,
+			];
+			return { text: parts.filter(Boolean).join(" · "), available: true, tint: found.checks.length > 0 ? COLORS.error : undefined };
+		},
+		act: (thread, ref) => fixFindings(thread.machine, ref, thread),
+	},
+	/** T3 Code's Explain: a walk through the change, sent to the selected thread. */
+	explain: {
+		glyph: "book",
+		label: (url) => t("pr.explain.title", { term: changeRequestLabel(url) }),
+		operates: true,
+		act: (thread, ref) => explainPr(thread.machine, ref, thread),
+	},
+	/**
+	 * Opens the thread that holds the pull request in T3 Code, to ask about it there. T3 Code's own Ask puts the pull
+	 * request in the composer, which lives in the app and can't be filled from outside.
+	 */
+	ask: {
+		glyph: "question",
+		label: (url) => t("pr.ask.title", { term: changeRequestLabel(url) }),
+		operates: false,
+		act: async (thread) => {
+			await openThread(thread);
+			return t("result.opened");
+		},
+	},
+	/**
+	 * Writes T3 Code's review guide (`pullRequests.generateReviewGuide`), shows its progress, then opens the thread,
+	 * whose pull request panel has the guide; there is no link to the guide itself.
+	 */
+	guide: {
+		glyph: "spark",
+		label: () => t("pr.guide.title"),
+		operates: true,
+		detail: (thread, _pr, ref) => {
+			const entry = guideEntry(thread, ref);
+			if (entry.result === undefined) return { text: entry.loading ? undefined : t("pr.guide.write"), available: true };
+			const state = guideState(entry.result);
+			return { text: t(state === "ready" ? "pr.guide.ready" : state === "running" ? "pr.guide.writing" : state === "failed" ? "pr.guide.failed" : "pr.guide.write"), available: true };
+		},
+		act: async (thread, ref) => {
+			const entry = guideEntry(thread, ref);
+			// New commits make a written guide stale, so the press decides on a fresh read.
+			entry.result = await prRequests.reviewGuide(thread.machine, ref);
+			const state = guideState(entry.result);
+			if (state === "ready") {
+				await openThread(thread);
+				return t("result.opened");
+			}
+			if (state !== "running") entry.result = await prRequests.generateReviewGuide(thread.machine, ref);
+			deck.repaint();
+			void pollGuide(thread, ref, entry);
+			return t("pr.guide.writing");
+		},
+	},
+};
+
+const defaultDetail = (pr: ThreadPullRequest): HandoffDetail => ({ text: `#${pr.number} ${pr.title ?? ""}`.trim(), available: true });
+
+/**
+ * The selected thread's pull request (its Does setting): Show draws its number and state, with live checks, review and
+ * findings, and a tap opens it in the browser; the rest hand it to an agent as T3 Code's pull request menu does.
+ */
+abstract class PullRequestAction extends DeckAction<PrKeySettings> {
+	#mode(action: Action<PrKeySettings>) {
+		return modeOf("pr", this.manifestId, this.settingsOf(action));
 	}
 
-	protected abstract act(thread: DeckThread, ref: PullRequestRef): Promise<string>;
+	#shown(action: Action<PrKeySettings>) {
+		const thread = selectedThread(this.machineOf(action));
+		const pr = thread?.pullRequests.find((link) => link.state === "open") ?? thread?.pullRequests[0];
+		return { thread, pr, check: availability("pr", { thread, canOperate: true }) };
+	}
 
 	protected override async paint(action: Action<PrKeySettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
 		const offline = connectionFace(machine);
 		if (offline) return void (await this.setImage(action, offline));
-		const check = prCheck(machine, this.operates);
-		const url = check.ok ? check.pr.url : "";
-		if (!check.ok) return void (await this.setImage(action, renderInfoKey({ glyph: this.glyph, title: this.label(url), detail: check.reason, available: false })));
-		const detail = this.detail(check.thread, check.pr, check.ref);
-		await this.setImage(action, renderInfoKey({ glyph: this.glyph, title: this.label(url), detail: detail.text, available: detail.available, tint: detail.tint }));
+		const mode = this.#mode(action);
+		if (mode === "show") {
+			const { thread, pr, check } = this.#shown(action);
+			if (pr === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "pullRequest", title: t("face.pullRequest"), detail: check.available ? undefined : check.reason, available: false })));
+			return void (await this.setImage(action, pullRequestKeyFace(thread!, pr)));
+		}
+		const handoff = HANDOFFS[mode];
+		const check = prCheck(machine, handoff.operates);
+		if (!check.ok) return void (await this.setImage(action, renderInfoKey({ glyph: handoff.glyph, title: handoff.label(""), detail: check.reason, available: false })));
+		const detail = handoff.detail?.(check.thread, check.pr, check.ref) ?? defaultDetail(check.pr);
+		await this.setImage(action, renderInfoKey({ glyph: handoff.glyph, title: handoff.label(check.pr.url), detail: detail.text, available: detail.available, tint: detail.tint }));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<PrKeySettings>): void {
@@ -249,163 +389,52 @@ abstract class PrHandoffKey extends DeckAction<PrKeySettings> {
 	override async onKeyUp(ev: KeyUpEvent<PrKeySettings>): Promise<void> {
 		const held = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const check = prCheck(this.machineOf(ev.action), this.operates);
+		const mode = this.#mode(ev.action);
+		if (mode === "show") {
+			const { pr, check } = this.#shown(ev.action);
+			if (!(await this.allowed(ev.action, check))) return;
+			if (!URL.canParse(pr!.url) || new URL(pr!.url).protocol !== "https:") return void (await this.flash(ev.action, false, t("result.notWebLink")));
+			return void (await this.run(ev.action, () => streamDeck.system.openUrl(pr!.url)));
+		}
+		const handoff = HANDOFFS[mode];
+		const check = prCheck(this.machineOf(ev.action), handoff.operates);
 		if (!check.ok) return void (await this.flash(ev.action, false, check.reason));
-		const detail = this.detail(check.thread, check.pr, check.ref);
+		const detail = handoff.detail?.(check.thread, check.pr, check.ref) ?? defaultDetail(check.pr);
 		if (!detail.available) return void (await this.flash(ev.action, false, detail.text ?? t("strip.notNow")));
-		const confirm = this.settingsOf(ev.action).confirm;
-		const hold = confirm === "hold" || (confirm !== "tap" && this.holdByDefault);
-		if (hold && held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("repo.holdTo")));
-		await this.run(ev.action, () => this.act(check.thread, check.ref));
+		// Only Fix findings asks for a hold (its To send setting), since it sends review comments to an agent.
+		if (mode === "fix" && this.settingsOf(ev.action).confirm !== "tap" && held < HOLD_CONFIRM_MS) return void (await this.flash(ev.action, false, t("repo.holdTo")));
+		await this.run(ev.action, () => handoff.act(check.thread, check.ref));
 	}
 
 	override needs(action: Action<PrKeySettings>): Need[] {
 		const machine = this.machineOf(action);
+		const thread = selectedThread(machine);
+		const mode = this.#mode(action);
+		if (mode === "show") return [...threadNeeds(machine, thread, false), { kind: "pr", ok: (thread?.pullRequests.length ?? 0) > 0 }];
 		const found = threadPr(machine);
-		return [...threadNeeds(machine, selectedThread(machine), this.operates), { kind: "pr", ok: found?.ref !== undefined }];
+		const needs: Need[] = [...threadNeeds(machine, thread, HANDOFFS[mode].operates), { kind: "pr", ok: found?.ref !== undefined }];
+		if (mode !== "fix") return needs;
+		const total = found?.ref && prFindings(found.thread, found.ref)?.total;
+		return [...needs, { kind: "findings", ok: total === undefined ? undefined : total > 0 }];
 	}
 }
 
-/** T3 Code's Fix findings for the selected thread's pull request, sent to that thread. Hold to send by default. */
+@action({ UUID: `${ID}.pr` })
+export class PullRequest extends PullRequestAction {}
+
+// Fix Findings, Explain PR, Ask about PR and Review Guide, which Pull Request's Does setting replaced: hidden from
+// the actions list, still on decks and in older profiles.
 @action({ UUID: `${ID}.pr.fix` })
-export class FixFindingsKey extends PrHandoffKey {
-	protected readonly glyph = "hammer";
-	protected override readonly holdByDefault = true;
+export class FixFindingsKey extends PullRequestAction {}
 
-	protected label(): string {
-		return t("pr.fix.title");
-	}
-
-	protected override detail(thread: DeckThread, _pr: ThreadPullRequest, ref: PullRequestRef) {
-		const info = store.get(thread.machine, ref);
-		if (info.activity === undefined) return { available: true };
-		const found = findings({ ...info.activity, checks: info.checks ?? [] });
-		if (found.total === 0) return { text: t("pr.fix.none"), available: false };
-		const parts = [
-			found.threads.length > 0 ? counted(found.threads.length, "pr.fix.threadOne", "pr.fix.threads") : undefined,
-			found.remarks.length > 0 ? counted(found.remarks.length, "pr.fix.remarkOne", "pr.fix.remarks") : undefined,
-			found.checks.length > 0 ? counted(found.checks.length, "pr.fix.checkOne", "pr.fix.checks") : undefined,
-		];
-		return { text: parts.filter(Boolean).join(" · "), available: true, tint: found.checks.length > 0 ? COLORS.error : undefined };
-	}
-
-	protected act(thread: DeckThread, ref: PullRequestRef): Promise<string> {
-		return fixFindings(thread.machine, ref, thread);
-	}
-
-	override needs(action: Action<PrKeySettings>): Need[] {
-		const found = threadPr(this.machineOf(action));
-		const info = found?.ref && store.get(found.thread.machine, found.ref);
-		const total = info?.activity && findings({ ...info.activity, checks: info.checks ?? [] }).total;
-		return [...super.needs(action), { kind: "findings", ok: total === undefined ? undefined : total > 0 }];
-	}
-}
-
-/** T3 Code's Explain for the selected thread's pull request: a walk through the change, sent to that thread. */
 @action({ UUID: `${ID}.pr.explain` })
-export class ExplainPrKey extends PrHandoffKey {
-	protected readonly glyph = "book";
+export class ExplainPrKey extends PullRequestAction {}
 
-	protected label(url: string): string {
-		return t("pr.explain.title", { term: changeRequestLabel(url) });
-	}
-
-	protected act(thread: DeckThread, ref: PullRequestRef): Promise<string> {
-		return explainPr(thread.machine, ref, thread);
-	}
-}
-
-/**
- * Opens the thread that holds the selected thread's pull request in T3 Code, to ask about it there. T3 Code's own Ask
- * puts the pull request in the composer, which lives in the app and can't be filled from outside.
- */
 @action({ UUID: `${ID}.pr.ask` })
-export class AskPrKey extends PrHandoffKey {
-	protected readonly glyph = "question";
-	protected override readonly operates = false;
+export class AskPrKey extends PullRequestAction {}
 
-	protected label(url: string): string {
-		return t("pr.ask.title", { term: changeRequestLabel(url) });
-	}
-
-	protected async act(thread: DeckThread): Promise<string> {
-		await openThread(thread);
-		return t("result.opened");
-	}
-}
-
-/**
- * Writes T3 Code's review guide for the selected thread's pull request (`pullRequests.generateReviewGuide`), shows its
- * progress, then opens the thread, whose pull request panel has the guide; there is no link to the guide itself.
- */
 @action({ UUID: `${ID}.pr.guide` })
-export class ReviewGuideKey extends PrHandoffKey {
-	protected readonly glyph = "spark";
-	readonly #guides = new Map<string, { result?: ReviewGuideResult; loading: boolean; polling: boolean }>();
-
-	protected label(): string {
-		return t("pr.guide.title");
-	}
-
-	#entry(thread: DeckThread, ref: PullRequestRef) {
-		const key = `${thread.machine.url}|${ref.projectId}|${ref.repository}#${ref.number}`;
-		let entry = this.#guides.get(key);
-		if (entry === undefined) {
-			entry = { loading: true, polling: false };
-			this.#guides.set(key, entry);
-			const created = entry;
-			void prRequests
-				.reviewGuide(thread.machine, ref)
-				.then((result) => (created.result = result))
-				.catch(() => undefined)
-				.finally(() => {
-					created.loading = false;
-					deck.repaint();
-				});
-		}
-		return entry;
-	}
-
-	protected override detail(thread: DeckThread, _pr: ThreadPullRequest, ref: PullRequestRef) {
-		const entry = this.#entry(thread, ref);
-		if (entry.result === undefined) return { text: entry.loading ? undefined : t("pr.guide.write"), available: true };
-		const state = guideState(entry.result);
-		return { text: t(state === "ready" ? "pr.guide.ready" : state === "running" ? "pr.guide.writing" : state === "failed" ? "pr.guide.failed" : "pr.guide.write"), available: true };
-	}
-
-	protected async act(thread: DeckThread, ref: PullRequestRef): Promise<string> {
-		const entry = this.#entry(thread, ref);
-		// New commits make a written guide stale, so the press decides on a fresh read.
-		entry.result = await prRequests.reviewGuide(thread.machine, ref);
-		const state = guideState(entry.result);
-		if (state === "ready") {
-			await openThread(thread);
-			return t("result.opened");
-		}
-		if (state !== "running") entry.result = await prRequests.generateReviewGuide(thread.machine, ref);
-		deck.repaint();
-		void this.#poll(thread, ref, entry);
-		return t("pr.guide.writing");
-	}
-
-	/** Re-reads the guide while it is being written, for at most a few minutes, then opens the thread once it is done. */
-	async #poll(thread: DeckThread, ref: PullRequestRef, entry: { result?: ReviewGuideResult; polling: boolean }): Promise<void> {
-		if (entry.polling) return;
-		entry.polling = true;
-		try {
-			for (let attempt = 0; attempt < 45 && entry.result && guideState(entry.result) === "running"; attempt++) {
-				await new Promise((resolve) => setTimeout(resolve, 4_000));
-				entry.result = await prRequests.reviewGuide(thread.machine, ref);
-				deck.repaint();
-			}
-			if (entry.result && guideState(entry.result) === "ready") await openThread(thread);
-		} catch (error) {
-			logger.warn(`Review guide polling stopped: ${error instanceof Error ? error.message : String(error)}`);
-		} finally {
-			entry.polling = false;
-		}
-	}
-}
+export class ReviewGuideKey extends PullRequestAction {}
 
 type PrDialSettings = DialSettings & { confirm?: string };
 

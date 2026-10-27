@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { dialPrompts, migratePromptSettings, quickPrompt } from "./prompts.js";
+import { dialPrompts, migratePromptSettings, templatePrompt } from "./prompts.js";
 
-describe("quickPrompt", () => {
-	it("sends a template's text under its short label, defaulting to Continue", () => {
-		expect(quickPrompt({ template: "test" })).toEqual({ label: "Fix tests", text: "Run the tests and fix any failures." });
-		expect(quickPrompt({})).toMatchObject({ label: "Continue" });
-		expect(quickPrompt({ template: "toString" })).toMatchObject({ label: "Continue" });
+describe("templatePrompt", () => {
+	it("sends a template's text under its short label", () => {
+		expect(templatePrompt("test", "ignored")).toEqual({ label: "Fix tests", text: "Run the tests and fix any failures." });
+		expect(templatePrompt("continue", undefined)).toMatchObject({ label: "Continue" });
 	});
 
-	it("sends the custom prompt, or nothing when it is empty", () => {
-		expect(quickPrompt({ template: "custom", prompt: "  Ship it  " })).toEqual({ label: "Prompt", text: "Ship it" });
-		expect(quickPrompt({ template: "custom" }).text).toBe("");
+	it("sends the key's own prompt with no label, or nothing when it is empty", () => {
+		expect(templatePrompt("custom", "  Ship it  ")).toEqual({ label: undefined, text: "Ship it" });
+		expect(templatePrompt("custom", undefined).text).toBe("");
 	});
 });
 

@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "從 Stream Deck 監看並操控 T3 Code 對話：對話狀態、停止、提示詞、模型選項與回答，支援所有供應商。",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "對話",
+		"Tooltip": "依按鍵位置填入看板上的一個對話：狀態、標題與計時。點按可在 T3 Code 中開啟；長按可選取。"
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "動態",
 		"Tooltip": "符合篩選條件中最緊急的對話。點按可在 T3 Code 中開啟。"
@@ -12,31 +16,19 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "傳送提示詞",
-		"Tooltip": "將已儲存的提示詞傳送到所選對話。長按可中斷並以此重新開始。"
+		"Tooltip": "將你自己的提示詞，或常用提示詞（繼續、修正測試、說明、提交等）傳送到所選對話。長按可中斷並以此重新開始。"
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "引導",
 		"Tooltip": "將已儲存的指示加入所選對話正在執行的回合。"
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "快速提示詞",
-		"Tooltip": "將常用提示詞傳送到所選對話：繼續、修正測試、診斷、說明、提交，或自訂內容。"
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "執行技能",
+		"Tooltip": "執行對話供應商的一項技能，就像在 T3 Code 的輸入框中選取並傳送一樣。"
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "停止",
-		"Tooltip": "停止 T3 Code 中所選對話正在執行的回合。"
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "停止工作流程",
-		"Tooltip": "停止對話執行中的工作流程（Claude）。長按以停止。"
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "分叉",
-		"Tooltip": "從最新一則完成的回覆分叉出對話，並開啟分叉。"
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "合併回去",
-		"Tooltip": "將分叉的對話合併回原本的對話。長按以合併。"
+		"Tooltip": "停止所選對話正在執行的回合，或依設定停止其執行中的工作流程（Claude）。停止工作流程需長按。"
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "模型",
@@ -66,73 +58,57 @@
 		"Name": "拒絕",
 		"Tooltip": "拒絕所選對話的核准請求。"
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "對話",
-		"Tooltip": "依按鍵位置填入看板上的一個對話：狀態、標題與計時。點按可在 T3 Code 中開啟；長按可選取。"
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "整理",
 		"Tooltip": "將所選對話標為完結、釘選、延後、封存或標為未讀，或喚醒最近延後的對話。"
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "PR",
-		"Tooltip": "所選對話的 PR 及其狀態。點按可開啟。"
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "分叉",
+		"Tooltip": "從最新一則完成的回覆分叉出對話並開啟，或將分叉合併回原本的對話（長按）。"
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "分支",
 		"Tooltip": "所選對話的分支。點按可在 T3 Code 中開啟對話。"
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "提交",
-		"Tooltip": "提交所選對話的變更，或同時推送、建立 PR；除非你自行設定，否則使用 T3 Code 產生的提交訊息。"
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
 	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "推送",
-		"Tooltip": "推送所選對話的分支。長按以推送。"
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "建立 PR",
-		"Tooltip": "推送所選對話的分支並為其建立 PR。長按以建立。"
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "拉取",
-		"Tooltip": "在所選對話的分支落後上游時拉取。"
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "修正問題",
-		"Tooltip": "為所選對話的 PR 傳送 T3 Code 的「Fix findings」任務：未解決的審查與失敗的檢查。長按以傳送。"
-	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "說明 PR",
-		"Tooltip": "請所選對話逐步說明其 PR，如同 T3 Code 的「Explain」功能。"
-	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "詢問 PR",
-		"Tooltip": "在 T3 Code 中開啟包含此 PR 的對話，以便在那裡提問。"
-	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "審查指南",
-		"Tooltip": "為所選對話的 PR 撰寫 T3 Code 的審查指南，然後開啟對話。"
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "在編輯器開啟",
-		"Tooltip": "在執行 T3 Code 的機器上，以編輯器開啟所選對話的工作樹或專案。"
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "開啟預覽",
-		"Tooltip": "在這台電腦的瀏覽器中開啟對話的預覽頁面，或其最新的 HTML 轉譯。"
-	},
-	"com.alejandrom2.t3deck.health": {
-		"Name": "健康狀態",
-		"Tooltip": "與 T3 Code 及其供應商的連線：優先顯示最嚴重的問題（離線、需要配對、未驗證、不支援的版本、無法使用）。點按可重新連線。"
+	"com.alejandrom2.t3deck.pr": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
 	},
 	"com.alejandrom2.t3deck.task": {
 		"Name": "執行任務",
 		"Tooltip": "T3 Code 的一項排程任務：名稱與下次執行時間。按下可立即執行。"
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "執行技能",
-		"Tooltip": "執行對話供應商的一項技能，就像在 T3 Code 的輸入框中選取並傳送一樣。"
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "用量",
+		"Tooltip": "某段期間的 API 估算費用、token 與工作階段，與 T3 Code 的 Usage 顯示相同，可看單台或所有機器。點按可重新整理；長按還會重新載入模型價格。"
+	},
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "額度",
+		"Tooltip": "供應商的訂閱額度，與 T3 Code 的「Limits」一樣合併計算：剩餘 %、下次重置與累積的重置次數。點按可重新整理；長按可開啟 T3 Code 的 Usage 或使用重置。"
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
+	},
+	"com.alejandrom2.t3deck.health": {
+		"Name": "健康狀態",
+		"Tooltip": "與 T3 Code 及其供應商的連線：優先顯示最嚴重的問題（離線、需要配對、未驗證、不支援的版本、無法使用）。點按可重新連線。"
+	},
+	"com.alejandrom2.t3deck.update": {
+		"Name": "更新 T3",
+		"Tooltip": "某台機器上的 T3 Code 版本。長按可更新至最新版本；需要更新權限，會在該機器下次配對時要求。"
+	},
+	"com.alejandrom2.t3deck.script": {
+		"Name": "執行指令碼",
+		"Tooltip": "在對話的終端機中執行專案已儲存的指令碼；長按可停止。需要終端機權限（shell），會在該機器下次配對時要求。"
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "分享對話",
+		"Tooltip": "為對話建立訪客連結並複製；顯示「已分享」及其訪客。長按可停止分享。需要訪客連結權限，會在該機器下次配對時要求。"
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "對話旋鈕",
@@ -190,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "選擇 PR", "Push": "修正問題（長按）", "Touch": "在瀏覽器開啟", "LongTouch": "閱讀問題" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "更新 T3",
-		"Tooltip": "某台機器上的 T3 Code 版本。長按可更新至最新版本；需要更新權限，會在該機器下次配對時要求。"
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "執行指令碼",
-		"Tooltip": "在對話的終端機中執行專案已儲存的指令碼；長按可停止。需要終端機權限（shell），會在該機器下次配對時要求。"
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "分享對話",
-		"Tooltip": "為對話建立訪客連結並複製；顯示「已分享」及其訪客。長按可停止分享。需要訪客連結權限，會在該機器下次配對時要求。"
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "額度",
-		"Tooltip": "供應商的訂閱額度，與 T3 Code 的「Limits」一樣合併計算：剩餘 %、下次重置與累積的重置次數。點按可重新整理；長按可開啟 T3 Code 的 Usage 或使用重置。"
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "額度旋鈕",
 		"Tooltip": "旋轉以瀏覽各供應商的額度時段。按下或點按可重新整理；長按可開啟 T3 Code 的 Usage 或使用重置。",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "選擇供應商與時段", "Push": "重新整理（長按：重置）", "Touch": "重新整理", "LongTouch": "閱讀詳情" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "用量",
-		"Tooltip": "某段期間的 API 估算費用、token 與工作階段，與 T3 Code 的 Usage 顯示相同，可看單台或所有機器。點按可重新整理；長按還會重新載入模型價格。"
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "裝置旋鈕",
-		"Tooltip": "旋轉以瀏覽 T3 Code 的模擬器。按下可在對話的 Device panel 中啟動或開啟顯示的裝置；長按可關機。觸碰可重新搜尋裝置。",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "選擇裝置", "Push": "啟動或開啟（長按：關機）", "Touch": "重新搜尋" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -230,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "選擇模型", "Push": "重新整理（長按：含價格）", "Touch": "重新整理", "LongTouch": "閱讀詳情" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "裝置旋鈕",
+		"Tooltip": "旋轉以瀏覽 T3 Code 的模擬器。按下可在對話的 Device panel 中啟動或開啟顯示的裝置；長按可關機。觸碰可重新搜尋裝置。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "選擇裝置", "Push": "啟動或開啟（長按：關機）", "Touch": "重新搜尋" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "對所選對話的分支執行提交、推送、建立 PR 或拉取，由「動作」設定決定。長按以推送。"
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "PR",
+		"Tooltip": "所選對話的 PR 及其狀態；點按可開啟。也可交給代理：修正問題（長按）、說明、詢問或審查指南。"
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "傳送提示詞",
+		"Tooltip": "將你自己的提示詞，或常用提示詞（繼續、修正測試、說明、提交等）傳送到所選對話。長按可中斷並以此重新開始。"
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "停止",
+		"Tooltip": "停止所選對話正在執行的回合，或依設定停止其執行中的工作流程（Claude）。停止工作流程需長按。"
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "分叉",
+		"Tooltip": "從最新一則完成的回覆分叉出對話並開啟，或將分叉合併回原本的對話（長按）。"
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
 	},
 	"Localization": {
 		"result": {
@@ -699,7 +707,12 @@
 				"hold": "長按",
 				"tap": "點按",
 				"fixHint": "將 T3 Code 針對所選對話 PR 的「Fix findings」任務傳送給該對話，若對話忙碌則排入佇列。審查意見與檢查輸出來自主機，會以不受信任的資料附上。",
-				"dialHint": "列出機器上開啟中的 PR。按下可在連結的對話（或新的工作樹對話）中執行「修正問題」；點按可在瀏覽器中開啟；長按觸控條可閱讀問題。"
+				"dialHint": "列出機器上開啟中的 PR。按下可在連結的對話（或新的工作樹對話）中執行「修正問題」；點按可在瀏覽器中開啟；長按觸控條可閱讀問題。",
+				"show": "顯示",
+				"fix": "修正問題",
+				"explain": "說明",
+				"ask": "詢問",
+				"guide": "審查指南"
 			},
 			"git": {
 				"action": "動作",
@@ -713,7 +726,10 @@
 				"tap": "點按",
 				"hold": "長按",
 				"hint": "作用於所選對話的工作樹或其專案資料夾。推送到預設分支一律需要長按；從預設分支建立 PR 會被拒絕，因為 T3 Code 會先建議建立新分支。",
-				"pullHint": "在所選對話的分支落後上游時，從上游拉取。"
+				"pullHint": "在所選對話的分支落後上游時，從上游拉取。",
+				"push": "推送",
+				"createPr": "建立 PR",
+				"pull": "拉取"
 			},
 			"card": {
 				"machine": "裝置",
@@ -803,7 +819,7 @@
 				"previewPet": "預覽寵物",
 				"idlePetHint": "兩分鐘內沒有按下、轉動或觸碰時，一個小機器人會走過你最長一排相鄰的旋鈕觸控條，最多三次，每次間隔四分鐘。在任何 T3 Deck 動作上按下、轉動或觸碰都會讓它離開。它會遵循「動態效果」：「減少」時慢慢走，「關」時不會出現。",
 				"confirm": "傳送前確認",
-				"confirmHint": "適用於傳送提示詞、引導、快速提示詞、執行技能、提示詞旋鈕與技能旋鈕；模型、強度、速度、權限與效能旋鈕一律立即套用。「檢視」會在第一次按下時顯示要傳送什麼到哪裡；在 10 秒內再按一次即可傳送。「長按」會在長按時傳送，因此長按無法同時用於重新開始或開始對話。每個動作都可覆寫此設定。"
+				"confirmHint": "適用於傳送提示詞、引導、執行技能、提示詞旋鈕與技能旋鈕；模型、強度、速度、權限與效能旋鈕一律立即套用。「檢視」會在第一次按下時顯示要傳送什麼到哪裡；在 10 秒內再按一次即可傳送。「長按」會在長按時傳送，因此長按無法同時用於重新開始或開始對話。每個動作都可覆寫此設定。"
 			},
 			"field": {
 				"strip": "觸控條",
@@ -819,7 +835,8 @@
 				"model": "模型",
 				"effort": "強度",
 				"access": "權限",
-				"confirm": "確認"
+				"confirm": "確認",
+				"does": "功能"
 			},
 			"background": {
 				"global": "使用全域設定",
@@ -900,7 +917,9 @@
 			"send": {
 				"titlePlaceholder": "修正測試",
 				"promptPlaceholder": "執行測試並修正失敗的部分",
-				"hint": "傳送到 T3 Code 中所選的對話：開始一個回合，或引導、排在執行中的回合之後。長按按鍵可中斷並以此重新開始。"
+				"hint": "傳送到 T3 Code 中所選的對話：開始一個回合，或引導、排在執行中的回合之後。長按按鍵可中斷並以此重新開始。",
+				"myText": "自訂文字",
+				"text": "文字"
 			},
 			"steer": {
 				"titlePlaceholder": "保持精簡",
@@ -908,16 +927,11 @@
 				"hint": "加入所選對話正在執行的回合。對話閒置時會變暗。"
 			},
 			"quick": {
-				"titlePlaceholder": "此按鍵的選用標籤",
-				"type": "提示詞類型",
 				"continue": "繼續",
 				"test": "執行測試並修正失敗",
 				"fix": "診斷並修正",
 				"explain": "說明目前狀態",
-				"commit": "提交你的變更",
-				"custom": "自訂提示詞",
-				"customPlaceholder": "輸入此按鍵要傳送的提示詞",
-				"hint": "傳送到 T3 Code 中所選的對話。長按按鍵可中斷並以此重新開始。"
+				"commit": "提交你的變更"
 			},
 			"new": {
 				"createIn": "建立於",
@@ -1050,7 +1064,9 @@
 			},
 			"lineage": {
 				"forkHint": "從最新一則完成的回覆將對話分叉為新對話，與 T3 Code 在該回覆上的分叉按鈕相同，然後開啟分叉。",
-				"mergeHint": "將分叉的對話合併回原本的對話，與 T3 Code 的「Merge」相同，然後開啟該對話。長按按鍵以合併。"
+				"mergeHint": "將分叉的對話合併回原本的對話，與 T3 Code 的「Merge」相同，然後開啟該對話。長按按鍵以合併。",
+				"fork": "分叉",
+				"merge": "合併回去"
 			},
 			"update": {
 				"hint": "顯示下方所選機器上的 T3 Code 版本（未選取時為這台電腦）。長按可更新至其更新頻道的最新版本；桌面應用程式會自行安裝更新並重新啟動。T3 Code 不會向 T3 Deck 通知更新，因此按鍵無法顯示有更新待安裝。",
@@ -1066,6 +1082,16 @@
 				"access": "需要訪客連結權限，讓 T3 Deck 能與外部人士分享對話。按鍵第一次按下時，會在該機器下次配對時要求此權限。",
 				"link": "訪客連結",
 				"linkHint": "僅在 T3 Deck 執行時顯示：T3 Code 只會在建立連結時顯示一次。"
+			},
+			"stop": {
+				"stops": "停止對象",
+				"turn": "回合",
+				"workflow": "工作流程"
+			},
+			"open": {
+				"in": "開啟方式",
+				"editor": "編輯器",
+				"preview": "預覽"
 			}
 		},
 		"usage": {

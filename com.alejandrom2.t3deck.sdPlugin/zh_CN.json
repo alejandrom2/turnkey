@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "在 Stream Deck 上查看并操控 T3 Code 对话：对话状态、停止、提示词、模型选项与回答，支持所有提供方。",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "对话",
+		"Tooltip": "看板中的一个对话，按按键位置填充：状态、标题和计时。轻触在 T3 Code 中打开；长按选中。"
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "动态",
 		"Tooltip": "符合筛选条件的最紧急对话。轻触在 T3 Code 中打开。"
@@ -12,31 +16,19 @@
 	},
 	"com.alejandrom2.t3deck.send": {
 		"Name": "发送提示词",
-		"Tooltip": "向所选对话发送已保存的提示词。长按则中断并以它重新开始。"
+		"Tooltip": "向所选对话发送你自己的提示词，或常用提示词（继续、修复测试、解释、提交等）。长按则中断并以它重新开始。"
 	},
 	"com.alejandrom2.t3deck.steer": {
 		"Name": "引导",
 		"Tooltip": "向所选对话正在进行的轮次追加一条已保存的指令。"
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "快捷提示词",
-		"Tooltip": "向所选对话发送常用提示词：继续、修复测试、诊断、解释、提交，或自定义内容。"
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "运行技能",
+		"Tooltip": "运行对话提供方的某个技能，与在 T3 Code 输入框中选择并发送相同。"
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "停止",
-		"Tooltip": "停止 T3 Code 中所选对话正在进行的轮次。"
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "停止工作流",
-		"Tooltip": "停止对话运行的工作流（Claude）。长按停止。"
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "分叉",
-		"Tooltip": "从对话最新完成的回复处分叉，并打开分叉。"
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "合并回去",
-		"Tooltip": "将分叉的对话合并回其来源对话。长按合并。"
+		"Tooltip": "停止所选对话正在进行的轮次，或按设置停止其运行的工作流（Claude）。停止工作流需长按。"
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "模型",
@@ -66,73 +58,57 @@
 		"Name": "拒绝",
 		"Tooltip": "拒绝所选对话的审批。"
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "对话",
-		"Tooltip": "看板中的一个对话，按按键位置填充：状态、标题和计时。轻触在 T3 Code 中打开；长按选中。"
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "整理",
 		"Tooltip": "将所选对话完结、置顶、延后、归档或标为未读，或唤醒最近延后的对话。"
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "拉取请求",
-		"Tooltip": "所选对话的拉取请求及其状态。轻触打开。"
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "分叉",
+		"Tooltip": "从对话最新完成的回复处分叉并打开分叉，或将分叉合并回其来源对话（长按）。"
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "分支",
 		"Tooltip": "所选对话的分支。轻触在 T3 Code 中打开对话。"
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "提交",
-		"Tooltip": "提交所选对话的更改，或同时推送、创建 PR；未设置提交信息时使用 T3 Code 生成的提交信息。"
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
 	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "推送",
-		"Tooltip": "推送所选对话的分支。长按推送。"
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "创建 PR",
-		"Tooltip": "推送所选对话的分支并为其创建拉取请求。长按创建。"
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "拉取",
-		"Tooltip": "当所选对话的分支落后于上游时拉取。"
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
-		"Name": "修复问题",
-		"Tooltip": "为所选对话的拉取请求发送 T3 Code 的“Fix findings”任务：未解决的评审和失败的检查。长按发送。"
-	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "解释 PR",
-		"Tooltip": "让所选对话逐步讲解其拉取请求，与 T3 Code 的“Explain”相同。"
-	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "询问 PR",
-		"Tooltip": "在 T3 Code 中打开包含该拉取请求的对话，以便在那里提问。"
-	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "评审指南",
-		"Tooltip": "为所选对话的拉取请求编写 T3 Code 的评审指南，然后打开对话。"
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "在编辑器中打开",
-		"Tooltip": "在运行 T3 Code 的机器上，用编辑器打开所选对话的工作树或项目。"
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "打开预览",
-		"Tooltip": "在这台电脑的浏览器中打开对话的预览页面或其最新的 HTML 渲染。"
-	},
-	"com.alejandrom2.t3deck.health": {
-		"Name": "健康状态",
-		"Tooltip": "与 T3 Code 及其提供方的连接：最严重的问题优先（离线、需要配对、未认证、版本不受支持、不可用）。轻触重新连接。"
+	"com.alejandrom2.t3deck.pr": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
 	},
 	"com.alejandrom2.t3deck.task": {
 		"Name": "运行任务",
 		"Tooltip": "T3 Code 的某个定时任务：名称及下次运行时间。按下立即运行。"
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "运行技能",
-		"Tooltip": "运行对话提供方的某个技能，与在 T3 Code 输入框中选择并发送相同。"
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "用量",
+		"Tooltip": "某时段按 API 估算的费用、token 和会话数，与 T3 Code 的 Usage 一致，可看单台或全部机器。轻触刷新；长按同时重新加载模型价格。"
+	},
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "额度",
+		"Tooltip": "提供方的订阅额度，与 T3 Code 的“Limits”一样汇总：剩余百分比、下次重置和储备的重置次数。轻触刷新；长按打开 T3 Code 的 Usage 或使用一次重置。"
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "打开",
+		"Tooltip": "用编辑器打开所选对话的工作树，或按设置在这台电脑的浏览器中打开其预览页面。"
+	},
+	"com.alejandrom2.t3deck.health": {
+		"Name": "健康状态",
+		"Tooltip": "与 T3 Code 及其提供方的连接：最严重的问题优先（离线、需要配对、未认证、版本不受支持、不可用）。轻触重新连接。"
+	},
+	"com.alejandrom2.t3deck.update": {
+		"Name": "更新 T3",
+		"Tooltip": "某台机器上的 T3 Code 版本。长按更新到最新版本；需要更新权限，会在该机器下次配对时申请。"
+	},
+	"com.alejandrom2.t3deck.script": {
+		"Name": "运行脚本",
+		"Tooltip": "在对话的终端中运行项目的某个已保存脚本；长按停止。需要终端权限（shell），会在该机器下次配对时申请。"
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "分享对话",
+		"Tooltip": "为对话生成访客链接并复制；显示“已分享”及其访客。长按停止分享。需要访客链接权限，会在该机器下次配对时申请。"
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "对话旋钮",
@@ -190,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "选择拉取请求", "Push": "修复问题（长按）", "Touch": "在浏览器中打开", "LongTouch": "查看问题" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "更新 T3",
-		"Tooltip": "某台机器上的 T3 Code 版本。长按更新到最新版本；需要更新权限，会在该机器下次配对时申请。"
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "运行脚本",
-		"Tooltip": "在对话的终端中运行项目的某个已保存脚本；长按停止。需要终端权限（shell），会在该机器下次配对时申请。"
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "分享对话",
-		"Tooltip": "为对话生成访客链接并复制；显示“已分享”及其访客。长按停止分享。需要访客链接权限，会在该机器下次配对时申请。"
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "额度",
-		"Tooltip": "提供方的订阅额度，与 T3 Code 的“Limits”一样汇总：剩余百分比、下次重置和储备的重置次数。轻触刷新；长按打开 T3 Code 的 Usage 或使用一次重置。"
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "额度旋钮",
 		"Tooltip": "旋转浏览每个提供方的额度窗口。按下或轻触刷新；按住可打开 T3 Code 的 Usage 或使用一次重置。",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "选择提供方和窗口", "Push": "刷新（长按：重置）", "Touch": "刷新", "LongTouch": "查看详情" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "用量",
-		"Tooltip": "某时段按 API 估算的费用、token 和会话数，与 T3 Code 的 Usage 一致，可看单台或全部机器。轻触刷新；长按同时重新加载模型价格。"
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "设备旋钮",
-		"Tooltip": "旋转浏览 T3 Code 的模拟器与仿真器。按下在对话的 Device panel 中启动或打开当前设备；长按关机。触摸重新查找设备。",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "选择设备", "Push": "启动或打开（长按：关机）", "Touch": "重新查找" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -230,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "选择模型", "Push": "刷新（长按：含价格）", "Touch": "刷新", "LongTouch": "查看详情" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "设备旋钮",
+		"Tooltip": "旋转浏览 T3 Code 的模拟器与仿真器。按下在对话的 Device panel 中启动或打开当前设备；长按关机。触摸重新查找设备。",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "选择设备", "Push": "启动或打开（长按：关机）", "Touch": "重新查找" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "对所选对话的分支执行提交、推送、创建 PR 或拉取，由“操作”设置决定。长按推送。"
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "拉取请求",
+		"Tooltip": "所选对话的拉取请求及其状态；轻触打开。也可交给智能体：修复问题（长按）、解释、询问或评审指南。"
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "发送提示词",
+		"Tooltip": "向所选对话发送你自己的提示词，或常用提示词（继续、修复测试、解释、提交等）。长按则中断并以它重新开始。"
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "停止",
+		"Tooltip": "停止所选对话正在进行的轮次，或按设置停止其运行的工作流（Claude）。停止工作流需长按。"
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "分叉",
+		"Tooltip": "从对话最新完成的回复处分叉并打开分叉，或将分叉合并回其来源对话（长按）。"
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "打开",
+		"Tooltip": "用编辑器打开所选对话的工作树，或按设置在这台电脑的浏览器中打开其预览页面。"
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "打开",
+		"Tooltip": "用编辑器打开所选对话的工作树，或按设置在这台电脑的浏览器中打开其预览页面。"
 	},
 	"Localization": {
 		"result": {
@@ -699,7 +707,12 @@
 				"hold": "长按",
 				"tap": "轻触",
 				"fixHint": "将 T3 Code 针对所选对话拉取请求的“Fix findings”任务发送到该对话，忙碌时排队。评审评论和检查输出来自托管平台，作为不可信数据附加。",
-				"dialHint": "列出该机器上打开的拉取请求。按下在关联的对话（或新的工作树对话）中运行“Fix findings”；轻触在浏览器中打开；触摸并按住查看问题。"
+				"dialHint": "列出该机器上打开的拉取请求。按下在关联的对话（或新的工作树对话）中运行“Fix findings”；轻触在浏览器中打开；触摸并按住查看问题。",
+				"show": "显示",
+				"fix": "修复问题",
+				"explain": "解释",
+				"ask": "询问",
+				"guide": "评审指南"
 			},
 			"git": {
 				"action": "操作",
@@ -713,7 +726,10 @@
 				"tap": "轻触",
 				"hold": "长按",
 				"hint": "作用于所选对话的工作树，或其项目文件夹。推送到默认分支始终需要长按；从默认分支创建 PR 会被拒绝，因为 T3 Code 会先建议新建分支。",
-				"pullHint": "当所选对话的分支落后时，从其上游拉取。"
+				"pullHint": "当所选对话的分支落后时，从其上游拉取。",
+				"push": "推送",
+				"createPr": "创建 PR",
+				"pull": "拉取"
 			},
 			"card": {
 				"machine": "设备",
@@ -803,7 +819,7 @@
 				"previewPet": "预览宠物",
 				"idlePetHint": "两分钟内没有按下、旋转或触摸后，一个小机器人会走过你最长的一排相邻旋钮触控条，最多三次，每次间隔四分钟。在任何 T3 Deck 操作上按下、旋转或触摸都会让它离开。它跟随“动效”设置：“减弱”时慢慢走，“关”时不出现。",
 				"confirm": "发送前确认",
-				"confirmHint": "适用于发送提示词、引导、快捷提示词、运行技能、提示词旋钮和技能旋钮；模型、推理强度、速度、权限和性能旋钮始终立即生效。“预览”在第一次按下时显示发送内容和目标；10 秒内再按一次发送。“长按”在长按时发送，因此长按不会同时重启或新建对话。每个操作可覆盖此项。"
+				"confirmHint": "适用于发送提示词、引导、运行技能、提示词旋钮和技能旋钮；模型、推理强度、速度、权限和性能旋钮始终立即生效。“预览”在第一次按下时显示发送内容和目标；10 秒内再按一次发送。“长按”在长按时发送，因此长按不会同时重启或新建对话。每个操作可覆盖此项。"
 			},
 			"field": {
 				"strip": "触控条",
@@ -819,7 +835,8 @@
 				"model": "模型",
 				"effort": "推理强度",
 				"access": "权限",
-				"confirm": "确认"
+				"confirm": "确认",
+				"does": "功能"
 			},
 			"background": {
 				"global": "使用全局设置",
@@ -900,7 +917,9 @@
 			"send": {
 				"titlePlaceholder": "修复测试",
 				"promptPlaceholder": "运行测试并修复失败项",
-				"hint": "发送到 T3 Code 中所选的对话：开始一个轮次，或引导进行中的轮次、在其后排队。长按按键则中断并以它重新开始。"
+				"hint": "发送到 T3 Code 中所选的对话：开始一个轮次，或引导进行中的轮次、在其后排队。长按按键则中断并以它重新开始。",
+				"myText": "自定义文本",
+				"text": "文本"
 			},
 			"steer": {
 				"titlePlaceholder": "保持精简",
@@ -908,16 +927,11 @@
 				"hint": "追加到所选对话进行中的轮次。对话空闲时按键变暗。"
 			},
 			"quick": {
-				"titlePlaceholder": "此按键的可选标签",
-				"type": "提示词类型",
 				"continue": "继续",
 				"test": "运行测试并修复失败",
 				"fix": "诊断并修复",
 				"explain": "解释当前状态",
-				"commit": "提交你的更改",
-				"custom": "自定义提示词",
-				"customPlaceholder": "输入此按键发送的提示词",
-				"hint": "发送到 T3 Code 中所选的对话。长按按键则中断并以它重新开始。"
+				"commit": "提交你的更改"
 			},
 			"new": {
 				"createIn": "创建位置",
@@ -1050,7 +1064,9 @@
 			},
 			"lineage": {
 				"forkHint": "从对话最新完成的回复处分叉出一个新对话，与 T3 Code 中该回复上的分叉按钮相同，然后打开分叉。",
-				"mergeHint": "将分叉的对话合并回其来源对话，与 T3 Code 的“Merge”相同，然后打开该对话。长按按键合并。"
+				"mergeHint": "将分叉的对话合并回其来源对话，与 T3 Code 的“Merge”相同，然后打开该对话。长按按键合并。",
+				"fork": "分叉",
+				"merge": "合并回去"
 			},
 			"update": {
 				"hint": "显示下方所选机器上的 T3 Code 版本（未选择时为本机）。长按更新到其渠道的最新版本；桌面应用会自行安装更新并重新启动。T3 Code 不会向 Deck 通知更新，因此按键无法显示有待安装的更新。",
@@ -1066,6 +1082,16 @@
 				"access": "需要访客链接权限，允许此 Deck 与外部人员分享对话。按键第一次按下时，会在该机器下次配对时申请。",
 				"link": "访客链接",
 				"linkHint": "仅在 T3 Deck 运行期间显示：T3 Code 只在生成链接时显示一次。"
+			},
+			"stop": {
+				"stops": "停止对象",
+				"turn": "轮次",
+				"workflow": "工作流"
+			},
+			"open": {
+				"in": "打开方式",
+				"editor": "编辑器",
+				"preview": "预览"
 			}
 		},
 		"usage": {
