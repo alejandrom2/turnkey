@@ -3,7 +3,7 @@
  * up to a few fixes. Built from the same facts the keys' availability uses, so the two never disagree.
  */
 import { type MessageKey, t } from "./i18n.js";
-import { DIAGNOSTICS_SCOPE, PROVIDERS_SCOPE, SOURCE_CONTROL_SCOPE } from "./t3/pairing.js";
+import { ACCESS_SCOPE, DIAGNOSTICS_SCOPE, MAINTAIN_SCOPE, PROVIDERS_SCOPE, SOURCE_CONTROL_SCOPE, TERMINAL_READ_SCOPE, TERMINAL_SCOPE } from "./t3/pairing.js";
 
 /** Why the action's machine can't be used: none found, removed, unpaired or unreachable (base.ts `ConnectionProblem`). */
 export type Connection = "ready" | "none" | "missing" | "pair" | "offline";
@@ -41,6 +41,10 @@ const SCOPE_LABEL: Record<string, MessageKey> = {
 	[SOURCE_CONTROL_SCOPE]: "needs.scope.sourceControl",
 	[DIAGNOSTICS_SCOPE]: "needs.scope.diagnostics",
 	[PROVIDERS_SCOPE]: "needs.scope.providers",
+	[MAINTAIN_SCOPE]: "needs.scope.maintain",
+	[TERMINAL_SCOPE]: "needs.scope.terminal",
+	[TERMINAL_READ_SCOPE]: "needs.scope.terminalRead",
+	[ACCESS_SCOPE]: "needs.scope.share",
 };
 
 const CONNECTION_FIX: Record<Exclude<Connection, "ready">, MessageKey[]> = {
