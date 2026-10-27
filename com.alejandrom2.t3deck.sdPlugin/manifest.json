@@ -78,19 +78,20 @@
 			"Name": "Stop",
 			"UUID": "com.alejandrom2.t3deck.stop",
 			"Icon": "imgs/actions/stop/icon",
-			"Tooltip": "Stops the running turn of the thread selected in T3 Code.",
-			"PropertyInspectorPath": "ui/target.html",
+			"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow.",
+			"PropertyInspectorPath": "ui/stop.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/stop/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Stop Workflow",
+			"Name": "Stop",
 			"UUID": "com.alejandrom2.t3deck.workflow.stop",
 			"Icon": "imgs/actions/workflow-stop/icon",
-			"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop.",
+			"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow.",
 			"PropertyInspectorPath": "ui/workflow.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/workflow-stop/key" }]
+			"States": [{ "Image": "imgs/actions/workflow-stop/key" }],
+			"VisibleInActionsList": false
 		},
 		{
 			"Name": "Fork",

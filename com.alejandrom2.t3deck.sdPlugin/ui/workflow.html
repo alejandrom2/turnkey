@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>Stop Workflow</title>
+		<title>Stop</title>
 		<script src="sdpi-components.js"></script>
 		<style>
 			:root { color-scheme: dark; --t3-warning: #fcd34d; }
@@ -58,7 +58,13 @@
 				<sdpi-select setting="thread" datasource="getThreads" hot-reload loading="Loading threads…" data-i18n-loading="inspector.loading.threads"></sdpi-select>
 			</sdpi-item>
 			<p class="hint" id="target-hint" hidden data-i18n="inspector.target.hint">The key acts on this thread even when another is selected, and shows a small pin. Archived or deleted, it shows as not available until you pick another.</p>
-			<p class="hint" data-i18n="inspector.workflow.hint">Stops the workflows the thread runs, as T3 Code's Lineage panel does. Only Claude's workflows can be stopped. Hold the key to stop; a stopped workflow can't be resumed.</p>
+			<sdpi-item label="Stops" data-i18n-label="inspector.stop.stops">
+				<sdpi-select setting="mode" default="workflow">
+					<option value="turn" data-i18n="inspector.stop.turn">The turn</option>
+					<option value="workflow" data-i18n="inspector.stop.workflow">The workflow</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint" id="workflow-hint" hidden data-i18n="inspector.workflow.hint">Stops the workflows the thread runs, as T3 Code's Lineage panel does. Only Claude's workflows can be stopped. Hold the key to stop; a stopped workflow can't be resumed.</p>
 			<sdpi-item label="Machine" data-i18n-label="inspector.card.machine">
 				<select class="native" id="t3-machine" aria-label="Machine for this action" data-i18n-aria-label="inspector.card.machineGroup"></select>
 			</sdpi-item>
@@ -301,6 +307,13 @@ function mergeGlobalSettings(current , patch ) {
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["target"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["target"]));
+			}
+			{
+				const field = document.querySelector('[setting="mode"]');
+				const apply = (value) => { $("workflow-hint").hidden = !((value) => ["workflow"].includes(value === "" ? "workflow" : value))(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["mode"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["mode"]));
 			}
 		</script>
 	</body>

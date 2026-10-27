@@ -63,8 +63,6 @@ export function defaultNeeds(manifestId: string, settings: Record<string, unknow
 			];
 		case "dial.prompts":
 			return [...needsFor(machine, thread), { kind: "prompt", ok: dialPrompts(settings).length > 0 }];
-		case "stop":
-			return [...needsFor(machine, thread), { kind: "running", ok: thread?.active === true }];
 		case "model": {
 			const fixed = parseModelKey(settings.model);
 			const known = fixed && deck.machines.some((candidate) => pickableModels(candidate.modelConfig).some((model) => model.key === modelKey(fixed.instanceId, fixed.model)));

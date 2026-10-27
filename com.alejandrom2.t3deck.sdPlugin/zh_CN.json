@@ -24,11 +24,11 @@
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "停止",
-		"Tooltip": "停止 T3 Code 中所选对话正在进行的轮次。"
+		"Tooltip": "停止所选对话正在进行的轮次，或按设置停止其运行的工作流（Claude）。停止工作流需长按。"
 	},
 	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "停止工作流",
-		"Tooltip": "停止对话运行的工作流（Claude）。长按停止。"
+		"Name": "停止",
+		"Tooltip": "停止所选对话正在进行的轮次，或按设置停止其运行的工作流（Claude）。停止工作流需长按。"
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "分叉",
@@ -1070,6 +1070,11 @@
 				"access": "需要访客链接权限，允许此 Deck 与外部人员分享对话。按键第一次按下时，会在该机器下次配对时申请。",
 				"link": "访客链接",
 				"linkHint": "仅在 T3 Deck 运行期间显示：T3 Code 只在生成链接时显示一次。"
+			},
+			"stop": {
+				"stops": "停止对象",
+				"turn": "轮次",
+				"workflow": "工作流"
 			}
 		},
 		"usage": {
