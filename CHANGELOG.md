@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/alejandrom2/turnkey/compare/v0.9.1...v0.9.2) (2026-10-27)
+
+
+### Fixes
+
+* audit cleanup — crash and pairing fixes, shared drawing and action code ([#7](https://github.com/alejandrom2/turnkey/issues/7)) ([ae4596b](https://github.com/alejandrom2/turnkey/commit/ae4596b508fafdf1b64e55ea02ee5aef1795c682))
+
 ## [0.9.1](https://github.com/alejandrom2/turnkey/compare/v0.9.0...v0.9.1) (2026-10-27)
 
 
