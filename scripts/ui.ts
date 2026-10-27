@@ -85,6 +85,11 @@ const style = `
 			.machine .actions { display: flex; align-items: center; gap: 4px; }
 			.machine .detail { grid-column: 2 / 4; margin: 4px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-error); }
 			.machine .detail.muted { color: var(--t3-muted); }
+			/* Broader access a machine holds or asks for at its next pairing. */
+			.machine .optins { grid-column: 2 / 4; display: grid; gap: 3px; margin: 6px 0 0; }
+			.machine .optin { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--t3-muted); }
+			.machine .optin .scope { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--t3-foreground); }
+			.machine .optin.pending .scope { color: var(--t3-warning); }
 
 			.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
 			.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -305,7 +310,7 @@ const script = (extra = "") => `
 				return node;
 			};
 
-			function tile({ url, icon, name, where, checked, actions = [], detail, detailTone }) {
+			function tile({ url, icon, name, where, checked, actions = [], detail, detailTone, optIn }) {
 				const node = el("div", "machine");
 				node.setAttribute("role", "radio");
 				node.setAttribute("aria-checked", String(checked));
@@ -327,7 +332,37 @@ const script = (extra = "") => `
 				right.append(...actions);
 				node.append(glyph, text, right);
 				if (detail) node.append(el("p", detailTone === "muted" ? "detail muted" : "detail", detail));
+				if (optIn?.length) node.append(optIns(url, optIn));
 				return node;
+			}
+
+			const SCOPE_NAMES = {
+				"providers:manage": "inspector.card.scopeProviders",
+				"environment:maintain": "inspector.card.scopeMaintain",
+				"terminal:operate": "inspector.card.scopeTerminal",
+				"terminal:read": "inspector.card.scopeTerminalRead",
+				"access:write": "inspector.card.scopeShare",
+			};
+			/** Each opt-in scope: held by the pairing, or flagged for the next one with a way to take it back. */
+			function optIns(url, optIn) {
+				const list = el("div", "optins");
+				list.setAttribute("aria-label", s("inspector.card.optInTitle"));
+				for (const { scope, state } of optIn) {
+					const row = el("div", "optin " + state);
+					row.append(el("span", "scope", SCOPE_NAMES[scope] ? s(SCOPE_NAMES[scope]) : scope));
+					row.append(el("span", state === "held" ? "pill ready" : "pill wait", s(state === "held" ? "inspector.card.optInHeld" : "inspector.card.optInPending")));
+					if (state === "pending") {
+						const drop = el("button", "ghost", s("inspector.card.optInDrop"));
+						drop.type = "button";
+						drop.addEventListener("click", (click) => {
+							click.stopPropagation();
+							send("unflagScope", { url, scope });
+						});
+						row.append(drop);
+					}
+					list.append(row);
+				}
+				return list;
 			}
 
 			const focusLink = () => {
@@ -409,6 +444,7 @@ const script = (extra = "") => `
 						actions: machineActions(env),
 						detail: env.state === "error" ? env.message : env.state === "signed-out" ? (env.message ?? s("inspector.card.pasteFromMachine")) : undefined,
 						detailTone: env.state === "signed-out" ? "muted" : undefined,
+						optIn: env.optIn,
 					}));
 				}
 				$("t3-machines").replaceChildren(...tiles);
