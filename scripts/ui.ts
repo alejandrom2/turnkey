@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { FEATURES } from "../src/core/features.ts";
 import { machineSummary, mergeGlobalSettings, needsFirstPairing } from "../src/core/panel.ts";
 
 const plugin = join(import.meta.dirname, "..", "com.alejandrom2.t3deck.sdPlugin");
@@ -503,14 +504,18 @@ const settingsPage = `<!doctype html>
 							["off", "inspector.motion.off"],
 						]),
 						"inspector.advanced.motionHint",
-					)}${field(
-						"inspector.advanced.idlePet",
-						`${select("idlePet", [
-							["off", "inspector.idlePet.off"],
-							["on", "inspector.idlePet.on"],
-						])}<button class="sd" id="t3-preview-pet" type="button"${text("inspector.advanced.previewPet")}</button>`,
-						"inspector.advanced.idlePetHint",
-					)}
+					)}${
+						FEATURES.idlePet
+							? field(
+									"inspector.advanced.idlePet",
+									`${select("idlePet", [
+										["off", "inspector.idlePet.off"],
+										["on", "inspector.idlePet.on"],
+									])}<button class="sd" id="t3-preview-pet" type="button"${text("inspector.advanced.previewPet")}</button>`,
+									"inspector.advanced.idlePetHint",
+								)
+							: ""
+					}
 				</section>
 				<section id="section-behavior" hidden>
 					<h1${text("inspector.settings.behavior")}</h1>${field(
@@ -714,7 +719,7 @@ const settingsPage = `<!doctype html>
 			$("t3-verbose").addEventListener("change", () => send("verbose", { on: $("t3-verbose").checked }));
 			$("t3-open-logs").addEventListener("click", () => send("openLogs"));
 			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
-			$("t3-preview-pet").addEventListener("click", () => send("previewPet"));
+			$("t3-preview-pet")?.addEventListener("click", () => send("previewPet"));
 			$("t3-readme").addEventListener("click", () => call((b) => b.openUrl(README)));
 			wirePairing(send);
 			renderGlobals({});

@@ -117,11 +117,6 @@
 						<div class="control"><select class="native" data-setting="motion"><option value="full" data-i18n="inspector.motion.full">Full</option><option value="reduced" data-i18n="inspector.motion.reduced">Reduced</option><option value="off" data-i18n="inspector.motion.off">Off</option></select></div>
 					</div>
 					<p class="hint" data-i18n="inspector.advanced.motionHint">Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.</p>
-					<div class="field">
-						<label data-i18n="inspector.advanced.idlePet">Idle pet</label>
-						<div class="control"><select class="native" data-setting="idlePet"><option value="off" data-i18n="inspector.idlePet.off">Off</option><option value="on" data-i18n="inspector.idlePet.on">On</option></select><button class="sd" id="t3-preview-pet" type="button" data-i18n="inspector.advanced.previewPet">Preview pet</button></div>
-					</div>
-					<p class="hint" data-i18n="inspector.advanced.idlePetHint">After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a T3 Deck action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.</p>
 				</section>
 				<section id="section-behavior" hidden>
 					<h1 data-i18n="inspector.settings.behavior">Behavior</h1>
@@ -422,7 +417,7 @@ function mergeGlobalSettings(current , patch ) {
 			$("t3-verbose").addEventListener("change", () => send("verbose", { on: $("t3-verbose").checked }));
 			$("t3-open-logs").addEventListener("click", () => send("openLogs"));
 			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
-			$("t3-preview-pet").addEventListener("click", () => send("previewPet"));
+			$("t3-preview-pet")?.addEventListener("click", () => send("previewPet"));
 			$("t3-readme").addEventListener("click", () => call((b) => b.openUrl(README)));
 			wirePairing(send);
 			renderGlobals({});
