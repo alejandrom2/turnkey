@@ -343,6 +343,10 @@ export type ThreadKeyInput = {
 	motion?: KeyMotion;
 	/** Messages waiting in the thread's queue: a small "+2" under the meta. */
 	queued?: number;
+	/** Subagents running for the thread: a small bot and count beside the queue. */
+	subagents?: number;
+	/** The thread works in its own worktree: a small folder mark beside the state glyph. */
+	worktree?: boolean;
 };
 
 /** "+N" in a small pill, right-aligned at `right`, top at `top`: messages waiting in a thread's queue. */
@@ -350,6 +354,20 @@ export function queueBadge(count: number, right: number, top: number): string {
 	const label = `+${count}`;
 	const width = Math.round(textWidth(label, 14) + 14);
 	return `<rect x="${right - width}" y="${top}" width="${width}" height="20" rx="10" fill="#FFFFFF" fill-opacity=".14"/>` + textEl(label, top + 15, { x: right - width / 2, size: 14, fill: COLORS.text, anchor: "middle" });
+}
+
+/** A bot and "N" in a small pill, right-aligned at `right`, top at `top`: subagents running for a thread. */
+export function subagentBadge(count: number, right: number, top: number): { svg: string; width: number } {
+	const label = String(count);
+	const width = Math.round(textWidth(label, 14) + 32);
+	const left = right - width;
+	return {
+		width,
+		svg:
+			`<rect x="${left}" y="${top}" width="${width}" height="20" rx="10" fill="#FFFFFF" fill-opacity=".14"/>` +
+			glyph("subagent", left + 6, top + 3, 14, COLORS.text, 2.2) +
+			textEl(label, top + 15, { x: right - 8, size: 14, fill: COLORS.text, anchor: "end" }),
+	};
 }
 
 /** The wash and glyph color of a state that wants attention: amber approval, indigo question, red failed, green unseen done. */
@@ -394,7 +412,18 @@ export function renderThreadKey(input: ThreadKeyInput): string {
 		parts.push(textEl(input.meta, META.baseline, { x: META.right, size: META.size, fill: "#9A9A9A", anchor: "end" }));
 	}
 
-	if (input.queued !== undefined && input.queued > 0) parts.push(queueBadge(input.queued, META.right, 40));
+	let badgeRight: number = META.right;
+	if (input.queued !== undefined && input.queued > 0) {
+		parts.push(queueBadge(input.queued, META.right, 40));
+		badgeRight -= Math.round(textWidth(`+${input.queued}`, 14) + 14) + 4;
+	}
+	if (input.subagents !== undefined && input.subagents > 0) {
+		const pill = subagentBadge(input.subagents, badgeRight, 40);
+		parts.push(pill.svg);
+		badgeRight -= pill.width + 4;
+	}
+	// The worktree mark gives way when the queue and subagent pills need the row.
+	if (input.worktree && badgeRight >= 78) parts.push(glyph("worktree", 58, 42, 16, COLORS.muted, 2.2));
 
 	const dot = input.unseen === true && input.state !== "done";
 	const maxWidth = dot ? 100 : 114;
@@ -587,6 +616,8 @@ export type InfoKeyInput = {
 	detail?: string;
 	available?: boolean;
 	active?: boolean;
+	/** The key acts on one thread picked in its settings: a small pin top-right. */
+	pinned?: boolean;
 };
 
 /** A status: icon top-left, a title of up to three lines, and an optional muted detail line, laid out like a thread key. */
@@ -601,6 +632,7 @@ export function renderInfoKey(input: InfoKeyInput): string {
 		const firstBaseline = TITLE.firstBaseline + title.lines.length * TITLE.lineHeight;
 		content.push(textBlock(wrapText(input.detail, 114, 15, 1), { x: TITLE.x, firstBaseline, lineHeight: 18, size: 15, maxWidth: 114, opacity: 0.5 }));
 	}
+	if (input.pinned) content.push(pinMark());
 	parts.push(input.available === false ? `<g opacity=".5">${content.join("")}</g>` : content.join(""));
 	return keySvg(parts.join(""));
 }

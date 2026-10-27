@@ -26,6 +26,18 @@
 		"Name": "Stop",
 		"Tooltip": "Stops the running turn of the thread selected in T3 Code."
 	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "Stop Workflow",
+		"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop."
+	},
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "Fork",
+		"Tooltip": "Forks the thread from its newest finished reply and opens the fork."
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "Merge Back",
+		"Tooltip": "Merges a forked thread back into the thread it came from. Hold to merge."
+	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Model",
 		"Tooltip": "Switches the selected thread to a favorite model, or to the next of T3 Code's favorites."
@@ -114,6 +126,10 @@
 		"Name": "Run Task",
 		"Tooltip": "One of T3 Code's scheduled tasks: its name and when it runs next. Press runs it now."
 	},
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "Run Skill",
+		"Tooltip": "Runs one of the thread's provider skills, the way picking it in T3 Code's composer and sending does."
+	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Threads Dial",
 		"Tooltip": "Rotate through the threads that match its filter, selecting them in T3 Code; press or tap to open one.",
@@ -154,6 +170,13 @@
 		"Tooltip": "Rotate through T3 Code's scheduled tasks, with when each runs next. Press runs the shown task now; tap turns it off or back on.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Choose task", "Push": "Run now", "Touch": "Turn on or off" }
+		}
+	},
+	"com.alejandrom2.t3deck.dial.skills": {
+		"Name": "Skills Dial",
+		"Tooltip": "Rotate through the thread's provider skills. Press or tap runs the shown one; touch and hold reads its description.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose skill", "Push": "Run skill", "Touch": "Run skill", "LongTouch": "Read description" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.pr": {
@@ -224,7 +247,8 @@
 			"snooze": "Snooze {duration}?",
 			"pressAgain": "Press again",
 			"pressToSend": "Press again to send",
-			"to": "To {thread}"
+			"to": "To {thread}",
+			"runSkill": "Run skill?"
 		},
 		"organize": {
 			"settle": "Settle",
@@ -309,7 +333,9 @@
 			"failed": "Failed",
 			"stopped": "Stopped",
 			"idle": "Idle",
-			"queuedCount": "+{count} queued"
+			"queuedCount": "+{count} queued",
+			"subagent": "{count} subagent",
+			"subagents": "{count} subagents"
 		},
 		"filter": {
 			"all": "Threads",
@@ -514,7 +540,9 @@
 			"holdOnDefault": "Hold to push to {branch}",
 			"starting": "Starting…",
 			"pulled": "Pulled",
-			"upToDate": "Up to date"
+			"upToDate": "Up to date",
+			"files": "{count} files",
+			"fileOne": "1 file"
 		},
 		"needs": {
 			"paired": "Paired with T3 Code",
@@ -650,7 +678,7 @@
 				"maxEffortHint": "Gradient colors every effort level along a ladder in the model's own color, turning toward violet at the top, and gives each model and Fast its provider's gradient. Solid and Model color mark only the top effort level, in violet or the model's color; Off leaves them plain. Ultrathink keeps T3 Code's spectrum.",
 				"motionHint": "Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.",
 				"confirm": "Confirm before sending",
-				"confirmHint": "Applies to Send Prompt, Steer, Quick Prompt and the Prompts dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
+				"confirmHint": "Applies to Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
 			},
 			"field": {
 				"strip": "Strip",
@@ -709,7 +737,8 @@
 				"providers": "Loading providers…",
 				"windows": "Loading windows…",
 				"threads": "Loading threads…",
-				"tasks": "Loading tasks…"
+				"tasks": "Loading tasks…",
+				"skills": "Loading skills…"
 			},
 			"filter": {
 				"all": "All threads",
@@ -768,7 +797,11 @@
 				"promptPlaceholder": "Optional: Review the open pull request",
 				"title": "Thread title",
 				"titlePlaceholder": "Review PR",
-				"hint": "With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access."
+				"hint": "With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access.",
+				"startIn": "Start in",
+				"folder": "Project folder",
+				"worktree": "New worktree",
+				"worktreeHint": "A new worktree starts from the repository's default branch, as T3 Code's composer does, and takes its branch name from the prompt; it needs a prompt and a project."
 			},
 			"model": {
 				"hint": "Cycling steps through T3 Code's favorite models, across providers, or the thread's provider's models when you have none. Picking another provider's model hands the thread over, as T3 Code's model picker does."
@@ -866,6 +899,21 @@
 				"label": "Task",
 				"hint": "Press runs the task now, as T3 Code's Run now does; it keeps its schedule. Tasks come from T3 Code's Settings → Scheduled tasks.",
 				"dialHint": "Rotate through the machine's scheduled tasks. Press runs the shown one now; tap turns it off, and tapping again turns it back on."
+			},
+			"skill": {
+				"label": "Skill",
+				"extra": "With",
+				"extraPlaceholder": "Optional: what to tell it, after the skill",
+				"titlePlaceholder": "The skill's name",
+				"hint": "Sends the skill to the thread as T3 Code's composer does ($name, then your text). Skills come from the thread's provider for its checkout: Codex, Claude and Antigravity list them.",
+				"dialHint": "Rotate through the thread's provider skills for its checkout. Press or tap runs the shown one, touch and hold reads its description."
+			},
+			"workflow": {
+				"hint": "Stops the workflows the thread runs, as T3 Code's Lineage panel does. Only Claude's workflows can be stopped. Hold the key to stop; a stopped workflow can't be resumed."
+			},
+			"lineage": {
+				"forkHint": "Forks the thread from its newest finished reply into a new thread, as T3 Code's fork button on that reply does, then opens the fork.",
+				"mergeHint": "Merges a forked thread back into the thread it came from, as T3 Code's Merge does, then opens that thread. Hold the key to merge."
 			}
 		},
 		"usage": {
@@ -930,6 +978,44 @@
 			"pickTask": "Pick a task",
 			"gone": "Not available: {task}",
 			"chooseTask": "Choose a task…"
+		},
+		"skills": {
+			"title": "Skills",
+			"pickSkill": "Pick a skill",
+			"none": "No skills",
+			"gone": "Not available: {skill}",
+			"chooseSkill": "Choose a skill…",
+			"aSkill": "A skill the thread's provider offers"
+		},
+		"workflow": {
+			"stop": "Stop workflow",
+			"none": "No workflow running",
+			"notClaude": "Not on this provider",
+			"option": "Stopping workflows (Claude)",
+			"holdToStop": "Hold to stop",
+			"notRunning": "No longer running",
+			"unsupported": "Provider can't stop it",
+			"unavailable": "No live task",
+			"stopFailed": "Couldn't stop it"
+		},
+		"lineage": {
+			"fork": "Fork",
+			"mergeBack": "Merge back",
+			"into": "Into {thread}",
+			"notFork": "Not a fork",
+			"finishRunFirst": "Finish a turn first",
+			"finishTurn": "Wait for the turn",
+			"nothingToFork": "Nothing to fork yet",
+			"holdToMerge": "Hold to merge",
+			"aFork": "A forked thread",
+			"aFinishedTurn": "A finished reply"
+		},
+		"worktree": {
+			"newThread": "New worktree",
+			"noProject": "Needs a project",
+			"needsPrompt": "Needs a prompt",
+			"notRepo": "Not a git repository",
+			"noBranch": "No branch to start from"
 		}
 	}
 }

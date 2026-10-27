@@ -5,7 +5,7 @@
  * the tiles and any text that scrolls.
  */
 import { t } from "./i18n.js";
-import { BLANK_ART, COLORS, glyphArt, type MarkPainter, queueBadge, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, textWidth, wrapText } from "./render.js";
+import { BLANK_ART, COLORS, glyphArt, type MarkPainter, queueBadge, type StripAppearance, stripCanvas, stripMarkIcon, subagentBadge, svgDataUrl, svgText, textWidth, wrapText } from "./render.js";
 import { overflowIn, type ScrollLine, scrollLine, type StripContent, slotItems, type TextScroll, type TextSlot } from "./strip.js";
 
 export type StripStyle = "classic" | "list" | "carousel";
@@ -254,8 +254,8 @@ export function styleFlash(style: Exclude<StripStyle, "classic">, ok: boolean, l
 	return carouselFeedback(content, list, { appearance, scroll: "off", reading: { lines: readingLines([label]), top: 0 } });
 }
 
-/** `queued` draws the first row's queue as "+N" at its right. */
-export type ThreadRow = { title: string; art: MarkPainter; queued?: number };
+/** `queued` and `subagents` draw the first row's queue ("+N") and running subagents at its right. */
+export type ThreadRow = { title: string; art: MarkPainter; queued?: number; subagents?: number };
 
 const ROWS = [
 	{ baseline: 31, size: 19, weight: 700, fill: "#FFFFFF", width: 184 },
@@ -271,8 +271,18 @@ export function threadRowsArt(rows: readonly ThreadRow[]): string {
 	const parts: string[] = [];
 	rows.slice(0, 3).forEach((row, at) => {
 		const line = ROWS[at]!;
-		const badge = at === 0 && row.queued !== undefined && row.queued > 0 ? queueBadge(row.queued, 192, line.baseline - 16) : "";
-		const width = badge ? line.width - 40 : line.width;
+		let right = 192;
+		let badge = "";
+		if (at === 0 && row.queued !== undefined && row.queued > 0) {
+			badge += queueBadge(row.queued, right, line.baseline - 16);
+			right -= Math.round(textWidth(`+${row.queued}`, 14) + 14) + 4;
+		}
+		if (at === 0 && row.subagents !== undefined && row.subagents > 0) {
+			const pill = subagentBadge(row.subagents, right, line.baseline - 16);
+			badge += pill.svg;
+			right -= pill.width + 4;
+		}
+		const width = badge ? Math.min(line.width, right - 12 - 4) : line.width;
 		let text = svgText(row.title, 12, line.baseline, line.size, line.weight, line.fill);
 		if (textWidth(row.title, line.size) > width - 2) {
 			const end = 12 + width;
