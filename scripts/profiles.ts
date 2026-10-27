@@ -32,7 +32,8 @@ const entry = (seed: string, placed: Placed) => ({
 	UUID: `${manifest.UUID}.${placed.action}`,
 });
 
-const slot = (n: number): Placed => ({ action: "slot", name: "Thread", settings: { slot: String(n) } });
+/** Without a number a Thread key fills by its position; the second page continues the board from slot 5. */
+const slot = (n?: number): Placed => ({ action: "slot", name: "Thread", ...(n === undefined ? {} : { settings: { slot: String(n) } }) });
 
 const DIALS: Placed[] = [
 	{ action: "dial.threads", name: "Threads Dial" },
@@ -61,7 +62,7 @@ const PROFILES: Profile[] = [
 			{
 				name: "T3 DECK",
 				keys: [
-					[slot(1), slot(2), slot(3), slot(4)],
+					[slot(), slot(), slot(), slot()],
 					[
 						{ action: "activity", name: "Activity" },
 						{ action: "stop", name: "Stop" },

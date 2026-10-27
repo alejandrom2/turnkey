@@ -234,6 +234,11 @@ export function renderControlKey(input: ControlKeyInput): string {
 	return keySvg(background(COLORS.key) + body);
 }
 
+/** A press's outcome, shown for a moment: a green check with what happened, or a red mark with why not. */
+export function renderResultKey(input: { ok: boolean; label: string }): string {
+	return renderControlKey(input.ok ? { glyph: "check", tone: "approve", label: input.label } : { glyph: "error", tone: "deny", label: input.label });
+}
+
 export type NoticeKeyInput = { glyph: GlyphName; title: string; detail?: string; tone?: "muted" | "attention" };
 
 /** Sign-in, connection and removal notices, laid out like a thread key so they read as native. */

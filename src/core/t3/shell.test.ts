@@ -197,6 +197,22 @@ describe("unread", () => {
 	});
 });
 
+describe("selection marker", () => {
+	it("follows the server's open stamp, and the read watermark only on servers without one", () => {
+		const state = reduce([
+			snapshot([
+				thread({ id: "opened", opens: { openedAt: 1_000 }, lastVisitedAt: "2026-10-26T14:05:00.000Z" }),
+				thread({ id: "never-opened", opens: null }),
+				thread({ id: "old-server", lastVisitedAt: "2026-10-26T14:05:00.000Z" }),
+			]),
+		]);
+		const byThread = byId(state);
+		expect(byThread.opened.openedAt).toBe(1_000);
+		expect(byThread["never-opened"].openedAt).toBeUndefined();
+		expect(byThread["old-server"].openedAt).toBe(Date.parse("2026-10-26T14:05:00.000Z"));
+	});
+});
+
 describe("listing", () => {
 	it("hides settled and snoozed threads only where the server supports them", () => {
 		const state = reduce([
