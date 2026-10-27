@@ -6,10 +6,12 @@ It connects like T3 Code's own web and mobile clients: a pair link, then a live 
 
 ## Setup
 
-Open any T3 Deck action's settings in Stream Deck. The **Machines** list there shows your machines.
+Open any T3 Deck action's settings in Stream Deck. Below the action's own fields, **Machine** picks the machine it follows, and **T3 Deck settings…** opens the **T3 Deck Settings** window, with a line saying how many machines are connected (amber when one needs pairing or failed). Until a machine is paired, the panel also has a pair link field of its own.
 
-- In T3 Code, open **Settings → Sharing & access** and create a pair link (`http://192.168.1.20:3773/pair#token=…`). Paste it under **Add a machine** and press **Connect**. This works the same for this machine and for others; **this machine** shows up by itself whenever T3 Code runs here, marked **Needs pairing** until you do.
-- Each action follows the machine you pick in its card, or **All machines**. Machines are shared, so add each one once.
+- In T3 Code, open **Settings → Sharing & access** and create a pair link (`http://192.168.1.20:3773/pair#token=…`). Paste it under **Add a machine** in the window's **Machines** section (or the panel's field) and press **Connect**. This works the same for this machine and for others; **this machine** shows up by itself whenever T3 Code runs here, marked **Needs pairing** until you do.
+- Each action follows the machine you pick in its **Machine** field, or **All machines**. Machines are shared, so add each one once.
+
+The window has five sections: **Machines** (pairing, extra access, sign out and remove), **Appearance** (dial strips, strip style, long text, colors, motion and the idle pet), **Behavior** (confirm before sending, app link), **Diagnostics** and **About** (version and languages). It works through the panel that opened it: switch to another action and it asks you to open it again from that action.
 
 T3 Deck asks to read threads and act on them, for source control access (git and pull request keys) and to read usage. T3 Code grants what the pair link allows, so a link that only grants reading gives a read-only deck, and a key that needs access the pairing lacks says so; pair again with a new standard link to grant it. Actions that need broader access later ask for it on that machine's next pairing. Pairings last 30 days, then need a new link. T3 Deck appears under **Sharing & access** in T3 Code, which is where you revoke it. **Sign out** only forgets the pairing on this computer, and **Remove** forgets a machine you added.
 
@@ -82,25 +84,25 @@ Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Per
 
 A key that can't act right now is dimmed, and pressing it says why. A press that works shows no confirmation: the key or strip just shows the new state. Each action's settings list **What this action needs**: every condition it checks (paired, can act, a selected thread, access, what the thread's model offers, a pull request…), met or not, with how to fix what isn't; a saved choice that no longer exists shows as **Not available**. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Effort shows where it sits on its model's ladder, Model where it sits among your favorites, and Permissions a track of the modes its provider offers, from Supervised to Full access, colored blue through violet to amber; the Power dial's access view uses the same colors. Models and favorites are read again whenever a key's settings open.
 
-**Confirm before sending** (**Advanced**, overridable per action) covers Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial. Model, Effort, Speed, Permissions and the Power dial always apply on the press:
+**Confirm before sending** (T3 Deck Settings → **Behavior**, overridable per action) covers Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial. Model, Effort, Speed, Permissions and the Power dial always apply on the press:
 
 - **Review, then press again** (default): the first press shows what would be sent and to which thread; press again between ¾ of a second and 10 seconds later to go ahead. If anything changed in between, it shows the new review instead. Turning the dial drops a review.
 - **Hold to send**: a held press sends. Holding then can't also restart (Send Prompt, Quick Prompt) or start a thread (Prompts dial).
 - **Send right away**: a press acts at once.
 
-**Colors** (**Advanced**): Gradient (default) colors each effort level along a ladder in the model's own color, from a light tint up to the color and turning toward violet at the top (blue to violet for providers with a white mark), on the Effort key and the Power dial, and gives each model's slider and Fast its provider's own gradient. Solid and Model color mark only a model's top effort level, in violet or the model's color; Off leaves them plain. Ultrathink always shows T3 Code's spectrum.
+**Colors** (T3 Deck Settings → **Appearance**): Gradient (default) colors each effort level along a ladder in the model's own color, from a light tint up to the color and turning toward violet at the top (blue to violet for providers with a white mark), on the Effort key and the Power dial, and gives each model's slider and Fast its provider's own gradient. Solid and Model color mark only a model's top effort level, in violet or the model's color; Off leaves them plain. Ultrathink always shows T3 Code's spectrum.
 
-**Motion** (**Advanced**): Full (default) spins running threads on keys and strips, pulses keys waiting on you and flashes a thread once when it finishes or fails. The upper half of an effort ladder sparkles on the Effort key and dial; the sparkles twinkle in Full, twinkle slowly in Reduced and stay still when Off. Reduced spins slowly without pulsing. Off keeps every face still.
+**Motion** (**Appearance**): Full (default) spins running threads on keys and strips, pulses keys waiting on you and flashes a thread once when it finishes or fails. The upper half of an effort ladder sparkles on the Effort key and dial; the sparkles twinkle in Full, twinkle slowly in Reduced and stay still when Off. Reduced spins slowly without pulsing. Off keeps every face still.
 
-**Idle pet** (**Advanced**, off by default): on a Stream Deck +, after two minutes without a press, turn or touch, a small robot walks across the longest row of neighboring T3 Deck dial strips, then rests four minutes and walks back, up to three times. Any press, turn or touch on a T3 Deck key or dial sends it away and starts the wait over; presses on other plugins' keys don't count. It follows **Motion**: Full walks with a small bounce, Reduced walks calmly at fewer frames, Off keeps it away. It never draws over keys, a press result, a review card or a strip you are reading. **Preview pet**, beside it, sends it across once now, even while it is off.
+**Idle pet** (**Appearance**, off by default): on a Stream Deck +, after two minutes without a press, turn or touch, a small robot walks across the longest row of neighboring T3 Deck dial strips, then rests four minutes and walks back, up to three times. Any press, turn or touch on a T3 Deck key or dial sends it away and starts the wait over; presses on other plugins' keys don't count. It follows **Motion**: Full walks with a small bounce, Reduced walks calmly at fewer frames, Off keeps it away. It never draws over keys, a press result, a review card or a strip you are reading. **Preview pet**, beside it, sends it across once now, even while it is off.
 
-Each dial's strip has a style, set under **Advanced → Strip style** in any action's settings and overridable per dial. Classic is the default:
+Each dial's strip has a style, set under **Appearance → Strip style** in T3 Deck Settings and overridable per dial. Classic is the default:
 
 - **Classic**: Elgato's layout, with an icon, the value and a detail line. The Threads dial shows the selected thread's title large, with the next two dimmed below and their status at the right. The Power dial shows effort and access as a slider: the thread's level filled, the one you turned to as a hollow thumb. Models aren't levels, so for models it shows one pill per favorite instead, like the Model key: the thread's filled in its color, the one you turned to outlined. Its bottom row shows Speed on the left and the thread's effort on the right, in its level's color; either can be turned off in the dial's settings, and with nothing left there the pills sit lower.
 - **List**: a wheel of the dial's items (threads, models, efforts or access modes, prompts, answers). The heading shows the dial and where you are (`3/12`), the selected item is bold with its glyph between the previous and the next ones, and the last row says what pressing does or why the dial can't act.
 - **Carousel**: the selected item as a tile between its dimmed neighbors, with its title below. Turning slides to the next tile. On the Power dial every tile has its short name on the bottom row, sliding with it, and the selected model's name (and its row in List) takes its provider's color: T3 Code's accent for the instance, else the brand color.
 
-Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Advanced → Dial strips** in any action's settings: Dark (default, a plain near-black), Flow (one picture across neighboring dials), the thread's state (green unseen done, red failed, amber approval, indigo question) or a color of your own, with or without the colored state line. Each dial can override it.
+Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Appearance → Dial strips** in T3 Deck Settings: Dark (default, a plain near-black), Flow (one picture across neighboring dials), the thread's state (green unseen done, red failed, amber approval, indigo question) or a color of your own, with or without the colored state line. Each dial can override it.
 
 ### Usage and limits
 
@@ -124,13 +126,13 @@ Some actions need access a standard pairing doesn't ask for. The deck asks for i
 | Terminal access | Run Script | Run any command in T3 Code's terminals: shell access to that machine. Terminal status access comes with it, so the key can show whether the script runs. |
 | Guest link access | Share Thread | Create guest links, which let someone outside watch a thread for a day and propose messages. |
 
-The **T3 Code** card in any action's settings lists, per machine, the extra access its pairing holds (**Granted**) and what its next pairing will ask for (**Next pairing**). **Don't ask** takes back a pending request. To give up access the pairing already holds, sign out and pair again, or revoke the session in T3 Code under **Sharing & access**.
+**Machines** in T3 Deck Settings lists, per machine, the extra access its pairing holds (**Granted**) and what its next pairing will ask for (**Next pairing**). **Don't ask** takes back a pending request. To give up access the pairing already holds, sign out and pair again, or revoke the session in T3 Code under **Sharing & access**.
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
 ### Diagnostics
 
-Under **Diagnostics** in any action's settings:
+Under **Diagnostics** in T3 Deck Settings:
 
 - **Verbose logging** writes more detail to the plugin's log for 24 hours, then turns itself off, across restarts too. It never logs tokens.
 - **Open logs folder** shows the plugin's logs.

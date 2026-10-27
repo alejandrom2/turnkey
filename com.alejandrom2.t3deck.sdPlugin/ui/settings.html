@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title data-i18n="inspector.settings.title">T3 Deck Settings</title>
+		<style>
+			:root { color-scheme: dark; --t3-warning: #fcd34d; }
+			body { font-family: "Segoe UI", Arial, Roboto, Helvetica, sans-serif; font-size: 9pt; }
+			[hidden] { display: none !important; }
+			.native { width: 100%; box-sizing: border-box; height: 24px; padding: 0 6px; font: inherit; color: #d8d8d8; background: #3d3d3d; border: 0; border-radius: 3px; }
+			.native::placeholder { color: #8f8f8f; }
+			button.sd { height: 22px; padding: 0 9px; white-space: nowrap; font: inherit; color: #d8d8d8; background: #3d3d3d; border: 0; border-radius: 3px; cursor: pointer; }
+			button.sd:hover { background: #474747; }
+			button.sd:disabled { opacity: .45; cursor: default; }
+			button.text { padding: 0; font: inherit; color: #8fb3ff; background: none; border: 0; cursor: pointer; }
+			.state { white-space: nowrap; }
+			.state::before { content: "●"; margin-right: 4px; }
+			.state.ok { color: #40c977; }
+			.state.wait { color: var(--t3-warning); }
+			.state.muted { color: #8f8f8f; }
+			.state.error { color: #f87171; }
+			html, body { height: 100%; }
+			body { margin: 0; color: #d8d8d8; background: #262626; }
+			.win { display: grid; grid-template-columns: 150px minmax(0, 1fr); height: 100%; }
+			nav { display: grid; align-content: start; gap: 2px; padding: 14px 8px; background: #1f1f1f; border-right: 1px solid #333; }
+			nav .title { padding: 0 8px 10px; color: #f0f0f0; font-size: 10pt; font-weight: 600; }
+			nav button { padding: 6px 8px; font: inherit; text-align: left; color: #bdbdbd; background: none; border: 0; border-radius: 4px; cursor: pointer; }
+			nav button:hover { color: #fff; }
+			nav button[aria-current="page"] { color: #fff; background: #3a3a3a; }
+			main { padding: 16px 20px; overflow: auto; }
+			h1 { margin: 0 0 14px; color: #f0f0f0; font-size: 13pt; font-weight: 600; }
+			h1 + .lede { margin-top: -12px; }
+			h2 { margin: 18px 0 6px; color: #9a9a9a; font-size: 8.5pt; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+			.lede { max-width: 460px; margin: 0 0 14px; color: #9a9a9a; line-height: 1.45; }
+			.hint { max-width: 460px; margin: -4px 0 12px 150px; color: #9a9a9a; line-height: 1.45; }
+			.hint.wide { margin: 6px 0 0; max-width: 520px; }
+			.hint.error { color: #f87171; }
+			.field { display: grid; grid-template-columns: 140px minmax(0, 320px); gap: 10px; align-items: center; margin: 0 0 8px; }
+			.field > label { color: #bdbdbd; }
+			.control { display: flex; align-items: center; gap: 6px; min-width: 0; }
+			.check { display: flex; align-items: center; gap: 6px; }
+			input[type="color"] { width: 48px; height: 24px; padding: 0 2px; background: #3d3d3d; border: 0; border-radius: 3px; }
+			.rows { display: grid; gap: 6px; }
+			.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; padding: 9px 10px; background: #303030; border-radius: 4px; }
+			.row > * { min-width: 0; }
+			.row .name { color: #f0f0f0; font-size: 9.5pt; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			.row .where { color: #8f8f8f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			.row .state { font-size: 8.5pt; }
+			.row .detail { grid-column: 1 / -1; color: #9a9a9a; line-height: 1.35; }
+			.row .detail.error { color: #f87171; }
+			.row .buttons { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+			.access { grid-column: 1 / -1; display: grid; gap: 3px; margin-top: 4px; padding-top: 6px; border-top: 1px solid #424242; }
+			.access .heading { color: #9a9a9a; font-size: 8pt; letter-spacing: .06em; text-transform: uppercase; }
+			.access .line { display: flex; justify-content: space-between; gap: 10px; }
+			.access .line .scope { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			.pair { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; max-width: 520px; }
+			.detached { padding: 24px; color: #9a9a9a; }
+			.nowrap { white-space: nowrap; }
+		</style>
+	</head>
+	<body>
+		<p class="detached" id="detached" data-i18n="inspector.settings.detached">Open T3 Deck settings from a T3 Deck action.</p>
+		<div class="win" id="win" hidden>
+			<nav>
+				<div class="title">T3 Deck</div>
+				<button type="button" data-section="machines" data-i18n="inspector.card.machines">Machines</button>
+				<button type="button" data-section="appearance" data-i18n="inspector.settings.appearance">Appearance</button>
+				<button type="button" data-section="behavior" data-i18n="inspector.settings.behavior">Behavior</button>
+				<button type="button" data-section="diagnostics" data-i18n="inspector.diagnostics.title">Diagnostics</button>
+				<button type="button" data-section="about" data-i18n="inspector.settings.about">About</button>
+			</nav>
+			<main>
+				<section id="section-machines">
+					<h1 data-i18n="inspector.card.machines">Machines</h1>
+					<p class="lede" data-i18n="inspector.settings.machinesLede">T3 Deck connects to T3 Code on each machine you add. Every key and dial can follow one machine, or all of them.</p>
+					<div class="rows" id="t3-machines" aria-live="polite"></div>
+					<h2 data-i18n="inspector.card.addMachine">Add a machine</h2>
+					<div class="pair">
+						<input class="native" id="t3-link" type="url" autocomplete="off" spellcheck="false" placeholder="Paste a pair link from Settings → Sharing &amp; access" data-i18n-placeholder="inspector.card.linkPlaceholder" />
+						<button class="sd" id="t3-pair" type="button" disabled data-i18n="inspector.card.connect">Connect</button>
+						<button class="sd" id="t3-get-link" type="button" data-i18n="inspector.card.getLink">Get a pair link</button>
+					</div>
+					<p class="hint wide error" id="t3-result" hidden></p>
+					<p class="hint wide" data-i18n="inspector.card.accessHelp">T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing &amp; access.</p>
+				</section>
+				<section id="section-appearance" hidden>
+					<h1 data-i18n="inspector.settings.appearance">Appearance</h1>
+					<div class="field">
+						<label data-i18n="inspector.advanced.dialStrips">Dial strips</label>
+						<div class="control"><select class="native" data-setting="stripBackground"><option value="t3" data-i18n="inspector.background.t3">Dark</option><option value="flow" data-i18n="inspector.background.flow">Flow</option><option value="state" data-i18n="inspector.background.state">Thread state</option><option value="custom" data-i18n="inspector.background.custom">Custom color</option></select></div>
+					</div>
+					<div class="field" id="strip-color">
+						<label data-i18n="inspector.field.stripColor">Strip color</label>
+						<div class="control"><input type="color" data-setting="stripColor" /></div>
+					</div>
+					<div class="field">
+						<label data-i18n="inspector.advanced.stateLine">State line</label>
+						<div class="control"><label class="check"><input type="checkbox" data-setting="stripHairline" /><span data-i18n="inspector.advanced.stateLineLabel">Show the colored line under each strip</span></label></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.stateHint">Dark is a plain near-black, like Stream Deck's own strips. Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
+					<div class="field">
+						<label data-i18n="inspector.advanced.stripStyle">Strip style</label>
+						<div class="control"><select class="native" data-setting="stripStyle"><option value="" data-i18n="inspector.style.perDial">Per dial default</option><option value="classic" data-i18n="inspector.style.classic">Classic</option><option value="list" data-i18n="inspector.style.list">List</option><option value="carousel" data-i18n="inspector.style.carousel">Carousel</option></select></div>
+					</div>
+					<div class="field">
+						<label data-i18n="inspector.field.longText">Long text</label>
+						<div class="control"><select class="native" data-setting="textScroll"><option value="horizontal" data-i18n="inspector.scroll.horizontal">Scroll sideways</option><option value="vertical" data-i18n="inspector.scroll.vertical">Roll up line by line</option><option value="off" data-i18n="inspector.scroll.off">Don't scroll</option></select></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.styleHint">List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Per dial default uses List for the Threads dial, Classic for the others; Classic shows the Power dial as a slider. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.</p>
+					<div class="field">
+						<label data-i18n="inspector.advanced.maxEffort">Colors</label>
+						<div class="control"><select class="native" data-setting="maxEffort"><option value="gradient" data-i18n="inspector.maxEffort.gradient">Gradient</option><option value="solid" data-i18n="inspector.maxEffort.solid">Solid</option><option value="model" data-i18n="inspector.maxEffort.model">Model color</option><option value="off" data-i18n="inspector.maxEffort.off">Off</option></select></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.maxEffortHint">Gradient colors every effort level along a ladder in the model's own color, turning toward violet at the top, and gives each model and Fast its provider's gradient. Solid and Model color mark only the top effort level, in violet or the model's color; Off leaves them plain. Ultrathink keeps T3 Code's spectrum.</p>
+					<div class="field">
+						<label data-i18n="inspector.advanced.motion">Motion</label>
+						<div class="control"><select class="native" data-setting="motion"><option value="full" data-i18n="inspector.motion.full">Full</option><option value="reduced" data-i18n="inspector.motion.reduced">Reduced</option><option value="off" data-i18n="inspector.motion.off">Off</option></select></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.motionHint">Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.</p>
+					<div class="field">
+						<label data-i18n="inspector.advanced.idlePet">Idle pet</label>
+						<div class="control"><select class="native" data-setting="idlePet"><option value="off" data-i18n="inspector.idlePet.off">Off</option><option value="on" data-i18n="inspector.idlePet.on">On</option></select><button class="sd" id="t3-preview-pet" type="button" data-i18n="inspector.advanced.previewPet">Preview pet</button></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.idlePetHint">After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a T3 Deck action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.</p>
+				</section>
+				<section id="section-behavior" hidden>
+					<h1 data-i18n="inspector.settings.behavior">Behavior</h1>
+					<div class="field">
+						<label data-i18n="inspector.advanced.confirm">Confirm before sending</label>
+						<div class="control"><select class="native" data-setting="confirmSend"><option value="review" data-i18n="inspector.confirm.review">Review, then press again</option><option value="hold" data-i18n="inspector.confirm.hold">Hold to send</option><option value="off" data-i18n="inspector.confirm.off">Send right away</option></select></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.confirmHint">Applies to Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this.</p>
+					<div class="field">
+						<label data-i18n="inspector.advanced.appLink">App link</label>
+						<div class="control"><input class="native" data-setting="scheme" type="text" spellcheck="false" placeholder="t3code" /></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.appLinkHint">Use t3code-dev to open threads in a development build.</p>
+				</section>
+				<section id="section-diagnostics" hidden>
+					<h1 data-i18n="inspector.diagnostics.title">Diagnostics</h1>
+					<div class="field">
+						<label data-i18n="inspector.diagnostics.verbose">Verbose logging</label>
+						<div class="control"><label class="check"><input type="checkbox" id="t3-verbose" /><span data-i18n="inspector.diagnostics.verboseLabel">On for 24 hours</span></label></div>
+					</div>
+					<p class="hint" id="t3-verbose-state" data-i18n="inspector.card.verboseOff">Logs more detail for 24 hours, then turns itself off. Never logs tokens.</p>
+					<div class="field">
+						<label data-i18n="inspector.diagnostics.logs">Logs</label>
+						<div class="control"><button class="sd" id="t3-open-logs" type="button" data-i18n="inspector.diagnostics.openLogs">Open logs folder</button></div>
+					</div>
+					<div class="field">
+						<label data-i18n="inspector.diagnostics.report">Report</label>
+						<div class="control"><button class="sd" id="t3-export" type="button" data-i18n="inspector.diagnostics.export">Export diagnostics</button></div>
+					</div>
+					<p class="hint" data-i18n="inspector.diagnostics.exportHint">Saves versions, machines (host, state and access only), action counts and recent errors to a file in the logs folder and shows it. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report.</p>
+					<p class="hint error" id="t3-diagnostics-result" hidden data-i18n="inspector.card.diagnosticsFailed">That didn't work. Open the logs folder to look yourself.</p>
+				</section>
+				<section id="section-about" hidden>
+					<h1 data-i18n="inspector.settings.about">About</h1>
+					<div class="field">
+						<label data-i18n="inspector.settings.version">Version</label>
+						<div class="control"><span>0.1.0.0</span></div>
+					</div>
+					<div class="field">
+						<label data-i18n="inspector.settings.languages">Languages</label>
+						<div class="control"><span><span class="nowrap">English</span> · <span class="nowrap">Deutsch</span> · <span class="nowrap">Español</span> · <span class="nowrap">Français</span> · <span class="nowrap">日本語</span> · <span class="nowrap">한국어</span> · <span class="nowrap">简体中文</span> · <span class="nowrap">繁體中文</span></span></div>
+					</div>
+					<p class="hint" data-i18n="inspector.settings.languagesHint">T3 Deck follows Stream Deck's language.</p>
+					<div class="field">
+						<label data-i18n="inspector.settings.readme">Guide</label>
+						<div class="control"><button class="sd" id="t3-readme" type="button" data-i18n="inspector.settings.openReadme">Open the README</button></div>
+					</div>
+				</section>
+			</main>
+		</div>
+		<script>
+			const strings = {"inspector.card.machine":"Machine","inspector.card.machines":"Machines","inspector.card.getLink":"Get a pair link","inspector.card.getLinkRow":"Get link","inspector.card.pasteLink":"Paste link","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…","inspector.card.needsTitle":"What this action needs","inspector.card.needsNotMet":" · {count} not met","inspector.card.noMachines":"No machines yet","inspector.card.needsAllMet":" · all met","inspector.card.needsMet":"Met","inspector.card.needsUnmet":"Not met","inspector.card.needsChecking":"Checking","inspector.card.optInTitle":"Extra access","inspector.card.optInHeld":"Granted","inspector.card.optInPending":"Next pairing","inspector.card.optInDrop":"Don't ask","inspector.card.scopeProviders":"Provider accounts (spend resets)","inspector.card.scopeMaintain":"Updates (Update T3)","inspector.card.scopeTerminal":"Terminal: runs commands (Run Script)","inspector.card.scopeTerminalRead":"Terminal status (Run Script)","inspector.card.scopeShare":"Guest links (Share Thread)","inspector.card.verboseUntil":"On until {time}, then back to normal logging.","inspector.card.verboseOff":"Logs more detail for 24 hours, then turns itself off. Never logs tokens.","inspector.card.diagnosticsFailed":"That didn't work. Open the logs folder to look yourself."};
+			const s = (key, params = {}) => (strings[key] ?? key).replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match));
+			const $ = (id) => document.getElementById(id);
+			const el = (tag, className, text) => {
+				const node = document.createElement(tag);
+				if (className) node.className = className;
+				if (text !== undefined) node.textContent = text;
+				return node;
+			};
+			function machineSummary(environments ) {
+	if (environments.length === 0) return { tone: "muted", key: "inspector.card.noMachines", params: {} };
+	const ready = environments.filter((env) => env.state === "ready").length;
+	const trouble = environments.some((env) => env.state === "signed-out" || env.state === "error");
+	return {
+		tone: trouble ? "wait" : ready === environments.length ? "ok" : "muted",
+		key: "inspector.card.connectedCount",
+		params: { ready, total: environments.length },
+	};
+}
+function needsFirstPairing(environments ) {
+	return environments.every((env) => env.state === "signed-out");
+}
+function mergeGlobalSettings(current , patch ) {
+	const editable = ["scheme", "stripBackground", "stripColor", "stripHairline", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
+	const next = { ...current };
+	for (const key of editable) if (key in patch) next[key] = patch[key];
+	return next;
+}
+
+			/** Swaps the English copy for the plugin's current-language table. */
+			function applyStrings(table, lang) {
+				if (lang) document.documentElement.lang = lang;
+				Object.assign(strings, table);
+				for (const node of document.querySelectorAll("[data-i18n]")) if (table[node.dataset.i18n]) node.textContent = table[node.dataset.i18n];
+				for (const name of ["label", "placeholder", "loading", "aria-label"]) {
+					for (const node of document.querySelectorAll("[data-i18n-" + name + "]")) {
+						const value = table[node.getAttribute("data-i18n-" + name)];
+						if (value) node.setAttribute(name, value);
+					}
+				}
+				if (lastStatus) renderStatus(lastStatus);
+				else syncPairButton();
+			}
+
+			const STATE = {
+				ready: (env) => (env.access === "Can act" ? ["ok", "inspector.card.connected"] : ["muted", "inspector.card.readOnly"]),
+				connecting: () => ["muted", "inspector.card.connecting"],
+				error: () => ["error", "inspector.card.tryAgain"],
+				"signed-out": () => ["wait", "inspector.card.needsPairing"],
+			};
+
+			/** The pair link field and its Connect button, on whichever page holds them. */
+			let pairedOnce = false;
+			const syncPairButton = (working = false) => {
+				$("t3-pair").disabled = working || !/[#?&]token=./.test($("t3-link").value);
+				$("t3-pair").textContent = s(working ? "inspector.card.connecting" : "inspector.card.connect");
+			};
+			function renderPairing(pairing = { state: "idle" }) {
+				const result = $("t3-result");
+				result.hidden = pairing.state === "idle";
+				result.classList.toggle("error", pairing.state === "error");
+				result.textContent = pairing.state === "error" ? pairing.message : s("inspector.card.pairing");
+				if (pairing.state === "idle" && pairedOnce) {
+					$("t3-link").value = "";
+					pairedOnce = false;
+				}
+				syncPairButton(pairing.state === "working");
+			}
+			function wirePairing(send) {
+				$("t3-link").addEventListener("input", () => syncPairButton());
+				$("t3-pair").addEventListener("click", () => {
+					pairedOnce = true;
+					send("pair", { link: $("t3-link").value.trim() });
+					syncPairButton(true);
+				});
+				$("t3-link").addEventListener("keydown", (key) => {
+					if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
+				});
+			}
+
+			const README = "https://github.com/alejandrom2/t3-deck#readme";
+
+			/** Every bridge call goes through here: a closed or replaced opener detaches the window instead of failing. */
+			let bridge;
+			let unsubscribe;
+			const call = (work) => {
+				if (bridge === undefined) return undefined;
+				try {
+					return work(bridge);
+				} catch {
+					detach();
+					return undefined;
+				}
+			};
+			const send = (event, extra) => call((b) => b.send(event, extra));
+			const write = (patch) => {
+				Object.assign(globals, patch);
+				renderGlobals(globals);
+				call((b) => b.setGlobalSettings(patch));
+			};
+
+			const SCOPE_NAMES = {
+				"providers:manage": "inspector.card.scopeProviders",
+				"environment:maintain": "inspector.card.scopeMaintain",
+				"terminal:operate": "inspector.card.scopeTerminal",
+				"terminal:read": "inspector.card.scopeTerminalRead",
+				"access:write": "inspector.card.scopeShare",
+			};
+			const button = (label, kind, event, url, extra = {}) => {
+				const node = el("button", kind, label);
+				node.type = "button";
+				node.addEventListener("click", () => send(event, { url, ...extra }));
+				return node;
+			};
+			/** Each opt-in scope on its own line: held by the pairing, or asked for at the next one, with a way to take that back. */
+			function optIns(url, optIn) {
+				const block = el("div", "access");
+				block.append(el("div", "heading", s("inspector.card.optInTitle")));
+				for (const { scope, state } of optIn) {
+					const line = el("div", "line");
+					line.append(el("span", "scope", SCOPE_NAMES[scope] ? s(SCOPE_NAMES[scope]) : scope));
+					const right = el("span");
+					right.append(el("span", state === "held" ? "state ok" : "state wait", s(state === "held" ? "inspector.card.optInHeld" : "inspector.card.optInPending")));
+					if (state === "pending") right.append(" · ", button(s("inspector.card.optInDrop"), "text", "unflagScope", url, { scope }));
+					line.append(right);
+					block.append(line);
+				}
+				return block;
+			}
+
+			const focusLink = () => {
+				$("t3-link").focus();
+				$("t3-link").select();
+			};
+
+			/** One machine: name, address and state, what went wrong or how to pair, its extra access, then its buttons. */
+			function row(env) {
+				const node = el("div", "row");
+				const text = el("div");
+				text.append(el("div", "name", env.name), el("div", "where", env.where));
+				const [tone, label] = (STATE[env.state] ?? STATE.connecting)(env);
+				node.append(text, el("span", "state " + tone, s(label)));
+				if (env.state === "error" && env.message) node.append(el("div", "detail error", env.message));
+				if (env.state === "signed-out") node.append(el("div", "detail", env.message ?? s("inspector.card.pasteFromMachine")));
+				if (env.optIn?.length) node.append(optIns(env.url, env.optIn));
+				const buttons = el("div", "buttons");
+				if (env.state === "ready") buttons.append(button(s("inspector.card.signOut"), "sd", "signOut", env.url));
+				if (env.state === "error") buttons.append(button(s("inspector.card.tryAgain"), "sd", "retry", env.url));
+				if (env.state === "signed-out") {
+					buttons.append(button(s("inspector.card.getLinkRow"), "sd", "getPairLink", env.url));
+					const paste = el("button", "sd", s("inspector.card.pasteLink"));
+					paste.type = "button";
+					paste.addEventListener("click", focusLink);
+					buttons.append(paste);
+				}
+				if (!env.local) buttons.append(button(s("inspector.card.remove"), "sd", "remove", env.url));
+				if (buttons.childElementCount > 0) node.append(buttons);
+				return node;
+			}
+
+			let lastStatus;
+			function renderStatus(payload) {
+				lastStatus = payload;
+				const environments = payload.environments ?? [];
+				$("t3-machines").replaceChildren(...(environments.length === 0 ? [el("p", "hint wide", s("inspector.card.notRunning"))] : environments.map(row)));
+				renderPairing(payload.pairing);
+				const until = typeof payload.verboseUntil === "number" ? new Date(payload.verboseUntil) : undefined;
+				$("t3-verbose").checked = until !== undefined;
+				$("t3-verbose-state").textContent = until
+					? s("inspector.card.verboseUntil", { time: until.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) })
+					: s("inspector.card.verboseOff");
+			}
+
+			/** What Stream Deck's own fields showed for a setting never saved. */
+			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "#121212", stripHairline: true, stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
+			const globals = {};
+			function renderGlobals(settings) {
+				Object.assign(globals, settings);
+				for (const control of document.querySelectorAll("[data-setting]")) {
+					const value = globals[control.dataset.setting] ?? DEFAULTS[control.dataset.setting];
+					if (control.type === "checkbox") control.checked = value !== false;
+					else if (document.activeElement !== control) control.value = value;
+				}
+				$("strip-color").hidden = (globals.stripBackground ?? DEFAULTS.stripBackground) !== "custom";
+			}
+			for (const control of document.querySelectorAll("[data-setting]")) {
+				control.addEventListener("change", () => {
+					const patch = { [control.dataset.setting]: control.type === "checkbox" ? control.checked : control.value.trim() };
+					// The plugin ignores a custom background with no color, so save the one the picker shows.
+					if (patch.stripBackground === "custom" && !globals.stripColor) patch.stripColor = DEFAULTS.stripColor;
+					write(patch);
+				});
+			}
+
+			function onMessage(message) {
+				if (message?.event === "strings") applyStrings(message.strings ?? {}, message.lang);
+				if (message?.event === "status") renderStatus(message);
+				if (message?.event === "globals") renderGlobals(message.settings ?? {});
+				if (message?.event === "diagnostics") $("t3-diagnostics-result").hidden = message.ok === true;
+			}
+
+			function detach() {
+				try {
+					unsubscribe?.();
+				} catch {}
+				bridge = undefined;
+				unsubscribe = undefined;
+				$("win").hidden = true;
+				$("detached").hidden = false;
+			}
+
+			/** Finds the opener's bridge: on load, and again whenever another action's panel takes the window over. */
+			function attach() {
+				let next;
+				try {
+					next = window.opener && !window.opener.closed ? window.opener.t3Bridge : undefined;
+				} catch {}
+				if (next === bridge) return;
+				detach();
+				if (next === undefined) return;
+				bridge = next;
+				try {
+					applyStrings(bridge.strings, bridge.lang);
+					unsubscribe = bridge.subscribe(onMessage);
+					if (bridge.status) renderStatus(bridge.status);
+					bridge.getGlobalSettings().then((settings) => renderGlobals(settings ?? {}), () => {});
+					bridge.send("status");
+				} catch {
+					return detach();
+				}
+				$("win").hidden = false;
+				$("detached").hidden = true;
+			}
+
+			function show(section) {
+				if (!$("section-" + section)) section = "machines";
+				for (const node of document.querySelectorAll("main > section")) node.hidden = node.id !== "section-" + section;
+				for (const node of document.querySelectorAll("nav button")) {
+					if (node.dataset.section === section) node.setAttribute("aria-current", "page");
+					else node.removeAttribute("aria-current");
+				}
+			}
+			for (const node of document.querySelectorAll("nav button")) node.addEventListener("click", () => show(node.dataset.section));
+			show(location.hash.slice(1));
+
+			$("t3-get-link").addEventListener("click", () => send("getPairLink", {}));
+			$("t3-verbose").addEventListener("change", () => send("verbose", { on: $("t3-verbose").checked }));
+			$("t3-open-logs").addEventListener("click", () => send("openLogs"));
+			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
+			$("t3-preview-pet").addEventListener("click", () => send("previewPet"));
+			$("t3-readme").addEventListener("click", () => call((b) => b.openUrl(README)));
+			wirePairing(send);
+			renderGlobals({});
+
+			attach();
+			// Stream Deck may tear the panel down without an unload event; a cheap check notices the opener went away.
+			setInterval(attach, 1000);
+			window.addEventListener("focus", attach);
+			window.addEventListener("pagehide", () => {
+				try {
+					unsubscribe?.();
+				} catch {}
+			});
+		</script>
+	</body>
+</html>
