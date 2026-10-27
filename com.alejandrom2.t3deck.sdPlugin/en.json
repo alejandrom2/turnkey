@@ -456,6 +456,9 @@
 			"sourceControl": "Needs source control access — re-pair",
 			"diagnostics": "Needs usage access — re-pair",
 			"providers": "Needs provider access — re-pair to enable",
+			"maintain": "Needs update access — re-pair to enable",
+			"terminal": "Needs terminal access — re-pair to enable",
+			"share": "Needs sharing access — re-pair to enable",
 			"other": "Needs more access — re-pair"
 		},
 		"pr": {
@@ -555,6 +558,10 @@
 				"sourceControl": "Source control access",
 				"diagnostics": "Usage access",
 				"providers": "Provider access",
+				"maintain": "Update access (updates T3 Code on that machine)",
+				"terminal": "Terminal access (runs commands on that machine)",
+				"terminalRead": "Terminal status access",
+				"share": "Guest link access (shares threads with people outside)",
 				"other": "{scope} access"
 			},
 			"option": "{option} on the thread's model",

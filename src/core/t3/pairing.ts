@@ -14,13 +14,21 @@ export const DIAGNOSTICS_SCOPE = "diagnostics:read";
 export const SOURCE_CONTROL_SCOPE = "source-control:write";
 /** Spending a banked limits reset; asked for only on a machine where the user turned that on. */
 export const PROVIDERS_SCOPE = "providers:manage";
+/** Updating T3 Code itself (`server.updateServer`). */
+export const MAINTAIN_SCOPE = "environment:maintain";
+/** Running commands in T3 Code's terminals: shell access on that machine. */
+export const TERMINAL_SCOPE = "terminal:operate";
+/** Seeing whether a terminal still runs something; asked for alongside `TERMINAL_SCOPE`. */
+export const TERMINAL_READ_SCOPE = "terminal:read";
+/** Creating guest links, which hand a thread to someone outside like a pair link. */
+export const ACCESS_SCOPE = "access:write";
 /**
  * What every pairing asks for. The server grants the overlap with what the pair link allows and drops names it
  * doesn't know, so asking for more never fails a pairing; T3 Code's standard links grant all four.
  */
 export const REQUESTED_SCOPES = [READ_SCOPE, OPERATE_SCOPE, DIAGNOSTICS_SCOPE, SOURCE_CONTROL_SCOPE] as const;
 /** Broader scopes a machine asks for only after the user turns on an action that needs one there. */
-export const OPT_IN_SCOPES = ["providers:manage", "terminal:operate", "access:write", "environment:maintain"] as const;
+export const OPT_IN_SCOPES = [PROVIDERS_SCOPE, TERMINAL_SCOPE, TERMINAL_READ_SCOPE, ACCESS_SCOPE, MAINTAIN_SCOPE] as const;
 export type OptInScope = (typeof OPT_IN_SCOPES)[number];
 
 export const isOptInScope = (scope: string): scope is OptInScope => (OPT_IN_SCOPES as readonly string[]).includes(scope);
