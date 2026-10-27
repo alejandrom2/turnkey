@@ -16,7 +16,17 @@
 	],
 	"Nodejs": { "Version": "24" },
 	"UUID": "com.alejandrom2.t3deck",
-	"Profiles": [{ "Name": "profiles/t3-deck-plus", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true }],
+	"Profiles": [
+		{ "Name": "profiles/t3-deck-plus", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-plus-all", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-neo", "DeviceType": 9, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-neo-all", "DeviceType": 9, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-15", "DeviceType": 0, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-15-all", "DeviceType": 0, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-xl", "DeviceType": 2, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-xl-all", "DeviceType": 2, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-mini", "DeviceType": 1, "Readonly": false, "DontAutoSwitchWhenInstalled": true }
+	],
 	"Actions": [
 		{
 			"Name": "Activity",
