@@ -116,3 +116,12 @@ describe("renderNoticeKey", () => {
 		expect(out).toContain("&lt;T3&gt; Code");
 	});
 });
+
+describe("ultrathink frame", () => {
+	it("draws T3 Code's spectrum border on a key only while armed", () => {
+		expect(svg(renderControlKey({ glyph: "effort", label: "High" }))).not.toContain("ultrathink");
+		const armed = svg(renderControlKey({ glyph: "effort", label: "Ultrathink", ultrathink: true }));
+		expect(armed).toContain(`stroke="url(#ultrathink)"`);
+		expect(armed).toContain("#D76868");
+	});
+});

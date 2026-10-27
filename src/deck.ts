@@ -3,20 +3,26 @@ import type { JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
 import { AcpIcons } from "./core/models.js";
+import { UltrathinkArming } from "./core/ultrathink.js";
 import { type CredentialStore, Machine } from "./core/t3/machine.js";
 import { type Credential, findLocalEnvironment, normalizeEnvironmentUrl, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
 import type { SocketLike } from "./core/t3/rpc.js";
 
 /**
  * `environments` lists machines added from pair links; this machine is found on its own.
- * `scheme` is edited in the property inspector; `environments` and `auth` are written only by the plugin.
+ * `scheme` and the strip appearance are edited in the property inspector; `environments` and `auth` are written only by the plugin.
  * Global settings are the SDK's recommended home for user tokens; action settings ship in profile exports.
  */
 type GlobalSettings = {
 	environments?: string;
 	scheme?: string;
+	stripBackground?: string;
+	stripColor?: string;
+	stripHairline?: boolean;
 	auth?: Record<string, JsonValue>;
 };
+
+const appearanceOf = ({ stripBackground, stripColor, stripHairline }: GlobalSettings) => ({ stripBackground, stripColor, stripHairline });
 
 const logger = streamDeck.logger.createScope("deck");
 
@@ -85,6 +91,7 @@ function environmentStatus(machine: Machine): EnvironmentStatus {
 class Deck implements CredentialStore {
 	readonly board = new ThreadBoard(() => this.machines);
 	readonly acpIcons = new AcpIcons(fetch, () => this.repaint());
+	readonly ultrathink = new UltrathinkArming(() => this.repaint());
 	readonly #machines = new Map<string, Machine>();
 	readonly #visible = new Set<string>();
 	readonly #painters = new Set<() => void>();
@@ -109,6 +116,11 @@ class Deck implements CredentialStore {
 
 	get machines(): Machine[] {
 		return [...this.#machines.values()];
+	}
+
+	/** The global strip appearance settings, resolved per dial with its own override. */
+	get appearance(): ReturnType<typeof appearanceOf> {
+		return appearanceOf(this.#settings);
 	}
 
 	get scheme(): string {
@@ -240,7 +252,9 @@ class Deck implements CredentialStore {
 	}
 
 	async #apply(settings: GlobalSettings): Promise<void> {
+		const restyled = JSON.stringify(appearanceOf(settings)) !== JSON.stringify(appearanceOf(this.#settings));
 		this.#settings = settings;
+		if (restyled) this.repaint();
 		// The inspector writes from its own copy of global settings; keep our tokens authoritative.
 		if (!this.#authLoaded) {
 			this.#authLoaded = true;

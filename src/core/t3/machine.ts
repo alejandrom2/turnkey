@@ -1,4 +1,4 @@
-import { type ConfigProvider, type ModelConfig, type ModelOptionInfo, type ModelPreferences, optionInfo } from "../models.js";
+import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { type Credential, OPERATE_SCOPE, PairingError, redeemPairingCode, socketUrl } from "./pairing.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
@@ -53,18 +53,6 @@ type ServerConfig = {
 	shellThreadFamilies?: boolean;
 	shellOlderSettled?: boolean;
 	scratchWorkspaceRoot?: string;
-};
-
-export type { ModelOptionInfo } from "../models.js";
-export { currentOptionValue, withOptionValue } from "../models.js";
-export type ProviderInfo = {
-	instanceId: string;
-	displayName: string;
-	models: { id: string; label: string; isDefault: boolean; options: ModelOptionInfo[] }[];
-	runtimeModes: RuntimeMode[] | undefined;
-	interactionModeToggle: boolean;
-	/** Switching models needs a new thread, so the deck does not offer it. */
-	fixedModel: boolean;
 };
 
 export type Decision = "accept" | "acceptForSession" | "acceptAlways" | "decline" | "cancel";
@@ -578,26 +566,6 @@ export class Machine {
 	}
 
 	/** Providers and their models' options from the cached server config, without prompt-injected values. */
-	providers(): ProviderInfo[] {
-		return (this.#config?.providers ?? [])
-			.filter((provider) => provider.enabled !== false)
-			.map((provider) => ({
-				instanceId: provider.instanceId,
-				displayName: provider.displayName ?? provider.driver ?? provider.instanceId,
-				runtimeModes: provider.supportedRuntimeModes,
-				interactionModeToggle: provider.showInteractionModeToggle !== false,
-				fixedModel: provider.requiresNewThreadForModelChange === true,
-				models: provider.models
-					.filter((model) => model.isLegacy !== true)
-					.map((model) => ({
-						id: model.slug,
-						label: model.shortName ?? model.name,
-						isDefault: model.isDefault === true,
-						options: (model.capabilities?.optionDescriptors ?? []).map(optionInfo),
-					})),
-			}));
-	}
-
 	/** Cheapest diff there is: the open pull request's totals from the shell row. */
 	turnDiff(thread: Pick<ShellRow, "pullRequests">): { additions: number; deletions: number } | undefined {
 		const open = thread.pullRequests.find((link) => link.state === "open" && (link.additions ?? 0) + (link.deletions ?? 0) > 0);

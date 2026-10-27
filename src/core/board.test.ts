@@ -177,4 +177,23 @@ describe("ThreadBoard", () => {
 			vi.useRealTimers();
 		}
 	});
+
+	it("steps a filtered dial from the thread it shows, which is the first match when the selection doesn't match", () => {
+		vi.useFakeTimers();
+		try {
+			const a = machine("a", [row("a1", { deck: "approval" }), row("a2", { deck: "running" }), row("a3", { openedAt: 100 }), row("a4", { deck: "failed" })]);
+			const board = new ThreadBoard(() => [a]);
+			board.update();
+			const attention = (thread: { deck: string }) => thread.deck === "approval" || thread.deck === "failed";
+			expect(board.selectedOn()?.key).toBe("a/a3");
+			expect(board.shownOn(undefined, attention)?.key).toBe("a/a1");
+			board.step(1, undefined, attention);
+			expect(board.shownOn(undefined, attention)?.key).toBe("a/a4");
+			expect(board.pendingOn(undefined, (thread) => thread.deck === "running")).toBeUndefined();
+			vi.advanceTimersByTime(SELECT_DEBOUNCE_MS);
+			expect(a.visit).toHaveBeenCalledWith(expect.objectContaining({ threadId: "a4" }), { opened: true });
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 });

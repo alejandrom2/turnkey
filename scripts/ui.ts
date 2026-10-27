@@ -124,17 +124,48 @@ const card = `
 					<sdpi-textfield setting="scheme" global placeholder="t3code"></sdpi-textfield>
 				</sdpi-item>
 				<p class="hint">Use t3code-dev to open threads in a development build.</p>
+				<sdpi-item label="Dial strips">
+					<sdpi-select setting="stripBackground" global default="t3">
+						<option value="t3">T3 Code</option>
+						<option value="gradient">Gradient</option>
+						<option value="state">Thread state</option>
+						<option value="custom">Custom colour</option>
+					</sdpi-select>
+				</sdpi-item>
+				<sdpi-item label="Strip colour" id="strip-color" hidden>
+					<sdpi-color setting="stripColor" global default="#121212"></sdpi-color>
+				</sdpi-item>
+				<sdpi-item label="State line">
+					<sdpi-checkbox setting="stripHairline" global default="true" label="Show the coloured line under each strip"></sdpi-checkbox>
+				</sdpi-item>
+				<p class="hint">Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
 			</details>`;
 
-/** Shows the element `id` only while `setting` passes `test`, as the inspector edits it and as settings arrive. */
-const showWhen = (setting: string, id: string, test: string) => `
+/** Shows the element `id` only while `setting` (a global one with `global`) passes `test`, as it is edited and as settings arrive. */
+const showWhen = (setting: string, id: string, test: string, global = false) => `
 			{
 				const field = document.querySelector('[setting="${setting}"]');
 				const apply = (value) => { $("${id}").hidden = !((value) => ${test})(value ?? ""); };
 				field.addEventListener("valuechange", () => apply(field.value));
-				client.getSettings().then((payload) => apply(payload?.settings?.["${setting}"]));
-				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["${setting}"]));
+				client.${global ? "getGlobalSettings" : "getSettings"}().then((payload) => apply(payload?.settings?.["${setting}"]));
+				client.${global ? "didReceiveGlobalSettings" : "didReceiveSettings"}.subscribe(({ payload }) => apply(payload?.settings?.["${setting}"]));
 			}`;
+
+/** A dial's own strip background, over the global one in Advanced. */
+const dialAppearance = `
+			<sdpi-item label="Strip">
+				<sdpi-select setting="background" default="">
+					<option value="">Use global</option>
+					<option value="t3">T3 Code</option>
+					<option value="gradient">Gradient</option>
+					<option value="state">Thread state</option>
+					<option value="custom">Custom colour</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Strip colour" id="background-color" hidden>
+				<sdpi-color setting="backgroundColor" default="#121212"></sdpi-color>
+			</sdpi-item>`;
+const dialAppearanceScript = showWhen("background", "background-color", `value === "custom"`);
 
 const script = (extra = "") => `
 		<script>
@@ -280,7 +311,7 @@ const script = (extra = "") => `
 			$("t3-link").addEventListener("keydown", (key) => {
 				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
 			});
-			send("status");${extra}
+			send("status");${showWhen("stripBackground", "strip-color", `value === "custom"`, true)}${extra}
 		</script>`;
 
 const page = (title: string, fields = "", extra = "") => `<!doctype html>
@@ -344,7 +375,8 @@ const pages: Record<string, string> = {
 					<option value="tap">Press the dial</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Turn between this choice and Deny. A request that doesn't offer the choice opens in T3 Code instead.</p>`,
+			<p class="hint">Turn between this choice and Deny. A request that doesn't offer the choice opens in T3 Code instead. Touch and hold the strip to read a long request in full.</p>${dialAppearance}`,
+		dialAppearanceScript,
 	),
 	"send.html": page(
 		"Send Prompt",
@@ -426,7 +458,7 @@ const pages: Record<string, string> = {
 			<sdpi-item label="Effort">
 				<sdpi-select setting="effort" datasource="getEfforts" hot-reload loading="Loading efforts…" default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint">Cycling steps through the efforts the selected thread's model offers. A set effort its model doesn't offer dims the key.</p>`,
+			<p class="hint">Cycling steps through the efforts the selected thread's model offers. A set effort its model doesn't offer dims the key. Ultrathink doesn't change the effort: like T3 Code, it prefixes the prompts the deck sends to that thread until you pick another effort.</p>`,
 	),
 	"permissions.html": page(
 		"Permissions",
@@ -484,7 +516,50 @@ const pages: Record<string, string> = {
 			<sdpi-item label="Prompts">
 				<sdpi-textarea setting="prompts" rows="6" placeholder="One prompt per line"></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint">Rotate to choose, press to send to the selected thread, hold to start a new thread.</p>`,
+			<sdpi-item label="Templates">
+				<sdpi-checkbox setting="templates" default="true" label="Add Continue, Fix tests, Diagnose, Explain and Commit"></sdpi-checkbox>
+			</sdpi-item>
+			<p class="hint">Rotate to choose, press to send to the selected thread, hold to start a new thread.</p>${dialAppearance}`,
+		dialAppearanceScript,
+	),
+	"threads-dial.html": page(
+		"Threads Dial",
+		`
+			<sdpi-item label="Show">
+				<sdpi-select setting="filter" default="all">
+					<option value="all">All threads</option>
+					<option value="attention">Needs you: approval, question, failure or unread result</option>
+					<option value="active">Working or queued</option>
+					<option value="unread">Unread</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Project">
+				<sdpi-select setting="project" datasource="getProjects" hot-reload loading="Loading projects…" default=""></sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="From the last">
+				<sdpi-select setting="recency" default="all">
+					<option value="all">No limit</option>
+					<option value="24h">24 hours</option>
+					<option value="48h">48 hours</option>
+					<option value="3d">3 days</option>
+					<option value="7d">7 days</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint">Rotate through the matching threads, most urgent first; the one the dial rests on becomes T3 Code's selection. Press or tap opens it.</p>${dialAppearance}`,
+		dialAppearanceScript,
+	),
+	"power.html": page(
+		"Power Dial",
+		`
+			<sdpi-item label="This dial controls">
+				<sdpi-select setting="dialControls" default="model">
+					<option value="model">Model</option>
+					<option value="effort">Effort</option>
+					<option value="permissions">Access</option>
+				</sdpi-select>
+			</sdpi-item>
+			<p class="hint">Rotate to preview, press to apply to the selected thread. Model turns through T3 Code's favorite models across providers. Press with nothing to apply, or tap, to switch Speed when the model offers it. Ultrathink, where Claude offers it, prefixes the deck's next prompts to the thread.</p>${dialAppearance}`,
+		dialAppearanceScript,
 	),
 };
 

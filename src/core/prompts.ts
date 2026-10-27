@@ -29,3 +29,19 @@ export function migratePromptSettings<T extends { title?: unknown; label?: unkno
 	const title = typeof rest.title === "string" && rest.title !== "" ? rest.title : label;
 	return typeof title === "string" && title !== "" ? { ...rest, title } : rest;
 }
+
+export type DialPrompt = { text: string; label?: string };
+
+const sameText = (text: string) => text.trim().toLowerCase().replace(/[.!\s]+$/, "");
+
+/** The Prompts dial's list: the user's own lines, then Quick Prompt's templates (unless turned off) not already among them. */
+export function dialPrompts(settings: { prompts?: unknown; templates?: unknown }): DialPrompt[] {
+	const own = (typeof settings.prompts === "string" ? settings.prompts : "")
+		.split("\n")
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.map((text): DialPrompt => ({ text }));
+	if (settings.templates === false || settings.templates === "false") return own;
+	const seen = new Set(own.map((prompt) => sameText(prompt.text)));
+	return [...own, ...Object.values(QUICK_PROMPTS).filter((template) => !seen.has(sameText(template.text))).map((template) => ({ text: template.text, label: template.label }))];
+}
