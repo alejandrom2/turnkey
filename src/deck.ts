@@ -4,6 +4,7 @@ import type { JsonObject, JsonValue } from "@elgato/utils";
 import { ThreadBoard } from "./core/board.js";
 import { QueueStore } from "./core/queues.js";
 import { readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
+import { VERBOSE_MS, verboseOn } from "./core/diagnostics.js";
 import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
 import { Animator, motionMode, nextMinute, Transitions } from "./core/motion.js";
@@ -34,6 +35,8 @@ type GlobalSettings = {
 	auth?: Record<string, JsonValue>;
 	/** Per machine, broader scopes its next pairing asks for (`ScopeRequests`); written only by the plugin. */
 	scopeRequests?: Record<string, JsonValue>;
+	/** When verbose logging turns itself off, in ms; written only by the plugin, so a stale inspector can't restart it. */
+	verboseUntil?: number;
 };
 
 const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll, motion, confirmSend, maxEffort }: GlobalSettings) => ({
@@ -127,6 +130,10 @@ class Deck implements CredentialStore {
 	#auth: Record<string, Credential> = {};
 	#scopeRequests: ScopeRequests = {};
 	#authLoaded = false;
+	#verboseUntil: number | undefined;
+	#verboseTimer: ReturnType<typeof setTimeout> | undefined;
+	/** Each machine's last connection state, so debug logging notes changes only. */
+	readonly #loggedStates = new Map<string, string>();
 	#clock: ReturnType<typeof setTimeout> | undefined;
 	#statusSent: string | undefined;
 	#machineStates = "";
@@ -154,6 +161,40 @@ class Deck implements CredentialStore {
 	/** The global strip appearance settings, resolved per dial with its own override. */
 	get appearance(): ReturnType<typeof appearanceOf> {
 		return appearanceOf(this.#settings);
+	}
+
+	/** The global settings as the plugin holds them, for the diagnostics export to pick from. */
+	get globalSettings(): Readonly<Record<string, unknown>> {
+		return this.#settings;
+	}
+
+	/** When verbose logging ends; undefined while it is off. */
+	get verboseUntil(): number | undefined {
+		return this.#verboseUntil;
+	}
+
+	/** Turns verbose logging on for 24 hours, or off now. */
+	async setVerbose(on: boolean): Promise<void> {
+		this.#verboseUntil = on ? Date.now() + VERBOSE_MS : undefined;
+		this.#syncVerbose();
+		await this.#persist();
+		await this.pushStatus(true);
+	}
+
+	/**
+	 * Debug while verbose logging is on, info otherwise; never "trace", which would log the tokens kept in global
+	 * settings. A timer turns it off at its end, and a restart past the end finds it over.
+	 */
+	#syncVerbose(): void {
+		clearTimeout(this.#verboseTimer);
+		const now = Date.now();
+		const on = verboseOn(this.#verboseUntil, now);
+		streamDeck.logger.setLevel(on ? "debug" : "info");
+		if (on) this.#verboseTimer = setTimeout(() => void this.setVerbose(false), Math.min(this.#verboseUntil! - now, 2 ** 31 - 1));
+		else if (this.#verboseUntil !== undefined) {
+			this.#verboseUntil = undefined;
+			void this.#persist();
+		}
 	}
 
 	get scheme(): string {
@@ -271,6 +312,7 @@ class Deck implements CredentialStore {
 			environments: this.machines.map(environmentStatus),
 			selected: normalizeEnvironmentUrl(settings.machine ?? "") ?? "",
 			pairing: this.#pairing,
+			verboseUntil: this.#verboseUntil ?? null,
 			requirements: this.#checklist?.(streamDeck.ui.action),
 		};
 		const signature = JSON.stringify(status);
@@ -294,6 +336,11 @@ class Deck implements CredentialStore {
 		this.board.update();
 		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion, machine.tasksVersion]));
 		if (states === this.#machineStates) return;
+		for (const machine of this.machines) {
+			if (this.#loggedStates.get(machine.url) === machine.state.kind) continue;
+			this.#loggedStates.set(machine.url, machine.state.kind);
+			logger.debug(`${new URL(machine.url).host}: ${machine.state.kind}`);
+		}
 		this.#machineStates = states;
 		this.repaint();
 	}
@@ -319,6 +366,8 @@ class Deck implements CredentialStore {
 			this.#authLoaded = true;
 			this.#auth = readCredentials(settings.auth);
 			this.#scopeRequests = readScopeRequests(settings.scopeRequests);
+			this.#verboseUntil = typeof settings.verboseUntil === "number" ? settings.verboseUntil : undefined;
+			this.#syncVerbose();
 			if (migrated || this.#stale(settings)) await this.#persist();
 		} else if (migrated || this.#stale(settings)) await this.#persist();
 
@@ -355,11 +404,21 @@ class Deck implements CredentialStore {
 
 	/** The inspector's copy of global settings lags behind the plugin's tokens and scope requests. */
 	#stale(settings: GlobalSettings): boolean {
-		return JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth) || JSON.stringify(settings.scopeRequests ?? {}) !== JSON.stringify(this.#scopeRequests);
+		return (
+			JSON.stringify(settings.auth ?? {}) !== JSON.stringify(this.#auth) ||
+			JSON.stringify(settings.scopeRequests ?? {}) !== JSON.stringify(this.#scopeRequests) ||
+			settings.verboseUntil !== this.#verboseUntil
+		);
 	}
 
 	#persist(): Promise<void> {
-		return streamDeck.settings.setGlobalSettings<GlobalSettings>({ ...this.#settings, auth: this.#auth, scopeRequests: this.#scopeRequests });
+		const { verboseUntil: _stale, ...settings } = this.#settings;
+		return streamDeck.settings.setGlobalSettings<GlobalSettings>({
+			...settings,
+			auth: this.#auth,
+			scopeRequests: this.#scopeRequests,
+			...(this.#verboseUntil === undefined ? {} : { verboseUntil: this.#verboseUntil }),
+		});
 	}
 }
 
