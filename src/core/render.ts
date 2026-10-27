@@ -306,7 +306,7 @@ export function renderNoticeKey(input: NoticeKeyInput): string {
 export type InfoKeyInput = {
 	glyph: GlyphName;
 	mark?: MarkPainter;
-	/** Glyph colour; white by default. */
+	/** Glyph color; white by default. */
 	color?: string;
 	/** A faint wash over the key, as thread keys use for attention and failure. */
 	tint?: string;
@@ -331,7 +331,7 @@ export function renderInfoKey(input: InfoKeyInput): string {
 	return keySvg(parts.join(""));
 }
 
-/** How a dial strip's background looks: T3 Code's card, Elgato's gradient, tinted by thread state, or one colour. */
+/** How a dial strip's background looks: T3 Code's card, Elgato's gradient, tinted by thread state, or one color. */
 export type StripBackground = "t3" | "elgato" | "state" | "custom";
 export type StripAppearance = { background: StripBackground; color?: string; hairline: boolean };
 /** What a strip is about, for the State background: done, failed, waiting on you, or nothing to report. */
@@ -344,7 +344,7 @@ export const stripBackground = (value: unknown): StripBackground | undefined =>
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
-/** The dial's own background when it sets one, else the global one; a custom colour must be `#rrggbb`. */
+/** The dial's own background when it sets one, else the global one; a custom color must be `#rrggbb`. */
 export function resolveAppearance(
 	global: { stripBackground?: unknown; stripColor?: unknown; stripHairline?: unknown },
 	dial: { background?: unknown; backgroundColor?: unknown } = {},

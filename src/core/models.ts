@@ -105,7 +105,7 @@ export type CatalogModel = {
 	label: string;
 	accentColor: string | undefined;
 	iconUrl: string | undefined;
-	/** T3 Code adds an initials badge when the instance has an accent colour or shares its driver. */
+	/** T3 Code adds an initials badge when the instance has an accent color or shares its driver. */
 	badge: boolean;
 	options: ModelOptionInfo[];
 };
@@ -310,7 +310,7 @@ export type SpeedToggle = { option: ModelOptionInfo; fast: boolean; label: strin
 
 /**
  * The model's fast switch, as T3 Code's traits menu reads it (packages/client-runtime/src/modelTraits.ts): Claude's
- * `fastMode`, or a Codex service tier labelled "Fast" against "default". Undefined when the model has neither.
+ * `fastMode`, or a Codex service tier labeled "Fast" against "default". Undefined when the model has neither.
  */
 export function speedToggle(model: Pick<CatalogModel, "options" | "driver"> | undefined, selection: ModelSelection): SpeedToggle | undefined {
 	const fastMode = model?.options.find((option) => option.id === "fastMode" && option.type === "boolean");
@@ -343,7 +343,7 @@ export function officialAcpIconUrl(icon: string | undefined): string | undefined
 export type MarkArt = { viewBox: string; body: string };
 
 /**
- * A registry SVG made safe and one colour, as T3 Code tints it: no scripts, events, styles, foreign content or
+ * A registry SVG made safe and one color, as T3 Code tints it: no scripts, events, styles, foreign content or
  * outside references, and every paint becomes `currentColor`. Done in the markup because Stream Deck's SVG
  * renderer can't be relied on for filters.
  */
@@ -405,7 +405,7 @@ export class AcpIcons {
 	}
 }
 
-/** `art` fitted and centred in a `size` box at (x, y), as a transformed group like every other key glyph. */
+/** `art` fitted and centered in a `size` box at (x, y), as a transformed group like every other key glyph. */
 function placed(x: number, y: number, size: number, art: MarkArt, color: string, fill: string): string {
 	const [minX, minY, width, height] = art.viewBox.split(/[\s,]+/).map(Number);
 	const scale = size / Math.max(width, height);
@@ -420,7 +420,7 @@ const badgeAt = (x: number, y: number, ...args: Parameters<typeof initialsBadgeS
 
 /**
  * A model's provider mark at (x, y), as T3 Code's `ProviderInstanceIcon` draws it: the driver's mark, a
- * registry agent's own icon in one colour (the generic ACP mark until it loads), or initials for an unknown
+ * registry agent's own icon in one color (the generic ACP mark until it loads), or initials for an unknown
  * driver; with an initials badge when the instance needs telling apart.
  */
 export function providerMark(
