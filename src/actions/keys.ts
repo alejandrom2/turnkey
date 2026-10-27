@@ -399,13 +399,13 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 
 type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; machine?: string };
 
-const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey, MessageKey]> = {
-	settle: ["settle", "organize.settle", "organize.settled"],
-	pin: ["pin", "organize.pin", "organize.pinned"],
-	unpin: ["pin", "organize.unpin", "organize.unpinned"],
-	snooze: ["moon", "organize.snooze", "organize.snoozed"],
-	archive: ["archive", "organize.archive", "organize.archived"],
-	mark_unread: ["chat", "organize.markUnread", "organize.markedUnread"],
+const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey]> = {
+	settle: ["settle", "organize.settle"],
+	pin: ["pin", "organize.pin"],
+	unpin: ["pin", "organize.unpin"],
+	snooze: ["moon", "organize.snooze"],
+	archive: ["archive", "organize.archive"],
+	mark_unread: ["chat", "organize.markUnread"],
 };
 
 /** Settle, pin or unpin, snooze, archive or mark the selected thread unread. Pin toggles; the rest are undone in T3 Code. */
@@ -433,7 +433,7 @@ export class Organize extends DeckAction<OrganizeSettings> {
 		const { which, thread, check } = this.#check(ev.action);
 		if (!(await this.allowed(ev.action, check))) return;
 		const minutes = Number(ev.payload.settings.snoozeMinutes ?? 60) || 60;
-		await this.run(ev.action, () => organize(thread!, which, minutes), t(ORGANIZE_FACE[which][2]));
+		await this.apply(ev.action, () => organize(thread!, which, minutes));
 	}
 }
 
