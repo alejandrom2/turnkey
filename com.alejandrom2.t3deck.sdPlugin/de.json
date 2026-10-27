@@ -119,12 +119,16 @@
 		"Tooltip": "Schreibt den Review-Leitfaden von T3 Code für den Pull Request des ausgewählten Threads und öffnet dann den Thread."
 	},
 	"com.alejandrom2.t3deck.editor": {
-		"Name": "Im Editor öffnen",
-		"Tooltip": "Öffnet den Worktree oder das Projekt des ausgewählten Threads in einem Editor, auf dem Rechner, auf dem T3 Code läuft."
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
 	},
 	"com.alejandrom2.t3deck.preview": {
-		"Name": "Vorschau öffnen",
-		"Tooltip": "Öffnet die Vorschauseite des Threads oder sein neuestes HTML-Rendering im Browser dieses Computers."
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Zustand",
@@ -1078,6 +1082,11 @@
 				"stops": "Stoppt",
 				"turn": "Den Durchlauf",
 				"workflow": "Den Workflow"
+			},
+			"open": {
+				"in": "Öffnen in",
+				"editor": "Editor",
+				"preview": "Vorschau"
 			}
 		},
 		"usage": {

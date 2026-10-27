@@ -119,12 +119,16 @@
 		"Tooltip": "Rédige le guide de revue de T3 Code pour la pull request du fil sélectionné, puis ouvre le fil."
 	},
 	"com.alejandrom2.t3deck.editor": {
-		"Name": "Ouvrir dans l'éditeur",
-		"Tooltip": "Ouvre le worktree ou le projet du fil sélectionné dans un éditeur, sur la machine où tourne T3 Code."
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
 	},
 	"com.alejandrom2.t3deck.preview": {
-		"Name": "Ouvrir l'aperçu",
-		"Tooltip": "Ouvre la page d'aperçu du fil, ou son dernier rendu HTML, dans le navigateur de cet ordinateur."
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "Ouvrir",
+		"Tooltip": "Ouvre le worktree du fil sélectionné dans un éditeur ou, selon son réglage, sa page d'aperçu dans le navigateur de cet ordinateur."
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Santé",
@@ -1078,6 +1082,11 @@
 				"stops": "Arrête",
 				"turn": "Le tour",
 				"workflow": "Le workflow"
+			},
+			"open": {
+				"in": "Ouvrir dans",
+				"editor": "Éditeur",
+				"preview": "Aperçu"
 			}
 		},
 		"usage": {

@@ -119,12 +119,16 @@
 		"Tooltip": "為所選對話的 PR 撰寫 T3 Code 的審查指南，然後開啟對話。"
 	},
 	"com.alejandrom2.t3deck.editor": {
-		"Name": "在編輯器開啟",
-		"Tooltip": "在執行 T3 Code 的機器上，以編輯器開啟所選對話的工作樹或專案。"
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
 	},
 	"com.alejandrom2.t3deck.preview": {
-		"Name": "開啟預覽",
-		"Tooltip": "在這台電腦的瀏覽器中開啟對話的預覽頁面，或其最新的 HTML 轉譯。"
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
+	},
+	"com.alejandrom2.t3deck.open": {
+		"Name": "開啟",
+		"Tooltip": "以編輯器開啟所選對話的工作樹，或依設定在這台電腦的瀏覽器中開啟其預覽頁面。"
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "健康狀態",
@@ -1078,6 +1082,11 @@
 				"stops": "停止對象",
 				"turn": "回合",
 				"workflow": "工作流程"
+			},
+			"open": {
+				"in": "開啟方式",
+				"editor": "編輯器",
+				"preview": "預覽"
 			}
 		},
 		"usage": {
