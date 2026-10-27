@@ -2,7 +2,7 @@ import streamDeck, { type Action, action, type DialAction, type DidReceiveSettin
 
 import { failureLabel } from "../core/feedback.js";
 import { gaugeStripArt, renderGaugeKey } from "../core/gauge.js";
-import { t } from "../core/i18n.js";
+import { type MessageKey, t } from "../core/i18n.js";
 import { providerDisplayName, providerMark } from "../core/models.js";
 import { COLORS, glyphArt, type MarkPainter, renderInfoKey, renderSkeletonKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
@@ -111,7 +111,7 @@ async function refreshUsage(url: string | undefined, period: UsagePeriod, prices
 					?.refreshUsageRates()
 					.catch((error: unknown) => logger.warn(`Refreshing prices failed: ${message(error)}`));
 			}
-			await store.refresh(machine, period);
+			await store.refresh(machine, period, prices);
 		}),
 	);
 	const failed = machines.map((machine) => store.entry(machine, period)?.error).find((error) => error !== undefined);
@@ -133,6 +133,9 @@ const itemMark = (item: UsageItem): MarkPainter => {
 	return (x, y, size) => providerMark({ driver, providerName: providerDisplayName({ instanceId: driver, driver }), accentColor: undefined, iconUrl: undefined, badge: false }, x, y, size);
 };
 
+/** Who has to update when a machine's usage contract is one the deck can't merge. */
+const MISMATCH: Record<"serverBehind" | "clientBehind", MessageKey> = { serverBehind: "usage.updateT3", clientBehind: "usage.updateDeck" };
+
 type UsageSettings = { machine?: string; period?: string };
 
 /** A period's API-estimate cost, tokens and sessions, on the key's machine or merged across every machine. */
@@ -146,7 +149,8 @@ export class UsageKey extends DeckAction<UsageSettings> {
 		const period = usagePeriod(this.settingsOf(action).period);
 		const label = periodLabel(period);
 		if (!usageAccess(url)) return void (await this.setImage(action, renderInfoKey({ glyph: "usage", title: label, detail: needsAccessLabel(DIAGNOSTICS_SCOPE), available: false })));
-		const { merged, loading, error } = store.view(readers(url), period);
+		const { merged, loading, error, mismatch } = store.view(readers(url), period);
+		if (mismatch !== undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "usage", title: label, detail: t(MISMATCH[mismatch]), available: false })));
 		if (merged === undefined) {
 			if (loading || error === undefined) return void (await this.setImage(action, renderSkeletonKey()));
 			return void (await this.setImage(action, renderInfoKey({ glyph: "usage", title: label, detail: failureLabel(error), available: false })));
@@ -208,9 +212,10 @@ export class UsageDial extends StripDial<UsageDialSettings> {
 		const header = t("usage.title");
 		const offline = disconnectedStrip(header, this.machineOf(action));
 		if (offline) return offline;
-		const { url, period, item, loading, error } = this.#state(action);
+		const { url, period, item, loading, error, mismatch } = this.#state(action);
 		const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("usage", COLORS.muted), accent: COLORS.muted, value, detail });
 		if (!usageAccess(url)) return muted(periodLabel(period), needsAccessLabel(DIAGNOSTICS_SCOPE));
+		if (mismatch !== undefined) return muted(periodLabel(period), t(MISMATCH[mismatch]));
 		if (item === undefined) return { ...muted(periodLabel(period), error === undefined || loading ? "" : failureLabel(error)), loading: loading || error === undefined };
 		return { header: `${header} · ${periodLabel(period)}`, icon: itemMark(item), accent: COLORS.accent, value: `${item.label} · ${item.cost}`, detail: [item.tokens, item.detail].filter(Boolean).join(" · ") };
 	}

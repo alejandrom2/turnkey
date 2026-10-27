@@ -817,7 +817,9 @@
 			"sessions": "{count} sessions",
 			"unpriced": "Unpriced",
 			"cacheHit": "{percent} cache",
-			"perMillion": "{cost}/M"
+			"perMillion": "{cost}/M",
+			"updateT3": "Update T3 Code to read usage",
+			"updateDeck": "Update T3 Deck to read usage"
 		},
 		"limits": {
 			"title": "Limits",
