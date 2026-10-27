@@ -234,6 +234,9 @@ const card = `
 						<option value="on"${text("inspector.idlePet.on")}</option>
 					</sdpi-select>
 				</sdpi-item>
+				<sdpi-item>
+					<sdpi-button id="t3-preview-pet"><span${text("inspector.advanced.previewPet")}</span></sdpi-button>
+				</sdpi-item>
 				<p class="hint"${text("inspector.advanced.idlePetHint")}</p>
 				<sdpi-item ${attr("label", "inspector.advanced.maxEffort")}>
 					<sdpi-select setting="maxEffort" global default="gradient">
@@ -521,6 +524,7 @@ const script = (extra = "") => `
 
 			$("t3-verbose").addEventListener("change", () => send("verbose", { on: $("t3-verbose").checked }));
 			$("t3-open-logs").addEventListener("click", () => send("openLogs"));
+			$("t3-preview-pet").addEventListener("click", () => send("previewPet"));
 			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
 
 			let pairedOnce = false;

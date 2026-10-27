@@ -268,6 +268,8 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				return deck.setVerbose(payload.on === true);
 			case "openLogs":
 				return this.#diagnostics(() => openLogsFolder());
+			case "previewPet":
+				return deck.previewPet();
 			case "exportDiagnostics":
 				return this.#diagnostics(() => exportDiagnostics(visibleActions()));
 			case "retry":

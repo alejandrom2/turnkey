@@ -92,7 +92,7 @@ A key that can't act right now is dimmed, and pressing it says why. A press that
 
 **Motion** (**Advanced**): Full (default) spins running threads on keys and strips, pulses keys waiting on you and flashes a thread once when it finishes or fails. Reduced spins slowly without pulsing. Off keeps every face still.
 
-**Idle pet** (**Advanced**, off by default): on a Stream Deck +, after two minutes without a press, turn or touch, a small robot walks across the longest row of neighboring T3 Deck dial strips, then rests four minutes and walks back, up to three times. Any press, turn or touch on a T3 Deck key or dial sends it away and starts the wait over; presses on other plugins' keys don't count. It follows **Motion**: Full walks with a small bounce, Reduced walks calmly at fewer frames, Off keeps it away. It never draws over keys, a press result, a review card or a strip you are reading.
+**Idle pet** (**Advanced**, off by default): on a Stream Deck +, after two minutes without a press, turn or touch, a small robot walks across the longest row of neighboring T3 Deck dial strips, then rests four minutes and walks back, up to three times. Any press, turn or touch on a T3 Deck key or dial sends it away and starts the wait over; presses on other plugins' keys don't count. It follows **Motion**: Full walks with a small bounce, Reduced walks calmly at fewer frames, Off keeps it away. It never draws over keys, a press result, a review card or a strip you are reading. **Preview pet**, beside it, sends it across once now, even while it is off.
 
 Each dial's strip has a style, set under **Advanced → Strip style** in any action's settings and overridable per dial. Classic is the default:
 
