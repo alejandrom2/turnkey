@@ -6,7 +6,7 @@ import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
-import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, effortToneOf, isTopEffort, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
+import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, effortToneOf, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
 import { spinAngle } from "../core/motion.js";
@@ -18,7 +18,6 @@ import {
 	type MarkPainter,
 	modelFill,
 	paintedGlyphArt,
-	type Paint,
 	SPECTRUM,
 	STATE_COLOR,
 	STATE_GLYPH,
@@ -186,15 +185,14 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 type PowerSettings = DialSettings & { dialControls?: string };
 
 
-/** The thread's effort as `model` would carry it, colored by its level; `top` when it is the model's highest. */
-function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): { suffix: SliderInput["suffix"]; top?: Paint } {
+/** The thread's effort as `model` would carry it, colored by its level. */
+function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): SliderInput["suffix"] {
 	const value = currentEffort(findModel(thread.machine.modelConfig, thread.model), thread.model, armed);
 	const choices = effortChoices(model);
 	const choice = choices.find((candidate) => candidate.key === String(value));
-	if (choice === undefined) return { suffix: undefined };
-	if (choice.ultrathink) return { suffix: { text: choice.label, paint: { gradient: SPECTRUM } } };
-	const tone = effortToneOf(choices, choice.key, colorStyle(), modelColor(model));
-	return { suffix: { text: choice.label, paint: tone?.text }, top: isTopEffort(choices, choice.key) ? tone?.fill : undefined };
+	if (choice === undefined) return undefined;
+	if (choice.ultrathink) return { text: choice.label, paint: { gradient: SPECTRUM } };
+	return { text: choice.label, paint: effortToneOf(choices, choice.key, colorStyle(), modelColor(model))?.text };
 }
 
 /** What a previewed choice reads in: the model's color, or its effort level's; amber for other settings. */
@@ -323,7 +321,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 		return {
 			// The badge and the color already name the provider.
 			label: shown?.kind === "model" ? bareModelName(shown.model) : (shown?.label ?? thread.model.model),
-			suffix: effort?.suffix,
+			suffix: effort,
 			labelColor: shown?.kind === "model" ? modelColor(shown.model) : shown?.kind === "effort" ? (tone?.text ?? (pending ? COLORS.attention : undefined)) : pending || fullAccess ? COLORS.attention : undefined,
 			stops: state.choices.length,
 			current: at(state.current),
@@ -334,8 +332,10 @@ export class ModelDial extends StripDial<PowerSettings> {
 					: shown?.kind === "effort"
 						? tone?.fill
 						: state.current?.kind === "model"
-							? (effort?.top ?? modelFill(colorStyle(), modelColor(state.current.model)))
+							? modelFill(colorStyle(), modelColor(state.current.model))
 							: undefined,
+			// Models are places in a list, not levels: pills like the Model key's, not a filling track.
+			pages: control === "model",
 			ends,
 			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending, thread) } : undefined,
 			badges,

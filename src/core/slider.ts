@@ -30,6 +30,8 @@ export type SliderInput = {
 	lead?: MarkPainter;
 	/** Dims the track: the dial can't act. */
 	dim?: boolean;
+	/** One pill per choice instead of a filled track: for choices that are places, not levels (models). */
+	pages?: boolean;
 	/** How far an overflowing label has scrolled left, in px. */
 	labelOffset?: number;
 };
@@ -52,6 +54,30 @@ export function fit(text: string, width: number, size: number): string {
 
 /** Provider labels can carry stray or doubled spaces; the label keeps whitespace as written, so collapse them. */
 const tidy = (text: string) => text.replace(/\s+/g, " ").trim();
+
+/**
+ * One pill per choice across the track, as the Model key's pages: the thread's filled in its paint, the previewed one
+ * outlined, the rest dim. Past eight, the pills stand for stretches of the list.
+ */
+function pagePills(count: number, current: number | undefined, preview: number | undefined, paint: Paint): string {
+	const shown = Math.min(count, 8);
+	const gap = 6;
+	const width = (SLIDER.width - gap * (shown - 1)) / shown;
+	const height = 12;
+	const y = SLIDER.y + (SLIDER.height - height) / 2;
+	const slot = (index: number | undefined) => (index === undefined ? undefined : count > shown ? Math.round((index * (shown - 1)) / (count - 1)) : index);
+	const at = slot(current);
+	const next = slot(preview);
+	const parts: string[] = [];
+	for (let index = 0; index < shown; index++) {
+		const x = +(SLIDER.x + index * (width + gap)).toFixed(2);
+		const box = (extra: string) => `<rect x="${x}" y="${y}" width="${+width.toFixed(2)}" height="${height}" rx="${height / 2}" ${extra}/>`;
+		if (index === at) parts.push(box(`fill="${paintFill(paint, `slider-page-${index}`, x, x + width, parts)}"`));
+		else if (index === next) parts.push(box(`fill="#FFFFFF" fill-opacity=".18" stroke="#FFFFFF" stroke-width="2"`));
+		else parts.push(box(`fill="#FFFFFF" fill-opacity=".14"`));
+	}
+	return parts.join("");
+}
 
 /** The label line as the marquee measures it. */
 export const sliderLabelText = (input: Pick<SliderInput, "label" | "suffix">): string => (input.suffix ? `${input.label} ${input.suffix.text}` : input.label);
@@ -97,8 +123,13 @@ export function sliderArt(input: SliderInput): string {
 		parts.push(`<defs>${shape}</defs>`, label(+(start - offset).toFixed(1), offset === 0 ? ` mask="url(#slider-label)"` : ` clip-path="url(#slider-label)"`));
 	} else parts.push(label(start));
 
-	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
+	if (input.pages) {
+		const pills = pagePills(stops, current, input.preview, input.fill ?? COLORS.accent);
+		parts.push(input.dim ? `<g opacity=".45">${pills}</g>` : pills);
+		return finish(parts, input);
+	}
+	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	if (current !== undefined) {
 		const fill = paintFill(input.fill ?? COLORS.accent, "slider-fill", SLIDER.x, SLIDER.x + SLIDER.width, track);
 		track.push(`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${+(stopX(current, stops) - SLIDER.x + SLIDER.height / 2).toFixed(2)}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="${fill}"/>`);
@@ -110,7 +141,11 @@ export function sliderArt(input: SliderInput): string {
 		track.push(`<circle cx="${stopX(preview, stops)}" cy="${cy}" r="9.5" fill="#111111" fill-opacity=".55" stroke="#FFFFFF" stroke-width="2.5"/>`);
 	}
 	parts.push(input.dim ? `<g opacity=".45">${track.join("")}</g>` : track.join(""));
+	return finish(parts, input);
+}
 
+/** The ends, a note or the footer under the track, and the finished picture. */
+function finish(parts: string[], input: SliderInput): string {
 	if (input.note) parts.push(svgText(fit(input.note.text, SLIDER.width, 15), SLIDER.x, 85, 15, 600, input.note.color ?? COLORS.muted));
 	else if (input.footer) {
 		parts.push(input.footer.mark(SLIDER.x, 70, 20));
