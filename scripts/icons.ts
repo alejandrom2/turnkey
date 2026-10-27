@@ -75,16 +75,25 @@ for (const [name, mark] of Object.entries(ACTIONS)) {
 	write(`actions/${name}/key.svg`, Buffer.from(key.split(",")[1], "base64").toString());
 }
 
-// T3 Code's own mark (MIT, apps/mobile/assets/widget/T3Mark.svg in the T3 Code repo), like Elgato's category uses its partner's.
-const T3_MARK =
-	"M33.4509 93V47.56H15.5309V37H64.3309V47.56H46.4109V93H33.4509ZM86.7253 93.96C82.832 93.96 78.9653 93.4533 75.1253 92.44C71.2853 91.3733 68.032 89.88 65.3653 87.96L70.4053 78.04C72.5386 79.5867 75.0186 80.8133 77.8453 81.72C80.672 82.6267 83.5253 83.08 86.4053 83.08C89.6586 83.08 92.2186 82.44 94.0853 81.16C95.952 79.88 96.8853 78.12 96.8853 75.88C96.8853 73.7467 96.0586 72.0667 94.4053 70.84C92.752 69.6133 90.0853 69 86.4053 69H80.4853V60.44L96.0853 42.76L97.5253 47.4H68.1653V37H107.365V45.4L91.8453 63.08L85.2853 59.32H89.0453C95.9253 59.32 101.125 60.8667 104.645 63.96C108.165 67.0533 109.925 71.0267 109.925 75.88C109.925 79.0267 109.099 81.9867 107.445 84.76C105.792 87.48 103.259 89.6933 99.8453 91.4C96.432 93.1067 92.0586 93.96 86.7253 93.96Z";
-const mark = (size: number, tile: boolean) => {
-	const inset = tile ? size * 0.2 : size * 0.06;
-	const width = size - inset * 2;
-	const scale = width / 95;
-	const offsetY = (size - 57 * scale) / 2;
-	const body = `<g transform="translate(${inset} ${offsetY}) scale(${scale}) translate(-15 -37)"><path d="${T3_MARK}" fill="#ffffff"/></g>`;
-	return svg(size, tile ? `<rect width="${size}" height="${size}" rx="${size * 0.08}" fill="#000000"/>${body}` : body);
+/**
+ * Turnkey's mark: three keys stacked like a deck of threads, the front one turning, with a prompt on it whose cursor is
+ * an agent's spark. On the marketplace tile the spark wears T3 Code's accent blue; the category icon stays plain white,
+ * as Elgato's guidelines ask, with the prompt and spark cut through the front key.
+ */
+const T3_BLUE = "#4a68f0";
+const logo = (size: number, tile: boolean) => {
+	const ink = tile ? "#000000" : "#ffffff";
+	const back = (x: number, y: number, opacity: number) => `<rect x="${x}" y="${y}" width="104" height="104" rx="22" fill="#ffffff" fill-opacity="${opacity}"/>`;
+	const prompt = `<path d="M142 104 L160 120 L142 136" fill="none" stroke="${ink}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
+	const spark = `<path d="M190 100 Q192.5 117.5 210 120 Q192.5 122.5 190 140 Q187.5 122.5 170 120 Q187.5 117.5 190 100Z" fill="${tile ? T3_BLUE : ink}"/>`;
+	// Without a tile, the front key's marks are cut out of it rather than drawn on it.
+	const front = tile
+		? `<rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff"/>${prompt}${spark}`
+		: `<mask id="cut"><rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff"/><path d="M142 104 L160 120 L142 136" fill="none" stroke="#000000" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/><path d="M190 98 Q192.8 117.2 212 120 Q192.8 122.8 190 142 Q187.2 122.8 168 120 Q187.2 117.2 190 98Z" fill="#000000"/></mask><rect x="120" y="68" width="104" height="104" rx="22" fill="#ffffff" mask="url(#cut)"/>`;
+	// The category icon has no room for a margin: the art is scaled up to fill it.
+	const art = `${back(64, 116, tile ? 0.22 : 0.4)}${back(92, 92, tile ? 0.45 : 0.65)}<g transform="rotate(14 172 120)">${front}</g>`;
+	const fit = tile ? art : `<g transform="translate(-44 -44) scale(1.31)">${art}</g>`;
+	return svg(size, `<svg viewBox="0 0 288 288" width="${size}" height="${size}">${tile ? '<rect width="288" height="288" rx="23" fill="#000000"/>' : ""}${fit}</svg>`);
 };
-write("plugin/category-icon.svg", mark(56, false));
-write("plugin/marketplace.svg", mark(288, true));
+write("plugin/category-icon.svg", logo(56, false));
+write("plugin/marketplace.svg", logo(288, true));
