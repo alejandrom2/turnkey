@@ -5,8 +5,9 @@
 export type DialPlace = { id: string; device: string; column: number };
 export type Run = { length: number; position: number };
 
-export function dialRuns(dials: readonly DialPlace[]): Map<string, Run> {
-	const runs = new Map<string, Run>();
+/** Dial ids per run of adjacent columns on one device, left to right. */
+export function dialGroups(dials: readonly DialPlace[]): string[][] {
+	const groups: string[][] = [];
 	const byDevice = new Map<string, DialPlace[]>();
 	for (const dial of dials) byDevice.set(dial.device, [...(byDevice.get(dial.device) ?? []), dial]);
 	for (const placed of byDevice.values()) {
@@ -14,11 +15,16 @@ export function dialRuns(dials: readonly DialPlace[]): Map<string, Run> {
 		let start = 0;
 		for (let index = 1; index <= sorted.length; index++) {
 			if (index < sorted.length && sorted[index].column === sorted[index - 1].column + 1) continue;
-			const run = sorted.slice(start, index);
-			run.forEach((dial, position) => runs.set(dial.id, { length: run.length, position }));
+			groups.push(sorted.slice(start, index).map((dial) => dial.id));
 			start = index;
 		}
 	}
+	return groups;
+}
+
+export function dialRuns(dials: readonly DialPlace[]): Map<string, Run> {
+	const runs = new Map<string, Run>();
+	for (const group of dialGroups(dials)) group.forEach((id, position) => runs.set(id, { length: group.length, position }));
 	return runs;
 }
 
