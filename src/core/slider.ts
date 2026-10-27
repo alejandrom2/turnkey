@@ -80,10 +80,9 @@ export function sliderArt(input: SliderInput): string {
 	const suffixFill = suffix?.spectrum ? `fill="url(#slider-suffix)"` : suffix?.color ? `fill="${suffix.color}"` : `fill="#FFFFFF" fill-opacity=".5"`;
 	if (suffix?.spectrum) parts.push(`<defs><linearGradient id="slider-suffix" gradientUnits="userSpaceOnUse" x1="${start}" y1="0" x2="${start + labelRoom}" y2="0">${spectrumStops()}</linearGradient></defs>`);
 	const label = (x: number, extra = "") => {
-		const name = svgText(input.label, x, 26, 16, 650, labelColor);
-		if (suffix === undefined) return `<g${extra}>${name}</g>`;
-		const after = +(x + textWidth(input.label, 16) + 2).toFixed(1);
-		return `<g${extra}>${name}<text x="${after}" y="26" font-family="${FONT_FAMILY}" font-size="16" font-weight="650" ${suffixFill}>${escapeXml(suffix.text)}</text></g>`;
+		if (suffix === undefined) return `<g${extra}>${svgText(input.label, x, 26, 16, 650, labelColor)}</g>`;
+		// One text run, as Elgato's slider draws it, so the space between name and effort comes from the font itself.
+		return `<g${extra}><text x="${x}" y="26" font-family="${FONT_FAMILY}" font-size="16" font-weight="650" xml:space="preserve"><tspan fill="${labelColor}">${escapeXml(input.label)} </tspan><tspan ${suffixFill}>${escapeXml(suffix.text)}</tspan></text></g>`;
 	};
 	if (overflow > 0) {
 		const end = start + labelRoom;
