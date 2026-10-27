@@ -3,7 +3,7 @@ import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
 import { type VcsRef, worktreeBase } from "../git.js";
-import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun } from "../lineage.js";
+import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun, type ProjectedTurnItem } from "../lineage.js";
 import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
 import { type ProjectedSubagent, type RunningWorkflow, runningWorkflows, stopWorkflowFailure } from "../workflows.js";
@@ -950,13 +950,13 @@ export class Machine {
 	}
 
 	/**
-	 * Forks the thread from its newest finished run into a new thread, as T3 Code's fork button on the latest reply
+	 * Forks the thread from its newest finished reply into a new thread, as T3 Code's fork button on that reply
 	 * does; the fork's id is chosen here so the caller can open it.
 	 */
 	async fork(thread: ThreadRef & { title: string }): Promise<{ threadId: string }> {
-		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[] } | undefined;
+		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[]; turnItems?: ProjectedTurnItem[] } | undefined;
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
-		const run = forkSourceRun(projection.runs ?? []);
+		const run = forkSourceRun(projection.runs ?? [], projection.turnItems ?? []);
 		if (run === undefined) throw new RpcError("NothingToFork", "No finished run to fork from.", t("lineage.nothingToFork"));
 		const threadId = this.#uuid();
 		await this.#dispatch({
