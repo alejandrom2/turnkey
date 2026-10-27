@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Idea or feature request
+    url: https://github.com/alejandrom2/turnkey/discussions/categories/ideas
+    about: Suggest a new action, setting or look in Discussions.
+  - name: Security problem
+    url: https://github.com/alejandrom2/turnkey/security/advisories/new
+    about: Report it privately, please.
+  - name: Problem in T3 Code itself
+    url: https://github.com/pingdotgg/t3code/issues
+    about: Bugs in T3 Code's app or server belong in its own repository.
