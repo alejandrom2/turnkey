@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "T3 Code-Threads vom Stream Deck aus beobachten und steuern: Thread-Status, Stopp, Prompts, Modelloptionen und Antworten, über alle Anbieter hinweg.",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "Thread",
+		"Tooltip": "Ein Thread vom Board, nach Tastenposition belegt: Status, Titel und Timer. Tippen öffnet ihn in T3 Code; Halten wählt ihn aus."
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "Aktivität",
 		"Tooltip": "Der dringendste Thread, der zum Filter passt. Tippen öffnet ihn in T3 Code."
@@ -18,25 +22,13 @@
 		"Name": "Lenken",
 		"Tooltip": "Fügt dem laufenden Durchlauf des ausgewählten Threads eine gespeicherte Anweisung hinzu."
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "Prompt senden",
-		"Tooltip": "Sendet deinen eigenen Prompt oder einen Alltags-Prompt (fortfahren, Tests reparieren, erklären, committen …) an den ausgewählten Thread. Halten unterbricht und startet damit neu."
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "Skill ausführen",
+		"Tooltip": "Führt einen Anbieter-Skill des Threads aus, so als würde man ihn im Composer von T3 Code auswählen und senden."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Stopp",
 		"Tooltip": "Stoppt den laufenden Durchlauf des ausgewählten Threads oder, je nach Einstellung, die Workflows, die er ausführt (Claude). Workflows zum Stoppen halten."
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Stopp",
-		"Tooltip": "Stoppt den laufenden Durchlauf des ausgewählten Threads oder, je nach Einstellung, die Workflows, die er ausführt (Claude). Workflows zum Stoppen halten."
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "Fork",
-		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "Fork",
-		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Modell",
@@ -66,17 +58,13 @@
 		"Name": "Ablehnen",
 		"Tooltip": "Lehnt die Freigabe des ausgewählten Threads ab."
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "Thread",
-		"Tooltip": "Ein Thread vom Board, nach Tastenposition belegt: Status, Titel und Timer. Tippen öffnet ihn in T3 Code; Halten wählt ihn aus."
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "Organisieren",
 		"Tooltip": "Erledigt, heftet an, stellt zurück, archiviert oder markiert den ausgewählten Thread als ungelesen, oder weckt den zuletzt zurückgestellten Thread."
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "Pull Request",
-		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "Fork",
+		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Branch",
@@ -86,45 +74,21 @@
 		"Name": "Git",
 		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Git",
-		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
-	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Git",
-		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Git",
-		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Git",
-		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
+	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull Request",
 		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
 	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "Pull Request",
-		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	"com.alejandrom2.t3deck.task": {
+		"Name": "Aufgabe ausführen",
+		"Tooltip": "Eine geplante Aufgabe von T3 Code: ihr Name und wann sie als Nächstes läuft. Drücken führt sie jetzt aus."
 	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Pull Request",
-		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "Nutzung",
+		"Tooltip": "Geschätzte API-Kosten, Tokens und Sitzungen eines Zeitraums, wie „Usage“ in T3 Code sie zeigt, auf einem Rechner oder allen. Tippen aktualisiert; Halten lädt zusätzlich die Modellpreise neu."
 	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Pull Request",
-		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "Öffnen",
-		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "Öffnen",
-		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "Limits",
+		"Tooltip": "Das Abo-Limit eines Anbieters, zusammengefasst wie die Limits in T3 Code: % übrig, nächster Reset und angesparte Resets. Tippen aktualisiert; Halten öffnet „Usage“ in T3 Code oder nutzt einen Reset."
 	},
 	"com.alejandrom2.t3deck.open": {
 		"Name": "Öffnen",
@@ -134,13 +98,17 @@
 		"Name": "Zustand",
 		"Tooltip": "Die Verbindung zu T3 Code und seinen Anbietern: das schwerste Problem zuerst (offline, Kopplung nötig, nicht angemeldet, Version nicht unterstützt, nicht verfügbar). Tippen verbindet neu."
 	},
-	"com.alejandrom2.t3deck.task": {
-		"Name": "Aufgabe ausführen",
-		"Tooltip": "Eine geplante Aufgabe von T3 Code: ihr Name und wann sie als Nächstes läuft. Drücken führt sie jetzt aus."
+	"com.alejandrom2.t3deck.update": {
+		"Name": "T3 aktualisieren",
+		"Tooltip": "Die T3 Code-Version auf einem Rechner. Halten aktualisiert auf die neueste Version; braucht Update-Zugriff, angefragt bei der nächsten Kopplung dieses Rechners."
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "Skill ausführen",
-		"Tooltip": "Führt einen Anbieter-Skill des Threads aus, so als würde man ihn im Composer von T3 Code auswählen und senden."
+	"com.alejandrom2.t3deck.script": {
+		"Name": "Skript ausführen",
+		"Tooltip": "Führt eines der gespeicherten Skripte des Projekts im Terminal des Threads aus; Halten stoppt es. Braucht Terminal-Zugriff (Shell), angefragt bei der nächsten Kopplung dieses Rechners."
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "Thread teilen",
+		"Tooltip": "Erstellt einen Gastlink für den Thread und kopiert ihn; zeigt Geteilt und den Gast. Halten beendet das Teilen. Braucht Gastlink-Zugriff, angefragt bei der nächsten Kopplung dieses Rechners."
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Thread-Regler",
@@ -198,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "Pull Request wählen", "Push": "Befunde beheben (halten)", "Touch": "Im Browser öffnen", "LongTouch": "Befunde lesen" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "T3 aktualisieren",
-		"Tooltip": "Die T3 Code-Version auf einem Rechner. Halten aktualisiert auf die neueste Version; braucht Update-Zugriff, angefragt bei der nächsten Kopplung dieses Rechners."
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "Skript ausführen",
-		"Tooltip": "Führt eines der gespeicherten Skripte des Projekts im Terminal des Threads aus; Halten stoppt es. Braucht Terminal-Zugriff (Shell), angefragt bei der nächsten Kopplung dieses Rechners."
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "Thread teilen",
-		"Tooltip": "Erstellt einen Gastlink für den Thread und kopiert ihn; zeigt Geteilt und den Gast. Halten beendet das Teilen. Braucht Gastlink-Zugriff, angefragt bei der nächsten Kopplung dieses Rechners."
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "Limits",
-		"Tooltip": "Das Abo-Limit eines Anbieters, zusammengefasst wie die Limits in T3 Code: % übrig, nächster Reset und angesparte Resets. Tippen aktualisiert; Halten öffnet „Usage“ in T3 Code oder nutzt einen Reset."
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "Limit-Regler",
 		"Tooltip": "Drehen geht durch die Limit-Fenster aller Anbieter. Drücken oder Tippen aktualisiert; gedrückt halten öffnet „Usage“ in T3 Code oder nutzt einen Reset.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Anbieter und Fenster wählen", "Push": "Aktualisieren (Halten: Reset)", "Touch": "Aktualisieren", "LongTouch": "Details lesen" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "Nutzung",
-		"Tooltip": "Geschätzte API-Kosten, Tokens und Sitzungen eines Zeitraums, wie „Usage“ in T3 Code sie zeigt, auf einem Rechner oder allen. Tippen aktualisiert; Halten lädt zusätzlich die Modellpreise neu."
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "Geräte-Regler",
-		"Tooltip": "Drehen geht durch die Simulatoren und Emulatoren von T3 Code. Drücken startet oder öffnet das angezeigte Gerät im „Device panel“ des Threads; Halten schaltet es aus. Berühren sucht erneut nach Geräten.",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "Gerät wählen", "Push": "Starten/öffnen (Halten: aus)", "Touch": "Erneut suchen" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -238,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Modell wählen", "Push": "Aktualisieren (Halten: auch Preise)", "Touch": "Aktualisieren", "LongTouch": "Details lesen" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "Geräte-Regler",
+		"Tooltip": "Drehen geht durch die Simulatoren und Emulatoren von T3 Code. Drücken startet oder öffnet das angezeigte Gerät im „Device panel“ des Threads; Halten schaltet es aus. Berühren sucht erneut nach Geräten.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Gerät wählen", "Push": "Starten/öffnen (Halten: aus)", "Touch": "Erneut suchen" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "Pull Request",
+		"Tooltip": "Der Pull Request des ausgewählten Threads und sein Status; Tippen öffnet ihn. Oder übergib ihn an einen Agenten: Befunde beheben (halten), erklären, fragen oder Review-Leitfaden."
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "Prompt senden",
+		"Tooltip": "Sendet deinen eigenen Prompt oder einen Alltags-Prompt (fortfahren, Tests reparieren, erklären, committen …) an den ausgewählten Thread. Halten unterbricht und startet damit neu."
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "Stopp",
+		"Tooltip": "Stoppt den laufenden Durchlauf des ausgewählten Threads oder, je nach Einstellung, die Workflows, die er ausführt (Claude). Workflows zum Stoppen halten."
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "Fork",
+		"Tooltip": "Forkt den Thread ab seiner neuesten fertigen Antwort und öffnet den Fork, oder mergt einen Fork zurück in den Thread, aus dem er stammt (halten)."
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "Öffnen",
+		"Tooltip": "Öffnet den Worktree des ausgewählten Threads in einem Editor oder, je nach Einstellung, seine Vorschauseite im Browser dieses Computers."
 	},
 	"Localization": {
 		"result": {

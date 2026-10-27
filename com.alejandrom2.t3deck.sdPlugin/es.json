@@ -2,6 +2,10 @@
 	"Name": "T3 Deck",
 	"Description": "Sigue y dirige los hilos de T3 Code desde Stream Deck: estado del hilo, detener, prompts, opciones de modelo y respuestas, con todos los proveedores.",
 	"Category": "T3 Deck",
+	"com.alejandrom2.t3deck.slot": {
+		"Name": "Hilo",
+		"Tooltip": "Un hilo del tablero, según la posición de la tecla: estado, título y tiempo. Pulsar lo abre en T3 Code; mantener lo selecciona."
+	},
 	"com.alejandrom2.t3deck.activity": {
 		"Name": "Actividad",
 		"Tooltip": "El hilo más urgente que coincide con un filtro. Pulsar lo abre en T3 Code."
@@ -18,25 +22,13 @@
 		"Name": "Guiar",
 		"Tooltip": "Añade una instrucción guardada al turno en curso del hilo seleccionado."
 	},
-	"com.alejandrom2.t3deck.quick": {
-		"Name": "Enviar prompt",
-		"Tooltip": "Envía tu propio prompt, o uno habitual (continuar, arreglar tests, explicar, hacer commit…), al hilo seleccionado. Mantén para interrumpir y reiniciar con él."
+	"com.alejandrom2.t3deck.skill": {
+		"Name": "Ejecutar skill",
+		"Tooltip": "Ejecuta una de las skills del proveedor del hilo, igual que elegirla en el compositor de T3 Code y enviarla."
 	},
 	"com.alejandrom2.t3deck.stop": {
 		"Name": "Detener",
 		"Tooltip": "Detiene el turno en curso del hilo seleccionado o, según su ajuste, los workflows que ejecuta (Claude). Mantén para detener un workflow."
-	},
-	"com.alejandrom2.t3deck.workflow.stop": {
-		"Name": "Detener",
-		"Tooltip": "Detiene el turno en curso del hilo seleccionado o, según su ajuste, los workflows que ejecuta (Claude). Mantén para detener un workflow."
-	},
-	"com.alejandrom2.t3deck.fork": {
-		"Name": "Bifurcar",
-		"Tooltip": "Bifurca el hilo desde su última respuesta terminada y abre la bifurcación, o reintegra una bifurcación en el hilo del que salió (mantén)."
-	},
-	"com.alejandrom2.t3deck.merge": {
-		"Name": "Bifurcar",
-		"Tooltip": "Bifurca el hilo desde su última respuesta terminada y abre la bifurcación, o reintegra una bifurcación en el hilo del que salió (mantén)."
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Modelo",
@@ -66,17 +58,13 @@
 		"Name": "Denegar",
 		"Tooltip": "Rechaza la aprobación del hilo seleccionado."
 	},
-	"com.alejandrom2.t3deck.slot": {
-		"Name": "Hilo",
-		"Tooltip": "Un hilo del tablero, según la posición de la tecla: estado, título y tiempo. Pulsar lo abre en T3 Code; mantener lo selecciona."
-	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "Organizar",
 		"Tooltip": "Resuelve, fija, pospone, archiva o marca como no leído el hilo seleccionado, o despierta el último hilo pospuesto."
 	},
-	"com.alejandrom2.t3deck.pr": {
-		"Name": "Pull request",
-		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
+	"com.alejandrom2.t3deck.fork": {
+		"Name": "Bifurcar",
+		"Tooltip": "Bifurca el hilo desde su última respuesta terminada y abre la bifurcación, o reintegra una bifurcación en el hilo del que salió (mantén)."
 	},
 	"com.alejandrom2.t3deck.branch": {
 		"Name": "Rama",
@@ -86,45 +74,21 @@
 		"Name": "Git",
 		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
 	},
-	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Git",
-		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
-	},
-	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Git",
-		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
-	},
-	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "Git",
-		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
-	},
-	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Git",
-		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
-	},
-	"com.alejandrom2.t3deck.pr.fix": {
+	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull request",
 		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
 	},
-	"com.alejandrom2.t3deck.pr.explain": {
-		"Name": "Pull request",
-		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
+	"com.alejandrom2.t3deck.task": {
+		"Name": "Ejecutar tarea",
+		"Tooltip": "Una de las tareas programadas de T3 Code: su nombre y cuándo se ejecuta de nuevo. Pulsar la ejecuta ahora."
 	},
-	"com.alejandrom2.t3deck.pr.ask": {
-		"Name": "Pull request",
-		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
+	"com.alejandrom2.t3deck.usage": {
+		"Name": "Uso",
+		"Tooltip": "El coste estimado por API, los tokens y las sesiones de un periodo, como los muestra Usage de T3 Code, en una máquina o en todas. Pulsar actualiza; mantener también recarga los precios de los modelos."
 	},
-	"com.alejandrom2.t3deck.pr.guide": {
-		"Name": "Pull request",
-		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
-	},
-	"com.alejandrom2.t3deck.editor": {
-		"Name": "Abrir",
-		"Tooltip": "Abre el worktree del hilo seleccionado en un editor o, según su ajuste, su página de vista previa en el navegador de este equipo."
-	},
-	"com.alejandrom2.t3deck.preview": {
-		"Name": "Abrir",
-		"Tooltip": "Abre el worktree del hilo seleccionado en un editor o, según su ajuste, su página de vista previa en el navegador de este equipo."
+	"com.alejandrom2.t3deck.limits": {
+		"Name": "Límites",
+		"Tooltip": "El límite de suscripción de un proveedor, agrupado como en Limits de T3 Code: % restante, próximo reinicio y reinicios guardados. Pulsar actualiza; mantener abre Usage de T3 Code o usa un reinicio."
 	},
 	"com.alejandrom2.t3deck.open": {
 		"Name": "Abrir",
@@ -134,13 +98,17 @@
 		"Name": "Estado",
 		"Tooltip": "La conexión con T3 Code y sus proveedores: primero el peor problema (sin conexión, falta vincular, sin autenticar, versión no compatible, no disponible). Pulsar reconecta."
 	},
-	"com.alejandrom2.t3deck.task": {
-		"Name": "Ejecutar tarea",
-		"Tooltip": "Una de las tareas programadas de T3 Code: su nombre y cuándo se ejecuta de nuevo. Pulsar la ejecuta ahora."
+	"com.alejandrom2.t3deck.update": {
+		"Name": "Actualizar T3",
+		"Tooltip": "La versión de T3 Code en una máquina. Mantener la actualiza a la última versión; requiere acceso de actualización, que se pide en la próxima vinculación de esa máquina."
 	},
-	"com.alejandrom2.t3deck.skill": {
-		"Name": "Ejecutar skill",
-		"Tooltip": "Ejecuta una de las skills del proveedor del hilo, igual que elegirla en el compositor de T3 Code y enviarla."
+	"com.alejandrom2.t3deck.script": {
+		"Name": "Ejecutar script",
+		"Tooltip": "Ejecuta uno de los scripts guardados del proyecto en la terminal del hilo; mantener lo detiene. Requiere acceso a la terminal (shell), que se pide en la próxima vinculación de esa máquina."
+	},
+	"com.alejandrom2.t3deck.share": {
+		"Name": "Compartir hilo",
+		"Tooltip": "Crea un enlace de invitado para el hilo y lo copia; muestra Compartido y su invitado. Mantener deja de compartir. Requiere acceso a enlaces de invitado, que se pide en la próxima vinculación de esa máquina."
 	},
 	"com.alejandrom2.t3deck.dial.threads": {
 		"Name": "Dial de hilos",
@@ -198,38 +166,11 @@
 			"TriggerDescription": { "Rotate": "Elegir pull request", "Push": "Corregir (mantener)", "Touch": "Abrir en navegador", "LongTouch": "Leer hallazgos" }
 		}
 	},
-	"com.alejandrom2.t3deck.update": {
-		"Name": "Actualizar T3",
-		"Tooltip": "La versión de T3 Code en una máquina. Mantener la actualiza a la última versión; requiere acceso de actualización, que se pide en la próxima vinculación de esa máquina."
-	},
-	"com.alejandrom2.t3deck.script": {
-		"Name": "Ejecutar script",
-		"Tooltip": "Ejecuta uno de los scripts guardados del proyecto en la terminal del hilo; mantener lo detiene. Requiere acceso a la terminal (shell), que se pide en la próxima vinculación de esa máquina."
-	},
-	"com.alejandrom2.t3deck.share": {
-		"Name": "Compartir hilo",
-		"Tooltip": "Crea un enlace de invitado para el hilo y lo copia; muestra Compartido y su invitado. Mantener deja de compartir. Requiere acceso a enlaces de invitado, que se pide en la próxima vinculación de esa máquina."
-	},
-	"com.alejandrom2.t3deck.limits": {
-		"Name": "Límites",
-		"Tooltip": "El límite de suscripción de un proveedor, agrupado como en Limits de T3 Code: % restante, próximo reinicio y reinicios guardados. Pulsar actualiza; mantener abre Usage de T3 Code o usa un reinicio."
-	},
 	"com.alejandrom2.t3deck.dial.limits": {
 		"Name": "Dial de límites",
 		"Tooltip": "Gira para recorrer las ventanas de límite de cada proveedor. Pulsar o tocar actualiza; mantener pulsado abre Usage de T3 Code o usa un reinicio.",
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Elegir proveedor y ventana", "Push": "Actualizar (mantén: reinicio)", "Touch": "Actualizar", "LongTouch": "Leer detalles" }
-		}
-	},
-	"com.alejandrom2.t3deck.usage": {
-		"Name": "Uso",
-		"Tooltip": "El coste estimado por API, los tokens y las sesiones de un periodo, como los muestra Usage de T3 Code, en una máquina o en todas. Pulsar actualiza; mantener también recarga los precios de los modelos."
-	},
-	"com.alejandrom2.t3deck.dial.devices": {
-		"Name": "Dial de dispositivos",
-		"Tooltip": "Gira para recorrer los simuladores y emuladores de T3 Code. Pulsar inicia el mostrado, o lo abre, en el Device panel del hilo; mantener lo apaga. Tocar vuelve a buscar dispositivos.",
-		"Encoder": {
-			"TriggerDescription": { "Rotate": "Elegir dispositivo", "Push": "Iniciar o abrir (mantener: apagar)", "Touch": "Volver a buscar" }
 		}
 	},
 	"com.alejandrom2.t3deck.dial.usage": {
@@ -238,6 +179,65 @@
 		"Encoder": {
 			"TriggerDescription": { "Rotate": "Elegir modelo", "Push": "Actualizar (mantener: y precios)", "Touch": "Actualizar", "LongTouch": "Leer detalles" }
 		}
+	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "Dial de dispositivos",
+		"Tooltip": "Gira para recorrer los simuladores y emuladores de T3 Code. Pulsar inicia el mostrado, o lo abre, en el Device panel del hilo; mantener lo apaga. Tocar vuelve a buscar dispositivos.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Elegir dispositivo", "Push": "Iniciar o abrir (mantener: apagar)", "Touch": "Volver a buscar" }
+		}
+	},
+	"com.alejandrom2.t3deck.git.commit": {
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
+	},
+	"com.alejandrom2.t3deck.git.push": {
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
+	},
+	"com.alejandrom2.t3deck.git.pr": {
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
+	},
+	"com.alejandrom2.t3deck.git.pull": {
+		"Name": "Git",
+		"Tooltip": "Hace commit, push, crea un PR o hace pull de la rama del hilo seleccionado, según su ajuste Acción. Mantén para hacer push."
+	},
+	"com.alejandrom2.t3deck.pr.fix": {
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
+	},
+	"com.alejandrom2.t3deck.pr.explain": {
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
+	},
+	"com.alejandrom2.t3deck.pr.ask": {
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
+	},
+	"com.alejandrom2.t3deck.pr.guide": {
+		"Name": "Pull request",
+		"Tooltip": "El pull request del hilo seleccionado y su estado; pulsar lo abre. O pásalo a un agente: corregir hallazgos (mantén), explicar, preguntar o guía de revisión."
+	},
+	"com.alejandrom2.t3deck.quick": {
+		"Name": "Enviar prompt",
+		"Tooltip": "Envía tu propio prompt, o uno habitual (continuar, arreglar tests, explicar, hacer commit…), al hilo seleccionado. Mantén para interrumpir y reiniciar con él."
+	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "Detener",
+		"Tooltip": "Detiene el turno en curso del hilo seleccionado o, según su ajuste, los workflows que ejecuta (Claude). Mantén para detener un workflow."
+	},
+	"com.alejandrom2.t3deck.merge": {
+		"Name": "Bifurcar",
+		"Tooltip": "Bifurca el hilo desde su última respuesta terminada y abre la bifurcación, o reintegra una bifurcación en el hilo del que salió (mantén)."
+	},
+	"com.alejandrom2.t3deck.editor": {
+		"Name": "Abrir",
+		"Tooltip": "Abre el worktree del hilo seleccionado en un editor o, según su ajuste, su página de vista previa en el navegador de este equipo."
+	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "Abrir",
+		"Tooltip": "Abre el worktree del hilo seleccionado en un editor o, según su ajuste, su página de vista previa en el navegador de este equipo."
 	},
 	"Localization": {
 		"result": {
