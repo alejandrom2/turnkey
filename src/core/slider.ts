@@ -16,6 +16,8 @@ export type SliderInput = {
 	preview?: number;
 	/** Fill with T3 Code's Ultrathink spectrum instead of the accent. */
 	spectrum?: boolean;
+	/** The fill's color instead of the accent. */
+	fill?: string;
 	/** What each end of the track means. */
 	ends: [string, string];
 	/** Replaces the ends: what pressing does, or why the dial can't act. */
@@ -77,7 +79,7 @@ export function sliderArt(input: SliderInput): string {
 	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
 	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
 	if (current !== undefined) {
-		const fill = input.spectrum ? "url(#slider-spectrum)" : COLORS.accent;
+		const fill = input.spectrum ? "url(#slider-spectrum)" : (input.fill ?? COLORS.accent);
 		if (input.spectrum) track.push(`<defs><linearGradient id="slider-spectrum" gradientUnits="userSpaceOnUse" x1="${SLIDER.x}" y1="0" x2="${SLIDER.x + SLIDER.width}" y2="0">${spectrumStops()}</linearGradient></defs>`);
 		track.push(`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${+(stopX(current, stops) - SLIDER.x + SLIDER.height / 2).toFixed(2)}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="${fill}"/>`);
 	}
