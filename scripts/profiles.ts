@@ -47,6 +47,9 @@ const DIALS: Placed[] = [
 const limits = (provider: string, window: string): Placed => ({ action: "limits", name: "Limits", settings: { provider, window } });
 const usage = (period: string): Placed => ({ action: "usage", name: "Usage", settings: { period } });
 
+/** Run Skill keys start unpicked: skills come from each thread's provider and checkout. */
+const skill = (): Placed => ({ action: "skill", name: "Run Skill" });
+
 /** Run Task keys start unpicked: tasks are the user's own. */
 const task = (): Placed => ({ action: "task", name: "Run Task" });
 
@@ -113,6 +116,19 @@ const PROFILES: Profile[] = [
 					[quick("commit"), organize("settle"), organize("pin"), organize("snooze")],
 				],
 				dials: [DIALS[0]!, DIALS[2]!, { action: "dial.queue", name: "Queue Dial" }, DIALS[3]!],
+			},
+			{
+				name: "SKILLS",
+				keys: [
+					[skill(), skill(), skill(), skill()],
+					[
+						{ action: "fork", name: "Fork" },
+						{ action: "merge", name: "Merge Back" },
+						{ action: "workflow.stop", name: "Stop Workflow" },
+						{ action: "branch", name: "Branch" },
+					],
+				],
+				dials: [{ action: "dial.skills", name: "Skills Dial" }, DIALS[0]!, { action: "dial.queue", name: "Queue Dial" }, DIALS[3]!],
 			},
 			{
 				name: "GIT",
