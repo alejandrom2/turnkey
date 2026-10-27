@@ -119,6 +119,9 @@
 			"loading": "Loading…",
 			"holdToAllow": "Hold to allow",
 			"holdToAnswer": "Hold to answer",
+			"holdToSend": "Hold to send",
+			"holdToApply": "Hold to apply",
+			"resumed": "Resumed",
 			"notWebLink": "Not a web link"
 		},
 		"face": {
@@ -133,9 +136,22 @@
 			"deny": "Deny",
 			"pullRequest": "Pull request",
 			"branch": "Branch",
-			"loading": "Loading…",
 			"needsYou": "Needs you",
 			"prompt": "Prompt"
+		},
+		"review": {
+			"send": "Send?",
+			"restart": "Restart with?",
+			"steer": "Steer?",
+			"newThread": "New thread?",
+			"model": "Switch model?",
+			"effort": "Set effort?",
+			"speed": "Switch speed?",
+			"access": "Set access?",
+			"pressAgain": "Press again",
+			"pressToSend": "Press again to send",
+			"pressToApply": "Press again to apply",
+			"to": "To {thread}"
 		},
 		"organize": {
 			"settle": "Settle",
@@ -242,10 +258,15 @@
 			"approvals": "Approvals: {authority}",
 			"approval": "Approval",
 			"question": "Question",
-			"loading": "Loading…",
 			"pressToOpen": "Press to open in T3 Code",
 			"openInT3Code": "Open in T3 Code",
 			"withHold": "{label} · hold"
+		},
+		"power": {
+			"quicker": "Quicker",
+			"deeper": "Deeper",
+			"asksFirst": "Asks first",
+			"handsOff": "Hands-off"
 		},
 		"approval": {
 			"open": "Open in T3",
@@ -280,8 +301,9 @@
 			"commit": "Commit"
 		},
 		"time": {
-			"minutes": "{minutes}:{seconds}",
-			"hours": "{hours}h{minutes}"
+			"minutes": "{minutes}m",
+			"hours": "{hours}h",
+			"days": "{days}d"
 		},
 		"datasource": {
 			"cycleFavorites": "Cycle favorites",
@@ -352,9 +374,13 @@
 				"dialStrips": "Dial strips",
 				"stateLine": "State line",
 				"stateLineLabel": "Show the colored line under each strip",
-				"stateHint": "Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.",
+				"stateHint": "Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.",
 				"stripStyle": "Strip style",
-				"styleHint": "List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll."
+				"styleHint": "List turns through a dial's items like a wheel, Carousel shows each as a tile between its neighbors. Per dial default uses List for the Threads dial, Classic for the others; Classic shows the Power dial as a slider. Long text moves once the dial rests, twice, then stops; touch and hold the strip to read it all, and turn to scroll.",
+				"motion": "Motion",
+				"motionHint": "Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.",
+				"confirm": "Confirm before sending",
+				"confirmHint": "Applies to prompts and to the Model, Effort, Speed and Power controls. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
 			},
 			"field": {
 				"strip": "Strip",
@@ -369,19 +395,31 @@
 				"toAnswer": "To answer",
 				"model": "Model",
 				"effort": "Effort",
-				"access": "Access"
+				"access": "Access",
+				"confirm": "Confirm"
 			},
 			"background": {
 				"global": "Use global",
 				"t3": "T3 Code",
-				"gradient": "Gradient",
+				"flow": "Flow",
 				"state": "Thread state",
 				"custom": "Custom color"
 			},
 			"style": {
+				"perDial": "Per dial default",
 				"classic": "Classic",
 				"list": "List",
 				"carousel": "Carousel"
+			},
+			"motion": {
+				"full": "Full",
+				"reduced": "Reduced",
+				"off": "Off"
+			},
+			"confirm": {
+				"review": "Review, then press again",
+				"hold": "Hold to send",
+				"off": "Send right away"
 			},
 			"scroll": {
 				"horizontal": "Scroll sideways",

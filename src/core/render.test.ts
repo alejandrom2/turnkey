@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { renderControlKey, renderInfoKey, renderNoticeKey, renderResultKey, renderThreadKey, textWidth, wrapText } from "./render.js";
+import {
+	dotsCue,
+	fitSize,
+	ladderCue,
+	renderControlKey,
+	renderDecisionKey,
+	renderInfoKey,
+	renderNoticeKey,
+	renderResultKey,
+	renderReviewKey,
+	renderThreadKey,
+	textWidth,
+	wrapText,
+} from "./render.js";
 
 const svg = (dataUrl: string) => Buffer.from(dataUrl.replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
 
@@ -23,6 +36,25 @@ describe("wrapText", () => {
 		expect(textWidth(lines[2], 17)).toBeLessThanOrEqual(114);
 	});
 
+	it("breaks a long word after a hyphen before anything else", () => {
+		expect(wrapText("Auto-accept edits", 112, 20, 3).lines).toEqual(["Auto-", "accept", "edits"]);
+	});
+
+	it("cuts a word that can't break, fading it, when asked", () => {
+		const wrapped = wrapText("Supercalifragilisticexpialidocious tests", 60, 17, 2, { cut: true });
+		expect(wrapped.cut).toEqual([0]);
+		expect(wrapped.lines[1]).toBe("tests");
+	});
+
+	it("shrinks a size step when a word doesn't fit, before breaking it", () => {
+		expect(fitSize("Auto-accept edits", 112, [20, 17])).toBe(17);
+		expect(fitSize("Fix tests", 112, [20, 17])).toBe(20);
+		const label = svg(renderControlKey({ glyph: "modeAutoAcceptEdits", label: "Auto-accept edits" }));
+		expect(label).toContain(`font-size="17"`);
+		expect(label).toContain(">Auto-accept<");
+		expect(label).toContain(">edits<");
+	});
+
 	it("breaks a word wider than the line by character", () => {
 		const { lines, overflowed } = wrapText("Supercalifragilisticexpialidocious", 60, 17, 1);
 		expect(overflowed).toBe(true);
@@ -43,20 +75,41 @@ describe("renderThreadKey", () => {
 		expect(out).not.toContain("<b>");
 	});
 
-	it("shows the unread badge only when unseen", () => {
-		expect(svg(renderThreadKey({ state: "done", title: "Done", unseen: true }))).toContain(`fill="#007BE5"`);
-		expect(svg(renderThreadKey({ state: "done", title: "Done" }))).not.toContain(`fill="#007BE5"`);
+	it("shows the unread badge on unseen threads, but lets an unseen done one's green wash say it", () => {
+		expect(svg(renderThreadKey({ state: "failed", title: "Failed", unseen: true }))).toContain(`fill="#007BE5"`);
+		expect(svg(renderThreadKey({ state: "failed", title: "Failed" }))).not.toContain(`fill="#007BE5"`);
+		const done = svg(renderThreadKey({ state: "done", title: "Done", unseen: true }));
+		expect(done).not.toContain(`fill="#007BE5"`);
+		expect(done).toContain(`fill="#40C977" fill-opacity="0.12"`);
+		expect(svg(renderThreadKey({ state: "done", title: "Done" }))).not.toContain(`fill="#40C977" fill-opacity`);
 	});
 
-	it("lifts the background while running and tints failures red", () => {
-		expect(svg(renderThreadKey({ state: "running", title: "Work" }))).toContain(`<rect width="144" height="144" fill="#292929"/>`);
+	it("tints and colors the glyph of threads that want attention: amber waiting, red failed", () => {
+		for (const state of ["approval", "question"] as const) {
+			const out = svg(renderThreadKey({ state, title: "Work" }));
+			expect(out).toContain(`fill="#FF8549" fill-opacity="0.18"`);
+			expect(out).toContain(`stroke="#FF8549"`);
+		}
 		const failed = svg(renderThreadKey({ state: "failed", title: "Work" }));
-		expect(failed).toContain(`<rect width="144" height="144" fill="#111111"/>`);
-		expect(failed).toContain(`fill="#FF6764" fill-opacity="0.2"`);
+		expect(failed).toContain(`fill="#FF6764" fill-opacity="0.18"`);
+		expect(failed).toContain(`stroke="#FF6764"`);
+		expect(svg(renderThreadKey({ state: "running", title: "Work" }))).not.toContain("fill-opacity=");
 	});
 
-	it("tints threads waiting on the user green", () => {
-		expect(svg(renderThreadKey({ state: "approval", title: "Work" }))).toContain(`fill="#40C977" fill-opacity="0.25"`);
+	it("marks the selected thread with a white wash and dims the other titles, without an outline", () => {
+		const selected = svg(renderThreadKey({ state: "idle", title: "Work", selected: true }));
+		expect(selected).toContain(`fill="#FFFFFF" fill-opacity="0.15"`);
+		expect(selected).not.toContain("stroke-width=\"4\"");
+		expect(selected).not.toContain(`fill-opacity="0.55"`);
+		expect(svg(renderThreadKey({ state: "idle", title: "Work", selected: false }))).toContain(`fill-opacity="0.55"`);
+		expect(svg(renderThreadKey({ state: "idle", title: "Work" }))).not.toContain(`fill-opacity="0.55"`);
+		expect(svg(renderThreadKey({ state: "approval", title: "Work", selected: true }))).toContain(`fill="#FF8549" fill-opacity="0.3"`);
+	});
+
+	it("turns the spinner and swaps the wash for motion", () => {
+		expect(svg(renderThreadKey({ state: "running", title: "Work", motion: { spin: 90 } }))).toContain("rotate(90 12 12)");
+		expect(svg(renderThreadKey({ state: "approval", title: "Work", motion: { wash: 0.3 } }))).toContain(`fill="#FF8549" fill-opacity="0.3"`);
+		expect(svg(renderThreadKey({ state: "done", title: "Work", motion: { wash: 0.4 } }))).toContain(`fill="#40C977" fill-opacity="0.4"`);
 	});
 
 	it("shows the diff instead of the elapsed meta", () => {
@@ -88,16 +141,44 @@ describe("renderControlKey", () => {
 		expect(two).toContain(`y="123"`);
 	});
 
-	it("fits a refusal reason in smaller lines instead of cutting it off", () => {
-		const out = svg(renderResultKey({ ok: false, label: "The target provider instance is unavailable" }));
-		expect(out).toContain(`font-size="14"`);
-		expect(out).not.toContain("mask=");
-		expect(out).toContain("unavailable</text>");
+	it("centers a result's glyph over its caption, smaller and wrapped when long", () => {
+		const short = svg(renderResultKey({ ok: true, label: "Sent" }));
+		expect(short).toContain(`stroke="#40C977"`);
+		expect(short).toContain(`text-anchor="middle"`);
+		expect(short).toContain(`font-size="16"`);
+		const long = svg(renderResultKey({ ok: false, label: "The target provider instance is unavailable" }));
+		expect(long).toContain(`font-size="13"`);
+		expect(long).not.toContain("mask=");
+		expect(long).toContain("unavailable</text>");
+	});
+
+	it("keeps the label to one line above a position cue", () => {
+		const out = svg(renderControlKey({ glyph: "effort", label: "High", cue: ladderCue(5, 2) }));
+		expect(out).toContain(`y="98"`);
+		expect(out).toContain(`<circle cx="72" cy="119" r="10" fill="#FFFFFF"/>`);
+		expect(dotsCue(4, 1).match(/<rect/g)).toHaveLength(4);
+		expect(dotsCue(4, 1).match(/fill-opacity/g)).toHaveLength(3);
 	});
 
 	it("draws a provider mark in place of the glyph", () => {
 		const out = svg(renderControlKey({ glyph: "model", label: "Opus 4.5", mark: (x, y, size) => `<rect x="${x}" y="${y}" width="${size}" id="mark"/>` }));
 		expect(out).toContain(`<rect x="15" y="12" width="42" id="mark"/>`);
+	});
+});
+
+describe("decision and review keys", () => {
+	it("draws Approve and Deny as a pair, gray when there is nothing to answer", () => {
+		const approve = svg(renderDecisionKey({ kind: "approve", armed: true, caption: "Allow once", detail: "npm test" }));
+		const deny = svg(renderDecisionKey({ kind: "deny", armed: true, caption: "Deny", detail: "npm test" }));
+		expect(approve.replace(/<g transform[^>]*>.*?<\/g>/, "")).toBe(deny.replace(/<g transform[^>]*>.*?<\/g>/, "").replace(">Deny<", ">Allow once<"));
+		expect(svg(renderDecisionKey({ kind: "deny", armed: false, caption: "Deny" }))).toContain(`<g opacity=".45">`);
+	});
+
+	it("shows what a review would send and where, escaped", () => {
+		const out = svg(renderReviewKey({ glyph: "send", verb: "Send?", target: "Fix <login>", body: "Run the tests", footer: "Press again" }));
+		expect(out).toContain("Fix &lt;login&gt;");
+		expect(out).toContain(">Run the tests<");
+		expect(out).toContain(">Press again<");
 	});
 });
 

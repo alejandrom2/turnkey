@@ -8,10 +8,12 @@ import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import { findModel, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
 import { dialControl, type DialControl, effortChange, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
-import { COLORS, glyphArt, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgText, toneOf } from "../core/render.js";
+import { sliderArt } from "../core/slider.js";
+import { spinAngle } from "../core/motion.js";
+import { COLORS, glyph, glyphArt, type GlyphName, type MarkPainter, STATE_COLOR, STATE_GLYPH, svgText, toneOf } from "../core/render.js";
 import { matchesDial, type ThreadFilter, threadFilter } from "../core/slots.js";
 import type { StripContent } from "../core/strip.js";
-import type { StripItem, StripList } from "../core/styles.js";
+import type { StripItem, StripList, StripStyle } from "../core/styles.js";
 import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
 import { canOperate, LONG_PRESS_MS, openThread, pressWhileDisconnected, selectedThread, sendToThread, ultrathinkArmed } from "./base.js";
@@ -43,6 +45,12 @@ function statusLine(thread: DeckThread): string {
 	}
 }
 
+/** The running spinner turned to `angle`, around a provider mark when there is one. */
+const spinnerArt =
+	(color: string, angle: number, inner?: MarkPainter): MarkPainter =>
+	(x, y, size) =>
+		inner ? glyph("spinner", x, y, size, color, 1.6, angle) + inner(x + size * 0.24, y + size * 0.24, size * 0.52) : glyph("spinner", x, y, size, color, 2, angle);
+
 const FILTER_LABEL: Record<ThreadFilter, MessageKey> = { all: "filter.all", attention: "filter.attention", active: "filter.active", unread: "filter.unread" };
 
 type ThreadDialSettings = DialSettings & { filter?: string; project?: string; recency?: string };
@@ -53,6 +61,10 @@ type ThreadDialSettings = DialSettings & { filter?: string; project?: string; re
  */
 @action({ UUID: `${ID}.dial.threads` })
 export class ThreadDial extends StripDial<ThreadDialSettings> {
+	protected override get defaultStyle(): StripStyle {
+		return "list";
+	}
+
 	#match(action: Action<ThreadDialSettings>): (thread: DeckThread) => boolean {
 		const settings = this.settingsOf(action);
 		const now = Date.now();
@@ -71,16 +83,17 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 		const threads = deck.board.threadsOn(machine).filter(match);
 		const model = findModel(thread.machine.modelConfig, thread.model);
 		const color = STATE_COLOR[thread.deck];
+		const spin = this.#spin(action, thread);
+		const mark = model ? markArt(model) : undefined;
 		return {
 			header: `${label} · ${threads.indexOf(thread) + 1}/${threads.length}`,
-			icon: model ? markArt(model) : glyphArt(STATE_GLYPH[thread.deck], color),
+			icon: spin === undefined ? (mark ?? glyphArt(STATE_GLYPH[thread.deck], color)) : spinnerArt(color, spin, mark),
 			accent: color,
 			value: thread.title,
 			detail: [statusLine(thread), thread.projectTitle].filter(Boolean).join(" · "),
 			detailColor: color === COLORS.muted ? undefined : color,
-			tone: toneOf(thread.deck),
-			// A running thread's status line ticks every second, which would cut its scroll short.
-			scroll: thread.active ? ["value"] : undefined,
+			tone: toneOf(thread.deck, thread.unseen),
+			moving: spin !== undefined && deck.animator.mode !== "off",
 		};
 	}
 
@@ -95,11 +108,18 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 		if (!threads.includes(thread)) return undefined;
 		const item = (row: DeckThread): StripItem => {
 			const color = STATE_COLOR[row.deck];
-			const tint = toneOf(row.deck) === "neutral" ? undefined : color;
+			const tint = toneOf(row.deck, row.unseen) === "neutral" ? undefined : color;
 			const detail = row === thread ? [statusLine(row), row.projectTitle].filter(Boolean).join(" · ") : undefined;
-			return { key: row.key, label: row.title, art: glyphArt(STATE_GLYPH[row.deck], color === COLORS.muted ? COLORS.text : color), tint, detail };
+			const spin = this.#spin(action, row);
+			const art = spin === undefined ? glyphArt(STATE_GLYPH[row.deck], color === COLORS.muted ? COLORS.text : color) : spinnerArt(color, spin);
+			return { key: row.key, label: row.title, art, tint, detail };
 		};
 		return { heading: t(FILTER_LABEL[filter]), items: threads.map(item), index: threads.indexOf(thread) };
+	}
+
+	/** A running thread's spinner angle; the carousel stays still, since a frame there redraws the whole strip. */
+	#spin(action: Action<ThreadDialSettings>, thread: DeckThread): number | undefined {
+		return thread.deck === "running" && this.styleOf(action) !== "carousel" ? spinAngle(deck.animator.mode, Date.now()) : undefined;
 	}
 
 	protected override rotated(dial: DialAction<ThreadDialSettings>, ticks: number): void {
@@ -124,10 +144,10 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 
 type PowerSettings = DialSettings & { dialControls?: string };
 
-const CONTROL: Record<DialControl, { label: MessageKey; kind: ActionKind; glyph: GlyphName }> = {
-	model: { label: "face.model", kind: "model", glyph: "model" },
-	effort: { label: "face.effort", kind: "effort", glyph: "effort" },
-	permissions: { label: "face.access", kind: "permissions", glyph: "modeSupervised" },
+const CONTROL: Record<DialControl, { label: MessageKey; kind: ActionKind; glyph: GlyphName; review: MessageKey }> = {
+	model: { label: "face.model", kind: "model", glyph: "model", review: "review.model" },
+	effort: { label: "face.effort", kind: "effort", glyph: "effort", review: "review.effort" },
+	permissions: { label: "face.access", kind: "permissions", glyph: "modeSupervised", review: "review.access" },
 };
 
 /** The value a Power dial previews; it resets when the selected thread or the dial's setting changes. */
@@ -178,7 +198,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 			value: shown?.label ?? (context.control === "model" ? thread.model.model : t("strip.default")),
 			detail: !check.available ? check.reason : pending ? t("strip.pressToApply") : this.#idleDetail(context.control, thread),
 			detailColor: pending ? COLORS.attention : undefined,
-			tone: toneOf(thread.deck),
+			tone: toneOf(thread.deck, thread.unseen),
 			ultrathink: context.control === "effort" && (armed || (pending?.kind === "effort" && pending.ultrathink)),
 		};
 	}
@@ -213,6 +233,51 @@ export class ModelDial extends StripDial<PowerSettings> {
 		return toggle ? t("strip.speed", { speed: toggle.label }) : thread.title;
 	}
 
+	/** The classic face as a slider: the setting's stops with the thread's value filled and the previewed one hollow. */
+	protected override slider(action: Action<PowerSettings>): string | undefined {
+		if (disconnectedStrip("", this.machineOf(action))) return undefined;
+		const context = this.#context(action);
+		if (context.thread === undefined || context.state.choices.length === 0) return undefined;
+		const { control, thread, state, pending, check } = context;
+		const shown = pending ?? state.current;
+		const at = (choice: PowerChoice | undefined) => (choice === undefined ? -1 : state.choices.findIndex((candidate) => candidate.key === choice.key));
+		const index = at(shown);
+		const toggle = speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
+		const badges: MarkPainter[] = [shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph)];
+		if (toggle) badges.unshift(glyphArt(toggle.fast ? "speedFilled" : "speed", toggle.fast ? COLORS.accent : COLORS.muted));
+		const ends: [string, string] =
+			control === "effort"
+				? [t("power.quicker"), t("power.deeper")]
+				: control === "permissions"
+					? [t("power.asksFirst"), t("power.handsOff")]
+					: [index >= 0 ? `${index + 1}/${state.choices.length}` : "", shown?.kind === "model" ? shown.model.providerName : ""];
+		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
+		return sliderArt({
+			label: shown?.label ?? thread.model.model,
+			labelColor: pending ? COLORS.attention : fullAccess ? COLORS.attention : undefined,
+			stops: state.choices.length,
+			current: at(state.current),
+			preview: pending ? index : undefined,
+			spectrum: shown?.kind === "effort" && shown.ultrathink,
+			ends,
+			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: COLORS.attention } : undefined,
+			badges,
+			dim: !check.available,
+		});
+	}
+
+	/** What a press or tap on this dial would change: the previewed value, else Speed. */
+	#scope(action: Action<PowerSettings>): string | undefined {
+		const context = this.#context(action);
+		if (context.thread === undefined) return undefined;
+		const toggle = speedToggle(findModel(context.thread.machine.modelConfig, context.thread.model), context.thread.model);
+		return JSON.stringify([context.thread.key, context.control, context.pending?.key ?? "", toggle?.nextLabel ?? ""]);
+	}
+
+	protected override reviewScope(action: Action<PowerSettings>): string | undefined {
+		return this.#scope(action);
+	}
+
 	protected override rotated(dial: DialAction<PowerSettings>, ticks: number): void {
 		const context = this.#context(dial);
 		if (context.thread === undefined) return;
@@ -220,27 +285,60 @@ export class ModelDial extends StripDial<PowerSettings> {
 		context.preview.key = next?.key === context.state.current?.key ? undefined : next?.key;
 	}
 
-	protected override async pressed(dial: DialAction<PowerSettings>): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(dial))) return;
-		const context = this.#context(dial);
-		if (context.thread === undefined) return void (await this.allowed(dial, availability(CONTROL[context.control].kind, { canOperate: false })));
-		if (context.pending === undefined) return this.#toggleSpeed(dial);
-		if (!(await this.allowed(dial, context.check))) return;
-		const { thread, armed, preview } = context;
-		const work = this.#apply(thread, context.pending, armed);
-		if (work === undefined) return void (await this.flash(dial, true, context.pending.label));
-		await this.run(
-			dial,
-			async () => {
-				await work();
-				preview.key = undefined;
-			},
-			context.pending.kind === "model" ? context.pending.model.name : context.pending.label,
-		);
+	protected override pressed(dial: DialAction<PowerSettings>, held: number): Promise<void> {
+		return this.#act(dial, held, this.#reviewed(dial) ?? (this.#context(dial).pending === undefined ? "speed" : "apply"));
 	}
 
 	protected override tapped(dial: DialAction<PowerSettings>): Promise<void> {
-		return this.#toggleSpeed(dial);
+		return this.#act(dial, 0, this.#reviewed(dial) ?? "speed");
+	}
+
+	/** What a showing review was for: the second press, press or tap, confirms that. */
+	#reviewed(dial: DialAction<PowerSettings>): "apply" | "speed" | undefined {
+		const detail = this.reviewed(dial, this.#scope(dial));
+		return detail === "apply" || detail === "speed" ? detail : undefined;
+	}
+
+	/**
+	 * Applies the previewed value or switches Speed, once the Confirm setting allows: a second press confirms what
+	 * the first one reviewed, press or tap.
+	 */
+	async #act(dial: DialAction<PowerSettings>, held: number, wants: "apply" | "speed"): Promise<void> {
+		const machine = this.machineOf(dial);
+		if (await pressWhileDisconnected(machine)) return;
+		const context = this.#context(dial);
+		const { thread, control } = context;
+		if (thread === undefined) return void (await this.allowed(dial, availability(CONTROL[control].kind, { canOperate: false })));
+		const toggle = speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
+		const speedCheck = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
+		const pending = context.pending;
+		if (!(await this.allowed(dial, wants === "apply" ? context.check : speedCheck))) return;
+		const work = wants === "apply" && pending ? this.#apply(thread, pending, context.armed) : undefined;
+		if (wants === "apply" && work === undefined) return void (await this.flash(dial, true, pending?.label ?? ""));
+		const go = await this.guard(dial, {
+			scope: this.#scope(dial)!,
+			detail: wants,
+			held,
+			holdHint: t("result.holdToApply"),
+			card: () =>
+				wants === "apply"
+					? { glyph: CONTROL[control].glyph, verb: t(CONTROL[control].review), target: thread.title, body: pending!.label, footer: t("review.pressToApply") }
+					: { glyph: "speed", verb: t("review.speed"), target: thread.title, body: toggle!.nextLabel, footer: t("review.pressToApply") },
+		});
+		if (go === undefined) return;
+		if (go === "apply" && pending !== undefined && work !== undefined) {
+			const { preview } = context;
+			return this.run(
+				dial,
+				async () => {
+					await work();
+					preview.key = undefined;
+				},
+				pending.kind === "model" ? pending.model.name : pending.label,
+			);
+		}
+		if (toggle === undefined) return void (await this.allowed(dial, speedCheck));
+		await this.run(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)), toggle.nextLabel);
 	}
 
 	#apply(thread: DeckThread, choice: PowerChoice, armed: boolean): (() => Promise<unknown>) | undefined {
@@ -254,15 +352,6 @@ export class ModelDial extends StripDial<PowerSettings> {
 				return change === undefined ? undefined : applyEffort(thread, change, armed);
 			}
 		}
-	}
-
-	async #toggleSpeed(dial: DialAction<PowerSettings>): Promise<void> {
-		const machine = this.machineOf(dial);
-		if (await pressWhileDisconnected(machine)) return;
-		const thread = selectedThread(machine);
-		const toggle = thread && speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
-		if (!(await this.allowed(dial, availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined })))) return;
-		await this.run(dial, () => thread!.machine.setModelSelection(thread!, withOptionValue(thread!.model, toggle!.option.id, toggle!.next)), toggle!.nextLabel);
 	}
 
 	override onWillDisappear(ev: Parameters<StripDial<PowerSettings>["onWillDisappear"]>[0]): void {
@@ -297,7 +386,7 @@ export class PromptDial extends StripDial<PromptListSettings> {
 			accent: check.available ? COLORS.accent : COLORS.muted,
 			value: prompt.text,
 			detail: check.available ? `→ ${thread!.title}` : check.reason,
-			tone: toneOf(thread?.deck),
+			tone: toneOf(thread?.deck, thread?.unseen),
 			ultrathink: ultrathinkArmed(thread),
 		};
 	}
@@ -328,21 +417,52 @@ export class PromptDial extends StripDial<PromptListSettings> {
 		if (prompts.length > 0) this.#index.set(dial.id, (((index + ticks) % prompts.length) + prompts.length) % prompts.length);
 	}
 
-	protected override async pressed(dial: DialAction<PromptListSettings>, heldMs: number): Promise<void> {
+	protected override reviewScope(action: Action<PromptListSettings>): string | undefined {
+		return JSON.stringify([selectedThread(this.machineOf(action))?.key ?? "", this.#current(action).prompt?.text ?? ""]);
+	}
+
+	protected override pressed(dial: DialAction<PromptListSettings>, heldMs: number): Promise<void> {
+		// Under Hold, the hold confirms the send itself, so it can't also start a thread.
+		const startsThread = heldMs >= LONG_PRESS_MS && this.confirmModeOf(dial) !== "hold";
+		return this.#send(dial, heldMs, this.#reviewed(dial) ?? (startsThread ? "new" : "send"));
+	}
+
+	protected override tapped(dial: DialAction<PromptListSettings>): Promise<void> {
+		return this.#send(dial, 0, this.#reviewed(dial) ?? "send");
+	}
+
+	/** The gesture a showing review was for: the second press confirms that, whatever its own. */
+	#reviewed(dial: DialAction<PromptListSettings>): "send" | "new" | undefined {
+		const detail = this.reviewed(dial, this.reviewScope(dial));
+		return detail === "send" || detail === "new" ? detail : undefined;
+	}
+
+	/** Sends the prompt to the selected thread, or starts a thread with it, once the Confirm setting allows. */
+	async #send(dial: DialAction<PromptListSettings>, held: number, wants: "send" | "new"): Promise<void> {
 		const machine = this.machineOf(dial);
 		if (await pressWhileDisconnected(machine)) return;
 		const text = this.#current(dial).prompt?.text;
 		const thread = selectedThread(machine);
-		if (heldMs < LONG_PRESS_MS) return this.#send(dial, thread, text);
-		if (!(await this.allowed(dial, availability("new", { canOperate: launchable(thread, machine), hasPrompt: text !== undefined })))) return;
-		await this.run(dial, () => startThread(thread, machine, text!), t("result.started"));
-	}
-
-	protected override tapped(dial: DialAction<PromptListSettings>): Promise<void> {
-		return this.#send(dial, selectedThread(this.machineOf(dial)), this.#current(dial).prompt?.text);
-	}
-
-	async #send(dial: DialAction<PromptListSettings>, thread: DeckThread | undefined, text: string | undefined): Promise<void> {
+		const check =
+			wants === "new"
+				? availability("new", { canOperate: launchable(thread, machine), hasPrompt: text !== undefined })
+				: availability("send", { thread, canOperate: canOperate(thread), hasPrompt: text !== undefined });
+		if (!(await this.allowed(dial, check))) return;
+		const go = await this.guard(dial, {
+			scope: this.reviewScope(dial)!,
+			detail: wants,
+			held,
+			holdHint: t("result.holdToSend"),
+			card: () => ({
+				glyph: "spark",
+				verb: t(wants === "new" ? "review.newThread" : "review.send"),
+				target: wants === "new" ? thread?.projectTitle || t("datasource.noProject") : thread!.title,
+				body: text,
+				footer: t("review.pressToSend"),
+			}),
+		});
+		if (go === undefined) return;
+		if (go === "new") return this.run(dial, () => startThread(thread, machine, text!), t("result.started"));
 		if (!(await this.allowed(dial, availability("send", { thread, canOperate: canOperate(thread), hasPrompt: text !== undefined })))) return;
 		await this.run(dial, () => sendToThread(thread!, text!, "auto"), t("result.sent"));
 	}
@@ -418,7 +538,7 @@ export class AnswerDial extends StripDial<AnswerSettings> {
 		const approval = thread.deck === "approval";
 		const answering = this.#answering(dial, thread);
 		const waiting: StripContent = { header: t(approval ? "strip.approval" : "strip.question"), icon: glyphArt(approval ? "shield" : "question", COLORS.attention), accent: COLORS.attention, value: thread.title, tone: "attention" };
-		if (answering === undefined) return { ...waiting, detail: t("strip.loading") };
+		if (answering === undefined) return { ...waiting, loading: true };
 		const { request, step, picks } = answering;
 		const canAct = canOperate(thread);
 		switch (request.type) {

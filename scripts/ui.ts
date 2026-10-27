@@ -125,6 +125,19 @@ const style = `
 			}
 		</style>`;
 
+const confirmOptions = `
+						<option value="review"${text("inspector.confirm.review")}</option>
+						<option value="hold"${text("inspector.confirm.hold")}</option>
+						<option value="off"${text("inspector.confirm.off")}</option>`;
+
+/** An action's own Confirm before sending, over the global one in Advanced. */
+const confirmField = `
+			<sdpi-item ${attr("label", "inspector.field.confirm")}>
+				<sdpi-select setting="confirmSend" default="">
+					<option value=""${text("inspector.background.global")}</option>${confirmOptions.replace(/\t\t\t\t\t\t</g, "\t\t\t\t\t<")}
+				</sdpi-select>
+			</sdpi-item>`;
+
 const card = `
 			<section class="t3" id="t3" aria-live="polite">
 				<p class="eyebrow">T3 Code</p>
@@ -151,7 +164,7 @@ const card = `
 				<sdpi-item ${attr("label", "inspector.advanced.dialStrips")}>
 					<sdpi-select setting="stripBackground" global default="t3">
 						<option value="t3"${text("inspector.background.t3")}</option>
-						<option value="gradient"${text("inspector.background.gradient")}</option>
+						<option value="flow"${text("inspector.background.flow")}</option>
 						<option value="state"${text("inspector.background.state")}</option>
 						<option value="custom"${text("inspector.background.custom")}</option>
 					</sdpi-select>
@@ -164,7 +177,8 @@ const card = `
 				</sdpi-item>
 				<p class="hint"${text("inspector.advanced.stateHint")}</p>
 				<sdpi-item ${attr("label", "inspector.advanced.stripStyle")}>
-					<sdpi-select setting="stripStyle" global default="classic">
+					<sdpi-select setting="stripStyle" global default="">
+						<option value=""${text("inspector.style.perDial")}</option>
 						<option value="classic"${text("inspector.style.classic")}</option>
 						<option value="list"${text("inspector.style.list")}</option>
 						<option value="carousel"${text("inspector.style.carousel")}</option>
@@ -178,6 +192,19 @@ const card = `
 					</sdpi-select>
 				</sdpi-item>
 				<p class="hint"${text("inspector.advanced.styleHint")}</p>
+				<sdpi-item ${attr("label", "inspector.advanced.motion")}>
+					<sdpi-select setting="motion" global default="full">
+						<option value="full"${text("inspector.motion.full")}</option>
+						<option value="reduced"${text("inspector.motion.reduced")}</option>
+						<option value="off"${text("inspector.motion.off")}</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.advanced.motionHint")}</p>
+				<sdpi-item ${attr("label", "inspector.advanced.confirm")}>
+					<sdpi-select setting="confirmSend" global default="review">${confirmOptions}
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.advanced.confirmHint")}</p>
 			</details>`;
 
 /** Shows the element `id` only while `setting` (a global one with `global`) passes `test`, as it is edited and as settings arrive. */
@@ -196,7 +223,7 @@ const dialAppearance = `
 				<sdpi-select setting="background" default="">
 					<option value=""${text("inspector.background.global")}</option>
 					<option value="t3"${text("inspector.background.t3")}</option>
-					<option value="gradient"${text("inspector.background.gradient")}</option>
+					<option value="flow"${text("inspector.background.flow")}</option>
 					<option value="state"${text("inspector.background.state")}</option>
 					<option value="custom"${text("inspector.background.custom")}</option>
 				</sdpi-select>
@@ -468,7 +495,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.prompt")}>
 				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.send.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint"${text("inspector.send.hint")}</p>`,
+			<p class="hint"${text("inspector.send.hint")}</p>${confirmField}`,
 	),
 	"steer.html": page(
 		"Steer",
@@ -479,7 +506,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.prompt")}>
 				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.steer.promptPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint"${text("inspector.steer.hint")}</p>`,
+			<p class="hint"${text("inspector.steer.hint")}</p>${confirmField}`,
 	),
 	"quick.html": page(
 		"Quick Prompt",
@@ -500,7 +527,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.quick.custom")} id="custom" hidden>
 				<sdpi-textarea setting="prompt" rows="4" ${attr("placeholder", "inspector.quick.customPlaceholder")}></sdpi-textarea>
 			</sdpi-item>
-			<p class="hint"${text("inspector.quick.hint")}</p>`,
+			<p class="hint"${text("inspector.quick.hint")}</p>${confirmField}`,
 		showWhen("template", "custom", `value === "custom"`),
 	),
 	"new.html": page(
@@ -531,7 +558,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.model")}>
 				<sdpi-select setting="model" datasource="getModels" hot-reload ${attr("loading", "inspector.loading.models")} default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint"${text("inspector.model.hint")}</p>`,
+			<p class="hint"${text("inspector.model.hint")}</p>${confirmField}`,
 	),
 	"effort.html": page(
 		"Effort",
@@ -539,7 +566,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.field.effort")}>
 				<sdpi-select setting="effort" datasource="getEfforts" hot-reload ${attr("loading", "inspector.loading.efforts")} default=""></sdpi-select>
 			</sdpi-item>
-			<p class="hint"${text("inspector.effort.hint")}</p>`,
+			<p class="hint"${text("inspector.effort.hint")}</p>${confirmField}`,
 	),
 	"permissions.html": page(
 		"Permissions",
@@ -568,6 +595,7 @@ const pages: Record<string, string> = {
 			</sdpi-item>
 			<p class="hint"${text("inspector.approve.hint")}</p>`,
 	),
+	"speed.html": page("Speed", confirmField),
 	"organize.html": page(
 		"Organize",
 		`
@@ -594,7 +622,7 @@ const pages: Record<string, string> = {
 			<sdpi-item ${attr("label", "inspector.prompts.templates")}>
 				<sdpi-checkbox setting="templates" default="true" ${attr("label", "inspector.prompts.templatesLabel")}></sdpi-checkbox>
 			</sdpi-item>
-			<p class="hint"${text("inspector.prompts.hint")}</p>${dialAppearance}`,
+			<p class="hint"${text("inspector.prompts.hint")}</p>${confirmField}${dialAppearance}`,
 		dialAppearanceScript,
 	),
 	"threads-dial.html": page(
@@ -627,7 +655,7 @@ const pages: Record<string, string> = {
 					<option value="permissions"${text("inspector.field.access")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint"${text("inspector.power.hint")}</p>${dialAppearance}`,
+			<p class="hint"${text("inspector.power.hint")}</p>${confirmField}${dialAppearance}`,
 		dialAppearanceScript,
 	),
 };

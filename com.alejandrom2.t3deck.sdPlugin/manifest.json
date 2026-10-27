@@ -95,7 +95,7 @@
 			"UUID": "com.alejandrom2.t3deck.speed",
 			"Icon": "imgs/actions/speed/icon",
 			"Tooltip": "Toggles fast mode on the selected thread where its model offers it.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"PropertyInspectorPath": "ui/speed.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/speed/key", "ShowTitle": false }]
 		},
