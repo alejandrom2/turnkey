@@ -177,10 +177,12 @@ npx streamdeck pack com.alejandrom2.t3deck.sdPlugin
 
 The visual style follows Stream Deck's native agent plugins: flat near-black keys, one white line glyph, a single status accent, and a gradient touch strip. The glyphs and art are drawn for this plugin.
 
-## Translations
+## Languages
 
-Every string the plugin shows lives in `com.alejandrom2.t3deck.sdPlugin/en.json`: the top-level `Name`, `Description`, `Category` and per-action entries translate the manifest for the Stream Deck app, and `Localization` holds everything drawn on keys, strips and settings pages. Stream Deck supports `de`, `en`, `es`, `fr`, `ja`, `ko`, `zh_CN` and `zh_TW`.
+T3 Deck shows keys, strips, settings pages and its action list in Stream Deck's language: English, German, Spanish, French, Japanese, Korean, Simplified Chinese and Traditional Chinese. Labels from T3 Code itself, such as **Settings → Sharing & access**, stay in English because T3 Code is in English. Thread titles, project and branch names, models, providers and T3 Code's own messages show as T3 Code sends them, and prompts the deck sends to agents stay in English.
 
-To add a language, copy `en.json` to `de.json` (for example) next to it and translate the values, leaving keys and `{placeholders}` as they are. Keys you leave out fall back to English one by one. Thread titles, project and branch names, models, providers and T3 Code's own messages always show as T3 Code sends them, and prompts the deck sends to agents stay in English.
+The translations are machine-translated. Corrections are welcome: open an issue or a pull request against the language's file.
 
-`npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and other language files only use known keys with the same placeholders. After changing settings-page copy, run `node scripts/ui.ts`.
+Every string lives in `com.alejandrom2.t3deck.sdPlugin/en.json`, with one file per language beside it (`de.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh_CN.json`, `zh_TW.json`). The top-level `Name`, `Description`, `Category` and per-action entries translate the manifest for the Stream Deck app, and `Localization` holds everything drawn on keys, strips and settings pages. Keep keys and `{placeholders}` as they are.
+
+`npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and every language file has exactly English's keys, the same placeholders per key and no empty strings. After changing settings-page copy, run `node scripts/ui.ts`.
