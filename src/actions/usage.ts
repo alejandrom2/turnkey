@@ -12,7 +12,7 @@ import type { StripList } from "../core/styles.js";
 import type { Machine } from "../core/t3/machine.js";
 import { DIAGNOSTICS_SCOPE } from "../core/t3/pairing.js";
 import { type UsagePeriod, type UsageReader, UsageStore, usagePeriod } from "../core/usage/store.js";
-import { periodLabel, type UsageItem, usageDriver, usageItems } from "../core/usage/usageView.js";
+import { periodLabel, type UsageItem, usageDriver, usageItems, usageProvider } from "../core/usage/usageView.js";
 import { deck } from "../deck.js";
 import { connectionFace, DeckAction, LONG_PRESS_MS, pressWhileDisconnected } from "./base.js";
 import { connectionOf } from "./needs.js";
@@ -136,7 +136,7 @@ const itemMark = (item: UsageItem): MarkPainter => {
 /** Who has to update when a machine's usage contract is one the deck can't merge. */
 const MISMATCH: Record<"serverBehind" | "clientBehind", MessageKey> = { serverBehind: "usage.updateT3", clientBehind: "usage.updateDeck" };
 
-type UsageSettings = { machine?: string; period?: string };
+type UsageSettings = { machine?: string; period?: string; provider?: string };
 
 /** A period's API-estimate cost, tokens and sessions, on the key's machine or merged across every machine. */
 @action({ UUID: `${ID}.usage` })
@@ -155,8 +155,8 @@ export class UsageKey extends DeckAction<UsageSettings> {
 			if (loading || error === undefined) return void (await this.setImage(action, renderSkeletonKey()));
 			return void (await this.setImage(action, renderInfoKey({ glyph: "usage", title: label, detail: failureLabel(error), available: false })));
 		}
-		const [total] = usageItems(merged);
-		await this.setImage(action, renderGaugeKey({ label, value: total!.cost, lines: [total!.tokens, total!.detail], dim: loading }));
+		const [total] = usageItems(merged, usageProvider(this.settingsOf(action).provider));
+		await this.setImage(action, renderGaugeKey({ mark: total!.provider && itemMark(total!), label, value: total!.cost, lines: [total!.tokens, total!.detail], dim: loading }));
 	}
 
 	override onWillAppear(ev: WillAppearEvent<UsageSettings>): void {
@@ -189,7 +189,7 @@ export class UsageKey extends DeckAction<UsageSettings> {
 	}
 }
 
-type UsageDialSettings = DialSettings & { period?: string };
+type UsageDialSettings = DialSettings & { period?: string; provider?: string };
 
 /**
  * Turns through a period's figures: the total, then each model by cost with its provider's mark, tokens, cache hit
@@ -203,7 +203,7 @@ export class UsageDial extends StripDial<UsageDialSettings> {
 		const url = this.machineOf(action);
 		const period = usagePeriod(this.settingsOf(action).period);
 		const view = store.view(readers(url), period);
-		const items = view.merged === undefined ? [] : usageItems(view.merged);
+		const items = view.merged === undefined ? [] : usageItems(view.merged, usageProvider(this.settingsOf(action).provider));
 		const index = Math.max(0, items.findIndex((item) => item.key === this.#selected.get(action.id)));
 		return { url, period, ...view, items, index, item: items[index] };
 	}
@@ -227,7 +227,7 @@ export class UsageDial extends StripDial<UsageDialSettings> {
 		return gaugeStripArt({
 			mark: itemMark(item),
 			// The total names its period; each model's bar is its share of it.
-			label: item.provider === undefined ? periodLabel(period) : item.label,
+			label: item.key === "total" ? periodLabel(period) : item.label,
 			value: item.cost,
 			lines: [item.tokens, item.detail],
 			...(item.share === undefined ? {} : { fill: item.share }),

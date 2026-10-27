@@ -119,6 +119,19 @@
 					<option value="90" data-i18n="inspector.usage.quarter">90 days</option>
 				</sdpi-select>
 			</sdpi-item>
+			<sdpi-item label="Provider" data-i18n-label="inspector.usage.provider">
+				<sdpi-select setting="provider" default="">
+					<option value="" data-i18n="inspector.usage.allProviders">All providers</option>
+					<option value="claude">Claude</option>
+					<option value="codex">Codex</option>
+					<option value="cursor">Cursor</option>
+					<option value="grok">Grok</option>
+					<option value="opencode">OpenCode</option>
+					<option value="antigravity">Antigravity</option>
+					<option value="pi">Pi</option>
+					<option value="muse">Muse</option>
+				</sdpi-select>
+			</sdpi-item>
 			<p class="hint" data-i18n="inspector.usage.hint">T3 Code's API estimate for the period, across the chosen machines; a folder two machines share counts once. Tap reads again, hold also reloads model prices. Needs usage access.</p>
 			<details class="group needs" id="needs" hidden>
 				<summary><span data-i18n="inspector.card.needsTitle">What this action needs</span><span class="unmet" id="needs-unmet"></span></summary>
