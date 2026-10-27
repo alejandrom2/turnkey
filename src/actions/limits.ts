@@ -37,7 +37,7 @@ import { connectionFace, DeckAction, pressWhileDisconnected } from "./base.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("limits");
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));

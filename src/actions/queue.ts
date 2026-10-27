@@ -12,7 +12,7 @@ import { deck } from "../deck.js";
 import { canOperate, LONG_PRESS_MS, openThread, pressWhileDisconnected, queueOf, selectedThread } from "./base.js";
 import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
 
-const ID = "com.alejandrom2.t3deck";
+const ID = "com.alejandrom2.turnkey";
 
 /**
  * The selected thread's queued messages. Rotate picks one; press sends it now (steering it into the running turn,

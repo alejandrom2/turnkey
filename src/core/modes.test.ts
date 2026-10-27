@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { defaultMode, MERGED, modeOf } from "./modes.js";
 import { QUICK_PROMPTS } from "./prompts.js";
 
-const id = (suffix: string) => `com.alejandrom2.t3deck.${suffix}`;
+const id = (suffix: string) => `com.alejandrom2.turnkey.${suffix}`;
 
 describe("modeOf", () => {
 	it("gives an older single-purpose key its own mode when it has none saved", () => {

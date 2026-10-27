@@ -7,7 +7,7 @@ import path from "node:path";
 import url from "node:url";
 
 const isWatching = !!process.env.ROLLUP_WATCH;
-const sdPlugin = "com.alejandrom2.t3deck.sdPlugin";
+const sdPlugin = "com.alejandrom2.turnkey.sdPlugin";
 
 /**
  * @type {import('rollup').RollupOptions}
