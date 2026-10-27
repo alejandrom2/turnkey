@@ -656,17 +656,25 @@ const pages: Record<string, string> = {
 					<option value="mark_unread"${text("inspector.organize.markUnread")}</option>
 				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.organize.snoozeMinutes")}>
-				<sdpi-textfield setting="snoozeMinutes" pattern="\\d+" placeholder="60"></sdpi-textfield>
+			<sdpi-item ${attr("label", "inspector.organize.snoozeFor")} id="snooze-for">
+				<sdpi-select setting="snoozeMinutes" default="60">
+					<option value="15"${text("inspector.organize.minutes15")}</option>
+					<option value="30"${text("inspector.organize.minutes30")}</option>
+					<option value="60"${text("inspector.organize.hour1")}</option>
+					<option value="120"${text("inspector.organize.hours2")}</option>
+					<option value="240"${text("inspector.organize.hours4")}</option>
+					<option value="480"${text("inspector.organize.hours8")}</option>
+					<option value="1440"${text("inspector.organize.day1")}</option>
+				</sdpi-select>
 			</sdpi-item>
-			<sdpi-item ${attr("label", "inspector.organize.confirmSettle")} id="confirm-settle">
-				<sdpi-select setting="confirmSettle" default="review">
-					<option value="review"${text("inspector.organize.settleReview")}</option>
-					<option value="hold"${text("inspector.organize.settleHold")}</option>
-					<option value="off"${text("inspector.organize.settleOff")}</option>
+			<sdpi-item ${attr("label", "inspector.organize.confirm")} id="confirm-first">
+				<sdpi-select setting="confirm" default="review">
+					<option value="review"${text("inspector.organize.confirmReview")}</option>
+					<option value="hold"${text("inspector.organize.confirmHold")}</option>
+					<option value="off"${text("inspector.organize.confirmOff")}</option>
 				</sdpi-select>
 			</sdpi-item>`,
-		showWhen("organize", "confirm-settle", `value === "" || value === "settle"`),
+		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`),
 	),
 	"prompts.html": page(
 		"Prompts Dial",
