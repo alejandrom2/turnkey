@@ -254,6 +254,8 @@ export type ShellRow = {
 	updatedAt: number;
 	/** When T3 Code last opened this thread, in server ms; the board follows the newest one as the selection. */
 	openedAt: number | undefined;
+	/** Subagents the thread's turn started that are still out (`pendingBackgroundTasks`), as T3 Code's banner counts them. */
+	subagents: number;
 	/** Changes whenever the thread's runs move: the shell carries no queue, so the deck reads it again then. */
 	runStamp: string;
 	/**
@@ -349,6 +351,7 @@ export function shellRows(state: ShellState, capabilities: ThreadCapabilities, n
 			parentThreadId: thread.lineage?.parentThreadId ?? null,
 			updatedAt: time(thread.updatedAt),
 			openedAt: openedAt(thread),
+			subagents: (thread.pendingBackgroundTasks ?? []).filter((task) => task.kind === "subagent").length,
 			runStamp: [thread.status, thread.latestRunId, thread.activeRunId, thread.activityRunStatus ?? ""].join("|"),
 			mayQueue: thread.status === "queued" || thread.status === "interrupted",
 		});

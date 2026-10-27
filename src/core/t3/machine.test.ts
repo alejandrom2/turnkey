@@ -575,6 +575,22 @@ describe("Machine details", () => {
 	});
 });
 
+describe("Machine workflows", () => {
+	it("stops a workflow, wording T3 Code's refusal by its reason", async () => {
+		const h = setup();
+		const socket = await connect(h);
+		const stopping = h.machine.stopWorkflow(row(h.machine), "node-1");
+		await flush();
+		expect(socket.request("orchestration.stopWorkflow").payload).toEqual({ threadId: "thr_123", subagentId: "node-1" });
+		socket.receive({
+			_tag: "Exit",
+			requestId: socket.request("orchestration.stopWorkflow").id,
+			exit: { _tag: "Failure", cause: [{ _tag: "Fail", error: { _tag: "OrchestrationV2StopWorkflowError", threadId: "thr_123", subagentId: "node-1", reason: "not-running" } }] },
+		});
+		await expect(stopping).rejects.toMatchObject({ reason: "No longer running" });
+	});
+});
+
 describe("Machine skills", () => {
 	const skill = (name: string) => ({ name, path: `/skills/${name}`, enabled: true });
 	const withSkills = { ...CONFIG, providers: [{ ...CONFIG.providers[0], skills: [skill("global")] }] };

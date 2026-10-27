@@ -73,6 +73,15 @@
 			"States": [{ "Image": "imgs/actions/stop/key", "ShowTitle": false }]
 		},
 		{
+			"Name": "Stop Workflow",
+			"UUID": "com.alejandrom2.t3deck.workflow.stop",
+			"Icon": "imgs/actions/workflow-stop/icon",
+			"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop.",
+			"PropertyInspectorPath": "ui/workflow.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/workflow-stop/key" }]
+		},
+		{
 			"Name": "Model",
 			"UUID": "com.alejandrom2.t3deck.model",
 			"Icon": "imgs/actions/model/icon",
