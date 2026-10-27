@@ -3,9 +3,9 @@
  * A line wider than its slot is drawn as a picture (`valueArt`/`detailArt`) so the marquee can scroll it.
  */
 import type { MarqueeLine } from "./marquee.js";
-import { BLANK_ART, lineArt, type MarkPainter, rollArt, type StripAppearance, stripCanvas, stripMarkIcon, type StripTone, svgDataUrl, textWidth, wrapText } from "./render.js";
+import { BLANK_ART, COLORS, lineArt, type MarkPainter, rollArt, skeletonRect, type StripAppearance, stripCanvas, stripMarkIcon, type StripTone, svgImage, textWidth, wrapText } from "./render.js";
 
-export type StripLine = "value" | "detail";
+type StripLine = "value" | "detail";
 
 /** How text too long for its slot moves: sideways, rolled up line by line, or not at all (it fades at the edge). */
 export type TextScroll = "horizontal" | "vertical" | "off";
@@ -34,7 +34,7 @@ export type TextSlot = { width: number; height: number; size: number; weight: nu
 
 export const STRIP_LINES: Record<StripLine, TextSlot> = {
 	value: { width: 136, height: 22, size: 16, weight: 650, color: "#FFFFFF" },
-	detail: { width: 136, height: 23, size: 14, weight: 600, color: "#B8BCC6" },
+	detail: { width: 136, height: 23, size: 14, weight: 600, color: COLORS.secondary },
 };
 
 /** Room left at the end of a scroll, and slack for the width estimate against the native font. */
@@ -93,7 +93,7 @@ export function twoLines(text: string, top = 0): [string, string] {
 	}
 }
 
-export type StripOptions = {
+type StripOptions = {
 	appearance: StripAppearance;
 	/** The scrolling line's offset, in px. */
 	offset?: number;
@@ -105,10 +105,8 @@ export type StripOptions = {
 };
 
 /** A static placeholder bar `width` px long in a `slot`-sized picture: data on its way. */
-export const skeletonBar = (slot: Pick<TextSlot, "width" | "height">, width: number, x = 0): string =>
-	svgDataUrl(
-		`<svg xmlns="http://www.w3.org/2000/svg" width="${slot.width}" height="${slot.height}" viewBox="0 0 ${slot.width} ${slot.height}"><rect x="${x}" y="${(slot.height - 12) / 2}" width="${width}" height="12" rx="6" fill="#FFFFFF" fill-opacity=".12"/></svg>`,
-	);
+const skeletonBar = (slot: Pick<TextSlot, "width" | "height">, width: number, x = 0): string =>
+	svgImage(slot.width, slot.height, skeletonRect(x, (slot.height - 12) / 2, width, 12));
 
 export function stripFeedback(content: StripContent, options: StripOptions): Record<string, string | { value: string; color: string }> {
 	const base = {

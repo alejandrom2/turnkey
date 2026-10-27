@@ -24,4 +24,9 @@ describe("sliderArt", () => {
 		expect(out).toContain(">Press to apply<");
 		expect(out).not.toContain(">Quicker<");
 	});
+
+	it("draws one pill for a single choice", () => {
+		const out = svg(sliderArt({ label: "Opus", stops: 1, current: 0, pages: true, ends: ["", ""] }));
+		expect(out.match(/height="12" rx="6"/g)).toHaveLength(1);
+	});
 });
