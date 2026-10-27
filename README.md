@@ -44,7 +44,13 @@ Most actions act on the **selected thread**: the one you opened last in T3 Code,
 
 A key that can't act right now is dimmed, and pressing it says why. After a press, the key shows what happened for a moment. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Models and favorites are read again whenever a key's settings open.
 
-On the dials, text too long for the strip scrolls once the dial has rested for a second, twice, then stops; touch and hold the strip to read it across both lines. Strip backgrounds follow **Advanced → Dial strips** in any action's settings: T3 Code (default), a dark blue-to-violet gradient, the thread's state (green done, red failed, amber needs you) or a colour of your own, with or without the coloured state line. Each dial can override it.
+Each dial's strip has a style, set under **Advanced → Strip style** in any action's settings and overridable per dial:
+
+- **Classic** (default): an icon, the value and a detail line.
+- **List**: a wheel of the dial's items (threads, models, efforts or access modes, prompts, answers). The heading shows the dial and where you are (`3/12`), the selected item is bold with its glyph between the previous and the next ones, and the last row says what pressing does or why the dial can't act.
+- **Carousel**: the selected item as a tile between its dimmed neighbors, with its title below. Turning slides to the next tile.
+
+Text too long for its line moves once the dial has rested for a second, twice, then stops. **Long text** picks how: scroll sideways (default), roll up line by line, or don't scroll (it fades at the edge). Touch and hold the strip to read the full text, including what the list and carousel leave out; turn the dial to scroll it, and press, touch or wait five seconds to close it. Strip backgrounds follow **Advanced → Dial strips** in any action's settings: T3 Code (default), a dark blue-to-violet gradient, the thread's state (green done, red failed, amber needs you) or a colour of your own, with or without the coloured state line. Each dial can override it.
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 

@@ -1,36 +1,53 @@
-import type { Action, DialAction, DialDownEvent, DialRotateEvent, DialUpEvent, FeedbackPayload, TouchTapEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import type { Action, DialAction, DialDownEvent, DialRotateEvent, DialUpEvent, FeedbackPayload, TouchTapEvent, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { Marquee } from "../core/marquee.js";
 import type { CatalogModel } from "../core/models.js";
-import { powerIconUrl } from "../core/power.js";
-import { COLORS, resolveAppearance, stripIcon } from "../core/render.js";
-import { scrollingLine, type StripContent, stripFeedback } from "../core/strip.js";
+import { powerArt } from "../core/power.js";
+import { COLORS, glyphArt, type MarkPainter, resolveAppearance } from "../core/render.js";
+import { Slides } from "../core/slides.js";
+import { readingLength, scrollingLine, type StripContent, stripFeedback } from "../core/strip.js";
+import {
+	carouselFeedback,
+	listFeedback,
+	listFromContent,
+	listReading,
+	READING,
+	resolveStripStyle,
+	scrollReading,
+	STRIP_LAYOUTS,
+	type StripList,
+	type StripStyle,
+	styleFlash,
+	styleLine,
+} from "../core/styles.js";
 import { deck } from "../deck.js";
 import { connectionProblem, DeckAction } from "./base.js";
 
-/** Every dial's appearance override: "" follows the global setting. */
-export type DialSettings = { machine?: string; background?: string; backgroundColor?: string };
+/** Every dial's appearance overrides: "" follows the global setting. */
+export type DialSettings = { machine?: string; background?: string; backgroundColor?: string; stripStyle?: string; textScroll?: string };
 
-/** How long a long touch shows a line's full text. */
-export const EXPAND_MS = 4_000;
+/** How long the reading view a long touch opens stays without a turn. */
+export const READING_IDLE_MS = 5_000;
 
 const painters = new Map<string, () => void>();
-const marquee = new Marquee((owner) => painters.get(owner)?.());
+const repaint = (owner: string) => painters.get(owner)?.();
+const marquee = new Marquee(repaint);
+const slides = new Slides(repaint);
 
-/** A model's provider mark in the strip's icon slot, as the Model key draws it. */
-export const markIcon = (model: CatalogModel): string => powerIconUrl({ kind: "mark", model }, { acpIcons: deck.acpIcons });
+/** A model's provider mark, as the Model key draws it. */
+export const markArt = (model: CatalogModel): MarkPainter => powerArt({ kind: "mark", model }, { acpIcons: deck.acpIcons });
 
 /** The strip shown instead of a dial's content while its machine is not usable. */
 export function disconnectedStrip(header: string, machine: string | undefined): StripContent | undefined {
-	const muted = (value: string, detail: string): StripContent => ({ header, icon: stripIcon("plug", COLORS.muted), accent: COLORS.muted, value, detail });
+	const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("plug", COLORS.muted), accent: COLORS.muted, value, detail });
 	switch (connectionProblem(machine)) {
 		case "missing":
 			return muted("Machine removed", "Pick another in settings");
 		case "none":
 			return muted("T3 Code not found", "Open it, then press");
 		case "pair":
-			return { header, icon: stripIcon("key", COLORS.attention), accent: COLORS.attention, value: "Pair T3 Deck", detail: "Paste a pair link in settings", tone: "attention" };
+			return { header, icon: glyphArt("key", COLORS.attention), accent: COLORS.attention, value: "Pair T3 Deck", detail: "Paste a pair link in settings", tone: "attention" };
 		case "offline":
 			return muted("Connecting…", "Press to retry");
 		default:
@@ -38,14 +55,26 @@ export function disconnectedStrip(header: string, machine: string | undefined): 
 	}
 }
 
+/** A long touch's full text: the Classic layout keeps the text and the wrapped line it starts at, the others wrapped lines. */
+type Reading = { text?: string; lines?: string[]; top: number; timer?: ReturnType<typeof setTimeout> };
+
 /**
- * A dial drawn on `layouts/strip.json`. Subclasses describe the face; this draws it in the dial's appearance,
- * scrolls an overflowing line once the dial rests, and shows a line in full on a long touch.
+ * A dial on the touch strip, in the style its settings pick: the Classic layout (`layouts/strip.json`), a list wheel or a
+ * carousel. Subclasses describe the face, and the items to browse for the other styles; this draws it in the dial's
+ * appearance, scrolls an overflowing line once the dial rests, and shows the full text on a long touch, which turning
+ * then scrolls.
  */
 export abstract class StripDial<T extends DialSettings & JsonObject> extends DeckAction<T> {
-	readonly #expanded = new Map<string, ReturnType<typeof setTimeout>>();
+	readonly #reading = new Map<string, Reading>();
+	/** The layout set on each dial; none means the manifest's, Classic. */
+	readonly #layouts = new Map<string, StripStyle>();
 
 	protected abstract face(action: Action<T>): StripContent;
+
+	/** What the list and carousel turn through; undefined shows the face as one item. */
+	protected list(_action: Action<T>): StripList | undefined {
+		return undefined;
+	}
 
 	protected rotated(_action: DialAction<T>, _ticks: number): void | Promise<void> {}
 
@@ -57,26 +86,59 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		return resolveAppearance(deck.appearance, this.settingsOf(action));
 	}
 
+	#style(action: Action<T>) {
+		return resolveStripStyle(deck.appearance, this.settingsOf(action));
+	}
+
 	protected override async paint(action: Action<T>): Promise<void> {
 		if (!action.isDial()) return;
 		painters.set(action.id, () => void this.paint(action));
+		const { style, scroll } = this.#style(action);
+		if ((this.#layouts.get(action.id) ?? "classic") !== style) {
+			this.#layouts.set(action.id, style);
+			this.#close(action.id, false);
+			slides.stop(action.id);
+			marquee.stop(action.id, false);
+			await action.setFeedbackLayout(STRIP_LAYOUTS[style]);
+			this.forgetSent(action.id);
+		}
+		const appearance = this.#appearance(action);
 		const content = this.face(action);
-		const line = scrollingLine(content);
-		const expanded = this.#expanded.has(action.id) && line !== undefined;
-		const offset = marquee.offset(action.id, expanded ? undefined : line);
-		await this.setFeedback(action, stripFeedback(content, { appearance: this.#appearance(action), offset, full: expanded ? line.text : undefined }));
+		const reading = this.#reading.get(action.id);
+		if (style === "classic") {
+			const line = scrollingLine(content, scroll);
+			const offset = marquee.offset(action.id, reading !== undefined || scroll === "off" ? undefined : line);
+			return this.setFeedback(action, stripFeedback(content, { appearance, scroll, offset, full: reading?.text, top: reading?.top }));
+		}
+		const list = this.list(action) ?? listFromContent(content);
+		const target = list.items[list.index];
+		const position =
+			style === "carousel" && target !== undefined ? slides.position(action.id, { index: list.index, key: target.key, count: list.items.length, wrap: list.wrap }) : list.index;
+		const line = styleLine(style, list, scroll, position);
+		const offset = marquee.offset(action.id, reading !== undefined || scroll === "off" ? undefined : line);
+		const options = { appearance, scroll, offset, position, reading: reading?.lines && { lines: reading.lines, top: reading.top } };
+		await this.setFeedback(action, style === "list" ? listFeedback(content, list, options) : carouselFeedback(content, list, options));
 	}
 
 	protected override flashFeedback(action: Action<T>, ok: boolean, label: string): FeedbackPayload {
 		marquee.stop(action.id, false);
+		const style = this.#layouts.get(action.id) ?? "classic";
+		if (style !== "classic") return styleFlash(style, ok, label, this.#appearance(action));
 		const color = ok ? COLORS.done : COLORS.error;
-		const content: StripContent = { header: ok ? "Done" : "Not now", icon: stripIcon(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
+		const content: StripContent = { header: ok ? "Done" : "Not now", icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
 		return stripFeedback(content, { appearance: this.#appearance(action), full: label });
 	}
 
 	override async onDialRotate(ev: DialRotateEvent<T>): Promise<void> {
-		this.#collapse(ev.action.id);
+		const reading = this.#reading.get(ev.action.id);
+		if (reading !== undefined) {
+			const [count, visible] = reading.lines ? [reading.lines.length, READING.visible] : [readingLength(reading.text ?? ""), 2];
+			reading.top = scrollReading(reading.top, ev.payload.ticks, count, visible);
+			this.#keepReading(ev.action, reading);
+			return this.paint(ev.action);
+		}
 		marquee.interact(ev.action.id);
+		slides.turn(ev.action.id);
 		await this.rotated(ev.action, ev.payload.ticks);
 		await this.paint(ev.action);
 	}
@@ -86,47 +148,72 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		this.pressStarted(ev.action.id);
 	}
 
+	/** A press or tap while the reading view is open only closes it, since turning there scrolls rather than picks. */
 	override async onDialUp(ev: DialUpEvent<T>): Promise<void> {
 		const held = this.heldFor(ev.action.id);
-		this.#collapse(ev.action.id);
 		marquee.interact(ev.action.id);
+		if (this.#close(ev.action.id)) return;
 		await this.pressed(ev.action, held);
 	}
 
 	override async onTouchTap(ev: TouchTapEvent<T>): Promise<void> {
 		marquee.interact(ev.action.id);
-		if (ev.payload.hold) return this.#expand(ev.action);
-		this.#collapse(ev.action.id);
+		if (ev.payload.hold) return this.#open(ev.action);
+		if (this.#close(ev.action.id)) return;
 		await this.tapped(ev.action);
 	}
 
+	override onWillAppear(ev: WillAppearEvent<T>): void {
+		this.#layouts.delete(ev.action.id);
+		super.onWillAppear(ev);
+	}
+
 	override onWillDisappear(ev: WillDisappearEvent<T>): void {
-		this.#collapse(ev.action.id, false);
+		this.#close(ev.action.id, false);
 		marquee.stop(ev.action.id, false);
+		slides.stop(ev.action.id);
+		this.#layouts.delete(ev.action.id);
 		painters.delete(ev.action.id);
 		super.onWillDisappear(ev);
 	}
 
-	/** Shows the overflowing line in full across both lines for a few seconds. */
-	async #expand(action: DialAction<T>): Promise<void> {
-		if (scrollingLine(this.face(action)) === undefined) return;
+	/** Opens the reading view: the overflowing line in the Classic layout, the selected item's label and details otherwise. */
+	async #open(action: DialAction<T>): Promise<void> {
+		const { style } = this.#style(action);
+		const content = this.face(action);
+		let reading: Reading;
+		if (style === "classic") {
+			const line = scrollingLine(content);
+			if (line === undefined) return;
+			reading = { text: line.text, top: 0 };
+		} else {
+			const lines = listReading(this.list(action) ?? listFromContent(content));
+			if (lines.length < 2) return;
+			reading = { lines, top: 0 };
+		}
 		marquee.stop(action.id, false);
-		clearTimeout(this.#expanded.get(action.id));
-		this.#expanded.set(
-			action.id,
-			setTimeout(() => {
-				this.#expanded.delete(action.id);
-				void this.paint(action);
-			}, EXPAND_MS),
-		);
+		clearTimeout(this.#reading.get(action.id)?.timer);
+		this.#reading.set(action.id, reading);
+		this.#keepReading(action, reading);
 		await this.paint(action);
 	}
 
-	#collapse(id: string, repaint = true): void {
-		const timer = this.#expanded.get(id);
-		if (timer === undefined) return;
-		clearTimeout(timer);
-		this.#expanded.delete(id);
+	/** Restarts the reading view's idle timer. */
+	#keepReading(action: DialAction<T>, reading: Reading): void {
+		clearTimeout(reading.timer);
+		reading.timer = setTimeout(() => {
+			this.#reading.delete(action.id);
+			void this.paint(action);
+		}, READING_IDLE_MS);
+	}
+
+	/** Closes the reading view; false when none was open. */
+	#close(id: string, repaint = true): boolean {
+		const reading = this.#reading.get(id);
+		if (reading === undefined) return false;
+		clearTimeout(reading.timer);
+		this.#reading.delete(id);
 		if (repaint) painters.get(id)?.();
+		return true;
 	}
 }

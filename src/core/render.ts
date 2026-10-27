@@ -387,13 +387,17 @@ export function stripCanvas(accent: string = COLORS.accent, appearance: StripApp
 	);
 }
 
-export function stripIcon(name: GlyphName, color: string = COLORS.text): string {
-	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">${glyph(name, 1, 1, 36, color)}</svg>`);
-}
+/** A glyph as a painter, so strips can draw it at any size or compose it into a larger picture. */
+export const glyphArt =
+	(name: GlyphName, color: string = COLORS.text): MarkPainter =>
+	(x, y, size) =>
+		glyph(name, x, y, size, color);
 
-/** A provider mark (or any painter) in the strip's 38×38 icon slot. */
-export const stripMarkIcon = (mark: MarkPainter): string =>
-	svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">${mark(1, 1, 36)}</svg>`);
+/** A provider mark (or any painter) in a square icon slot, 38×38 by default: the strip's. */
+export const stripMarkIcon = (mark: MarkPainter, box = 38): string =>
+	svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${box}" height="${box}" viewBox="0 0 ${box} ${box}">${mark(1, 1, box - 2)}</svg>`);
+
+export const stripIcon = (name: GlyphName, color: string = COLORS.text): string => stripMarkIcon(glyphArt(name, color));
 
 /** A strip text line drawn as a picture, for text wider than its slot. */
 export type LineArt = { text: string; width: number; height: number; size: number; weight: number; color: string; offset: number; overflow: number };
@@ -411,6 +415,23 @@ export function lineArt(line: LineArt): string {
 	const text = `<text x="${-line.offset}" y="${baseline}" font-family="${FONT_FAMILY}" font-size="${line.size}" font-weight="${line.weight}" fill="${line.color}" xml:space="preserve">${escapeXml(line.text)}</text>`;
 	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${line.width}" height="${line.height}" viewBox="0 0 ${line.width} ${line.height}">${mask}<g mask="url(#m)">${text}</g></svg>`);
 }
+
+/** Wrapped `lines` rolled up by `offset` px, one slot height per line, the last followed by the first again. */
+export type RollArt = { lines: readonly string[]; width: number; height: number; size: number; weight: number; color: string; offset: number };
+
+export function rollArt(art: RollArt): string {
+	const baseline = Math.round(art.height / 2 + art.size * 0.36);
+	const step = Math.floor(art.offset / art.height);
+	const shift = art.offset - step * art.height;
+	const line = (index: number, y: number) =>
+		`<text x="0" y="${y}" font-family="${FONT_FAMILY}" font-size="${art.size}" font-weight="${art.weight}" fill="${art.color}" xml:space="preserve">${escapeXml(art.lines[index % art.lines.length] ?? "")}</text>`;
+	const body = line(step, baseline - shift) + (shift > 0 ? line(step + 1, baseline - shift + art.height) : "");
+	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${art.width}" height="${art.height}" viewBox="0 0 ${art.width} ${art.height}">${body}</svg>`);
+}
+
+/** Text in the system font, for pictures drawn outside the layouts' native text items. */
+export const svgText = (content: string, x: number, y: number, size: number, weight: number, fill: string, extra = "") =>
+	`<text x="${x}" y="${y}" font-family="${FONT_FAMILY}" font-size="${size}" font-weight="${weight}" fill="${fill}"${extra}>${escapeXml(content)}</text>`;
 
 /** Clears a strip picture slot. */
 export const BLANK_ART = svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>`);
