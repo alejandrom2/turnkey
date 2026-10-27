@@ -121,7 +121,7 @@ export function gitSummary(status: VcsStatus, action: GitKeyAction): string | un
 
 export const reasonText = (blocker: GitBlocker): string => t(blocker.key, blocker.params);
 
-/** `vcs.refreshStatus`; `remote` also fetches, which only a press warrants. */
+/** `vcs.refreshStatus`; `remote: false` reads git's local state only and zero-fills what it didn't read from the remote. */
 export function readStatus(machine: GitMachine, cwd: string, remote: boolean): Promise<VcsStatus> {
 	return machine.call<VcsStatus>("vcs.refreshStatus", remote ? { cwd } : { cwd, localOnly: true }, READ_SCOPE);
 }
