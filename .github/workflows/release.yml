@@ -23,8 +23,8 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  # release-please bumps package.json; the manifest's four-part version follows on the release PR.
-  sync-manifest:
+  # release-please bumps package.json; the manifest's four-part version and the pages showing it follow on the release PR.
+  sync-version:
     needs: release-please
     if: needs.release-please.outputs.pr
     runs-on: ubuntu-latest
@@ -35,13 +35,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: node scripts/version.ts
-      - name: Commit the manifest version
+          cache: npm
+      - run: npm ci
+      - run: npm run assets
+      # Profile zips come out slightly different on Linux; the committed ones stay.
+      - run: git checkout -- '*.streamDeckProfile'
+      - name: Commit the version
         run: |
           git diff --quiet && exit 0
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "chore: manifest version for the release"
+          git commit -am "chore: version for the release"
           git push
 
   package:
