@@ -30,6 +30,8 @@ export class RpcError extends Error {
 		message: string,
 		readonly reason?: string,
 		readonly requiredPermission?: string,
+		/** A tagged error's own `reason` literal, such as a stopped workflow's "not-running". */
+		readonly code?: string,
 	) {
 		super(message);
 	}
@@ -92,16 +94,22 @@ type Frame =
 	| { _tag: "Exit"; requestId: number; exit: { _tag: "Success"; value?: unknown } | { _tag: "Failure"; cause: Cause[] } }
 	| { _tag: "Pong" }
 	| { _tag: "Defect"; defect: unknown };
-type Cause = { _tag: "Fail"; error: { _tag?: string; message?: string; cause?: unknown; requiredPermission?: unknown; detail?: unknown } } | { _tag: "Die"; defect: unknown } | { _tag: "Interrupt" };
+type Cause = { _tag: "Fail"; error: { _tag?: string; message?: string; cause?: unknown; requiredPermission?: unknown; detail?: unknown; reason?: unknown } } | { _tag: "Die"; defect: unknown } | { _tag: "Interrupt" };
 
 export function causeError(cause: Cause[] | undefined): RpcError {
 	const reasons = cause ?? [];
 	const fail = reasons.find((reason) => reason._tag === "Fail");
 	if (fail?._tag === "Fail") {
-		const { _tag, message, requiredPermission, detail } = fail.error ?? {};
+		const { _tag, message, requiredPermission, detail, reason: code } = fail.error ?? {};
 		// Source control and pull request errors carry their sentence in `detail`, not in a cause.
 		const reason = causeReason(fail.error) ?? (typeof detail === "string" && detail.trim() !== "" && detail.length <= 160 ? detail.trim() : undefined);
-		return new RpcError(_tag ?? "Fail", message ?? "T3 Code rejected the request.", reason, typeof requiredPermission === "string" ? requiredPermission : undefined);
+		return new RpcError(
+			_tag ?? "Fail",
+			message ?? "T3 Code rejected the request.",
+			reason,
+			typeof requiredPermission === "string" ? requiredPermission : undefined,
+			typeof code === "string" ? code : undefined,
+		);
 	}
 	const die = reasons.find((reason) => reason._tag === "Die");
 	if (die?._tag === "Die") {

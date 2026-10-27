@@ -26,6 +26,10 @@
 		"Name": "Stop",
 		"Tooltip": "Stops the running turn of the thread selected in T3 Code."
 	},
+	"com.alejandrom2.t3deck.workflow.stop": {
+		"Name": "Stop Workflow",
+		"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop."
+	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "Model",
 		"Tooltip": "Switches the selected thread to a favorite model, or to the next of T3 Code's favorites."
@@ -321,7 +325,9 @@
 			"failed": "Failed",
 			"stopped": "Stopped",
 			"idle": "Idle",
-			"queuedCount": "+{count} queued"
+			"queuedCount": "+{count} queued",
+			"subagent": "{count} subagent",
+			"subagents": "{count} subagents"
 		},
 		"filter": {
 			"all": "Threads",
@@ -887,6 +893,9 @@
 				"titlePlaceholder": "The skill's name",
 				"hint": "Sends the skill to the thread as T3 Code's composer does ($name, then your text). Skills come from the thread's provider for its checkout: Codex, Claude and Antigravity list them.",
 				"dialHint": "Rotate through the thread's provider skills for its checkout. Press or tap runs the shown one, touch and hold reads its description."
+			},
+			"workflow": {
+				"hint": "Stops the workflows the thread runs, as T3 Code's Lineage panel does. Only Claude's workflows can be stopped. Hold the key to stop; a stopped workflow can't be resumed."
 			}
 		},
 		"usage": {
@@ -959,6 +968,17 @@
 			"gone": "Not available: {skill}",
 			"chooseSkill": "Choose a skill…",
 			"aSkill": "A skill the thread's provider offers"
+		},
+		"workflow": {
+			"stop": "Stop workflow",
+			"none": "No workflow running",
+			"notClaude": "Not on this provider",
+			"option": "Stopping workflows (Claude)",
+			"holdToStop": "Hold to stop",
+			"notRunning": "No longer running",
+			"unsupported": "Provider can't stop it",
+			"unavailable": "No live task",
+			"stopFailed": "Couldn't stop it"
 		}
 	}
 }
