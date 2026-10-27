@@ -254,6 +254,11 @@ export type ShellRow = {
 	updatedAt: number;
 	/** When T3 Code last opened this thread, in server ms; the board follows the newest one as the selection. */
 	openedAt: number | undefined;
+	/**
+	 * Set while messages wait in the thread's queue (its latest run is queued), and changed when its runs move: the
+	 * shell carries no queue itself, so the deck reads the queue again when this changes.
+	 */
+	queueStamp?: string;
 };
 
 /**
@@ -342,6 +347,7 @@ export function shellRows(state: ShellState, capabilities: ThreadCapabilities, n
 			parentThreadId: thread.lineage?.parentThreadId ?? null,
 			updatedAt: time(thread.updatedAt),
 			openedAt: openedAt(thread),
+			...(thread.status === "queued" ? { queueStamp: [thread.latestRunId, thread.activeRunId, thread.activityRunStatus ?? ""].join("|") } : {}),
 		});
 	}
 	return rows;

@@ -109,7 +109,7 @@ const PROFILES: Profile[] = [
 					[quick("continue"), quick("test"), quick("fix"), quick("explain")],
 					[quick("commit"), organize("settle"), organize("pin"), organize("snooze")],
 				],
-				dials: [DIALS[0]!, DIALS[2]!, power("model"), DIALS[3]!],
+				dials: [DIALS[0]!, DIALS[2]!, { action: "dial.queue", name: "Queue Dial" }, DIALS[3]!],
 			},
 			{
 				name: "GIT",

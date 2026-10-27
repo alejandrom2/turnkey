@@ -22,6 +22,7 @@ import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
 import { pinnedKey, pinnedName, resolveTarget, type Target, type TargetSettings } from "../core/target.js";
 import type { SendMode } from "../core/t3/machine.js";
+import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 
@@ -499,6 +500,12 @@ export const ultrathinkPrompt = (thread: DeckThread, text: string): string =>
 /** Whether Ultrathink is armed for `thread` and its model still offers it. */
 export const ultrathinkArmed = (thread: DeckThread | undefined): boolean =>
 	thread !== undefined && deck.ultrathink.armed(thread.key, findModel(thread.machine.modelConfig, thread.model));
+
+/** The thread's queue as last read, read again when it moved; only call it for a thread a visible face shows. */
+export const queueOf = (thread: DeckThread): ThreadQueue | undefined => deck.queues.of(thread, () => thread.machine.queue(thread));
+
+/** How many messages wait in the thread's queue, as far as the deck knows. */
+export const queuedCount = (thread: DeckThread): number => queueOf(thread)?.items.length ?? 0;
 
 /** Selects the thread the way T3 Code's own open does, and opens it in the desktop app. */
 export async function openThread(thread: DeckThread): Promise<void> {

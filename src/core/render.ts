@@ -341,7 +341,16 @@ export type ThreadKeyInput = {
 	/** True on the selected thread's key, false on the others; undefined when nothing is selected. */
 	selected?: boolean;
 	motion?: KeyMotion;
+	/** Messages waiting in the thread's queue: a small "+2" under the meta. */
+	queued?: number;
 };
+
+/** "+N" in a small pill, right-aligned at `right`, top at `top`: messages waiting in a thread's queue. */
+export function queueBadge(count: number, right: number, top: number): string {
+	const label = `+${count}`;
+	const width = Math.round(textWidth(label, 14) + 14);
+	return `<rect x="${right - width}" y="${top}" width="${width}" height="20" rx="10" fill="#FFFFFF" fill-opacity=".14"/>` + textEl(label, top + 15, { x: right - width / 2, size: 14, fill: COLORS.text, anchor: "middle" });
+}
 
 /** The wash and glyph color of a state that wants attention: amber approval, indigo question, red failed, green unseen done. */
 export function threadTint(state: DeckState, unseen = false): string | undefined {
@@ -384,6 +393,8 @@ export function renderThreadKey(input: ThreadKeyInput): string {
 	} else if (input.meta) {
 		parts.push(textEl(input.meta, META.baseline, { x: META.right, size: META.size, fill: "#9A9A9A", anchor: "end" }));
 	}
+
+	if (input.queued !== undefined && input.queued > 0) parts.push(queueBadge(input.queued, META.right, 40));
 
 	const dot = input.unseen === true && input.state !== "done";
 	const maxWidth = dot ? 100 : 114;

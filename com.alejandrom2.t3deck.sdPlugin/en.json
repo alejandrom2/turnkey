@@ -138,6 +138,13 @@
 			"TriggerDescription": { "Rotate": "Choose answer", "Push": "Answer (hold by default)", "Touch": "Open thread" }
 		}
 	},
+	"com.alejandrom2.t3deck.dial.queue": {
+		"Name": "Queue Dial",
+		"Tooltip": "Rotate through the selected thread's queued messages. Press sends one now (steering it in, or starting it while nothing runs); hold removes it.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose message", "Push": "Send now (hold: remove)", "Touch": "Open thread" }
+		}
+	},
 	"com.alejandrom2.t3deck.dial.pr": {
 		"Name": "PR Dial",
 		"Tooltip": "Rotate through open pull requests. Press runs Fix findings, tap opens it in the browser, touch and hold reads its findings.",
@@ -179,7 +186,9 @@
 			"holdToSend": "Hold to send",
 			"holdToSettle": "Hold to settle",
 			"holdToSnooze": "Hold to snooze",
-			"notWebLink": "Not a web link"
+			"notWebLink": "Not a web link",
+			"holdToRemove": "Hold to remove",
+			"cantSteerYet": "Can't steer it in yet"
 		},
 		"face": {
 			"noThread": "No thread",
@@ -288,7 +297,8 @@
 			"done": "Done",
 			"failed": "Failed",
 			"stopped": "Stopped",
-			"idle": "Idle"
+			"idle": "Idle",
+			"queuedCount": "+{count} queued"
 		},
 		"filter": {
 			"all": "Threads",
@@ -315,7 +325,14 @@
 			"question": "Question",
 			"pressToOpen": "Press to open in T3 Code",
 			"openInT3Code": "Open in T3 Code",
-			"withHold": "{label} · hold"
+			"withHold": "{label} · hold",
+			"queue": "Queue",
+			"nothingQueued": "Nothing queued",
+			"queuedMessage": "Queued message",
+			"queueHeld": "Held · press sends it now",
+			"queueSendNow": "Press sends now · hold removes",
+			"queueSteer": "Press steers it in · hold removes",
+			"queueRemoveOnly": "Hold to remove"
 		},
 		"power": {
 			"quicker": "Quicker",
@@ -533,10 +550,12 @@
 				"signInProvider": "Sign in to Codex or Claude in T3 Code; they report subscription limits.",
 				"pickAnother": "Pick another value above.",
 				"noFindings": "Nothing is failing or unresolved on it.",
-				"providersInT3": "Fix them in T3 Code under Settings → Providers."
+				"providersInT3": "Fix them in T3 Code under Settings → Providers.",
+				"queueMessage": "Send a message while the thread works; it waits in its queue."
 			},
 			"findings": "Findings to fix",
-			"providers": "Providers ready"
+			"providers": "Providers ready",
+			"queued": "A queued message"
 		},
 		"editor": {
 			"title": "Open in editor",
@@ -825,6 +844,9 @@
 				"thread": "This thread",
 				"pick": "Thread",
 				"hint": "The key acts on this thread even when another is selected, and shows a small pin. Archived or deleted, it shows as not available until you pick another."
+			},
+			"queue": {
+				"hint": "Follows the selected thread's queue. Press sends the shown message now: into the running turn where the provider takes steering, or as the next turn when nothing runs, which also releases a queue Stop held. Hold removes it."
 			}
 		},
 		"usage": {

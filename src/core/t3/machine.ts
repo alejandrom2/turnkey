@@ -2,6 +2,7 @@ import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVIDERS_SCOPE, READ_SCOPE, redeemPairingCode, socketUrl } from "./pairing.js";
+import { type QueueProjection, type ThreadQueue, threadQueue } from "./queue.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
 	applyShellItem,
@@ -744,10 +745,19 @@ export class Machine {
 	}
 
 	/** Takes the first bounded snapshot of a thread and unsubscribes. `live` is false when the provider can't take an answer. */
-	#fromThreadSnapshot(rpc: RpcSocket, threadId: string, requestId: string): Promise<{ item: TurnItem | undefined; live: boolean } | undefined> {
+	async #fromThreadSnapshot(rpc: RpcSocket, threadId: string, requestId: string): Promise<{ item: TurnItem | undefined; live: boolean } | undefined> {
+		const projection = (await this.#threadSnapshot(rpc, threadId)) as { turnItems?: TurnItem[]; runtimeRequests?: { id: string; responseCapability?: { type?: string } }[] } | undefined;
+		if (projection === undefined) return undefined;
+		const item = projection.turnItems?.findLast((candidate) => candidate.requestId === requestId);
+		const capability = projection.runtimeRequests?.find((request) => request.id === requestId)?.responseCapability?.type;
+		return { item, live: capability !== "not_resumable" };
+	}
+
+	/** One bounded thread snapshot: the latest window plus every queued run and its message (threadHistoryPaging.ts). */
+	#threadSnapshot(rpc: RpcSocket, threadId: string): Promise<unknown> {
 		return new Promise((resolve) => {
 			let settled = false;
-			const finish = (result: { item: TurnItem | undefined; live: boolean } | undefined) => {
+			const finish = (result: unknown) => {
 				if (settled) return;
 				settled = true;
 				clearTimeout(timer);
@@ -759,15 +769,34 @@ export class Machine {
 				"orchestration.subscribeThread",
 				() => ({ threadId, acceptBoundedSnapshot: true }),
 				(value) => {
-					const snapshot = value as { kind?: string; projection?: { turnItems?: TurnItem[]; runtimeRequests?: { id: string; responseCapability?: { type?: string } }[] } };
-					if (snapshot.kind !== "snapshot") return;
-					const item = snapshot.projection?.turnItems?.findLast((candidate) => candidate.requestId === requestId);
-					const capability = snapshot.projection?.runtimeRequests?.find((request) => request.id === requestId)?.responseCapability?.type;
-					finish({ item, live: capability !== "not_resumable" });
+					const snapshot = value as { kind?: string; projection?: unknown };
+					if (snapshot.kind === "snapshot") finish(snapshot.projection);
 				},
 				{ onEnd: () => finish(undefined) },
 			);
 		});
+	}
+
+	/** The thread's queue, read from one bounded snapshot; T3 Code's shell carries no queue, so callers read it on change. */
+	async queue(thread: ThreadRef): Promise<ThreadQueue> {
+		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		return threadQueue(projection as QueueProjection);
+	}
+
+	/** Steers the running turn with a queued message (T3 Code's "Steer now"). */
+	async promoteQueued(thread: ThreadRef, queuedRunId: string, targetRunId: string): Promise<void> {
+		await this.#dispatch({ type: "queued-message.promote-to-steer", threadId: thread.threadId, queuedRunId, targetRunId });
+	}
+
+	/** Starts a queued message now while nothing runs, which also releases a held queue ("Send now"). */
+	async startQueued(thread: ThreadRef, runId: string): Promise<void> {
+		await this.#dispatch({ type: "queued-run.start", threadId: thread.threadId, runId });
+	}
+
+	/** Removes a queued message. */
+	async cancelQueued(thread: ThreadRef, runId: string): Promise<void> {
+		await this.#dispatch({ type: "queued-run.cancel", threadId: thread.threadId, runId });
 	}
 
 	async respond(threadId: string, requestId: string, decision: Decision): Promise<void> {

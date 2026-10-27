@@ -739,6 +739,12 @@ const pages: Record<string, string> = {
 			</sdpi-item>`,
 		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) + targetScript,
 	),
+	"queue-dial.html": page(
+		"Queue Dial",
+		`
+			<p class="hint"${text("inspector.queue.hint")}</p>${dialAppearance}`,
+		dialAppearanceScript,
+	),
 	"prompts.html": page(
 		"Prompts Dial",
 		`
