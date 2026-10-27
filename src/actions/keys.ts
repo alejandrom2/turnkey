@@ -790,7 +790,7 @@ const HEALTH_COLOR = { error: COLORS.error, attention: COLORS.attention, note: C
 
 /**
  * The connections to the action's machine (or all of them) and their providers: the worst problem first (offline,
- * needs pairing, a provider signed out, needing an update or failing its check), how many more, else that all is
+ * needs pairing, a provider not found, not authenticated, on an unsupported version or unavailable), how many more, else that all is
  * ready. Tap reconnects.
  */
 @action({ UUID: `${ID}.health` })
