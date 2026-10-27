@@ -1,0 +1,70 @@
+name: Bug report
+description: Something on your Stream Deck doesn't work as it should.
+title: "[Bug]: "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! One problem per issue helps a lot. Ideas go in [Discussions](https://github.com/alejandrom2/turnkey/discussions/categories/ideas).
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead. Photos or a short video of the key or strip help.
+    validations:
+      required: true
+
+  - type: input
+    id: action
+    attributes:
+      label: Which action?
+      description: For example "Power Dial (Effort)", "Git (Push)" or "Thread key".
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Stream Deck model
+      options:
+        - Stream Deck +
+        - Stream Deck Neo
+        - Stream Deck MK.2 / 15-key
+        - Stream Deck XL
+        - Stream Deck Mini
+        - Virtual Stream Deck
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Turnkey (Turnkey settings → About), Stream Deck app, T3 Code, and your OS.
+      placeholder: Turnkey 0.9.1, Stream Deck 7.6, T3 Code 0.1.3, macOS 26.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: connection
+    attributes:
+      label: How is the machine connected?
+      options:
+        - This computer
+        - Another machine on my network
+        - Tailscale
+        - T3 Connect
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Attach the file from Turnkey settings → Diagnostics → Export diagnostics, or paste recent errors. It leaves out tokens and pair links.
