@@ -5,6 +5,7 @@
  */
 import { type MessageKey, t } from "./i18n.js";
 import { initialsBadgeSvg, PROVIDER_MARKS, providerInstanceInitials } from "./providerIcons.js";
+import type { ProviderSkill, WorkspaceSnapshot } from "./skills.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 import type { LimitProvider, ServerProviderUsageLimits } from "./usage/types.js";
 
@@ -43,6 +44,9 @@ export type ConfigProvider = {
 	/** CLI version checks, for Health (`ServerProviderVersionAdvisory`, `ServerProviderCompatibilityAdvisory`). */
 	versionAdvisory?: { status?: string } | null;
 	compatibilityAdvisory?: { status?: string } | null;
+	/** Skills a user may run; a checkout's own come in `workspaceSnapshots` (`ServerProviderSkill`). */
+	skills?: ProviderSkill[];
+	workspaceSnapshots?: WorkspaceSnapshot[];
 };
 
 /** `ServerSettings` model preferences: `favorites` null means unmigrated, empty means none (settings.ts:1105). */

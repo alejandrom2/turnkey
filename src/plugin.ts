@@ -5,6 +5,7 @@ import { OpenInEditor } from "./actions/editor.js";
 import { CommitKey, CreatePrKey, PullKey, PushKey } from "./actions/git.js";
 import { LimitsDial, LimitsKey } from "./actions/limits.js";
 import { QueueDial } from "./actions/queue.js";
+import { RunSkillKey, SkillsDial } from "./actions/skills.js";
 import { RunTaskKey, TasksDial } from "./actions/tasks.js";
 import { UsageDial, UsageKey } from "./actions/usage.js";
 import "./actions/needs.js";
@@ -70,12 +71,14 @@ for (const instance of [
 	new LimitsKey(),
 	new UsageKey(),
 	new RunTaskKey(),
+	new RunSkillKey(),
 	new ThreadDial(),
 	new ModelDial(),
 	new PromptDial(),
 	new AnswerDial(),
 	new QueueDial(),
 	new TasksDial(),
+	new SkillsDial(),
 	new PrDial(),
 	new LimitsDial(),
 	new UsageDial(),

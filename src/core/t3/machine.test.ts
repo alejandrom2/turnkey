@@ -575,6 +575,47 @@ describe("Machine details", () => {
 	});
 });
 
+describe("Machine skills", () => {
+	const skill = (name: string) => ({ name, path: `/skills/${name}`, enabled: true });
+	const withSkills = { ...CONFIG, providers: [{ ...CONFIG.providers[0], skills: [skill("global")] }] };
+	const reads = (socket: FakeSocket) => socket.sent.filter((frame) => frame._tag === "Request" && frame.tag === "server.refreshProviders").length;
+
+	it("reads a checkout's skills once per snapshot lifetime, showing the provider's list until then", async () => {
+		const h = setup({ config: withSkills });
+		const socket = await connect(h);
+		expect(h.machine.skills("claudeAgent", "/repo")).toEqual({ skills: [skill("global")], loading: true });
+		expect(socket.request("server.refreshProviders").payload).toEqual({ instanceId: "claudeAgent", cwd: "/repo", workspaceSnapshotsOnDemand: true });
+		h.machine.skills("claudeAgent", "/repo");
+		expect(reads(socket)).toBe(1);
+
+		socket.reply("server.refreshProviders", { providers: [{ instanceId: "claudeAgent", workspaceSnapshots: [{ cwd: "/repo", checkedAt: "x", slashCommands: [], skills: [skill("repo")] }] }] });
+		await flush();
+		expect(h.machine.skills("claudeAgent", "/repo")).toEqual({ skills: [skill("repo")], loading: false });
+		expect(h.machine.modelConfig?.providers?.[0]?.skills).toEqual([skill("global")]);
+		expect(reads(socket)).toBe(1);
+
+		vi.setSystemTime(NOW + 5 * 60_000);
+		h.machine.skills("claudeAgent", "/repo");
+		expect(reads(socket)).toBe(2);
+	});
+
+	it("retries a failed read after a pause, three times at most", async () => {
+		const h = setup({ config: withSkills });
+		const socket = await connect(h);
+		for (let attempt = 1; attempt <= 3; attempt++) {
+			h.machine.skills("claudeAgent", "/repo");
+			expect(reads(socket)).toBe(attempt);
+			socket.reply("server.refreshProviders", { providers: [] });
+			await flush();
+			h.machine.skills("claudeAgent", "/repo");
+			expect(reads(socket)).toBe(attempt);
+			await vi.advanceTimersByTimeAsync(10_000);
+		}
+		h.machine.skills("claudeAgent", "/repo");
+		expect(reads(socket)).toBe(3);
+	});
+});
+
 describe("Machine usage and limits", () => {
 	const limits = { checkedAt: "2026-10-27T09:59:00.000Z", windows: [{ id: "primary", kind: "session", label: "Session", usedPercent: 37 }] };
 	const codex = { instanceId: "codex", driver: "codex", enabled: true, installed: true, models: [], usageLimits: limits };
