@@ -19,18 +19,30 @@ Most actions act on the **selected thread**: the one you opened last in T3 Code,
 
 | Action | Controller | What it does |
 |---|---|---|
-| Thread | key | A board thread. Keys fill by position, left to right and top to bottom, unless a slot is set (or **Selected thread**). Shows status, title and timer, with a dot when a finished turn is unseen. Tap opens it in T3 Code, hold selects it. |
 | Activity | key | The most urgent thread matching a filter (all, needs you, working, unread) and optional project. More Activity keys with the same settings show the next ones. Tap opens it. |
-| Stop | key | Stops the selected thread's running turn. |
+| New Thread | key | Starts a thread in the selected thread's project (no project when nothing is selected), in no project, or in a chosen project. With a prompt it starts working; without one it opens empty in T3 Code. It uses T3 Code's default model and access mode. |
 | Send Prompt | key | Sends a saved prompt to the selected thread (starts, steers or queues). Hold to interrupt and restart with it. |
-| New Thread | key | Starts a thread with a saved prompt in the selected thread's project, or with no project when the board is empty. It uses T3 Code's default model and access mode. |
+| Steer | key | Adds a saved instruction to the selected thread's running turn. |
+| Quick Prompt | key | Continue, run tests and fix failures, diagnose and fix, explain the current state, commit, or a custom prompt. Hold restarts, like Send Prompt. |
+| Stop | key | Stops the selected thread's running turn. |
+| Model | key | Switches the selected thread to one model, or to the next of your favorites in T3 Code (star them in its model picker), across providers. Without favorites it steps through the thread's provider's models. Switching provider works as in T3 Code's picker; when T3 Code refuses, the key shows why. |
+| Effort | key | Sets the reasoning effort, or steps through what the thread's model offers. |
+| Speed | key | Toggles fast mode where the model has one (Claude's Fast mode, Codex's Fast tier). |
+| Permissions | key | Sets access (Supervised, Auto-accept edits, Auto, Full access), or steps through the modes the provider supports. |
+| Plan | key | Switches between Build and Plan. |
+| Approve | key | Answers the selected thread's approval as far as its **Approvals** setting allows: open it in T3 Code (default), allow once, for the session, or always. Answering needs a hold unless set to tap. |
+| Deny | key | Declines the selected thread's approval with a tap. |
+| Thread | key | A board thread. Keys fill by position, left to right and top to bottom, unless a slot is set (or **Selected thread**). Shows status, title and timer, with a dot when a finished turn is unseen. Tap opens it in T3 Code, hold selects it. |
 | Organize | key | Settle, pin, unpin, snooze, archive or mark unread. |
+| Pull Request | key | The selected thread's pull request and its state. Tap opens it in the browser. |
+| Branch | key | The selected thread's branch. Tap opens the thread. |
+| Health | key | The connection to the action's machine (or all): connected, read only, connecting, needs pairing or the error. Tap reconnects. |
 | Threads Dial | dial | Rotate selects a thread (it settles after a short pause), press or tap opens it. |
 | Model Dial | dial | Tap picks a setting: the model, its options as the provider reports them (effort, speed, …), access (Supervised … Full access) and Build/Plan. Rotate previews a value, press applies it. |
 | Prompts Dial | dial | Rotate through saved prompts, press sends, hold starts a new thread. |
 | Answer Dial | dial | Approvals: rotate between the dial's **Approvals** setting and Deny, then hold (or press, if set) to answer. **Approvals** defaults to opening the request in T3 Code; it can allow once, for the session, or always. Questions: pick a choice per question. Tap opens the thread. Requests the deck can't answer open in T3 Code. |
 
-A key that can't act right now is dimmed, and pressing it says why. After a press, the key shows what happened for a moment.
+A key that can't act right now is dimmed, and pressing it says why. After a press, the key shows what happened for a moment. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Models and favorites are read again whenever a key's settings open.
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
@@ -38,6 +50,7 @@ Board order: needs approval, has a question, running, queued, then unseen failur
 
 - **Free-text answers and approval feedback** need T3 Code; the dials pick from the offered choices.
 - **Opening a thread** uses the desktop app's `t3code://threads/<environment>/<thread>` link. Set **App link** to `t3code-dev` for a dev build. It opens on the machine running Stream Deck. Selecting with the dial or a hold doesn't switch the app's window.
+- **Provider icons** for ACP registry agents load from `cdn.agentclientprotocol.com`, as T3 Code's do; until then, or if that fails, the key shows the generic ACP mark.
 - **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.
 
 ## Development

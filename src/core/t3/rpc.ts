@@ -16,14 +16,31 @@ export interface SocketLike {
 
 export type SocketFactory = (url: string) => SocketLike;
 
-/** A failed RPC: `tag` is the typed error's `_tag`, or `Die`, `Interrupt`, `Disconnected`. */
+/**
+ * A failed RPC: `tag` is the typed error's `_tag`, or `Die`, `Interrupt`, `Disconnected`. `reason` is the
+ * human sentence T3 Code buried in the error's cause chain, such as why a provider switch was refused.
+ */
 export class RpcError extends Error {
 	constructor(
 		readonly tag: string,
 		message: string,
+		readonly reason?: string,
 	) {
 		super(message);
 	}
+}
+
+/** The innermost string cause: dispatch errors wrap a policy's plain-text reason in generic messages. */
+export function causeReason(error: unknown): string | undefined {
+	let reason: string | undefined;
+	for (let cause = (error as { cause?: unknown } | null)?.cause, depth = 0; cause != null && depth < 8; depth++) {
+		if (typeof cause === "string") {
+			reason = cause.trim() || reason;
+			break;
+		}
+		cause = (cause as { cause?: unknown }).cause;
+	}
+	return reason !== undefined && reason.length <= 160 ? reason : undefined;
 }
 
 export type RpcState =
@@ -70,12 +87,12 @@ type Frame =
 	| { _tag: "Exit"; requestId: number; exit: { _tag: "Success"; value?: unknown } | { _tag: "Failure"; cause: Cause[] } }
 	| { _tag: "Pong" }
 	| { _tag: "Defect"; defect: unknown };
-type Cause = { _tag: "Fail"; error: { _tag?: string; message?: string } } | { _tag: "Die"; defect: unknown } | { _tag: "Interrupt" };
+type Cause = { _tag: "Fail"; error: { _tag?: string; message?: string; cause?: unknown } } | { _tag: "Die"; defect: unknown } | { _tag: "Interrupt" };
 
 export function causeError(cause: Cause[] | undefined): RpcError {
 	const reasons = cause ?? [];
 	const fail = reasons.find((reason) => reason._tag === "Fail");
-	if (fail?._tag === "Fail") return new RpcError(fail.error?._tag ?? "Fail", fail.error?.message ?? "T3 Code rejected the request.");
+	if (fail?._tag === "Fail") return new RpcError(fail.error?._tag ?? "Fail", fail.error?.message ?? "T3 Code rejected the request.", causeReason(fail.error));
 	const die = reasons.find((reason) => reason._tag === "Die");
 	if (die?._tag === "Die") {
 		const defect = die.defect as { message?: string } | string | undefined;

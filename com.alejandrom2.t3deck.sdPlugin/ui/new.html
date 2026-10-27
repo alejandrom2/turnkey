@@ -101,13 +101,23 @@
 	</head>
 	<body>
 		<main>
+			<sdpi-item label="Create in">
+				<sdpi-select setting="destination" default="selected">
+					<option value="selected">Selected thread's project</option>
+					<option value="scratch">No project</option>
+					<option value="project">Chosen project</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Project" id="project" hidden>
+				<sdpi-select setting="project" datasource="getLaunchProjects" hot-reload loading="Loading projects…"></sdpi-select>
+			</sdpi-item>
 			<sdpi-item label="Prompt">
-				<sdpi-textarea setting="prompt" rows="4" placeholder="Review the open pull request"></sdpi-textarea>
+				<sdpi-textarea setting="prompt" rows="4" placeholder="Optional: Review the open pull request"></sdpi-textarea>
 			</sdpi-item>
 			<sdpi-item label="Thread title">
 				<sdpi-textfield setting="title" placeholder="Review PR"></sdpi-textfield>
 			</sdpi-item>
-			<p class="hint">Starts in the selected thread's project.</p>
+			<p class="hint">With a prompt, the thread starts working and the deck selects it. Without one, it opens empty in T3 Code. With no thread selected, it starts with no project. It uses T3 Code's default model and access.</p>
 			<section class="t3" id="t3" aria-live="polite">
 				<p class="eyebrow">T3 Code</p>
 				<h2 id="t3-title">Choose a machine</h2>
@@ -276,6 +286,13 @@
 				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
 			});
 			send("status");
+			{
+				const field = document.querySelector('[setting="destination"]');
+				const apply = (value) => { $("project").hidden = !((value) => value === "project")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["destination"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["destination"]));
+			}
 		</script>
 	</body>
 </html>

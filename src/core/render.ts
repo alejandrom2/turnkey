@@ -203,17 +203,34 @@ export function renderThreadKey(input: ThreadKeyInput): string {
 }
 
 export type ControlTone = "default" | "approve" | "deny";
+/** Draws an icon at (x, y) in a `size` box: a provider mark instead of a glyph. */
+export type MarkPainter = (x: number, y: number, size: number) => string;
 export type ControlKeyInput = {
 	glyph: GlyphName;
+	/** Replaces the glyph, as on the Model key. */
+	mark?: MarkPainter;
 	label?: string;
 	/** Primary actions (Send, Stop, Steer) sit in a filled circle. */
 	primary?: boolean;
 	available?: boolean;
+	/** The setting this key applies is the thread's current one. */
+	active?: boolean;
 	tone?: ControlTone;
+	/** A label too long for two lines shrinks to four smaller ones instead of fading: a refusal reason. */
+	shrink?: boolean;
 };
 
 const TONE_COLOR: Record<ControlTone, string> = { default: "#FFFFFF", approve: COLORS.done, deny: COLORS.error };
 const LABEL = { x: 16.7, lineHeight: 22, size: 20, maxWidth: 112 } as const;
+const SMALL_LABEL = { x: 16.7, lineHeight: 16, size: 14, maxWidth: 112 } as const;
+
+/** Up to two lines at full size, bottom-aligned; with `shrink`, a longer label takes up to four smaller lines. */
+function labelBlock(label: string, shrink: boolean): string {
+	const wrapped = wrapText(label, LABEL.maxWidth, LABEL.size, 2);
+	if (!wrapped.overflowed || !shrink) return textBlock(wrapped, { ...LABEL, firstBaseline: wrapped.lines.length > 1 ? 101 : 123 });
+	const small = wrapText(label, SMALL_LABEL.maxWidth, SMALL_LABEL.size, 4);
+	return textBlock(small, { ...SMALL_LABEL, firstBaseline: 125 - (small.lines.length - 1) * SMALL_LABEL.lineHeight });
+}
 
 /** A control: a centered glyph alone, or a top-left glyph over a bottom-left label. */
 export function renderControlKey(input: ControlKeyInput): string {
@@ -221,22 +238,24 @@ export function renderControlKey(input: ControlKeyInput): string {
 	const content: string[] = [];
 	const label = input.label?.trim();
 	if (label) {
-		if (input.primary) content.push(`<circle cx="36" cy="33" r="24" fill="${accent}"/>`, glyph(input.glyph, 22, 19, 28, COLORS.key));
+		if (input.mark) content.push(input.mark(15, 12, 42));
+		else if (input.primary) content.push(`<circle cx="36" cy="33" r="24" fill="${accent}"/>`, glyph(input.glyph, 22, 19, 28, COLORS.key));
 		else content.push(glyph(input.glyph, 13, 10, 46, accent));
-		const wrapped = wrapText(label, LABEL.maxWidth, LABEL.size, 2);
-		content.push(textBlock(wrapped, { ...LABEL, firstBaseline: wrapped.lines.length > 1 ? 101 : 123 }));
+		content.push(labelBlock(label, input.shrink === true));
+	} else if (input.mark) {
+		content.push(input.mark(36, 36, 72));
 	} else if (input.primary) {
 		content.push(`<circle cx="72" cy="72" r="47.5" fill="${accent}"/>`, glyph(input.glyph, 50, 50, 44, COLORS.key));
 	} else {
 		content.push(glyph(input.glyph, 38, 38, 68, accent));
 	}
 	const body = input.available === false ? `<g opacity=".5">${content.join("")}</g>` : content.join("");
-	return keySvg(background(COLORS.key) + body);
+	return keySvg(background(input.active ? COLORS.keyActive : COLORS.key) + body);
 }
 
 /** A press's outcome, shown for a moment: a green check with what happened, or a red mark with why not. */
 export function renderResultKey(input: { ok: boolean; label: string }): string {
-	return renderControlKey(input.ok ? { glyph: "check", tone: "approve", label: input.label } : { glyph: "error", tone: "deny", label: input.label });
+	return renderControlKey(input.ok ? { glyph: "check", tone: "approve", label: input.label } : { glyph: "error", tone: "deny", label: input.label, shrink: true });
 }
 
 export type NoticeKeyInput = { glyph: GlyphName; title: string; detail?: string; tone?: "muted" | "attention" };
@@ -253,6 +272,34 @@ export function renderNoticeKey(input: NoticeKeyInput): string {
 		const firstBaseline = TITLE.firstBaseline + title.lines.length * TITLE.lineHeight;
 		parts.push(textBlock(wrapText(input.detail, 114, 15, 1), { x: TITLE.x, firstBaseline, lineHeight: 18, size: 15, maxWidth: 114, opacity: 0.5 }));
 	}
+	return keySvg(parts.join(""));
+}
+
+export type InfoKeyInput = {
+	glyph: GlyphName;
+	mark?: MarkPainter;
+	/** Glyph colour; white by default. */
+	color?: string;
+	/** A faint wash over the key, as thread keys use for attention and failure. */
+	tint?: string;
+	title: string;
+	detail?: string;
+	available?: boolean;
+	active?: boolean;
+};
+
+/** A status: icon top-left, a title of up to three lines, and an optional muted detail line, laid out like a thread key. */
+export function renderInfoKey(input: InfoKeyInput): string {
+	const parts = [background(input.active ? COLORS.keyActive : COLORS.key)];
+	if (input.tint) parts.push(overlay(input.tint, 0.2));
+	const content: string[] = [input.mark ? input.mark(14, 14, 36) : glyph(input.glyph, 12, 12, 40, input.color ?? COLORS.text)];
+	const title = wrapText(input.title, 114, TITLE.size, input.detail ? 2 : 3);
+	content.push(textBlock(title, { ...TITLE, maxWidth: 114 }));
+	if (input.detail) {
+		const firstBaseline = TITLE.firstBaseline + title.lines.length * TITLE.lineHeight;
+		content.push(textBlock(wrapText(input.detail, 114, 15, 1), { x: TITLE.x, firstBaseline, lineHeight: 18, size: 15, maxWidth: 114, opacity: 0.5 }));
+	}
+	parts.push(input.available === false ? `<g opacity=".5">${content.join("")}</g>` : content.join(""));
 	return keySvg(parts.join(""));
 }
 
