@@ -23,7 +23,7 @@ import {
 	switchSelection,
 	withOptionValue,
 } from "../core/models.js";
-import { currentEffort, effortChange, effortChoices } from "../core/power.js";
+import { currentEffort, effortChange, effortChoices, isTopEffort } from "../core/power.js";
 import { threadMotion } from "../core/motion.js";
 import { migratePromptSettings, QUICK_PROMPTS, quickPrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
@@ -33,6 +33,8 @@ import {
 	type GlyphName,
 	ladderCue,
 	type MarkPainter,
+	maxEffortPaint,
+	maxEffortStyle,
 	MODE_GLYPH,
 	pillCue,
 	renderControlKey,
@@ -557,8 +559,18 @@ export class EffortKey extends SettingKey<EffortSettings> {
 			(typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : t("face.effort"));
 		const shown = fixed ?? current;
 		const step = choices.findIndex((choice) => choice.value === shown);
-		const cue = choices.length > 1 && step >= 0 ? ladderCue(choices.length, step, choices[step]?.ultrathink === true) : undefined;
-		const face = renderControlKey({ glyph: "effort", label: labelOf(shown), available: check.available, active: fixed !== undefined && fixed === current, ultrathink: armed, cue });
+		const max = isTopEffort(choices, choices[step]?.key) ? maxEffortPaint(maxEffortStyle(deck.appearance.maxEffort), model && modelColor(model)) : undefined;
+		const cue = choices.length > 1 && step >= 0 ? ladderCue(choices.length, step, choices[step]?.ultrathink === true, max?.fill) : undefined;
+		const face = renderControlKey({
+			glyph: "effort",
+			glyphColor: max?.text,
+			label: labelOf(shown),
+			labelColor: max?.text,
+			available: check.available,
+			active: fixed !== undefined && fixed === current,
+			ultrathink: armed,
+			cue,
+		});
 		const next = fixed ?? cycleValue(values, current);
 		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
 		if (thread === undefined || change === undefined) return { face, check };

@@ -3,6 +3,8 @@ import {
 	dotsCue,
 	fitSize,
 	ladderCue,
+	maxEffortPaint,
+	maxEffortStyle,
 	renderControlKey,
 	renderDecisionKey,
 	renderInfoKey,
@@ -206,5 +208,16 @@ describe("ultrathink frame", () => {
 		const armed = svg(renderControlKey({ glyph: "effort", label: "Ultrathink", ultrathink: true }));
 		expect(armed).toContain(`stroke="url(#ultrathink)"`);
 		expect(armed).toContain("#D76868");
+	});
+});
+
+describe("maxEffortPaint", () => {
+	it("paints the top effort level by the chosen style", () => {
+		expect(maxEffortPaint("gradient", "#d97757")).toEqual({ text: "#AD7BF9", fill: { stops: expect.stringContaining("#648FFD") } });
+		expect(maxEffortPaint("solid", undefined)).toEqual({ text: "#AD7BF9", fill: "#AD7BF9" });
+		expect(maxEffortPaint("model", "#d97757")).toEqual({ text: "#d97757", fill: "#d97757" });
+		expect(maxEffortPaint("model", undefined)).toBeUndefined();
+		expect(maxEffortPaint("off", "#d97757")).toBeUndefined();
+		expect(maxEffortStyle("nonsense")).toBe("gradient");
 	});
 });

@@ -28,12 +28,14 @@ type GlobalSettings = {
 	motion?: string;
 	/** Confirm before sending: review (default), hold or off; actions can override it. */
 	confirmSend?: string;
+	/** How a model's top effort level stands out: gradient (default), solid, model or off. */
+	maxEffort?: string;
 	auth?: Record<string, JsonValue>;
 	/** Per machine, broader scopes its next pairing asks for (`ScopeRequests`); written only by the plugin. */
 	scopeRequests?: Record<string, JsonValue>;
 };
 
-const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll, motion, confirmSend }: GlobalSettings) => ({
+const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll, motion, confirmSend, maxEffort }: GlobalSettings) => ({
 	stripBackground,
 	stripColor,
 	stripHairline,
@@ -41,6 +43,7 @@ const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, 
 	textScroll,
 	motion,
 	confirmSend,
+	maxEffort,
 });
 
 const logger = streamDeck.logger.createScope("deck");

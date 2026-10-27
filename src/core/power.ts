@@ -39,6 +39,12 @@ export function effortChoices(model: Pick<CatalogModel, "options"> | undefined):
 	return [...option.values.map((value) => choice(value.value, value.label, false)), ...(option.injected ?? []).map((value) => choice(value.value, value.label, value.value === ULTRATHINK))];
 }
 
+/** Whether `key` is the model's top effort level (Ultrathink aside), when it has more than one. */
+export function isTopEffort(choices: readonly Extract<PowerChoice, { kind: "effort" }>[], key: string | undefined): boolean {
+	const levels = choices.filter((choice) => !choice.ultrathink);
+	return levels.length > 1 && key !== undefined && levels.at(-1)?.key === key;
+}
+
 /** The effort a thread shows: Ultrathink while armed, else its option's value. */
 export function currentEffort(model: Pick<CatalogModel, "options"> | undefined, selection: ModelSelection, armed: boolean): OptionValue | undefined {
 	const option = effortOption(model);

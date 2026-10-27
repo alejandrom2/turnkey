@@ -85,6 +85,37 @@ const SPECTRUM_OFFSETS = [0, 0.18, 0.36, 0.54, 0.72, 0.9, 1];
 /** The spectrum's gradient stops, for fills that carry it (Ultrathink on a track). */
 export const spectrumStops = (): string => ULTRATHINK_STOPS.map((color, index) => `<stop offset="${SPECTRUM_OFFSETS[index]}" stop-color="${color}"/>`).join("");
 
+/** How a model's top effort level stands out (Advanced → Max effort color): a blue-to-violet gradient by default. */
+export type MaxEffortStyle = "gradient" | "solid" | "model" | "off";
+export const maxEffortStyle = (value: unknown): MaxEffortStyle => (value === "solid" || value === "model" || value === "off" ? value : "gradient");
+
+const MAX_VIOLET = "#AD7BF9";
+const MAX_STOPS = `<stop offset="0" stop-color="#648FFD"/><stop offset=".55" stop-color="${MAX_VIOLET}"/><stop offset="1" stop-color="#8B84FB"/>`;
+
+/** A fill: one color, or gradient stops laid along the shape's run. */
+export type Paint = string | { stops: string };
+
+/** What the top effort level paints: `text` for its word and icon, `fill` for a track; undefined leaves them as usual. */
+export function maxEffortPaint(style: MaxEffortStyle, modelColor: string | undefined): { text: string; fill: Paint } | undefined {
+	switch (style) {
+		case "gradient":
+			return { text: MAX_VIOLET, fill: { stops: MAX_STOPS } };
+		case "solid":
+			return { text: MAX_VIOLET, fill: MAX_VIOLET };
+		case "model":
+			return modelColor === undefined ? undefined : { text: modelColor, fill: modelColor };
+		case "off":
+			return undefined;
+	}
+}
+
+/** `paint` as a fill attribute value, defining its gradient (`id`, along x1→x2) into `defs` when it has one. */
+export function paintFill(paint: Paint, id: string, x1: number, x2: number, defs: string[]): string {
+	if (typeof paint === "string") return paint;
+	defs.push(`<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="0" x2="${x2}" y2="0">${paint.stops}</linearGradient></defs>`);
+	return `url(#${id})`;
+}
+
 /** A static 120° spectrum border, like T3 Code's composer while Ultrathink is on. */
 export function ultrathinkFrame(width: number, height: number, radius: number, stroke: number): string {
 	const stops = ULTRATHINK_STOPS.map((color, index) => `<stop offset="${SPECTRUM_OFFSETS[index]}" stop-color="${color}"/>`).join("");
@@ -307,6 +338,8 @@ export type ControlKeyInput = {
 	tone?: ControlTone;
 	/** The glyph's color when not a tone's: amber for Full access, the accent for Fast. */
 	glyphColor?: string;
+	/** The label's color; white by default. */
+	labelColor?: string;
 	/** A faint wash over the key in this color: Full access while it is the thread's. */
 	wash?: string;
 	/** A label too long for two lines shrinks to four smaller ones instead of fading: a refusal reason. */
@@ -323,17 +356,17 @@ const LABEL_SIZES = [20, 17] as const;
 const SMALL_LABEL = { x: 16.7, lineHeight: 16, size: 14, maxWidth: 112 } as const;
 
 /** Up to two lines, bottom-aligned, a size smaller when a word wouldn't fit; with `shrink`, a longer label takes up to four small lines. */
-function labelBlock(label: string, shrink: boolean, cue: boolean): string {
+function labelBlock(label: string, shrink: boolean, cue: boolean, fill?: string): string {
 	const size = fitSize(label, LABEL.maxWidth, LABEL_SIZES);
 	const lineHeight = size + 2;
 	if (cue) {
 		const above = wrapText(label, LABEL.maxWidth, size, 2, { cut: true });
-		return textBlock(above, { ...LABEL, size, lineHeight, firstBaseline: 98 - (above.lines.length - 1) * lineHeight });
+		return textBlock(above, { ...LABEL, fill, size, lineHeight, firstBaseline: 98 - (above.lines.length - 1) * lineHeight });
 	}
 	const wrapped = wrapText(label, LABEL.maxWidth, size, 2, { cut: true });
-	if (!wrapped.overflowed || !shrink) return textBlock(wrapped, { ...LABEL, size, lineHeight, firstBaseline: 123 - (wrapped.lines.length - 1) * lineHeight });
+	if (!wrapped.overflowed || !shrink) return textBlock(wrapped, { ...LABEL, fill, size, lineHeight, firstBaseline: 123 - (wrapped.lines.length - 1) * lineHeight });
 	const small = wrapText(label, SMALL_LABEL.maxWidth, SMALL_LABEL.size, 4);
-	return textBlock(small, { ...SMALL_LABEL, firstBaseline: 125 - (small.lines.length - 1) * SMALL_LABEL.lineHeight });
+	return textBlock(small, { ...SMALL_LABEL, fill, firstBaseline: 125 - (small.lines.length - 1) * SMALL_LABEL.lineHeight });
 }
 
 /** A control: a centered glyph alone, or a top-left glyph over a bottom-left label (and a cue below it). */
@@ -345,7 +378,7 @@ export function renderControlKey(input: ControlKeyInput): string {
 		if (input.mark) content.push(input.mark(15, 12, 42));
 		else if (input.primary) content.push(`<circle cx="36" cy="33" r="24" fill="${accent}"/>`, glyph(input.glyph, 22, 19, 28, COLORS.key));
 		else content.push(glyph(input.glyph, 13, 10, 46, accent));
-		content.push(labelBlock(label, input.shrink === true, input.cue !== undefined));
+		content.push(labelBlock(label, input.shrink === true, input.cue !== undefined, input.labelColor));
 		if (input.cue) content.push(input.cue);
 	} else if (input.mark) {
 		content.push(input.mark(36, 36, 72));
@@ -359,16 +392,16 @@ export function renderControlKey(input: ControlKeyInput): string {
 	return keySvg(background(input.active ? COLORS.keyActive : COLORS.key) + wash + body + (input.ultrathink ? ultrathinkFrame(144, 144, 16, 3) : ""));
 }
 
-/** Stops along a track (y 110 to 128): `index` filled up to, in the accent or T3 Code's Ultrathink spectrum. */
-export function ladderCue(count: number, index: number, spectrum = false): string {
+/** Stops along a track (y 110 to 128): `index` filled up to, in the accent, T3 Code's Ultrathink spectrum or a given paint. */
+export function ladderCue(count: number, index: number, spectrum = false, paint?: Paint): string {
 	const stops = Math.max(2, count);
 	const at = Math.max(0, Math.min(stops - 1, index));
 	const step = 92 / (stops - 1);
 	const x = (i: number) => +(26 + i * step).toFixed(2);
-	const fill = spectrum ? "url(#cue-spectrum)" : COLORS.accent;
-	const defs = spectrum ? `<defs><linearGradient id="cue-spectrum" gradientUnits="userSpaceOnUse" x1="16" y1="0" x2="128" y2="0">${spectrumStops()}</linearGradient></defs>` : "";
+	const defs: string[] = [];
+	const fill = paintFill(spectrum ? { stops: spectrumStops() } : (paint ?? COLORS.accent), "cue-fill", 16, 128, defs);
 	const dots = Array.from({ length: stops }, (_, i) => `<circle cx="${x(i)}" cy="119" r="2" fill="#FFFFFF" fill-opacity="${i <= at ? ".55" : ".25"}"/>`).join("");
-	return `${defs}<rect x="16" y="110" width="112" height="18" rx="9" fill="#FFFFFF" fill-opacity=".1"/><rect x="16" y="110" width="${+(x(at) - 16 + 9).toFixed(2)}" height="18" rx="9" fill="${fill}"/>${dots}<circle cx="${x(at)}" cy="119" r="10" fill="#FFFFFF"/>`;
+	return `${defs.join("")}<rect x="16" y="110" width="112" height="18" rx="9" fill="#FFFFFF" fill-opacity=".1"/><rect x="16" y="110" width="${+(x(at) - 16 + 9).toFixed(2)}" height="18" rx="9" fill="${fill}"/>${dots}<circle cx="${x(at)}" cy="119" r="10" fill="#FFFFFF"/>`;
 }
 
 /** One pill per item, the current one bright: where a value sits among a few (favorite models). */
