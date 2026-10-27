@@ -21,7 +21,7 @@ export type SliderInput = {
 	/** What each end of the track means. */
 	ends: [string, string];
 	/** Replaces the ends with a mark and a word at the left: the model slider's Speed. */
-	footer?: { mark: MarkPainter; text: string; color?: string };
+	footer?: { mark: MarkPainter; text: string; paint?: Paint };
 	/** Replaces the ends: what pressing does, or why the dial can't act. */
 	note?: { text: string; color?: string };
 	/** Up to two 20 px badges at the top right, rightmost first. */
@@ -114,7 +114,10 @@ export function sliderArt(input: SliderInput): string {
 	if (input.note) parts.push(svgText(fit(input.note.text, SLIDER.width, 15), SLIDER.x, 85, 15, 600, input.note.color ?? COLORS.muted));
 	else if (input.footer) {
 		parts.push(input.footer.mark(SLIDER.x, 70, 20));
-		parts.push(svgText(fit(input.footer.text, SLIDER.width - LEAD, 15), SLIDER.x + LEAD, 85, 15, 600, input.footer.color ?? "#FFFFFF", input.footer.color ? "" : ` fill-opacity=".5"`));
+		const text = fit(input.footer.text, SLIDER.width - LEAD, 15);
+		const paint = input.footer.paint;
+		const fill = paint === undefined ? "#FFFFFF" : paintFill(paint, "slider-footer", SLIDER.x + LEAD, SLIDER.x + LEAD + textWidth(text, 15), parts);
+		parts.push(svgText(text, SLIDER.x + LEAD, 85, 15, 600, fill, paint === undefined ? ` fill-opacity=".5"` : ""));
 	}
 	else {
 		const half = SLIDER.width / 2 - 4;

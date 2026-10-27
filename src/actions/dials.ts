@@ -6,7 +6,7 @@ import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
 import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
-import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, isTopEffort, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
+import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, effortToneOf, isTopEffort, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
 import { spinAngle } from "../core/motion.js";
@@ -16,10 +16,10 @@ import {
 	glyphArt,
 	type GlyphName,
 	type MarkPainter,
-	maxEffortPaint,
-	maxEffortStyle,
+	modelFill,
+	paintedGlyphArt,
 	type Paint,
-	spectrumStops,
+	SPECTRUM,
 	STATE_COLOR,
 	STATE_GLYPH,
 	svgText,
@@ -32,7 +32,7 @@ import type { StripContent } from "../core/strip.js";
 import { type StripItem, type StripList, threadRowsArt } from "../core/styles.js";
 import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
-import { canOperate, LONG_PRESS_MS, openThread, pressWhileDisconnected, selectedThread, sendToThread, ultrathinkArmed } from "./base.js";
+import { canOperate, colorStyle, LONG_PRESS_MS, openThread, pressWhileDisconnected, selectedThread, sendToThread, speedPaint, ultrathinkArmed } from "./base.js";
 import { applyEffort, launchable, requestFor, startThread } from "./keys.js";
 import { type DialSettings, disconnectedStrip, markArt, StripDial } from "./strip.js";
 
@@ -173,22 +173,25 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 
 type PowerSettings = DialSettings & { dialControls?: string };
 
-/** "Press to apply" in the previewed model's color (white for white marks), else amber. */
-/** The thread's effort as `model` would carry it: dimmed, in the model's color at its top level, the spectrum for Ultrathink. */
-function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): { suffix: SliderInput["suffix"]; max?: { text: string; fill: Paint } } {
+
+/** The thread's effort as `model` would carry it, colored by its level; `top` when it is the model's highest. */
+function modelEffort(model: CatalogModel, thread: DeckThread, armed: boolean): { suffix: SliderInput["suffix"]; top?: Paint } {
 	const value = currentEffort(findModel(thread.machine.modelConfig, thread.model), thread.model, armed);
 	const choices = effortChoices(model);
 	const choice = choices.find((candidate) => candidate.key === String(value));
 	if (choice === undefined) return { suffix: undefined };
-	if (choice.ultrathink) return { suffix: { text: choice.label, paint: { stops: spectrumStops() } } };
-	const max = isTopEffort(choices, choice.key) ? maxPaint(modelColor(model)) : undefined;
-	return { suffix: { text: choice.label, paint: max?.text }, max };
+	if (choice.ultrathink) return { suffix: { text: choice.label, paint: { gradient: SPECTRUM } } };
+	const tone = effortToneOf(choices, choice.key, colorStyle(), modelColor(model));
+	return { suffix: { text: choice.label, paint: tone?.text }, top: isTopEffort(choices, choice.key) ? tone?.fill : undefined };
 }
 
-/** The top effort level's paint under Advanced → Max effort color. */
-const maxPaint = (modelColor: string | undefined) => maxEffortPaint(maxEffortStyle(deck.appearance.maxEffort), modelColor);
-
-const pendingColor = (pending: PowerChoice): string => (pending.kind === "model" ? (modelColor(pending.model) ?? COLORS.text) : COLORS.attention);
+/** What a previewed choice reads in: the model's color, or its effort level's; amber for other settings. */
+function pendingColor(pending: PowerChoice, thread: DeckThread): string {
+	if (pending.kind === "model") return modelColor(pending.model) ?? COLORS.text;
+	if (pending.kind !== "effort") return COLORS.attention;
+	const model = findModel(thread.machine.modelConfig, thread.model);
+	return effortToneOf(effortChoices(model), pending.key, colorStyle(), model && modelColor(model))?.text ?? COLORS.attention;
+}
 
 const CONTROL: Record<DialControl, { label: MessageKey; kind: ActionKind; glyph: GlyphName }> = {
 	model: { label: "face.model", kind: "model", glyph: "model" },
@@ -236,14 +239,14 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const { thread, state, pending, check, armed } = context;
 		const shown = pending ?? state.current;
 		const index = shown === undefined ? -1 : state.choices.findIndex((choice) => choice.key === shown.key);
-		const color = !check.available ? COLORS.muted : pending ? pendingColor(pending) : COLORS.accent;
+		const color = !check.available ? COLORS.muted : pending ? pendingColor(pending, thread) : COLORS.accent;
 		return {
 			header: `${label}${index >= 0 && state.choices.length > 1 ? ` · ${index + 1}/${state.choices.length}` : ""}`,
 			icon: shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(glyph),
 			accent: color,
 			value: shown?.label ?? (context.control === "model" ? thread.model.model : t("strip.default")),
 			detail: !check.available ? check.reason : pending ? t("strip.pressToApply") : this.#idleDetail(context.control, thread),
-			detailColor: pending ? pendingColor(pending) : undefined,
+			detailColor: pending ? pendingColor(pending, thread) : undefined,
 			tone: toneOf(thread.deck, thread.unseen),
 			ultrathink: context.control === "effort" && (armed || (pending?.kind === "effort" && pending.ultrathink)),
 		};
@@ -269,7 +272,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 				color: choice.kind === "model" ? modelColor(choice.model) : choice.key === pending?.key ? COLORS.attention : undefined,
 				detail: choice.key === shown.key ? detail : undefined,
 			})),
-			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending) } : undefined,
+			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending, thread) } : undefined,
 		};
 	}
 
@@ -291,11 +294,11 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const index = at(shown);
 		const toggle = speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
 		const model = findModel(thread.machine.modelConfig, thread.model);
-		const fastColor = (model && modelColor(model)) ?? COLORS.accent;
-		const bolt = toggle && glyphArt(toggle.fast ? "speedFilled" : "speed", toggle.fast ? fastColor : COLORS.muted);
+		const fastPaint = speedPaint(model);
+		const bolt = toggle && (toggle.fast ? paintedGlyphArt("speedFilled", fastPaint) : glyphArt("speed", COLORS.muted));
 		// The model slider shows Speed along the bottom, where a tap toggles it; the others keep the bolt at the top right.
-		const badges: MarkPainter[] = bolt && control !== "model" ? [bolt] : [];
-		const footer = bolt && control === "model" ? { mark: bolt, text: toggle!.label, color: toggle!.fast ? fastColor : undefined } : undefined;
+		const badges: MarkPainter[] = bolt && control === "effort" ? [bolt] : [];
+		const footer = bolt && control === "model" ? { mark: bolt, text: toggle!.label, paint: toggle!.fast ? fastPaint : undefined } : undefined;
 		const ends: [string, string] =
 			control === "effort"
 				? [t("power.quicker"), t("power.deeper")]
@@ -304,26 +307,28 @@ export class ModelDial extends StripDial<PowerSettings> {
 					: ["", ""];
 		const fullAccess = shown?.kind === "mode" && shown.mode === "full-access";
 		const effort = shown?.kind === "model" ? modelEffort(shown.model, thread, context.armed) : undefined;
-		const efforts = control === "effort" ? effortChoices(findModel(thread.machine.modelConfig, thread.model)) : [];
-		const max = shown?.kind === "effort" && isTopEffort(efforts, shown.key) ? maxPaint(model && modelColor(model)) : effort?.max;
+		const tone = shown?.kind === "effort" ? effortToneOf(effortChoices(model), shown.key, colorStyle(), model && modelColor(model)) : undefined;
 		return {
 			// The badge and the color already name the provider.
 			label: shown?.kind === "model" ? bareModelName(shown.model) : (shown?.label ?? thread.model.model),
 			suffix: effort?.suffix,
-			labelColor: shown?.kind === "model" ? modelColor(shown.model) : pending || fullAccess ? COLORS.attention : shown?.kind === "effort" ? max?.text : undefined,
+			labelColor: shown?.kind === "model" ? modelColor(shown.model) : shown?.kind === "effort" ? (tone?.text ?? (pending ? COLORS.attention : undefined)) : pending || fullAccess ? COLORS.attention : undefined,
 			stops: state.choices.length,
 			current: at(state.current),
 			preview: pending ? index : undefined,
-			// White marks fill gray, so the white thumb still stands out.
 			fill:
 				shown?.kind === "effort" && shown.ultrathink
-					? { stops: spectrumStops() }
-					: (max?.fill ?? (state.current?.kind === "model" ? (modelColor(state.current.model) ?? "#8E9199") : undefined)),
+					? { gradient: SPECTRUM }
+					: shown?.kind === "effort"
+						? tone?.fill
+						: state.current?.kind === "model"
+							? (effort?.top ?? modelFill(colorStyle(), modelColor(state.current.model)))
+							: undefined,
 			ends,
-			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending) } : undefined,
+			note: !check.available ? { text: check.reason } : pending ? { text: t("strip.pressToApply"), color: pendingColor(pending, thread) } : undefined,
 			badges,
 			footer,
-			lead: shown?.kind === "effort" && max ? glyphArt(CONTROL.effort.glyph, max.text) : shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph),
+			lead: shown?.kind === "effort" && tone ? glyphArt(CONTROL.effort.glyph, tone.text) : shown ? powerArt(shown.icon, { acpIcons: deck.acpIcons }) : glyphArt(CONTROL[control].glyph),
 			dim: !check.available,
 		};
 	}
@@ -354,8 +359,8 @@ export class ModelDial extends StripDial<PowerSettings> {
 		const toggle = speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
 		const speedCheck = availability("speed", { thread, canOperate: canOperate(thread) });
 		const pending = context.pending;
-		// A tap on a model without a Speed option is not a mistake worth an error face.
-		if (wants === "speed" && toggle === undefined) return;
+		// A tap on a model without a Speed option, or on the Access dial, which leaves Speed alone, does nothing.
+		if (wants === "speed" && (toggle === undefined || control === "permissions")) return;
 		if (!(await this.allowed(dial, wants === "apply" ? context.check : speedCheck))) return;
 		const work = wants === "apply" && pending ? this.#apply(thread, pending, context.armed) : undefined;
 		if (wants === "apply") {

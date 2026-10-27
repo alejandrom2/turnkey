@@ -23,7 +23,7 @@ import {
 	switchSelection,
 	withOptionValue,
 } from "../core/models.js";
-import { currentEffort, effortChange, effortChoices, isTopEffort } from "../core/power.js";
+import { currentEffort, effortChange, effortChoices, effortToneOf } from "../core/power.js";
 import { threadMotion } from "../core/motion.js";
 import { migratePromptSettings, QUICK_PROMPTS, quickPrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
@@ -33,9 +33,9 @@ import {
 	type GlyphName,
 	ladderCue,
 	type MarkPainter,
-	maxEffortPaint,
 	maxEffortStyle,
 	MODE_GLYPH,
+	paintedGlyphArt,
 	pillCue,
 	renderControlKey,
 	renderDecisionKey,
@@ -59,6 +59,7 @@ import {
 	selectedThread,
 	selectThread,
 	sendToThread,
+	speedPaint,
 	ultrathinkArmed,
 } from "./base.js";
 
@@ -559,7 +560,7 @@ export class EffortKey extends SettingKey<EffortSettings> {
 			(typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : t("face.effort"));
 		const shown = fixed ?? current;
 		const step = choices.findIndex((choice) => choice.value === shown);
-		const max = isTopEffort(choices, choices[step]?.key) ? maxEffortPaint(maxEffortStyle(deck.appearance.maxEffort), model && modelColor(model)) : undefined;
+		const max = effortToneOf(choices, choices[step]?.key, maxEffortStyle(deck.appearance.maxEffort), model && modelColor(model));
 		const cue = choices.length > 1 && step >= 0 ? ladderCue(choices.length, step, choices[step]?.ultrathink === true, max?.fill) : undefined;
 		const face = renderControlKey({
 			glyph: "effort",
@@ -598,8 +599,7 @@ export class SpeedKey extends SettingKey<JsonObject> {
 		const check = availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
 		const fast = toggle?.fast === true;
 		// Just the bolt, like Elgato's: outlined at Standard, filled in the model's color at Fast.
-		const color = fast ? ((model && modelColor(model)) ?? COLORS.accent) : undefined;
-		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", glyphColor: color, available: check.available });
+		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", mark: fast ? paintedGlyphArt("speedFilled", speedPaint(model)) : undefined, available: check.available });
 		if (thread === undefined || toggle === undefined) return { face, check };
 		return {
 			face,
