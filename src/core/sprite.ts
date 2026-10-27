@@ -22,7 +22,7 @@ const BODY = [
 /** Two walking steps: a stride, then the legs passing. */
 const LEGS = [
 	["...dd..dd...", "..dd....dd.."],
-	["....dddd....", "....dddd...."],
+	["....dd.dd...", "....dd.dd..."],
 ];
 
 const COLUMNS = BODY[0]!.length;
