@@ -5,7 +5,7 @@
  * the tiles and any text that scrolls.
  */
 import { t } from "./i18n.js";
-import { BLANK_ART, COLORS, glyphArt, type MarkPainter, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, textWidth, wrapText } from "./render.js";
+import { BLANK_ART, COLORS, glyphArt, type MarkPainter, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, wrapText } from "./render.js";
 import { overflowIn, type ScrollLine, scrollLine, type StripContent, slotItems, type TextScroll, type TextSlot } from "./strip.js";
 
 export type StripStyle = "classic" | "list" | "carousel";
@@ -33,8 +33,6 @@ export type StripItem = {
 	label: string;
 	/** The list's leading glyph and the carousel tile's art. */
 	art: MarkPainter;
-	/** Written on the carousel tile under its art, for items whose art alone doesn't tell them apart. */
-	caption?: string;
 	/** Washes the carousel tile, as thread keys tint by state. */
 	tint?: string;
 	/** The label's color while selected; white by default. */
@@ -185,13 +183,6 @@ export function listFeedback(content: StripContent, list: StripList, options: St
 
 const TILE = { center: 68, side: 54, far: 42, gap: 72, cy: 39, radius: 12 } as const;
 
-/** `text` centered on `cx`, shortened with an ellipsis to fit `width`. */
-function tileCaption(text: string, cx: number, baseline: number, size: number, width: number): string {
-	let shown = text;
-	while (shown.length > 1 && textWidth(shown, size) > width) shown = `${shown.slice(0, -2).trimEnd()}…`;
-	return svgText(shown, cx, baseline, size, 600, "#FFFFFF", ` text-anchor="middle"`);
-}
-
 /** One tile `distance` items from the center: smaller, dimmer and without the white border the further it is. */
 function tile(item: StripItem, distance: number): string {
 	const away = Math.abs(distance);
@@ -199,11 +190,9 @@ function tile(item: StripItem, distance: number): string {
 	const cx = 100 + distance * TILE.gap;
 	const x = cx - size / 2;
 	const y = TILE.cy - size / 2;
-	const art = Math.round(size * (item.caption ? 0.4 : 0.5));
-	const artY = item.caption ? TILE.cy - size * 0.14 : TILE.cy;
+	const art = Math.round(size * 0.5);
 	const box = (extra: string) => `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${TILE.radius}" ${extra}/>`;
-	const caption = item.caption ? tileCaption(item.caption, cx, y + size * 0.84, Math.round(size * 0.15), size - 4) : "";
-	const body = box(`fill="#26282E"`) + (item.tint ? box(`fill="${item.tint}" fill-opacity=".24"`) : "") + item.art(cx - art / 2, artY - art / 2, art) + caption;
+	const body = box(`fill="#26282E"`) + (item.tint ? box(`fill="${item.tint}" fill-opacity=".24"`) : "") + item.art(cx - art / 2, TILE.cy - art / 2, art);
 	const faded = Math.min(1, away);
 	const border = away < 1 ? box(`fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-opacity="${(1 - faded).toFixed(2)}"`) : "";
 	return `<g opacity="${(1 - 0.55 * faded).toFixed(2)}">${body}</g>${border}`;
