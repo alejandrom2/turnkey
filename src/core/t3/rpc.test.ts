@@ -25,8 +25,9 @@ function harness(authorize: () => Promise<string> = async () => "ws://test/ws?or
 	const sockets = fakeSockets();
 	const states: RpcState[] = [];
 	const opened = vi.fn();
-	const rpc = new RpcSocket({ authorize, socket: sockets.factory, onState: (state) => states.push(state), onOpen: opened, random: () => 0 });
-	return { rpc, sockets, states, opened };
+	const warn = vi.fn();
+	const rpc = new RpcSocket({ authorize, socket: sockets.factory, onState: (state) => states.push(state), onOpen: opened, warn, random: () => 0 });
+	return { rpc, sockets, states, opened, warn };
 }
 
 async function connected(authorize?: () => Promise<string>) {
@@ -65,6 +66,27 @@ describe("RpcSocket requests", () => {
 		rpc.stop();
 	});
 
+	it("skips malformed frames instead of throwing, and still settles a request whose Exit is garbled", async () => {
+		const { rpc, sockets, warn } = await connected();
+		const result = rpc.request("server.probe", {});
+		for (const frame of [null, 7, "x", { _tag: "Chunk", requestId: 0, values: "abc" }, [null, { _tag: "Exit" }]]) expect(() => sockets.last.receive(frame)).not.toThrow();
+		sockets.last.receive({ _tag: "Exit", requestId: 0 });
+		await expect(result).rejects.toBeInstanceOf(RpcError);
+		expect(() => causeError("junk" as never)).not.toThrow();
+		expect(warn).not.toHaveBeenCalledWith(expect.stringContaining("wsTicket"));
+		rpc.stop();
+	});
+
+	it("rejects a request T3 Code never answers once its timeout passes, keeping the socket", async () => {
+		const { rpc, sockets } = await connected();
+		const result = rpc.request("server.getConfig", {}, 15_000);
+		const settled = expect(result).rejects.toMatchObject({ tag: "Timeout" });
+		await vi.advanceTimersByTimeAsync(15_000);
+		await settled;
+		expect(sockets.last.closed).toBe(false);
+		rpc.stop();
+	});
+
 	it("fails fast while disconnected and rejects in-flight requests when the socket drops", async () => {
 		const { rpc, sockets } = harness();
 		await expect(rpc.request("server.probe", {})).rejects.toBeInstanceOf(RpcError);
@@ -94,13 +116,14 @@ describe("RpcSocket streams", () => {
 		rpc.stop();
 	});
 
-	it("still acks when handling a value throws, so the stream never stalls", async () => {
-		const { rpc, sockets } = await connected();
+	it("still acks when handling a value throws, so the stream never stalls, and logs instead of crashing", async () => {
+		const { rpc, sockets, warn } = await connected();
 		rpc.subscribe("s", () => ({}), () => {
 			throw new Error("bad item");
 		});
-		expect(() => sockets.last.receive({ _tag: "Chunk", requestId: 0, values: [1] })).toThrow("bad item");
+		expect(() => sockets.last.receive({ _tag: "Chunk", requestId: 0, values: [1] })).not.toThrow();
 		expect(sockets.last.sent.at(-1)).toEqual({ _tag: "Ack", requestId: 0 });
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining("bad item"));
 		rpc.stop();
 	});
 

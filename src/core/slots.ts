@@ -1,6 +1,6 @@
 import type { DeckThread } from "./board.js";
 
-export type PlacedKey = {
+type PlacedKey = {
 	id: string;
 	/** Keys only share positions with keys of the same action, device and thread source. */
 	group: string;

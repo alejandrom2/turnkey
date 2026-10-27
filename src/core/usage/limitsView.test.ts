@@ -124,6 +124,11 @@ describe("limits on the deck", () => {
 		expect(resetText(now + 3_600_000, now)).toBe(new Date(now + 3_600_000).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }));
 		expect(resetText(now + 3 * 86_400_000, now)).toBe(new Date(now + 3 * 86_400_000).toLocaleDateString(undefined, { month: "short", day: "numeric" }));
 		expect([creditsText(0), creditsText(1), creditsText(3)]).toEqual(["", "1 reset", "3 resets"]);
+		const fourPm = new Date(2026, 9, 27, 16, 0).getTime();
+		expect(resetText(new Date(2026, 9, 27, 23, 5).getTime(), fourPm, "en-US")).toBe("11:05 PM");
+		// Under a day away but tomorrow: the time alone would read as today's.
+		expect(resetText(new Date(2026, 9, 28, 15, 5).getTime(), fourPm, "en-US")).toBe("Wed 3:05 PM");
+		expect(resetText(new Date(2026, 9, 27, 23, 5).getTime(), fourPm, "de")).toBe("23:05");
 		expect(outcomeText({ outcome: "nothingToReset" })).toBe("Nothing to reset");
 		expect(outcomeText({ outcome: "reset", warning: "Applied; the hub keeps its cooldown." })).toBe("Applied; the hub keeps its cooldown.");
 	});

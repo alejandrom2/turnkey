@@ -347,14 +347,18 @@ for (const profile of PROFILES) {
 		const output = join(pluginDir, "profiles", `${profile.file}.streamDeckProfile`);
 		mkdirSync(join(output, ".."), { recursive: true });
 		rmSync(output, { force: true });
-		// A fixed time on every entry keeps a rebuilt zip byte-identical, so regenerating causes no diff.
+		// A fixed time, sorted entries and UTC (zip stores local time) keep a rebuilt zip byte-identical on every platform.
 		const stamp = new Date("2026-01-01T00:00:00Z");
-		const touch = (path: string) => {
-			if (statSync(path).isDirectory()) for (const name of readdirSync(path)) touch(join(path, name));
+		const entries: string[] = [];
+		const add = (entry: string) => {
+			const path = join(staging, entry);
 			utimesSync(path, stamp, stamp);
+			entries.push(entry);
+			if (statSync(path).isDirectory()) for (const name of readdirSync(path).sort()) add(join(entry, name));
 		};
-		touch(staging);
-		execFileSync("/usr/bin/zip", ["-X", "-q", "-r", output, "package.json", "Profiles"], { cwd: staging });
+		add("package.json");
+		add("Profiles");
+		execFileSync("/usr/bin/zip", ["-X", "-q", output, ...entries], { cwd: staging, env: { ...process.env, TZ: "UTC" } });
 		console.log(`wrote ${output}`);
 	} finally {
 		rmSync(staging, { recursive: true, force: true });

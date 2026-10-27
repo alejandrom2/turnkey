@@ -8,14 +8,14 @@ import { collectLimitAccounts, collectLimitPools, displayLimitWindows, type Limi
 import { knownWindows, type ResetCreditOutcome, type UsageLimitSourceSnapshot } from "./types.js";
 
 /** One environment's providers and hub accounts, as its config subscription last reported them. */
-export type LimitsSource = {
+type LimitsSource = {
 	environmentId: string;
 	label: string;
 	providers: readonly ConfigProvider[] | undefined;
 	sources: readonly UsageLimitSourceSnapshot[] | undefined;
 };
 
-export function limitPresentations(sources: readonly LimitsSource[]): LimitPresentations {
+function limitPresentations(sources: readonly LimitsSource[]): LimitPresentations {
 	return new Map(
 		sources.map((source) => [
 			source.environmentId,
@@ -40,11 +40,11 @@ export function limitPresentations(sources: readonly LimitsSource[]): LimitPrese
 /** Every provider's pool across `sources`, as T3 Code's Limits page pools them. */
 export const limitPools = (sources: readonly LimitsSource[], now: number): readonly LimitPool[] => collectLimitPools(collectLimitAccounts(limitPresentations(sources)), now);
 
-export type LimitsShow = "left" | "used";
+type LimitsShow = "left" | "used";
 export const limitsShow = (value: unknown): LimitsShow => (value === "used" ? "used" : "left");
 
 /** What a press beyond a tap does: open T3 Code's Usage page (default), or spend a banked reset from the deck. */
-export type ResetAction = "open" | "spend";
+type ResetAction = "open" | "spend";
 export const resetAction = (value: unknown): ResetAction => (value === "spend" ? "spend" : "open");
 
 /**
@@ -115,13 +115,16 @@ export function limitGauge(pool: LimitPool, window: LimitPoolWindow, now: number
 
 const DAY_MS = 86_400_000;
 
-/** When a reset lands: "now", a time within a day ("3:05 PM"), else a date ("Aug 28"), in this computer's locale. */
-export function resetText(at: number, now: number): string {
+/**
+ * When a reset lands: "now", a time today ("3:05 PM"), a weekday and time within a day ("Wed 3:05 PM"), else a date
+ * ("Aug 28"), in `locale` (this computer's when undefined).
+ */
+export function resetText(at: number, now: number, locale?: string): string {
 	if (at <= now) return t("limits.resetsNow");
 	const date = new Date(at);
-	return at - now < DAY_MS
-		? date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
-		: date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+	if (at - now >= DAY_MS) return date.toLocaleDateString(locale, { month: "short", day: "numeric" });
+	const today = date.toDateString() === new Date(now).toDateString();
+	return date.toLocaleString(locale, { ...(today ? {} : { weekday: "short" }), hour: "numeric", minute: "2-digit" });
 }
 
 /** "1 reset", "3 resets"; empty without any. */

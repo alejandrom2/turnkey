@@ -143,4 +143,14 @@ describe("UsageStore edges", () => {
 		expect(store.view([newer], 7)).toEqual({ loading: false, mismatch: "clientBehind" });
 		expect(store.view([older], 7)).toEqual({ loading: false, mismatch: "serverBehind" });
 	});
+
+	it("shows a current machine's empty period rather than the warning when another machine is behind", async () => {
+		const store = new UsageStore(() => undefined);
+		const empty = reader([async () => summary(0, { buckets: [] })]);
+		const older = reader([async () => summary(1, { contractVersion: 3 })], "http://old");
+		await Promise.all([store.refresh(empty, 7), store.refresh(older, 7)]);
+		const view = store.view([empty, older], 7);
+		expect(view.mismatch).toBeUndefined();
+		expect(view.merged?.costUsd).toBe(0);
+	});
 });

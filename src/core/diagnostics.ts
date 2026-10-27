@@ -8,7 +8,7 @@
 export const VERBOSE_MS = 24 * 60 * 60 * 1000;
 
 /** How many warnings and errors from the log the export keeps. */
-export const RECENT_PROBLEMS = 50;
+const RECENT_PROBLEMS = 50;
 
 /** Whether verbose logging is on: until its end time passes. */
 export const verboseOn = (until: number | undefined, now: number): boolean => until !== undefined && until > now;
@@ -64,7 +64,7 @@ export function recentProblems(log: string, limit = RECENT_PROBLEMS): string[] {
 /** The settings worth reporting: appearance and behavior. Tokens, scope requests and machine URLs are never read. */
 const REPORTED_SETTINGS = ["scheme", "stripBackground", "stripStyle", "stripHairline", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"] as const;
 
-export type DiagnosticsMachine = {
+type DiagnosticsMachine = {
 	url: string;
 	state: string;
 	message?: string;

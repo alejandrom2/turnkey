@@ -4,16 +4,17 @@
  * labels, effort and speed options, and provider marks. Pure, apart from the injected ACP icon fetch.
  */
 import { type MessageKey, t } from "./i18n.js";
-import { initialsBadgeSvg, PROVIDER_MARKS, providerInstanceInitials } from "./providerIcons.js";
+import { PROVIDER_MARKS } from "./providerIcons.js";
+import { escapeXml, isHexColor } from "./render.js";
 import type { ProviderSkill, WorkspaceSnapshot } from "./skills.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 import type { LimitProvider, ServerProviderUsageLimits } from "./usage/types.js";
 
-export type ProviderOptionDescriptor =
+type ProviderOptionDescriptor =
 	| { id: string; label: string; type: "select"; options: { id: string; label: string; isDefault?: boolean }[]; currentValue?: string; promptInjectedValues?: string[] }
 	| { id: string; label: string; type: "boolean"; currentValue?: boolean };
 
-export type ConfigModel = {
+type ConfigModel = {
 	slug: string;
 	name: string;
 	shortName?: string;
@@ -57,7 +58,7 @@ export type ModelPreferences = {
 
 export type ModelConfig = { providers?: ConfigProvider[]; settings?: ModelPreferences };
 
-export type ModelOptionInfo = {
+type ModelOptionInfo = {
 	id: string;
 	label: string;
 	type: "select" | "boolean";
@@ -68,7 +69,7 @@ export type ModelOptionInfo = {
 };
 
 /** Options as T3 Code reads them; prompt-injected values (Claude's Ultrathink) are kept apart from the real ones. */
-export function optionInfo(descriptor: ProviderOptionDescriptor): ModelOptionInfo {
+function optionInfo(descriptor: ProviderOptionDescriptor): ModelOptionInfo {
 	if (descriptor.type === "boolean") {
 		return {
 			id: descriptor.id,
@@ -210,7 +211,7 @@ function entry(config: ModelConfig, provider: ConfigProvider, model: ConfigModel
 		label: `${providerName} · ${name}`,
 		accentColor: provider.accentColor,
 		iconUrl: provider.iconUrl,
-		badge: /^#[0-9a-f]{6}$/i.test(provider.accentColor?.trim() ?? "") || sameDriver > 1,
+		badge: isHexColor(provider.accentColor?.trim()) || sameDriver > 1,
 		options: (model.capabilities?.optionDescriptors ?? []).map(optionInfo),
 	};
 }
@@ -322,7 +323,7 @@ export function effortValues(config: ModelConfig | undefined): { value: string; 
 	return [...seen].map(([value, label]) => ({ value, label }));
 }
 
-export type SpeedToggle = { option: ModelOptionInfo; fast: boolean; label: string; next: OptionValue; nextLabel: string };
+type SpeedToggle = { option: ModelOptionInfo; fast: boolean; label: string; next: OptionValue; nextLabel: string };
 
 /**
  * The model's fast switch, as T3 Code's traits menu reads it (packages/client-runtime/src/modelTraits.ts): Claude's
@@ -356,7 +357,7 @@ export function officialAcpIconUrl(icon: string | undefined): string | undefined
 	}
 }
 
-export type MarkArt = { viewBox: string; body: string };
+type MarkArt = { viewBox: string; body: string };
 
 /**
  * A registry SVG made safe and one color, as T3 Code tints it: no scripts, events, styles, foreign content or
@@ -430,9 +431,39 @@ function placed(x: number, y: number, size: number, art: MarkArt, color: string,
 	return `<g transform="translate(${left} ${top}) scale(${scale})" color="${color}" fill="${fill}">${art.body}</g>`;
 }
 
-/** T3 Code's initials badge, moved to (x, y). */
-const badgeAt = (x: number, y: number, ...args: Parameters<typeof initialsBadgeSvg>) =>
-	`<g transform="translate(${x} ${y})">${initialsBadgeSvg(...args).replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g>`;
+// Port of providerInstanceInitials (packages/client-runtime/src/state/providerInstanceDisplay.ts).
+function providerInstanceInitials(label: string): string {
+	const words = label
+		.replace(/[^\P{P}'’]+/gu, " ")
+		.split(/\s+/u)
+		.map((word) => word.replace(/^['’]+|['’]+$/gu, ""))
+		.filter(Boolean);
+	if (words.length === 0) return "";
+	if (words.length === 1) return Array.from(words[0]!).slice(0, 2).join("").toUpperCase();
+	return words
+		.slice(0, 2)
+		.map((word) => Array.from(word)[0]?.toUpperCase() ?? "")
+		.join("");
+}
+
+function providerAccentForegroundColor(accentColor: string): "#000000" | "#ffffff" {
+	const linearChannel = (offset: number) => {
+		const value = Number.parseInt(accentColor.slice(offset, offset + 2), 16) / 255;
+		return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+	};
+	const luminance = 0.2126 * linearChannel(1) + 0.7152 * linearChannel(3) + 0.0722 * linearChannel(5);
+	const blackContrast = (luminance + 0.05) / 0.05;
+	const whiteContrast = 1.05 / (luminance + 0.05);
+	return blackContrast >= whiteContrast ? "#000000" : "#ffffff";
+}
+
+/** T3 Code's initials badge at (x, y): its accent with a contrasting letter, or muted (bg-card/text-muted-foreground) without one. */
+function badgeAt(x: number, y: number, displayName: string, accentColor: string | undefined, size: number): string {
+	const accent = accentColor?.trim();
+	const [bg, fg] = isHexColor(accent) ? [accent, providerAccentForegroundColor(accent)] : ["#2a2a2a", "#a3a3a3"];
+	const r = size / 2;
+	return `<g transform="translate(${x} ${y})"><circle cx="${r}" cy="${r}" r="${r}" fill="${bg}"/><text x="${r}" y="${r}" dy="0.35em" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-weight="600" font-size="${Math.round(size * 0.42)}" fill="${fg}">${escapeXml(providerInstanceInitials(displayName))}</text></g>`;
+}
 
 /** The name without a leading provider word ("Claude Opus 4.7" → "Opus 4.7"), kept whole when only a number would remain. */
 export function bareModelName(model: Pick<CatalogModel, "name" | "providerName">): string {
@@ -450,7 +481,7 @@ const BRAND_HIGHLIGHT: Record<string, string> = { codex: "#4C9BFF" };
 /** A model's color for highlighted text: the instance's accent, else its provider's brand color; undefined for white marks. */
 export function modelColor(model: Pick<CatalogModel, "driver" | "accentColor">): string | undefined {
 	const accent = model.accentColor?.trim();
-	if (accent && /^#[0-9a-f]{6}$/i.test(accent)) return accent;
+	if (isHexColor(accent)) return accent;
 	const color = BRAND_HIGHLIGHT[model.driver] ?? PROVIDER_MARKS[model.driver]?.color;
 	if (color === undefined) return undefined;
 	const [r, g, b] = [1, 3, 5].map((at) => Number.parseInt(color.slice(at, at + 2), 16));

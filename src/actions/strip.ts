@@ -3,11 +3,9 @@ import type { JsonObject } from "@elgato/utils";
 
 import { t } from "../core/i18n.js";
 import { Marquee } from "../core/marquee.js";
-import type { CatalogModel } from "../core/models.js";
 import { motionMode } from "../core/motion.js";
 import { FEATURES } from "../core/features.js";
 import { Pet, petArt } from "../core/pet.js";
-import { powerArt } from "../core/power.js";
 import { dialGroups, type DialPlace, dialRuns, type Run } from "../core/flow.js";
 import { BLANK_ART, COLORS, glyphArt, type MarkPainter, resolveAppearance, type StripAppearance, stripCanvas } from "../core/render.js";
 import { type SliderInput, sliderArt, sliderLabelSlot, sliderLabelText } from "../core/slider.js";
@@ -76,14 +74,11 @@ function placeDial(id: string, place: DialPlace | undefined): void {
 const marquee = new Marquee(repaint);
 const slides = new Slides(repaint);
 
-/** A model's provider mark, as the Model key draws it. */
-export const markArt = (model: CatalogModel): MarkPainter => powerArt({ kind: "mark", model }, { acpIcons: deck.acpIcons });
-
-/** The strip shown instead of a dial's content while its machine is not usable. */
 /** A dim disc where a strip's icon will be, while the first connection loads. */
 const SKELETON_MARK: MarkPainter = (x, y, size) => `<circle cx="${x + size / 2}" cy="${y + size / 2}" r="${size / 2}" fill="#FFFFFF" fill-opacity=".1"/>`;
 
-export function disconnectedStrip(header: string, machine: string | undefined): StripContent | undefined {
+/** The strip shown instead of a dial's content while its machine is not usable. */
+function disconnectedStrip(header: string, machine: string | undefined): StripContent | undefined {
 	const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("plug", COLORS.muted), accent: COLORS.muted, value, detail });
 	switch (connectionProblem(machine)) {
 		case "loading":
@@ -115,6 +110,10 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 	/** The presentation set on each dial; none means the manifest's layout, the classic one. */
 	readonly #layouts = new Map<string, Presentation>();
 
+	/** The strip's header, which also heads the connection notice while the dial's machine is unusable. */
+	protected abstract heading(action: Action<T>): string;
+
+	/** The face while the dial's machine is usable. */
 	protected abstract face(action: Action<T>): StripContent;
 
 	/** A slider that replaces the classic layout, as on the Power dial; undefined keeps the classic face. */
@@ -147,13 +146,8 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		return settings.background === "gradient" ? { ...settings, background: "t3" } : undefined;
 	}
 
-	/** The style this dial takes when neither it nor the global setting picks one. */
-	protected get defaultStyle(): StripStyle {
-		return "classic";
-	}
-
 	#style(action: Action<T>) {
-		return resolveStripStyle(deck.appearance, this.settingsOf(action), this.defaultStyle);
+		return resolveStripStyle(deck.appearance, this.settingsOf(action), "classic");
 	}
 
 	/** The strip style this dial resolves to now. */
@@ -161,12 +155,18 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		return this.#style(action).style;
 	}
 
-	protected override async paint(action: Action<T>): Promise<void> {
+	/** The connection notice while the dial's machine is unusable; the face, slider, picture and list wait meanwhile. */
+	#offline(action: Action<T>): StripContent | undefined {
+		return disconnectedStrip(this.heading(action), this.machineOf(action));
+	}
+
+	protected override async draw(action: Action<T>): Promise<void> {
 		if (!action.isDial()) return;
 		painters.set(action.id, () => void this.paint(action));
 		const { style, scroll } = this.#style(action);
-		const slider = style === "classic" ? this.slider(action) : undefined;
-		const picture = style === "classic" && slider === undefined ? this.picture(action) : undefined;
+		const offline = this.#offline(action);
+		const slider = style === "classic" && offline === undefined ? this.slider(action) : undefined;
+		const picture = style === "classic" && offline === undefined && slider === undefined ? this.picture(action) : undefined;
 		const presentation: Presentation = slider === undefined && picture === undefined ? style : "slider";
 		if ((this.#layouts.get(action.id) ?? "classic") !== presentation) {
 			this.#layouts.set(action.id, presentation);
@@ -176,7 +176,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 			await action.setFeedbackLayout(LAYOUT[presentation]);
 			this.forgetSent(action.id);
 		}
-		const content = this.face(action);
+		const content = offline ?? this.face(action);
 		const reading = this.#reading.get(action.id);
 		// The pet skips a strip in the reading view; flashes and review cards build their own canvas without it.
 		const walk = reading === undefined ? pet.walk() : undefined;
@@ -196,7 +196,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 			const offset = marquee.offset(action.id, reading !== undefined || scroll === "off" ? undefined : line);
 			return this.setFeedback(action, stripFeedback(content, { appearance, scroll, offset, full: reading?.text, top: reading?.top }));
 		}
-		const list = this.list(action) ?? listFromContent(content);
+		const list = (offline === undefined ? this.list(action) : undefined) ?? listFromContent(content);
 		const target = list.items[list.index];
 		const position =
 			style === "carousel" && target !== undefined ? slides.position(action.id, { index: list.index, key: target.key, count: list.items.length, wrap: list.wrap }) : list.index;
@@ -282,7 +282,8 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 	/** Opens the reading view: the overflowing line in the Classic layout, the selected item's label and details otherwise. */
 	async #open(action: DialAction<T>): Promise<void> {
 		const { style } = this.#style(action);
-		const content = this.face(action);
+		const offline = this.#offline(action);
+		const content = offline ?? this.face(action);
 		let reading: Reading;
 		if (this.#layouts.get(action.id) === "slider") {
 			const lines = readingLines([content.value, content.detail]);
@@ -293,7 +294,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 			if (line === undefined) return;
 			reading = { text: line.text, top: 0 };
 		} else {
-			const lines = listReading(this.list(action) ?? listFromContent(content));
+			const lines = listReading((offline === undefined ? this.list(action) : undefined) ?? listFromContent(content));
 			if (lines.length < 2) return;
 			reading = { lines, top: 0 };
 		}
