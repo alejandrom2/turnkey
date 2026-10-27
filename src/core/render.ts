@@ -85,34 +85,65 @@ const SPECTRUM_OFFSETS = [0, 0.18, 0.36, 0.54, 0.72, 0.9, 1];
 /** The spectrum's gradient stops, for fills that carry it (Ultrathink on a track). */
 export const spectrumStops = (): string => ULTRATHINK_STOPS.map((color, index) => `<stop offset="${SPECTRUM_OFFSETS[index]}" stop-color="${color}"/>`).join("");
 
-/** How a model's top effort level stands out (Advanced → Max effort color): a blue-to-violet gradient by default. */
+/** How effort and models are colored (Advanced → Colors): gradients by default. */
 export type MaxEffortStyle = "gradient" | "solid" | "model" | "off";
 export const maxEffortStyle = (value: unknown): MaxEffortStyle => (value === "solid" || value === "model" || value === "off" ? value : "gradient");
 
+/** Color stops as data: offset (0 to 1) and color. */
+export type Stops = readonly (readonly [number, string])[];
+/** A fill: one color, or a gradient laid along the shape's run. */
+export type Paint = string | { gradient: Stops };
+
 const MAX_VIOLET = "#AD7BF9";
-const MAX_STOPS = `<stop offset="0" stop-color="#648FFD"/><stop offset=".55" stop-color="${MAX_VIOLET}"/><stop offset="1" stop-color="#8B84FB"/>`;
+const EFFORT_GRADIENT: Stops = [
+	[0, "#648FFD"],
+	[0.55, MAX_VIOLET],
+	[1, "#8B84FB"],
+];
+export const SPECTRUM: Stops = ULTRATHINK_STOPS.map((color, index) => [SPECTRUM_OFFSETS[index]!, color] as const);
 
-/** A fill: one color, or gradient stops laid along the shape's run. */
-export type Paint = string | { stops: string };
+const hex = (color: string) => [1, 3, 5].map((at) => Number.parseInt(color.slice(at, at + 2), 16));
+const toHex = (rgb: number[]) => `#${rgb.map((value) => Math.round(Math.max(0, Math.min(255, value))).toString(16).padStart(2, "0")).join("").toUpperCase()}`;
+const mix = (a: string, b: string, t: number) => toHex(hex(a).map((value, index) => value + (hex(b)[index]! - value) * t));
 
-/** What the top effort level paints: `text` for its word and icon, `fill` for a track; undefined leaves them as usual. */
-export function maxEffortPaint(style: MaxEffortStyle, modelColor: string | undefined): { text: string; fill: Paint } | undefined {
+/** The color `t` (0 to 1) of the way along `stops`. */
+export function sampleStops(stops: Stops, t: number): string {
+	const at = Math.max(0, Math.min(1, t));
+	const after = stops.findIndex(([offset]) => offset >= at);
+	if (after <= 0) return stops[Math.max(0, after)]![1];
+	const [from, a] = stops[after - 1]!;
+	const [to, b] = stops[after]!;
+	return mix(a, b, (at - from) / (to - from || 1));
+}
+
+/** Any provider's gradient: a light tint of its color into the color itself; gray for white marks. */
+export const providerGradient = (color: string | undefined): Stops => [
+	[0, mix(color ?? "#8E9199", "#FFFFFF", 0.45)],
+	[1, color ?? "#8E9199"],
+];
+
+/** An effort level `t` of the way up its model's ladder: its text color and the track's fill; undefined leaves them as usual. */
+export function effortTone(style: MaxEffortStyle, t: number, top: boolean, modelColor: string | undefined): { text: string; fill: Paint } | undefined {
 	switch (style) {
 		case "gradient":
-			return { text: MAX_VIOLET, fill: { stops: MAX_STOPS } };
+			return { text: sampleStops(EFFORT_GRADIENT, t), fill: { gradient: EFFORT_GRADIENT } };
 		case "solid":
-			return { text: MAX_VIOLET, fill: MAX_VIOLET };
+			return top ? { text: MAX_VIOLET, fill: MAX_VIOLET } : undefined;
 		case "model":
-			return modelColor === undefined ? undefined : { text: modelColor, fill: modelColor };
+			return top && modelColor !== undefined ? { text: modelColor, fill: modelColor } : undefined;
 		case "off":
 			return undefined;
 	}
 }
 
+/** A model's track fill: its provider's gradient, or its color; gray for white marks, so the white thumb stands out. */
+export const modelFill = (style: MaxEffortStyle, color: string | undefined): Paint => (style === "gradient" ? { gradient: providerGradient(color) } : (color ?? "#8E9199"));
+
 /** `paint` as a fill attribute value, defining its gradient (`id`, along x1→x2) into `defs` when it has one. */
 export function paintFill(paint: Paint, id: string, x1: number, x2: number, defs: string[]): string {
 	if (typeof paint === "string") return paint;
-	defs.push(`<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="0" x2="${x2}" y2="0">${paint.stops}</linearGradient></defs>`);
+	const stops = paint.gradient.map(([offset, color]) => `<stop offset="${offset}" stop-color="${color}"/>`).join("");
+	defs.push(`<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="0" x2="${x2}" y2="0">${stops}</linearGradient></defs>`);
 	return `url(#${id})`;
 }
 
@@ -399,7 +430,7 @@ export function ladderCue(count: number, index: number, spectrum = false, paint?
 	const step = 92 / (stops - 1);
 	const x = (i: number) => +(26 + i * step).toFixed(2);
 	const defs: string[] = [];
-	const fill = paintFill(spectrum ? { stops: spectrumStops() } : (paint ?? COLORS.accent), "cue-fill", 16, 128, defs);
+	const fill = paintFill(spectrum ? { gradient: SPECTRUM } : (paint ?? COLORS.accent), "cue-fill", x(0), x(stops - 1), defs);
 	const dots = Array.from({ length: stops }, (_, i) => `<circle cx="${x(i)}" cy="119" r="2" fill="#FFFFFF" fill-opacity="${i <= at ? ".55" : ".25"}"/>`).join("");
 	return `${defs.join("")}<rect x="16" y="110" width="112" height="18" rx="9" fill="#FFFFFF" fill-opacity=".1"/><rect x="16" y="110" width="${+(x(at) - 16 + 9).toFixed(2)}" height="18" rx="9" fill="${fill}"/>${dots}<circle cx="${x(at)}" cy="119" r="10" fill="#FFFFFF"/>`;
 }
@@ -576,6 +607,22 @@ export const glyphArt =
 	(name: GlyphName, color: string = COLORS.text): MarkPainter =>
 	(x, y, size) =>
 		glyph(name, x, y, size, color);
+
+let paintedIds = 0;
+
+/** A glyph in any paint: a gradient shows through the glyph's shape, laid corner to corner. */
+export function paintedGlyphArt(name: GlyphName, paint: Paint): MarkPainter {
+	if (typeof paint === "string") return glyphArt(name, paint);
+	return (x, y, size) => {
+		const id = `glyph-paint-${paintedIds++}`;
+		const stops = paint.gradient.map(([offset, color]) => `<stop offset="${offset}" stop-color="${color}"/>`).join("");
+		return (
+			`<defs><linearGradient id="${id}-fill" gradientUnits="userSpaceOnUse" x1="${x}" y1="${y}" x2="${x + size}" y2="${y + size}">${stops}</linearGradient>` +
+			`<mask id="${id}" maskUnits="userSpaceOnUse" x="${x}" y="${y}" width="${size}" height="${size}">${glyph(name, x, y, size, "#FFFFFF")}</mask></defs>` +
+			`<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="url(#${id}-fill)" mask="url(#${id})"/>`
+		);
+	};
+}
 
 /** A provider mark (or any painter) in a square icon slot, 38×38 by default: the strip's. */
 export const stripMarkIcon = (mark: MarkPainter, box = 38): string =>

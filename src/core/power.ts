@@ -4,7 +4,7 @@
  */
 import { type AcpIcons, type CatalogModel, currentOptionValue, effortOption, findModel, type ModelConfig, pickableModels, providerMark, runtimeModes } from "./models.js";
 import { t } from "./i18n.js";
-import { COLORS, type GlyphName, glyphArt, type MarkPainter, MODE_GLYPH, stripMarkIcon } from "./render.js";
+import { COLORS, effortTone, type GlyphName, glyphArt, type MarkPainter, type MaxEffortStyle, MODE_GLYPH, stripMarkIcon } from "./render.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 import { ULTRATHINK } from "./ultrathink.js";
 
@@ -43,6 +43,14 @@ export function effortChoices(model: Pick<CatalogModel, "options"> | undefined):
 export function isTopEffort(choices: readonly Extract<PowerChoice, { kind: "effort" }>[], key: string | undefined): boolean {
 	const levels = choices.filter((choice) => !choice.ultrathink);
 	return levels.length > 1 && key !== undefined && levels.at(-1)?.key === key;
+}
+
+/** How effort level `key` is colored, by where it sits on its model's ladder; undefined for Ultrathink or an unknown level. */
+export function effortToneOf(choices: readonly Extract<PowerChoice, { kind: "effort" }>[], key: string | undefined, style: MaxEffortStyle, modelColor: string | undefined) {
+	const levels = choices.filter((choice) => !choice.ultrathink);
+	const at = levels.findIndex((choice) => choice.key === key);
+	if (at < 0) return undefined;
+	return effortTone(style, levels.length > 1 ? at / (levels.length - 1) : 1, isTopEffort(choices, key), modelColor);
 }
 
 /** The effort a thread shows: Ultrathink while armed, else its option's value. */

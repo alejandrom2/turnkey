@@ -15,8 +15,8 @@ import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { messageTable, t } from "../core/i18n.js";
-import { effortValues, favoriteModels, findModel, pickableModels } from "../core/models.js";
-import { COLORS, type GlyphName, renderNoticeKey, renderResultKey, renderReviewKey, stripCanvas, stripIcon } from "../core/render.js";
+import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels } from "../core/models.js";
+import { COLORS, type GlyphName, maxEffortStyle, type Paint, providerGradient, renderNoticeKey, renderResultKey, renderReviewKey, stripCanvas, stripIcon } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
@@ -435,6 +435,14 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		}
 	}
 }
+
+export const colorStyle = () => maxEffortStyle(deck.appearance.maxEffort);
+
+/** Fast's paint: the model's gradient (or its color), the accent for white marks unless gradients are on. */
+export const speedPaint = (model: CatalogModel | undefined): Paint => {
+	const color = model && modelColor(model);
+	return colorStyle() === "gradient" ? { gradient: providerGradient(color ?? COLORS.accent) } : (color ?? COLORS.accent);
+};
 
 /** Sends `text` to an existing thread, with T3 Code's Ultrathink prefix while the deck has it armed there. */
 export function sendToThread(thread: DeckThread, text: string, mode: SendMode): Promise<void> {

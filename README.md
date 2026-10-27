@@ -60,7 +60,7 @@ A key that can't act right now is dimmed, and pressing it says why. A press that
 - **Hold to send**: a held press sends. Holding then can't also restart (Send Prompt, Quick Prompt) or start a thread (Prompts dial).
 - **Send right away**: a press acts at once.
 
-**Max effort color** (**Advanced**): how a model's top effort level stands out on the Effort key and the Power dial, its word, icon and slider fill. Gradient (default, blue to violet), Solid violet, Model color or Off. Ultrathink always shows T3 Code's spectrum.
+**Colors** (**Advanced**): Gradient (default) colors each effort level along a blue-to-violet ladder, on the Effort key and the Power dial, and gives each model's slider and Fast its provider's own gradient. Solid and Model color mark only a model's top effort level, in violet or the model's color; Off leaves them plain. Ultrathink always shows T3 Code's spectrum.
 
 **Motion** (**Advanced**): Full (default) spins running threads on keys and strips, pulses keys waiting on you and flashes a thread once when it finishes or fails. Reduced spins slowly without pulsing. Off keeps every face still.
 
