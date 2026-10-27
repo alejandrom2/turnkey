@@ -390,7 +390,7 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 			mark: mark(tile.pool.driver),
 			label: gauge.label,
 			value: `${gauge.percent}%`,
-			lines: typeof credits === "string" ? [[when, credits].filter(Boolean).join(" · ")] : [when, credits],
+			lines: [when, credits],
 			fill: gauge.percent / 100,
 			...(gauge.pace === undefined ? {} : { marker: gauge.pace / 100 }),
 			dim: gauge.stale,

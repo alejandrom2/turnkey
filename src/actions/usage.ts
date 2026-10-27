@@ -221,13 +221,14 @@ export class UsageDial extends StripDial<UsageDialSettings> {
 		if (!usageAccess(url) || item === undefined) return undefined;
 		return gaugeStripArt({
 			mark: itemMark(item),
-			label: item.label,
+			// The total names its period; each model's bar is its share of it.
+			label: item.provider === undefined ? periodLabel(period) : item.label,
 			value: item.cost,
 			lines: [item.tokens, item.detail],
 			...(item.share === undefined ? {} : { fill: item.share }),
 			dim: loading,
-			footer: periodLabel(period),
 			position: items.length > 1 ? `${index + 1}/${items.length}` : "",
+			stacked: true,
 		});
 	}
 
