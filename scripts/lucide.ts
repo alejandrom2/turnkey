@@ -70,6 +70,8 @@ const NAME = {
   worktree: "folder-git-2", // T3's worktree mark
   workflow: "workflow", // T3's workflow
   subagent: "bot", // T3's subagent rows
+  preview: "globe", // T3's preview panel
+  device: "smartphone", // T3's device panel
 } as const;
 
 const dir = process.argv[2];

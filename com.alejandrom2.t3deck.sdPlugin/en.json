@@ -72,7 +72,7 @@
 	},
 	"com.alejandrom2.t3deck.organize": {
 		"Name": "Organize",
-		"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread."
+		"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread, or wakes the thread snoozed last."
 	},
 	"com.alejandrom2.t3deck.pr": {
 		"Name": "Pull Request",
@@ -118,9 +118,13 @@
 		"Name": "Open in Editor",
 		"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on."
 	},
+	"com.alejandrom2.t3deck.preview": {
+		"Name": "Open Preview",
+		"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser."
+	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Health",
-		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, signed out, update required, check failed). Tap reconnects."
+		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects."
 	},
 	"com.alejandrom2.t3deck.task": {
 		"Name": "Run Task",
@@ -201,6 +205,13 @@
 		"Name": "Usage",
 		"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices."
 	},
+	"com.alejandrom2.t3deck.dial.devices": {
+		"Name": "Devices Dial",
+		"Tooltip": "Rotate through T3 Code's simulators and emulators. Press starts the shown one, or opens it, in the thread's Device panel; hold powers it off. Touch looks for devices again.",
+		"Encoder": {
+			"TriggerDescription": { "Rotate": "Choose device", "Push": "Start or open (hold: power off)", "Touch": "Look again" }
+		}
+	},
 	"com.alejandrom2.t3deck.dial.usage": {
 		"Name": "Usage Dial",
 		"Tooltip": "Rotate through a period's total and each model's cost, tokens, cache hit rate and cost per million tokens. Press or tap refreshes; a long press reloads model prices.",
@@ -257,7 +268,9 @@
 			"snooze": "Snooze",
 			"snoozeFor": "Snooze {duration}",
 			"archive": "Archive",
-			"markUnread": "Unread"
+			"markUnread": "Unread",
+			"wake": "Wake thread",
+			"nothingSnoozed": "Nothing snoozed"
 		},
 		"notice": {
 			"openT3Code": "Open T3 Code",
@@ -282,10 +295,11 @@
 			"readOnly": "Read only",
 			"connecting": "Connecting…",
 			"needsPairing": "Needs pairing",
-			"notFound": "Not installed",
-			"checkFailed": "Check failed",
-			"signedOut": "Signed out",
-			"updateRequired": "Update required",
+			"notFound": "Not found",
+			"unavailable": "Unavailable",
+			"unauthenticated": "Not authenticated",
+			"unsupported": "Unsupported version",
+			"broken": "Known broken version",
 			"needsAttention": "Needs attention",
 			"updateAvailable": "Update available",
 			"disabled": "Disabled",
@@ -566,6 +580,9 @@
 			"repo": "Something to act on",
 			"editor": "An editor on the machine",
 			"limits": "A provider that reports limits",
+			"snoozed": "A snoozed thread",
+			"preview": "A preview or HTML render",
+			"devices": "A simulator or emulator",
 			"notAvailable": "Not available: {value}",
 			"fix": {
 				"openT3": "Open T3 Code on this computer, then press the key.",
@@ -591,7 +608,10 @@
 				"noFindings": "Nothing is failing or unresolved on it.",
 				"providersInT3": "Fix them in T3 Code under Settings → Providers.",
 				"queueMessage": "Send a message while the thread works; it waits in its queue.",
-				"addTask": "Add one in T3 Code under Settings → Scheduled tasks."
+				"addTask": "Add one in T3 Code under Settings → Scheduled tasks.",
+				"snoozeOne": "Snooze one with an Organize key or in T3 Code.",
+				"openPreview": "Open a page in the thread's preview panel in T3 Code, or ask the agent to render HTML.",
+				"turnOnDevices": "Turn on Devices in T3 Code's Device panel, with Xcode or Android Studio on that machine."
 			},
 			"findings": "Findings to fix",
 			"providers": "Providers ready",
@@ -604,11 +624,44 @@
 			"noFolder": "No folder",
 			"opensOn": "Opens on {machine}"
 		},
+		"devices": {
+			"title": "Devices",
+			"ios": "iOS",
+			"android": "Android",
+			"open": "Open here",
+			"running": "Running",
+			"starting": "Starting…",
+			"stopped": "Stopped",
+			"loading": "Looking for devices…",
+			"unreadable": "Can't read devices",
+			"off": "Devices are off",
+			"turnOn": "Turn on in T3 Code",
+			"hubStarting": "Starting device hub…",
+			"hubFailed": "The device hub failed to start.",
+			"none": "No simulators or emulators",
+			"touchToCheck": "Touch to look again",
+			"pressToStart": "Press starts it · touch looks again",
+			"pressToOpen": "Press opens it · hold powers off",
+			"holdToStartCloud": "Hold to start: EAS bills",
+			"physical": "Can't power off a real device"
+		},
+		"openPreview": {
+			"title": "Open preview",
+			"none": "No preview",
+			"onlyOn": "Only on {machine}",
+			"htmlRender": "HTML render"
+		},
 		"inspector": {
 			"editor": {
 				"label": "Editor",
 				"loading": "Loading editors…",
 				"hint": "Opens the selected thread's worktree, or its project's folder. T3 Code launches the editor on its own machine, which may not be this one."
+			},
+			"devices": {
+				"hint": "Lists the simulators and emulators of the thread's machine and its device hosts. Press starts the shown device in the thread's Device panel, or opens it there if it runs; hold powers it off. A cloud (EAS) device needs a hold to start, since Expo bills while it runs. Turning Devices on and adding hosts happens in T3 Code."
+			},
+			"preview": {
+				"hint": "Opens the page the thread's preview panel shows in this computer's browser, else the thread's newest HTML render. A page on another machine's localhost only opens on that machine, so the key says so; open it from T3 Code there."
 			},
 			"pr": {
 				"confirm": "To send",
@@ -661,7 +714,20 @@
 				"needsNotMet": " · {count} not met",
 				"needsMet": "Met",
 				"needsUnmet": "Not met",
-				"needsChecking": "Checking"
+				"needsChecking": "Checking",
+				"verboseUntil": "On until {time}, then back to normal logging.",
+				"verboseOff": "Logs more detail for 24 hours, then turns itself off. Never logs tokens.",
+				"diagnosticsFailed": "That didn't work. Open the logs folder to look yourself."
+			},
+			"diagnostics": {
+				"title": "Diagnostics",
+				"verbose": "Verbose logging",
+				"verboseLabel": "On for 24 hours",
+				"logs": "Logs",
+				"openLogs": "Open logs folder",
+				"report": "Report",
+				"export": "Export diagnostics",
+				"exportHint": "Saves versions, machines (host, state and access only), action counts and recent errors to a file in the logs folder and shows it. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report."
 			},
 			"advanced": {
 				"title": "Advanced",
@@ -829,6 +895,7 @@
 				"snooze": "Snooze",
 				"archive": "Archive",
 				"markUnread": "Mark unread",
+				"wake": "Wake latest snoozed",
 				"snoozeFor": "Snooze for",
 				"minutes15": "15 minutes",
 				"minutes30": "30 minutes",

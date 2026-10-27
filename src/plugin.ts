@@ -1,10 +1,12 @@
 import streamDeck from "@elgato/streamdeck";
 
 import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.js";
+import { DevicesDial } from "./actions/devices.js";
 import { OpenInEditor } from "./actions/editor.js";
 import { CommitKey, CreatePrKey, PullKey, PushKey } from "./actions/git.js";
 import { LimitsDial, LimitsKey } from "./actions/limits.js";
 import { ForkKey, MergeBackKey, StopWorkflowKey } from "./actions/lineage.js";
+import { OpenPreview } from "./actions/preview.js";
 import { QueueDial } from "./actions/queue.js";
 import { RunSkillKey, SkillsDial } from "./actions/skills.js";
 import { RunTaskKey, TasksDial } from "./actions/tasks.js";
@@ -34,7 +36,7 @@ import {
 import { setTranslator } from "./core/i18n.js";
 import { deck } from "./deck.js";
 
-// Never "trace": it would log the access tokens kept in global settings.
+// Never "trace": it would log the access tokens kept in global settings. Verbose logging raises this to "debug" (deck.ts).
 streamDeck.logger.setLevel("info");
 setTranslator((key) => streamDeck.i18n.translate(key));
 
@@ -72,6 +74,7 @@ for (const instance of [
 	new AskPrKey(),
 	new ReviewGuideKey(),
 	new OpenInEditor(),
+	new OpenPreview(),
 	new LimitsKey(),
 	new UsageKey(),
 	new RunTaskKey(),
@@ -86,6 +89,7 @@ for (const instance of [
 	new PrDial(),
 	new LimitsDial(),
 	new UsageDial(),
+	new DevicesDial(),
 ]) {
 	streamDeck.actions.registerAction(instance);
 }
