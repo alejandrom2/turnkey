@@ -3,7 +3,7 @@
  * up to a few fixes. Built from the same facts the keys' availability uses, so the two never disagree.
  */
 import { type MessageKey, t } from "./i18n.js";
-import { DIAGNOSTICS_SCOPE, PROVIDERS_SCOPE, SOURCE_CONTROL_SCOPE } from "./t3/pairing.js";
+import { ACCESS_SCOPE, DIAGNOSTICS_SCOPE, isOptInScope, MAINTAIN_SCOPE, PROVIDERS_SCOPE, SOURCE_CONTROL_SCOPE, TERMINAL_READ_SCOPE, TERMINAL_SCOPE } from "./t3/pairing.js";
 
 /** Why the action's machine can't be used: none found, removed, unpaired or unreachable (base.ts `ConnectionProblem`). */
 export type Connection = "ready" | "none" | "missing" | "pair" | "offline";
@@ -29,6 +29,10 @@ export type Need =
 	| { kind: "repo"; ok: boolean | undefined; reason?: string }
 	| { kind: "editor"; ok: boolean }
 	| { kind: "limits"; ok: boolean }
+	| { kind: "script"; ok: boolean }
+	| { kind: "guestLinks"; ok: boolean }
+	/** `reason`: why it can't, in T3 Code's terms. */
+	| { kind: "selfUpdate"; ok: boolean; reason?: string }
 	/** Every provider ready; `problems` names what isn't ("Claude: Not authenticated"). */
 	| { kind: "providers"; problems: string[] }
 	/** A saved setting that no longer matches anything: a model, effort, mode, project or editor. */
@@ -44,6 +48,10 @@ const SCOPE_LABEL: Record<string, MessageKey> = {
 	[SOURCE_CONTROL_SCOPE]: "needs.scope.sourceControl",
 	[DIAGNOSTICS_SCOPE]: "needs.scope.diagnostics",
 	[PROVIDERS_SCOPE]: "needs.scope.providers",
+	[MAINTAIN_SCOPE]: "needs.scope.maintain",
+	[TERMINAL_SCOPE]: "needs.scope.terminal",
+	[TERMINAL_READ_SCOPE]: "needs.scope.terminalRead",
+	[ACCESS_SCOPE]: "needs.scope.share",
 };
 
 const CONNECTION_FIX: Record<Exclude<Connection, "ready">, MessageKey[]> = {
@@ -86,7 +94,12 @@ function describe(need: Need): Requirement {
 		case "prompt":
 			return make("prompt", t("needs.prompt"), need.ok, ["needs.fix.typePrompt"]);
 		case "scope":
-			return make(`scope:${need.scope}`, t(SCOPE_LABEL[need.scope] ?? "needs.scope.other", { scope: need.scope }), need.ok, ["needs.fix.newPairLink", "needs.fix.standardAccess"]);
+			return make(
+				`scope:${need.scope}`,
+				t(SCOPE_LABEL[need.scope] ?? "needs.scope.other", { scope: need.scope }),
+				need.ok,
+				isOptInScope(need.scope) ? ["needs.fix.optInNext", "needs.fix.newPairLink"] : ["needs.fix.newPairLink", "needs.fix.standardAccess"],
+			);
 		case "option":
 			return make(`option:${need.option}`, t("needs.option", { option: need.option }), need.ok, ["needs.fix.switchModel"]);
 		case "pr":
@@ -101,6 +114,12 @@ function describe(need: Need): Requirement {
 			return make("editor", t("needs.editor"), need.ok, ["needs.fix.installEditor"]);
 		case "limits":
 			return make("limits", t("needs.limits"), need.ok, ["needs.fix.signInProvider"]);
+		case "script":
+			return make("script", t("needs.script"), need.ok, ["needs.fix.addScript"]);
+		case "guestLinks":
+			return make("guestLinks", t("needs.guestLinks"), need.ok, ["needs.fix.guestLinks"]);
+		case "selfUpdate":
+			return make("selfUpdate", t("needs.selfUpdate"), need.ok, ["needs.fix.selfUpdate"], need.reason ? [need.reason] : []);
 		case "providers":
 			return make("providers", t("needs.providers"), need.problems.length === 0, ["needs.fix.providersInT3"], need.problems);
 		case "value":

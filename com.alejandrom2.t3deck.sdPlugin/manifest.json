@@ -316,6 +316,33 @@
 			"States": [{ "Image": "imgs/actions/skill/key" }]
 		},
 		{
+			"Name": "Update T3",
+			"UUID": "com.alejandrom2.t3deck.update",
+			"Icon": "imgs/actions/update/icon",
+			"Tooltip": "T3 Code's version on a machine. Hold updates it to the newest release; needs update access, asked for at that machine's next pairing.",
+			"PropertyInspectorPath": "ui/update.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/update/key" }]
+		},
+		{
+			"Name": "Run Script",
+			"UUID": "com.alejandrom2.t3deck.script",
+			"Icon": "imgs/actions/script/icon",
+			"Tooltip": "Runs one of the project's saved scripts in the thread's terminal; hold stops it. Needs terminal access (shell), asked for at that machine's next pairing.",
+			"PropertyInspectorPath": "ui/script.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/script/key" }]
+		},
+		{
+			"Name": "Share Thread",
+			"UUID": "com.alejandrom2.t3deck.share",
+			"Icon": "imgs/actions/share/icon",
+			"Tooltip": "Makes a guest link for the thread and copies it; shows Shared and its guest. Hold stops sharing. Needs guest link access, asked for at that machine's next pairing.",
+			"PropertyInspectorPath": "ui/share.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/share/key" }]
+		},
+		{
 			"Name": "Limits",
 			"UUID": "com.alejandrom2.t3deck.limits",
 			"Icon": "imgs/actions/limits/icon",
