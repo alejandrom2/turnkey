@@ -1,5 +1,6 @@
 import type { DeckState } from "./board.js";
 import { LUCIDE } from "./icons.js";
+import type { RuntimeMode } from "./t3/shell.js";
 
 /** Palette follows the native Stream Deck agent style: flat near-black keys, white line glyphs, one status accent. */
 export const COLORS = {
@@ -55,6 +56,31 @@ const THREAD_GLYPH: Record<DeckState, GlyphName> = {
 	stopped: "pause",
 	idle: "chat",
 };
+
+/** T3 Code's access-mode icons. */
+export const MODE_GLYPH: Record<RuntimeMode, GlyphName> = {
+	"approval-required": "modeSupervised",
+	"auto-accept-edits": "modeAutoAcceptEdits",
+	auto: "modeAuto",
+	"full-access": "modeFullAccess",
+};
+
+/**
+ * T3 Code's `.ultrathink-frame` spectrum (apps/web/src/index.css), its saturate(.82) brightness(.92) filter baked into
+ * the stops because Stream Deck's SVG renderer can't be relied on for filters.
+ */
+const ULTRATHINK_STOPS = ["#D76868", "#D49324", "#33AE61", "#28A396", "#4176CE", "#C54986", "#D76868"];
+const SPECTRUM_OFFSETS = [0, 0.18, 0.36, 0.54, 0.72, 0.9, 1];
+
+/** A static 120° spectrum border, like T3 Code's composer while Ultrathink is on. */
+export function ultrathinkFrame(width: number, height: number, radius: number, stroke: number): string {
+	const stops = ULTRATHINK_STOPS.map((color, index) => `<stop offset="${SPECTRUM_OFFSETS[index]}" stop-color="${color}"/>`).join("");
+	const inset = stroke / 2;
+	return (
+		`<defs><linearGradient id="ultrathink" gradientUnits="userSpaceOnUse" x1="0" y1="${height * 0.21}" x2="${width}" y2="${height * 0.79}">${stops}</linearGradient></defs>` +
+		`<rect x="${inset}" y="${inset}" width="${width - stroke}" height="${height - stroke}" rx="${radius}" fill="none" stroke="url(#ultrathink)" stroke-width="${stroke}"/>`
+	);
+}
 
 const FONT_FAMILY =
 	process.platform === "win32" ? `'Segoe UI Variable','Segoe UI',sans-serif` : `-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif`;
@@ -218,6 +244,8 @@ export type ControlKeyInput = {
 	tone?: ControlTone;
 	/** A label too long for two lines shrinks to four smaller ones instead of fading: a refusal reason. */
 	shrink?: boolean;
+	/** Ultrathink is armed for the thread this key acts on. */
+	ultrathink?: boolean;
 };
 
 const TONE_COLOR: Record<ControlTone, string> = { default: "#FFFFFF", approve: COLORS.done, deny: COLORS.error };
@@ -250,7 +278,7 @@ export function renderControlKey(input: ControlKeyInput): string {
 		content.push(glyph(input.glyph, 38, 38, 68, accent));
 	}
 	const body = input.available === false ? `<g opacity=".5">${content.join("")}</g>` : content.join("");
-	return keySvg(background(input.active ? COLORS.keyActive : COLORS.key) + body);
+	return keySvg(background(input.active ? COLORS.keyActive : COLORS.key) + body + (input.ultrathink ? ultrathinkFrame(144, 144, 16, 3) : ""));
 }
 
 /** A press's outcome, shown for a moment: a green check with what happened, or a red mark with why not. */
@@ -303,13 +331,86 @@ export function renderInfoKey(input: InfoKeyInput): string {
 	return keySvg(parts.join(""));
 }
 
-/** Touch-strip background: dark navy into violet, with a hairline tinted by state. */
-export function stripCanvas(accent: string = COLORS.accent): string {
+/** How a dial strip's background looks: T3 Code's card, Elgato's gradient, tinted by thread state, or one colour. */
+export type StripBackground = "t3" | "elgato" | "state" | "custom";
+export type StripAppearance = { background: StripBackground; color?: string; hairline: boolean };
+/** What a strip is about, for the State background: done, failed, waiting on you, or nothing to report. */
+export type StripTone = "done" | "failed" | "attention" | "neutral";
+
+export const DEFAULT_APPEARANCE: StripAppearance = { background: "t3", hairline: true };
+
+export const stripBackground = (value: unknown): StripBackground | undefined =>
+	value === "t3" || value === "elgato" || value === "state" || value === "custom" ? value : undefined;
+
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+/** The dial's own background when it sets one, else the global one; a custom colour must be `#rrggbb`. */
+export function resolveAppearance(
+	global: { stripBackground?: unknown; stripColor?: unknown; stripHairline?: unknown },
+	dial: { background?: unknown; backgroundColor?: unknown } = {},
+): StripAppearance {
+	const own = stripBackground(dial.background);
+	const background = own ?? stripBackground(global.stripBackground) ?? "t3";
+	const color = own === "custom" ? dial.backgroundColor : global.stripColor;
+	const hairline = global.stripHairline !== false && global.stripHairline !== "false";
+	if (background !== "custom") return { background, hairline };
+	return typeof color === "string" && HEX_COLOR.test(color) ? { background, color, hairline } : { background: "t3", hairline };
+}
+
+export const toneOf = (state: DeckState | undefined): StripTone =>
+	state === "done" ? "done" : state === "failed" ? "failed" : state === "approval" || state === "question" ? "attention" : "neutral";
+
+const TONE_TINT: Record<Exclude<StripTone, "neutral">, string> = { done: COLORS.done, failed: COLORS.error, attention: "#F5A524" };
+const T3_CARD = "#121212";
+
+function stripFill(appearance: StripAppearance, tone: StripTone): string {
+	switch (appearance.background) {
+		case "elgato":
+			return `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#121433"/><stop offset="1" stop-color="#241640"/></linearGradient></defs><rect width="200" height="100" fill="url(#g)"/>`;
+		case "custom":
+			return `<rect width="200" height="100" fill="${appearance.color}"/>`;
+		case "state":
+			if (tone === "neutral") break;
+			return (
+				`<defs><linearGradient id="t" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${TONE_TINT[tone]}" stop-opacity=".32"/><stop offset="1" stop-color="${TONE_TINT[tone]}" stop-opacity=".1"/></linearGradient></defs>` +
+				`<rect width="200" height="100" fill="${T3_CARD}"/><rect width="200" height="100" fill="url(#t)"/>`
+			);
+	}
+	return `<rect width="200" height="100" fill="${T3_CARD}"/>`;
+}
+
+/** Touch-strip background, with a hairline tinted by state unless turned off, and T3 Code's Ultrathink frame when armed. */
+export function stripCanvas(accent: string = COLORS.accent, appearance: StripAppearance = DEFAULT_APPEARANCE, tone: StripTone = "neutral", ultrathink = false): string {
+	const hairline = appearance.hairline ? `<rect y="97" width="200" height="3" fill="${accent}" fill-opacity=".85"/>` : "";
 	return svgDataUrl(
-		`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#121433"/><stop offset="1" stop-color="#241640"/></linearGradient></defs><rect width="200" height="100" fill="url(#g)"/><rect y="97" width="200" height="3" fill="${accent}" fill-opacity=".85"/></svg>`,
+		`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${stripFill(appearance, tone)}${hairline}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}</svg>`,
 	);
 }
 
 export function stripIcon(name: GlyphName, color: string = COLORS.text): string {
 	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">${glyph(name, 1, 1, 36, color)}</svg>`);
 }
+
+/** A provider mark (or any painter) in the strip's 38×38 icon slot. */
+export const stripMarkIcon = (mark: MarkPainter): string =>
+	svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">${mark(1, 1, 36)}</svg>`);
+
+/** A strip text line drawn as a picture, for text wider than its slot. */
+export type LineArt = { text: string; width: number; height: number; size: number; weight: number; color: string; offset: number; overflow: number };
+
+const FADE_PX = 14;
+
+/** `text` shifted left by `offset`, fading out at whichever edge still hides text. */
+export function lineArt(line: LineArt): string {
+	const baseline = Math.round(line.height / 2 + line.size * 0.36);
+	const left = line.offset > 0 ? FADE_PX / line.width : 0;
+	const right = line.offset < line.overflow ? 1 - FADE_PX / line.width : 1;
+	const mask =
+		`<defs><linearGradient id="f" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="${left > 0 ? 0 : 1}"/><stop offset="${left}" stop-color="#fff"/><stop offset="${right}" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="${right < 1 ? 0 : 1}"/></linearGradient>` +
+		`<mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="${line.width}" height="${line.height}"><rect width="${line.width}" height="${line.height}" fill="url(#f)"/></mask></defs>`;
+	const text = `<text x="${-line.offset}" y="${baseline}" font-family="${FONT_FAMILY}" font-size="${line.size}" font-weight="${line.weight}" fill="${line.color}" xml:space="preserve">${escapeXml(line.text)}</text>`;
+	return svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="${line.width}" height="${line.height}" viewBox="0 0 ${line.width} ${line.height}">${mask}<g mask="url(#m)">${text}</g></svg>`);
+}
+
+/** Clears a strip picture slot. */
+export const BLANK_ART = svgDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>`);

@@ -180,11 +180,12 @@ describe("effort and speed", () => {
 	const gpt = () => findModel(CONFIG, { instanceId: "codex", model: "gpt-5.5" })!;
 	const opus = () => findModel(CONFIG, { instanceId: "claudeAgent", model: "claude-opus-4-5" })!;
 
-	it("finds effort under T3 Code's reasoning option ids, without prompt-injected values", () => {
+	it("finds effort under T3 Code's reasoning option ids, keeping prompt-injected values apart and listed last", () => {
 		expect(effortOption(gpt())?.id).toBe("reasoningEffort");
 		expect(effortOption(opus())?.values.map((choice) => choice.label)).toEqual(["Low", "High"]);
 		expect(effortOption(findModel(CONFIG, { instanceId: "claudeAgent", model: "claude-haiku" }))).toBeUndefined();
-		expect(effortValues(CONFIG).map((choice) => choice.value)).toEqual(["medium", "high", "xhigh", "low", "max"]);
+		expect(effortOption(opus())?.injected).toEqual([{ value: "ultrathink", label: "Ultrathink" }]);
+		expect(effortValues(CONFIG).map((choice) => choice.value)).toEqual(["medium", "high", "xhigh", "low", "max", "ultrathink"]);
 	});
 
 	it("toggles Claude's fast mode", () => {

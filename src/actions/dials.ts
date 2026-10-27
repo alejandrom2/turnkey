@@ -1,57 +1,26 @@
-import {
-	type Action,
-	action,
-	type DialAction,
-	type DialDownEvent,
-	type DialRotateEvent,
-	type DialUpEvent,
-	type TouchTapEvent,
-} from "@elgato/streamdeck";
-import type { JsonObject } from "@elgato/utils";
+import { type Action, action, type DialAction } from "@elgato/streamdeck";
 
 import { approvalAuthority, approvalConfirm, type ApprovalPress, approvePress, authorityLabel, confirmed, DENY_PRESS } from "../core/approvals.js";
-import { availability } from "../core/availability.js";
+import { type ActionKind, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
-import { COLORS, elapsed, type GlyphName, STATE_COLOR, STATE_GLYPH, stripCanvas, stripIcon } from "../core/render.js";
-import { currentOptionValue, type PendingRequest, withOptionValue } from "../core/t3/machine.js";
-import type { InteractionMode, OptionValue, RuntimeMode } from "../core/t3/shell.js";
+import { findModel, speedToggle, switchSelection, withOptionValue } from "../core/models.js";
+import { dialControl, type DialControl, effortChange, type PowerChoice, powerIconUrl, powerState, stepChoice } from "../core/power.js";
+import { dialPrompts } from "../core/prompts.js";
+import { COLORS, elapsed, type GlyphName, STATE_COLOR, STATE_GLYPH, stripIcon, toneOf } from "../core/render.js";
+import { matchesDial, type ThreadFilter, threadFilter } from "../core/slots.js";
+import type { StripContent } from "../core/strip.js";
+import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
-import { canOperate, connectionProblem, DeckAction, openThread, pressWhileDisconnected, selectedThread } from "./base.js";
-import { launchable, startThread } from "./keys.js";
+import { canOperate, LONG_PRESS_MS, openThread, pressWhileDisconnected, selectedThread, sendToThread, ultrathinkArmed } from "./base.js";
+import { applyEffort, launchable, requestFor, startThread } from "./keys.js";
+import { type DialSettings, disconnectedStrip, markIcon, StripDial } from "./strip.js";
 
 const ID = "com.alejandrom2.t3deck";
 
-type Strip = { header: string; glyph: GlyphName; color?: string; value: string; detail?: string };
-
-/** Feedback for the shared `layouts/strip.json` layout. */
-function strip(content: Strip): Record<string, string> {
-	const color = content.color ?? COLORS.text;
-	return {
-		canvas: stripCanvas(content.color ?? COLORS.accent),
-		header: content.header,
-		glyph: stripIcon(content.glyph, color),
-		value: content.value,
-		detail: content.detail ?? "",
-	};
-}
-
-function disconnectedStrip(header: string, machine: string | undefined): Record<string, string> | undefined {
-	switch (connectionProblem(machine)) {
-		case "missing":
-			return strip({ header, glyph: "plug", color: COLORS.muted, value: "Machine removed", detail: "Pick another in settings" });
-		case "none":
-			return strip({ header, glyph: "plug", color: COLORS.muted, value: "T3 Code not found", detail: "Open it, then press" });
-		case "pair":
-			return strip({ header, glyph: "key", color: COLORS.attention, value: "Pair T3 Deck", detail: "Paste a pair link in settings" });
-		case "offline":
-			return strip({ header, glyph: "plug", color: COLORS.muted, value: "Connecting…", detail: "Press to retry" });
-		default:
-			return undefined;
-	}
-}
-
 function statusLine(thread: DeckThread): string {
+	const diff = thread.active ? undefined : thread.machine.turnDiff(thread);
+	const lines = diff ? ` · +${diff.additions} −${diff.deletions}` : "";
 	switch (thread.deck) {
 		case "approval":
 			return "Needs approval";
@@ -62,284 +31,279 @@ function statusLine(thread: DeckThread): string {
 		case "queued":
 			return "Queued";
 		case "done":
-			return "Done";
+			return `Done${lines}`;
 		case "failed":
-			return "Failed";
+			return `Failed${lines}`;
 		case "stopped":
-			return "Stopped";
+			return `Stopped${lines}`;
 		default:
-			return "Idle";
+			return `Idle${lines}`;
 	}
 }
 
+const FILTER_LABEL: Record<ThreadFilter, string> = { all: "Threads", attention: "Needs you", active: "Working", unread: "Unread" };
+
+type ThreadDialSettings = DialSettings & { filter?: string; project?: string; recency?: string };
+
 /**
- * Rotate moves T3 Code's selection through the board: the strip follows at once, and the thread is visited once the
- * dial rests. Press or tap opens it in T3 Code. Every "selected thread" action follows.
+ * Elgato's Activity dial: rotate steps through the threads that pass the filter, project and recency, selecting the
+ * one it rests on as T3 Code's own open does. Press or tap opens it.
  */
 @action({ UUID: `${ID}.dial.threads` })
-export class ThreadDial extends DeckAction {
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
-		if (!action.isDial()) return;
+export class ThreadDial extends StripDial<ThreadDialSettings> {
+	#match(action: Action<ThreadDialSettings>): (thread: DeckThread) => boolean {
+		const settings = this.settingsOf(action);
+		const now = Date.now();
+		return (thread) => matchesDial(thread, settings, now);
+	}
+
+	protected face(action: Action<ThreadDialSettings>): StripContent {
 		const machine = this.machineOf(action);
-		const offline = disconnectedStrip("Threads", machine);
-		if (offline) return void (await this.setFeedback(action, offline));
-		const thread = deck.board.pendingOn(machine) ?? deck.board.selectedOn(machine);
-		const threads = deck.board.threadsOn(machine);
-		if (thread === undefined) return void (await this.setFeedback(action, strip({ header: "Threads", glyph: "idle", color: COLORS.muted, value: "No threads" })));
-		await this.setFeedback(action, strip({
-			header: `${threads.indexOf(thread) + 1}/${threads.length} · ${statusLine(thread)}`,
-			glyph: STATE_GLYPH[thread.deck],
-			color: STATE_COLOR[thread.deck],
+		const filter = threadFilter(this.settingsOf(action).filter);
+		const label = FILTER_LABEL[filter];
+		const offline = disconnectedStrip(label, machine);
+		if (offline) return offline;
+		const match = this.#match(action);
+		const thread = deck.board.shownOn(machine, match);
+		if (thread === undefined) return { header: label, icon: stripIcon("check", COLORS.muted), accent: COLORS.muted, value: filter === "all" ? "No threads" : "All quiet" };
+		const threads = deck.board.threadsOn(machine).filter(match);
+		const model = findModel(thread.machine.modelConfig, thread.model);
+		const color = STATE_COLOR[thread.deck];
+		return {
+			header: `${label} · ${threads.indexOf(thread) + 1}/${threads.length}`,
+			icon: model ? markIcon(model) : stripIcon(STATE_GLYPH[thread.deck], color),
+			accent: color,
 			value: thread.title,
-			detail: `${thread.projectTitle} · ${thread.model.model}`,
-		}));
+			detail: [statusLine(thread), thread.projectTitle].filter(Boolean).join(" · "),
+			detailColor: color === COLORS.muted ? undefined : color,
+			tone: toneOf(thread.deck),
+			// A running thread's status line ticks every second, which would cut its scroll short.
+			scroll: thread.active ? ["value"] : undefined,
+		};
 	}
 
-	override onDialRotate(ev: DialRotateEvent): void {
-		deck.board.step(ev.payload.ticks, this.machineOf(ev.action));
+	protected override rotated(dial: DialAction<ThreadDialSettings>, ticks: number): void {
+		deck.board.step(ticks, this.machineOf(dial), this.#match(dial));
 	}
 
-	override async onDialUp(ev: DialUpEvent): Promise<void> {
-		await this.#open(ev.action);
+	protected override pressed(dial: DialAction<ThreadDialSettings>): Promise<void> {
+		return this.#open(dial);
 	}
 
-	override async onTouchTap(ev: TouchTapEvent): Promise<void> {
-		await this.#open(ev.action);
+	protected override tapped(dial: DialAction<ThreadDialSettings>): Promise<void> {
+		return this.#open(dial);
 	}
 
-	async #open(dial: DialAction<JsonObject>): Promise<void> {
+	async #open(dial: DialAction<ThreadDialSettings>): Promise<void> {
 		const machine = this.machineOf(dial);
 		if (await pressWhileDisconnected(machine)) return;
-		const thread = deck.board.pendingOn(machine) ?? deck.board.selectedOn(machine);
+		const thread = deck.board.shownOn(machine, this.#match(dial));
 		if (await this.allowed(dial, availability("open", { thread, canOperate: true }))) await this.run(dial, () => openThread(thread!), "Opened");
 	}
 }
 
-type Knob = {
-	id: string;
-	label: string;
-	values: { value: OptionValue; label: string }[];
-	current: OptionValue | undefined;
-	apply: (value: OptionValue) => Promise<unknown>;
+type PowerSettings = DialSettings & { dialControls?: string };
+
+const CONTROL: Record<DialControl, { label: string; kind: ActionKind; glyph: GlyphName }> = {
+	model: { label: "Model", kind: "model", glyph: "model" },
+	effort: { label: "Effort", kind: "effort", glyph: "effort" },
+	permissions: { label: "Access", kind: "permissions", glyph: "modeSupervised" },
 };
 
-const RUNTIME_MODES: { value: RuntimeMode; label: string }[] = [
-	{ value: "approval-required", label: "Supervised" },
-	{ value: "auto-accept-edits", label: "Auto-accept edits" },
-	{ value: "auto", label: "Auto" },
-	{ value: "full-access", label: "Full access" },
-];
-const INTERACTION_MODES: { value: InteractionMode; label: string }[] = [
-	{ value: "default", label: "Build" },
-	{ value: "plan", label: "Plan" },
-];
-
-/** What the Model dial can change on a thread: its model, every option the provider reports for it, access and mode. */
-export function knobsFor(thread: DeckThread): Knob[] {
-	const { machine, model: selection } = thread;
-	const provider = machine.providers().find((candidate) => candidate.instanceId === selection.instanceId);
-	const model = provider?.models.find((candidate) => candidate.id === selection.model);
-	const knobs: Knob[] = [];
-	if (provider !== undefined && !provider.fixedModel && provider.models.length > 1) {
-		knobs.push({
-			id: "model",
-			label: "Model",
-			values: provider.models.map((candidate) => ({ value: candidate.id, label: candidate.label })),
-			current: selection.model,
-			apply: (value) => {
-				const next = provider.models.find((candidate) => candidate.id === value);
-				const kept = new Set(next?.options.map((option) => option.id));
-				return machine.setModelSelection(thread, { ...selection, model: String(value), options: (selection.options ?? []).filter((option) => kept.has(option.id)) });
-			},
-		});
-	}
-	for (const option of model?.options ?? []) {
-		if (option.values.length < 2) continue;
-		knobs.push({
-			id: option.id,
-			label: option.label,
-			values: option.values,
-			current: currentOptionValue(selection, option),
-			apply: (value) => machine.setModelSelection(thread, withOptionValue(selection, option.id, value)),
-		});
-	}
-	const modes = provider?.runtimeModes;
-	knobs.push({
-		id: "runtimeMode",
-		label: "Access",
-		values: modes === undefined ? RUNTIME_MODES : RUNTIME_MODES.filter((mode) => modes.includes(mode.value)),
-		current: thread.runtimeMode,
-		apply: (value) => machine.setRuntimeMode(thread, value as RuntimeMode),
-	});
-	if (provider?.interactionModeToggle !== false) {
-		knobs.push({
-			id: "interactionMode",
-			label: "Mode",
-			values: INTERACTION_MODES,
-			current: thread.interactionMode,
-			apply: (value) => machine.setInteractionMode(thread, value as InteractionMode),
-		});
-	}
-	return knobs.filter((knob) => knob.values.length > 1);
-}
-
-const labelOf = (knob: Knob, value: OptionValue | undefined): string =>
-	knob.values.find((candidate) => candidate.value === value)?.label ?? (value === undefined ? "Default" : String(value));
+/** The value a Power dial previews; it resets when the selected thread or the dial's setting changes. */
+type Preview = { thread: string; control: DialControl; key: string | undefined };
 
 /**
- * Changes the selected thread's model, its options as the provider reports them (effort, speed, …),
- * access and Build/Plan mode. Rotate previews a value, press applies it, tap moves to the next setting.
+ * Elgato's Power dial. It controls one setting of the selected thread, picked in its settings: the model (T3 Code's
+ * favorites across providers), the effort (with Ultrathink) or access. Rotate previews, press applies; press with
+ * nothing to apply, or a tap, toggles Speed where the model has it.
  */
 @action({ UUID: `${ID}.dial.model` })
-export class ModelDial extends DeckAction {
-	#key: string | undefined;
-	#knobIndex = 0;
-	#preview: OptionValue | undefined;
+export class ModelDial extends StripDial<PowerSettings> {
+	readonly #previews = new Map<string, Preview>();
 
-	#state(action: Action<JsonObject>): { thread: DeckThread; knobs: Knob[]; knob: Knob | undefined } | undefined {
+	#context(action: Action<PowerSettings>) {
+		const control = dialControl(this.settingsOf(action).dialControls);
 		const thread = selectedThread(this.machineOf(action));
-		if (thread === undefined) return undefined;
-		if (this.#key !== thread.key) {
-			this.#key = thread.key;
-			this.#knobIndex = 0;
-			this.#preview = undefined;
+		if (thread === undefined) return { control, thread };
+		const config = thread.machine.modelConfig;
+		const armed = ultrathinkArmed(thread);
+		const state = powerState(control, config, thread, armed);
+		let preview = this.#previews.get(action.id);
+		if (preview?.thread !== thread.key || preview.control !== control) {
+			preview = { thread: thread.key, control, key: undefined };
+			this.#previews.set(action.id, preview);
 		}
-		const knobs = knobsFor(thread);
-		return { thread, knobs, knob: knobs[this.#knobIndex % Math.max(1, knobs.length)] };
+		const previewed = preview.key === undefined ? undefined : state.choices.find((choice) => choice.key === preview.key);
+		const pending = previewed !== undefined && previewed.key !== state.current?.key ? previewed : undefined;
+		const check = availability(CONTROL[control].kind, { thread, canOperate: canOperate(thread), missing: state.missing });
+		return { control, thread, config, armed, state, preview, pending, check };
 	}
 
-	protected override async paint(action: Action<JsonObject>): Promise<void> {
-		if (!action.isDial()) return;
-		const offline = disconnectedStrip("Model", this.machineOf(action));
-		if (offline) return void (await this.setFeedback(action, offline));
-		const state = this.#state(action);
-		if (state === undefined) return void (await this.setFeedback(action, strip({ header: "Model", glyph: "cube", color: COLORS.muted, value: "No thread" })));
-		const { thread, knobs, knob } = state;
-		if (knob === undefined) return void (await this.setFeedback(action, strip({ header: "Model", glyph: "cube", value: thread.model.model, detail: "Nothing to adjust" })));
-		const pending = this.#preview !== undefined && this.#preview !== knob.current;
-		const check = availability("model", { thread, canOperate: canOperate(thread) });
-		await this.setFeedback(action, strip({
-			header: `${knob.label}${knobs.length > 1 ? ` · ${(this.#knobIndex % knobs.length) + 1}/${knobs.length}` : ""}`,
-			glyph: "sliders",
-			color: !check.available ? COLORS.muted : pending ? COLORS.attention : COLORS.accent,
-			value: labelOf(knob, this.#preview ?? knob.current),
-			detail: !check.available ? check.reason : pending ? "Press to apply" : thread.model.model,
-		}));
+	protected face(action: Action<PowerSettings>): StripContent {
+		const context = this.#context(action);
+		const { label, glyph } = CONTROL[context.control];
+		const offline = disconnectedStrip(label, this.machineOf(action));
+		if (offline) return offline;
+		if (context.thread === undefined) return { header: label, icon: stripIcon(glyph, COLORS.muted), accent: COLORS.muted, value: "No thread" };
+		const { thread, state, pending, check, armed } = context;
+		const shown = pending ?? state.current;
+		const index = shown === undefined ? -1 : state.choices.findIndex((choice) => choice.key === shown.key);
+		const color = !check.available ? COLORS.muted : pending ? COLORS.attention : COLORS.accent;
+		return {
+			header: `${label}${index >= 0 && state.choices.length > 1 ? ` · ${index + 1}/${state.choices.length}` : ""}`,
+			icon: shown ? powerIconUrl(shown.icon, { acpIcons: deck.acpIcons }) : stripIcon(glyph),
+			accent: color,
+			value: shown?.label ?? (context.control === "model" ? thread.model.model : "Default"),
+			detail: !check.available ? check.reason : pending ? "Press to apply" : this.#idleDetail(context.control, thread),
+			detailColor: pending ? COLORS.attention : undefined,
+			tone: toneOf(thread.deck),
+			ultrathink: context.control === "effort" && (armed || (pending?.kind === "effort" && pending.ultrathink)),
+		};
 	}
 
-	override onDialRotate(ev: DialRotateEvent): void {
-		const knob = this.#state(ev.action)?.knob;
-		if (knob === undefined) return;
-		const values = knob.values.map((candidate) => candidate.value);
-		const from = Math.max(0, values.indexOf(this.#preview ?? knob.current ?? values[0]));
-		this.#preview = values[Math.min(values.length - 1, Math.max(0, from + ev.payload.ticks))];
-		void this.paint(ev.action);
+	#idleDetail(control: DialControl, thread: DeckThread): string {
+		const model = findModel(thread.machine.modelConfig, thread.model);
+		if (control !== "model") return model?.label ?? thread.model.model;
+		const toggle = speedToggle(model, thread.model);
+		return toggle ? `Speed: ${toggle.label}` : thread.title;
 	}
 
-	override onTouchTap(ev: TouchTapEvent): void {
-		const count = this.#state(ev.action)?.knobs.length ?? 0;
-		if (count === 0) return;
-		this.#knobIndex = (this.#knobIndex + 1) % count;
-		this.#preview = undefined;
-		void this.paint(ev.action);
+	protected override rotated(dial: DialAction<PowerSettings>, ticks: number): void {
+		const context = this.#context(dial);
+		if (context.thread === undefined) return;
+		const next = stepChoice(context.state, context.pending?.key, ticks);
+		context.preview.key = next?.key === context.state.current?.key ? undefined : next?.key;
 	}
 
-	override async onDialUp(ev: DialUpEvent): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const state = this.#state(ev.action);
-		const value = this.#preview;
-		if (state?.knob === undefined || value === undefined || value === state.knob.current) return;
-		if (!(await this.allowed(ev.action, availability("model", { thread: state.thread, canOperate: canOperate(state.thread) })))) return;
-		const { knob } = state;
-		await this.run(ev.action, async () => {
-			await knob.apply(value);
-			this.#preview = undefined;
-		}, "Applied");
+	protected override async pressed(dial: DialAction<PowerSettings>): Promise<void> {
+		if (await pressWhileDisconnected(this.machineOf(dial))) return;
+		const context = this.#context(dial);
+		if (context.thread === undefined) return void (await this.allowed(dial, availability(CONTROL[context.control].kind, { canOperate: false })));
+		if (context.pending === undefined) return this.#toggleSpeed(dial);
+		if (!(await this.allowed(dial, context.check))) return;
+		const { thread, armed, preview } = context;
+		const work = this.#apply(thread, context.pending, armed);
+		if (work === undefined) return void (await this.flash(dial, true, context.pending.label));
+		await this.run(
+			dial,
+			async () => {
+				await work();
+				preview.key = undefined;
+			},
+			context.pending.kind === "model" ? context.pending.model.name : context.pending.label,
+		);
+	}
+
+	protected override tapped(dial: DialAction<PowerSettings>): Promise<void> {
+		return this.#toggleSpeed(dial);
+	}
+
+	#apply(thread: DeckThread, choice: PowerChoice, armed: boolean): (() => Promise<unknown>) | undefined {
+		switch (choice.kind) {
+			case "model":
+				return () => thread.machine.setModelSelection(thread, switchSelection(choice.model, thread.model));
+			case "mode":
+				return () => thread.machine.setRuntimeMode(thread, choice.mode);
+			case "effort": {
+				const change = effortChange(findModel(thread.machine.modelConfig, thread.model), thread.model, choice.value);
+				return change === undefined ? undefined : applyEffort(thread, change, armed);
+			}
+		}
+	}
+
+	async #toggleSpeed(dial: DialAction<PowerSettings>): Promise<void> {
+		const machine = this.machineOf(dial);
+		if (await pressWhileDisconnected(machine)) return;
+		const thread = selectedThread(machine);
+		const toggle = thread && speedToggle(findModel(thread.machine.modelConfig, thread.model), thread.model);
+		if (!(await this.allowed(dial, availability("speed", { thread, canOperate: canOperate(thread), missing: toggle === undefined ? "No fast mode" : undefined })))) return;
+		await this.run(dial, () => thread!.machine.setModelSelection(thread!, withOptionValue(thread!.model, toggle!.option.id, toggle!.next)), toggle!.nextLabel);
+	}
+
+	override onWillDisappear(ev: Parameters<StripDial<PowerSettings>["onWillDisappear"]>[0]): void {
+		this.#previews.delete(ev.action.id);
+		super.onWillDisappear(ev);
 	}
 }
 
-type PromptListSettings = { prompts?: string };
+type PromptListSettings = DialSettings & { prompts?: string; templates?: boolean };
 
-/** Rotate through saved prompts. Press sends to the selected thread; hold starts a new thread with it. */
+/** Rotate through the user's prompts and Quick Prompt's templates. Press or tap sends to the selected thread; hold starts a new thread. */
 @action({ UUID: `${ID}.dial.prompts` })
-export class PromptDial extends DeckAction<PromptListSettings> {
-	#index = 0;
+export class PromptDial extends StripDial<PromptListSettings> {
+	readonly #index = new Map<string, number>();
 
-	#prompts(settings: PromptListSettings): string[] {
-		return (settings.prompts ?? "")
-			.split("\n")
-			.map((line) => line.trim())
-			.filter(Boolean);
+	#current(action: Action<PromptListSettings>) {
+		const prompts = dialPrompts(this.settingsOf(action));
+		const index = Math.min(this.#index.get(action.id) ?? 0, Math.max(0, prompts.length - 1));
+		return { prompts, index, prompt: prompts[index] };
 	}
 
-	protected override async paint(action: Action<PromptListSettings>): Promise<void> {
-		if (!action.isDial()) return;
+	protected face(action: Action<PromptListSettings>): StripContent {
 		const offline = disconnectedStrip("Prompts", this.machineOf(action));
-		if (offline) return void (await this.setFeedback(action, offline));
-		const prompts = this.#prompts(this.settingsOf(action));
-		if (prompts.length === 0) return void (await this.setFeedback(action, strip({ header: "Prompts", glyph: "spark", color: COLORS.muted, value: "No prompts", detail: "Add them in settings" })));
-		this.#index = Math.min(this.#index, prompts.length - 1);
+		if (offline) return offline;
+		const { prompts, index, prompt } = this.#current(action);
+		if (prompt === undefined) return { header: "Prompts", icon: stripIcon("spark", COLORS.muted), accent: COLORS.muted, value: "No prompts", detail: "Add them in settings" };
 		const thread = selectedThread(this.machineOf(action));
 		const check = availability("send", { thread, canOperate: canOperate(thread), hasPrompt: true });
-		await this.setFeedback(action, strip({
-			header: `Prompt ${this.#index + 1}/${prompts.length}`,
-			glyph: "spark",
-			color: check.available ? undefined : COLORS.muted,
-			value: prompts[this.#index],
+		return {
+			header: `${prompt.label ?? "Prompt"} · ${index + 1}/${prompts.length}`,
+			icon: stripIcon("spark", check.available ? COLORS.text : COLORS.muted),
+			accent: check.available ? COLORS.accent : COLORS.muted,
+			value: prompt.text,
 			detail: check.available ? `→ ${thread!.title}` : check.reason,
-		}));
+			tone: toneOf(thread?.deck),
+			ultrathink: ultrathinkArmed(thread),
+		};
 	}
 
-	override async onDialRotate(ev: DialRotateEvent<PromptListSettings>): Promise<void> {
-		const count = this.#prompts(ev.payload.settings).length;
-		if (count === 0) return;
-		this.#index = (((this.#index + ev.payload.ticks) % count) + count) % count;
-		await this.paint(ev.action);
+	protected override rotated(dial: DialAction<PromptListSettings>, ticks: number): void {
+		const { prompts, index } = this.#current(dial);
+		if (prompts.length > 0) this.#index.set(dial.id, (((index + ticks) % prompts.length) + prompts.length) % prompts.length);
 	}
 
-	override onDialDown(ev: DialDownEvent<PromptListSettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
-	override async onDialUp(ev: DialUpEvent<PromptListSettings>): Promise<void> {
-		const long = this.wasLongPress(ev.action.id);
-		const machine = this.machineOf(ev.action);
+	protected override async pressed(dial: DialAction<PromptListSettings>, heldMs: number): Promise<void> {
+		const machine = this.machineOf(dial);
 		if (await pressWhileDisconnected(machine)) return;
-		const prompt = this.#prompts(ev.payload.settings)[this.#index];
+		const text = this.#current(dial).prompt?.text;
 		const thread = selectedThread(machine);
-		if (long) {
-			if (!(await this.allowed(ev.action, availability("new", { canOperate: launchable(thread, machine), hasPrompt: prompt !== undefined })))) return;
-			return void (await this.run(ev.action, () => startThread(thread, machine, prompt!), "Started"));
-		}
-		await this.#send(ev.action, thread, prompt);
+		if (heldMs < LONG_PRESS_MS) return this.#send(dial, thread, text);
+		if (!(await this.allowed(dial, availability("new", { canOperate: launchable(thread, machine), hasPrompt: text !== undefined })))) return;
+		await this.run(dial, () => startThread(thread, machine, text!), "Started");
 	}
 
-	override async onTouchTap(ev: TouchTapEvent<PromptListSettings>): Promise<void> {
-		await this.#send(ev.action, selectedThread(this.machineOf(ev.action)), this.#prompts(ev.payload.settings)[this.#index]);
+	protected override tapped(dial: DialAction<PromptListSettings>): Promise<void> {
+		return this.#send(dial, selectedThread(this.machineOf(dial)), this.#current(dial).prompt?.text);
 	}
 
-	async #send(dial: DialAction<PromptListSettings>, thread: DeckThread | undefined, prompt: string | undefined): Promise<void> {
-		if (!(await this.allowed(dial, availability("send", { thread, canOperate: canOperate(thread), hasPrompt: prompt !== undefined })))) return;
-		await this.run(dial, () => thread!.machine.send(thread!, prompt!, "auto"), "Sent");
+	async #send(dial: DialAction<PromptListSettings>, thread: DeckThread | undefined, text: string | undefined): Promise<void> {
+		if (!(await this.allowed(dial, availability("send", { thread, canOperate: canOperate(thread), hasPrompt: text !== undefined })))) return;
+		await this.run(dial, () => sendToThread(thread!, text!, "auto"), "Sent");
+	}
+
+	override onWillDisappear(ev: Parameters<StripDial<PromptListSettings>["onWillDisappear"]>[0]): void {
+		this.#index.delete(ev.action.id);
+		super.onWillDisappear(ev);
 	}
 }
 
-type AnswerSettings = { machine?: string; approvalAuthority?: string; approvalConfirm?: string };
+type AnswerSettings = DialSettings & { approvalAuthority?: string; approvalConfirm?: string };
 
+/** One dial's progress through a request: its choice per question (or the approval's choice) and the question shown. */
 type Answering = { id: string; request: PendingRequest; step: number; picks: number[] };
 
-const PRESS_COLOR = (press: ApprovalPress): string => (press.kind === "open" ? COLORS.attention : press.decision === "decline" ? COLORS.error : COLORS.done);
+const PRESS_FACE = (press: ApprovalPress): { glyph: GlyphName; color: string } =>
+	press.kind === "open" ? { glyph: "shield", color: COLORS.attention } : press.decision === "decline" ? { glyph: "deny", color: COLORS.error } : { glyph: "approve", color: COLORS.done };
 
 /**
- * Answers what blocks the selected thread (or the board's first blocked one). Approvals: rotate between the
- * action's approval authority (open in T3 Code, or allow once, for the session or always) and Deny; press, or
- * hold when it asks for a hold, to send it. Questions: rotate through choices, press to confirm each. Tap, or a
- * request the deck can't answer, opens the thread in T3 Code.
+ * Answers what blocks the selected thread (or the board's first blocked one). Approvals: rotate between the dial's
+ * approval authority (open in T3 Code, or allow once, for the session or always) and Deny; press, or hold when it
+ * asks for a hold, to send it. Questions: rotate through choices, press to confirm each. Tap opens the thread.
  */
 @action({ UUID: `${ID}.dial.answer` })
-export class AnswerDial extends DeckAction<AnswerSettings> {
-	#answering: Answering | undefined;
-	#loading: string | undefined;
+export class AnswerDial extends StripDial<AnswerSettings> {
+	readonly #answers = new Map<string, Answering>();
 
 	#target(machine: string | undefined): DeckThread | undefined {
 		const selected = selectedThread(machine);
@@ -347,115 +311,113 @@ export class AnswerDial extends DeckAction<AnswerSettings> {
 		return selected !== undefined && blocked(selected) ? selected : deck.board.threadsOn(machine).find(blocked);
 	}
 
-	/** The request being answered, if its details for `thread`'s current request are loaded. */
-	#current(thread: DeckThread): Answering | undefined {
+	/** This dial's progress on `thread`'s request, once its details are loaded. */
+	#answering(dial: Action<AnswerSettings>, thread: DeckThread): Answering | undefined {
+		const request = requestFor(thread);
+		if (request === undefined) return undefined;
 		const id = `${thread.key}#${thread.pendingRequest?.id}`;
-		if (this.#answering?.id === id) return this.#answering;
-		this.#load(thread, id);
-		return undefined;
+		const known = this.#answers.get(dial.id);
+		if (known?.id === id) return known;
+		const answering = { id, request, step: 0, picks: request.type === "question" ? request.questions.map(() => 0) : [0] };
+		this.#answers.set(dial.id, answering);
+		return answering;
 	}
 
-	#load(thread: DeckThread, id: string): void {
-		if (this.#loading === id) return;
-		this.#loading = id;
-		const pending = thread.pendingRequest!;
-		thread.machine
-			.pendingRequest(thread)
-			.catch((): PendingRequest => ({ type: "unsupported", threadId: pending.threadId, requestId: pending.id, heading: "Needs you in T3 Code" }))
-			.then((request) => {
-				if (request !== undefined) this.#answering = { id, request, step: 0, picks: request.type === "question" ? request.questions.map(() => 0) : [0] };
-			})
-			.finally(() => {
-				if (this.#loading === id) this.#loading = undefined;
-				deck.repaint();
-			});
+	/** An approval's two choices: what this dial's authority allows, then Deny. */
+	#choices(dial: Action<AnswerSettings>, request: Extract<PendingRequest, { type: "approval" }>): ApprovalPress[] {
+		return [approvePress(approvalAuthority(this.settingsOf(dial).approvalAuthority), request.decisions), DENY_PRESS];
 	}
 
-	/** An approval's two choices: what this action's authority allows, then Deny. */
-	#choices(action: Action<AnswerSettings>, request: Extract<PendingRequest, { type: "approval" }>): ApprovalPress[] {
-		return [approvePress(approvalAuthority(this.settingsOf(action).approvalAuthority), request.decisions), DENY_PRESS];
-	}
-
-	protected override async paint(action: Action<AnswerSettings>): Promise<void> {
-		if (!action.isDial()) return;
-		const offline = disconnectedStrip("Answer", this.machineOf(action));
-		if (offline) return void (await this.setFeedback(action, offline));
-		const thread = this.#target(this.machineOf(action));
+	protected face(dial: Action<AnswerSettings>): StripContent {
+		const offline = disconnectedStrip("Answer", this.machineOf(dial));
+		if (offline) return offline;
+		const settings = this.settingsOf(dial);
+		const thread = this.#target(this.machineOf(dial));
 		if (thread === undefined) {
-			this.#answering = undefined;
-			const authority = authorityLabel(approvalAuthority(this.settingsOf(action).approvalAuthority));
-			return void (await this.setFeedback(action, strip({ header: "Answer", glyph: "check", color: COLORS.muted, value: "Nothing pending", detail: `Approvals: ${authority}` })));
+			this.#answers.delete(dial.id);
+			return { header: "Answer", icon: stripIcon("check", COLORS.muted), accent: COLORS.muted, value: "Nothing pending", detail: `Approvals: ${authorityLabel(approvalAuthority(settings.approvalAuthority))}` };
 		}
-		const answering = this.#current(thread);
-		const glyph: GlyphName = thread.deck === "approval" ? "shield" : "question";
-		if (answering === undefined) return void (await this.setFeedback(action, strip({ header: thread.deck === "approval" ? "Approval" : "Question", glyph, color: COLORS.attention, value: thread.title, detail: "Loading…" })));
+		const approval = thread.deck === "approval";
+		const answering = this.#answering(dial, thread);
+		const waiting: StripContent = { header: approval ? "Approval" : "Question", icon: stripIcon(approval ? "shield" : "question", COLORS.attention), accent: COLORS.attention, value: thread.title, tone: "attention" };
+		if (answering === undefined) return { ...waiting, detail: "Loading…" };
 		const { request, step, picks } = answering;
+		const canAct = canOperate(thread);
 		switch (request.type) {
 			case "unsupported":
-				return void (await this.setFeedback(action, strip({ header: request.heading, glyph, color: COLORS.attention, value: thread.title, detail: "Press to open in T3 Code" })));
+				return { ...waiting, header: request.heading, detail: "Press to open in T3 Code" };
 			case "approval": {
-				const press = this.#choices(action, request)[picks[0] ?? 0];
-				const check = press.kind === "open" ? undefined : availability(press.decision === "decline" ? "deny" : "approve", { thread, canOperate: canOperate(thread) });
-				if (check?.available === false) return void (await this.setFeedback(action, strip({ header: request.heading, glyph: "shield", color: COLORS.muted, value: press.label, detail: check.reason })));
-				const hold = press.kind === "respond" && approvalConfirm(this.settingsOf(action).approvalConfirm) === "hold";
-				return void (await this.setFeedback(action, strip({ header: `${request.heading}${hold ? " · hold" : ""}`, glyph: "shield", color: PRESS_COLOR(press), value: press.label, detail: request.summary })));
+				const press = this.#choices(dial, request)[picks[0] ?? 0];
+				const check = press.kind === "open" ? undefined : availability(press.decision === "decline" ? "deny" : "approve", { thread, canOperate: canAct });
+				const hold = press.kind === "respond" && approvalConfirm(settings.approvalConfirm) === "hold";
+				const { glyph, color } = check?.available === false ? { glyph: "shield" as const, color: COLORS.muted } : PRESS_FACE(press);
+				return {
+					header: request.heading,
+					icon: stripIcon(glyph, color),
+					accent: color,
+					value: request.summary || thread.title,
+					detail: check?.available === false ? check.reason : `${press.label}${hold ? " · hold" : ""}`,
+					detailColor: color,
+					tone: "attention",
+				};
 			}
 			case "question": {
 				const question = request.questions[step];
 				const option = question?.options[picks[step] ?? 0];
-				const check = option === undefined ? undefined : availability("answer", { thread, canOperate: canOperate(thread) });
-				return void (await this.setFeedback(action, strip({
+				const check = option === undefined ? undefined : availability("answer", { thread, canOperate: canAct });
+				const unavailable = check?.available === false;
+				return {
 					header: `${question?.header || "Question"}${request.questions.length > 1 ? ` · ${step + 1}/${request.questions.length}` : ""}`,
-					glyph: "question",
-					color: check?.available === false ? COLORS.muted : COLORS.attention,
+					icon: stripIcon("question", unavailable ? COLORS.muted : COLORS.attention),
+					accent: unavailable ? COLORS.muted : COLORS.attention,
 					value: option?.label ?? "Open in T3 Code",
-					detail: check?.available === false ? check.reason : (question?.question ?? ""),
-				})));
+					detail: unavailable ? check.reason : (question?.question ?? ""),
+					tone: "attention",
+				};
 			}
 		}
 	}
 
-	override onDialRotate(ev: DialRotateEvent<AnswerSettings>): void {
-		const answering = this.#answering;
+	protected override rotated(dial: DialAction<AnswerSettings>, ticks: number): void {
+		const answering = this.#answers.get(dial.id);
 		if (answering === undefined || answering.request.type === "unsupported") return;
 		const count = answering.request.type === "approval" ? 2 : (answering.request.questions[answering.step]?.options.length ?? 0);
 		if (count === 0) return;
-		answering.picks[answering.step] = Math.min(count - 1, Math.max(0, (answering.picks[answering.step] ?? 0) + ev.payload.ticks));
-		void this.paint(ev.action);
+		answering.picks[answering.step] = Math.min(count - 1, Math.max(0, (answering.picks[answering.step] ?? 0) + ticks));
 	}
 
-	override onDialDown(ev: DialDownEvent<AnswerSettings>): void {
-		this.pressStarted(ev.action.id);
-	}
-
-	override async onDialUp(ev: DialUpEvent<AnswerSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
-		const machine = this.machineOf(ev.action);
+	protected override async pressed(dial: DialAction<AnswerSettings>, held: number): Promise<void> {
+		const machine = this.machineOf(dial);
 		if (await pressWhileDisconnected(machine)) return;
 		const thread = this.#target(machine);
-		const answering = thread === undefined ? undefined : this.#current(thread);
-		if (thread === undefined || answering === undefined) return void (await this.allowed(ev.action, availability("answer", { thread, canOperate: canOperate(thread) })));
+		const answering = thread === undefined ? undefined : this.#answering(dial, thread);
+		if (thread === undefined || answering === undefined) return void (await this.allowed(dial, availability("answer", { thread, canOperate: canOperate(thread) })));
 		const { request, picks } = answering;
-		if (request.type === "unsupported") return void (await this.run(ev.action, () => openThread(thread), "Opened"));
+		if (request.type === "unsupported") return void (await this.run(dial, () => openThread(thread), "Opened"));
 		if (request.type === "approval") {
-			const press = this.#choices(ev.action, request)[picks[0] ?? 0];
-			if (press.kind === "open") return void (await this.run(ev.action, () => openThread(thread), "Opened"));
-			if (!(await this.allowed(ev.action, availability(press.decision === "decline" ? "deny" : "approve", { thread, canOperate: canOperate(thread) })))) return;
-			if (!confirmed(press, approvalConfirm(ev.payload.settings.approvalConfirm), held)) return void (await this.flash(ev.action, false, "Hold to answer"));
-			return void (await this.run(ev.action, () => thread.machine.respond(request.threadId, request.requestId, press.decision), press.decision === "decline" ? "Denied" : "Allowed"));
+			const press = this.#choices(dial, request)[picks[0] ?? 0];
+			if (press.kind === "open") return void (await this.run(dial, () => openThread(thread), "Opened"));
+			if (!(await this.allowed(dial, availability(press.decision === "decline" ? "deny" : "approve", { thread, canOperate: canOperate(thread) })))) return;
+			if (!confirmed(press, approvalConfirm(this.settingsOf(dial).approvalConfirm), held)) return void (await this.flash(dial, false, "Hold to answer"));
+			return void (await this.run(dial, () => thread.machine.respond(request.threadId, request.requestId, press.decision), press.decision === "decline" ? "Denied" : "Allowed"));
 		}
 		const answerable = request.questions[answering.step]?.options.length ?? 0;
-		if (answerable === 0) return void (await this.run(ev.action, () => openThread(thread), "Opened"));
+		if (answerable === 0) return void (await this.run(dial, () => openThread(thread), "Opened"));
 		if (answering.step < request.questions.length - 1) {
 			answering.step += 1;
-			return void (await this.paint(ev.action));
+			return void (await this.paint(dial));
 		}
-		if (!(await this.allowed(ev.action, availability("answer", { thread, canOperate: canOperate(thread) })))) return;
-		await this.run(ev.action, () => thread.machine.answer(request.threadId, request.requestId, buildAnswers(request.questions, picks, request.messageMode)), "Answered");
+		if (!(await this.allowed(dial, availability("answer", { thread, canOperate: canOperate(thread) })))) return;
+		await this.run(dial, () => thread.machine.answer(request.threadId, request.requestId, buildAnswers(request.questions, picks, request.messageMode)), "Answered");
 	}
 
-	override async onTouchTap(ev: TouchTapEvent<AnswerSettings>): Promise<void> {
-		const thread = this.#target(this.machineOf(ev.action));
-		if (thread !== undefined) await this.run(ev.action, () => openThread(thread), "Opened");
+	protected override async tapped(dial: DialAction<AnswerSettings>): Promise<void> {
+		const thread = this.#target(this.machineOf(dial));
+		if (thread !== undefined) await this.run(dial, () => openThread(thread), "Opened");
+	}
+
+	override onWillDisappear(ev: Parameters<StripDial<AnswerSettings>["onWillDisappear"]>[0]): void {
+		this.#answers.delete(ev.action.id);
+		super.onWillDisappear(ev);
 	}
 }

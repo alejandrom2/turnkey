@@ -26,7 +26,7 @@ const ACTIONS: Record<string, GlyphName> = {
 	branch: "branch",
 	health: "health",
 	"dial-threads": "chat",
-	"dial-model": "sliders",
+	"dial-model": "gauge",
 	"dial-prompts": "spark",
 	"dial-answer": "question",
 };

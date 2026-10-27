@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { assignSlots, matchesFilter, slotSetting } from "./slots.js";
+import { assignSlots, matchesDial, matchesFilter, slotSetting, threadRecency } from "./slots.js";
 
 const at = (id: string, row: number, column: number, extra: { group?: string; slot?: number } = {}) => ({ id, group: "deck|", position: { row, column }, ...extra });
 
@@ -43,5 +43,26 @@ describe("matchesFilter", () => {
 	it("narrows to one project when set", () => {
 		expect(matchesFilter(thread("idle", false, "p"), "all", "q")).toBe(false);
 		expect(matchesFilter(thread("idle", false, "q"), "all", "q")).toBe(true);
+	});
+});
+
+describe("matchesDial", () => {
+	const HOUR = 3_600_000;
+	const now = 100 * HOUR;
+	const thread = (patch: object = {}) => ({ deck: "done" as const, unseen: false, projectId: "p", updatedAt: now - 30 * HOUR, active: false, ...patch });
+
+	it("keeps threads updated within the recency window, and working threads always", () => {
+		expect(threadRecency("all")).toBeUndefined();
+		expect(threadRecency("3d")).toBe(72 * HOUR);
+		expect(matchesDial(thread(), { recency: "all" }, now)).toBe(true);
+		expect(matchesDial(thread(), { recency: "24h" }, now)).toBe(false);
+		expect(matchesDial(thread(), { recency: "48h" }, now)).toBe(true);
+		expect(matchesDial(thread({ active: true, deck: "running" }), { recency: "24h" }, now)).toBe(true);
+	});
+
+	it("applies the filter and project too", () => {
+		expect(matchesDial(thread(), { filter: "attention" }, now)).toBe(false);
+		expect(matchesDial(thread({ unseen: true }), { filter: "attention", project: "p" }, now)).toBe(true);
+		expect(matchesDial(thread({ unseen: true }), { filter: "attention", project: "q" }, now)).toBe(false);
 	});
 });

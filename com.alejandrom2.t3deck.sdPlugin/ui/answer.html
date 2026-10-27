@@ -115,7 +115,19 @@
 					<option value="tap">Press the dial</option>
 				</sdpi-select>
 			</sdpi-item>
-			<p class="hint">Turn between this choice and Deny. A request that doesn't offer the choice opens in T3 Code instead.</p>
+			<p class="hint">Turn between this choice and Deny. A request that doesn't offer the choice opens in T3 Code instead. Touch and hold the strip to read a long request in full.</p>
+			<sdpi-item label="Strip">
+				<sdpi-select setting="background" default="">
+					<option value="">Use global</option>
+					<option value="t3">T3 Code</option>
+					<option value="elgato">Elgato gradient</option>
+					<option value="state">Thread state</option>
+					<option value="custom">Custom colour</option>
+				</sdpi-select>
+			</sdpi-item>
+			<sdpi-item label="Strip colour" id="background-color" hidden>
+				<sdpi-color setting="backgroundColor" default="#121212"></sdpi-color>
+			</sdpi-item>
 			<section class="t3" id="t3" aria-live="polite">
 				<p class="eyebrow">T3 Code</p>
 				<h2 id="t3-title">Choose a machine</h2>
@@ -138,6 +150,21 @@
 					<sdpi-textfield setting="scheme" global placeholder="t3code"></sdpi-textfield>
 				</sdpi-item>
 				<p class="hint">Use t3code-dev to open threads in a development build.</p>
+				<sdpi-item label="Dial strips">
+					<sdpi-select setting="stripBackground" global default="t3">
+						<option value="t3">T3 Code</option>
+						<option value="elgato">Elgato gradient</option>
+						<option value="state">Thread state</option>
+						<option value="custom">Custom colour</option>
+					</sdpi-select>
+				</sdpi-item>
+				<sdpi-item label="Strip colour" id="strip-color" hidden>
+					<sdpi-color setting="stripColor" global default="#121212"></sdpi-color>
+				</sdpi-item>
+				<sdpi-item label="State line">
+					<sdpi-checkbox setting="stripHairline" global default="true" label="Show the coloured line under each strip"></sdpi-checkbox>
+				</sdpi-item>
+				<p class="hint">Thread state tints a strip green when done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
 			</details>
 		</main>
 		<script>
@@ -284,6 +311,20 @@
 				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
 			});
 			send("status");
+			{
+				const field = document.querySelector('[setting="stripBackground"]');
+				const apply = (value) => { $("strip-color").hidden = !((value) => value === "custom")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getGlobalSettings().then((payload) => apply(payload?.settings?.["stripBackground"]));
+				client.didReceiveGlobalSettings.subscribe(({ payload }) => apply(payload?.settings?.["stripBackground"]));
+			}
+			{
+				const field = document.querySelector('[setting="background"]');
+				const apply = (value) => { $("background-color").hidden = !((value) => value === "custom")(value ?? ""); };
+				field.addEventListener("valuechange", () => apply(field.value));
+				client.getSettings().then((payload) => apply(payload?.settings?.["background"]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["background"]));
+			}
 		</script>
 	</body>
 </html>

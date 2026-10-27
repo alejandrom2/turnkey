@@ -75,3 +75,20 @@ export function matchesFilter(thread: Pick<DeckThread, "deck" | "unseen" | "proj
 			return true;
 	}
 }
+
+const HOUR = 3_600_000;
+const RECENCY_MS: Record<string, number> = { "24h": 24 * HOUR, "48h": 48 * HOUR, "3d": 72 * HOUR, "7d": 168 * HOUR };
+
+/** The Threads dial's `recency` window in ms (Elgato's "From the last"); undefined is no limit. */
+export const threadRecency = (value: unknown): number | undefined => (typeof value === "string" ? RECENCY_MS[value] : undefined);
+
+/** Whether `thread` passes the filter, project and recency window; a working thread is always recent. */
+export function matchesDial(
+	thread: Pick<DeckThread, "deck" | "unseen" | "projectId" | "updatedAt" | "active">,
+	settings: { filter?: unknown; project?: unknown; recency?: unknown },
+	now: number,
+): boolean {
+	const window = threadRecency(settings.recency);
+	if (window !== undefined && !thread.active && thread.updatedAt < now - window) return false;
+	return matchesFilter(thread, threadFilter(settings.filter), typeof settings.project === "string" && settings.project !== "" ? settings.project : undefined);
+}
