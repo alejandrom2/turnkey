@@ -277,7 +277,8 @@ class Deck implements CredentialStore {
 	#syncClock(): void {
 		clearTimeout(this.#clock);
 		this.#clock = undefined;
-		const starts = this.#visible.size === 0 ? [] : this.board.threads.flatMap((thread) => (thread.active && thread.activeSince !== undefined ? [thread.activeSince] : []));
+		// Thread keys show how long ago an idle thread last moved, too.
+		const starts = this.#visible.size === 0 ? [] : this.board.threads.map((thread) => (thread.active ? (thread.activeSince ?? thread.updatedAt) : thread.updatedAt));
 		const wait = nextMinute(starts, Date.now());
 		if (wait !== undefined) this.#clock = setTimeout(() => this.repaint(), wait + 50);
 	}

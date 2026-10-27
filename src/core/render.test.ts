@@ -75,25 +75,27 @@ describe("renderThreadKey", () => {
 		expect(out).not.toContain("<b>");
 	});
 
-	it("shows the unread badge on unseen threads, but lets an unseen done one's green wash say it", () => {
+	it("shows the unread badge on unseen threads, but lets an unseen done one's green tile say it", () => {
 		expect(svg(renderThreadKey({ state: "failed", title: "Failed", unseen: true }))).toContain(`fill="#007BE5"`);
 		expect(svg(renderThreadKey({ state: "failed", title: "Failed" }))).not.toContain(`fill="#007BE5"`);
 		const done = svg(renderThreadKey({ state: "done", title: "Done", unseen: true }));
 		expect(done).not.toContain(`fill="#007BE5"`);
-		expect(done).toContain(`fill="#40C977" fill-opacity="0.12"`);
-		expect(svg(renderThreadKey({ state: "done", title: "Done" }))).not.toContain(`fill="#40C977" fill-opacity`);
+		expect(done).toContain(`fill="#1E4A32"`);
+		expect(svg(renderThreadKey({ state: "done", title: "Done" }))).toContain(`fill="#363636"`);
 	});
 
-	it("tints and colors the glyph of threads that want attention: amber waiting, red failed", () => {
+	it("shades the tile and colors the glyph of threads that want attention: amber waiting, red failed", () => {
 		for (const state of ["approval", "question"] as const) {
 			const out = svg(renderThreadKey({ state, title: "Work" }));
-			expect(out).toContain(`fill="#FF8549" fill-opacity="0.18"`);
+			expect(out).toContain(`fill="#5B3322"`);
 			expect(out).toContain(`stroke="#FF8549"`);
 		}
 		const failed = svg(renderThreadKey({ state: "failed", title: "Work" }));
-		expect(failed).toContain(`fill="#FF6764" fill-opacity="0.18"`);
+		expect(failed).toContain(`fill="#5C2328"`);
 		expect(failed).toContain(`stroke="#FF6764"`);
-		expect(svg(renderThreadKey({ state: "running", title: "Work" }))).not.toContain("fill-opacity=");
+		const running = svg(renderThreadKey({ state: "running", title: "Work" }));
+		expect(running).toContain(`fill="#363636"`);
+		expect(running).not.toContain("fill-opacity=");
 	});
 
 	it("marks the selected thread with a white wash and dims the other titles, without an outline", () => {
@@ -103,7 +105,7 @@ describe("renderThreadKey", () => {
 		expect(selected).not.toContain(`fill-opacity="0.55"`);
 		expect(svg(renderThreadKey({ state: "idle", title: "Work", selected: false }))).toContain(`fill-opacity="0.55"`);
 		expect(svg(renderThreadKey({ state: "idle", title: "Work" }))).not.toContain(`fill-opacity="0.55"`);
-		expect(svg(renderThreadKey({ state: "approval", title: "Work", selected: true }))).toContain(`fill="#FF8549" fill-opacity="0.3"`);
+		expect(svg(renderThreadKey({ state: "approval", title: "Work", selected: true }))).toContain(`fill="#FFFFFF" fill-opacity="0.1"`);
 	});
 
 	it("turns the spinner and swaps the wash for motion", () => {
