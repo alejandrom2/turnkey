@@ -423,6 +423,19 @@ function placed(x: number, y: number, size: number, art: MarkArt, color: string,
 const badgeAt = (x: number, y: number, ...args: Parameters<typeof initialsBadgeSvg>) =>
 	`<g transform="translate(${x} ${y})">${initialsBadgeSvg(...args).replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g>`;
 
+/** Codex's mark is white, so its highlight takes OpenAI Codex's blue instead. */
+const BRAND_HIGHLIGHT: Record<string, string> = { codex: "#4C9BFF" };
+
+/** A model's color for highlighted text: the instance's accent, else its provider's brand color; undefined for white marks. */
+export function modelColor(model: Pick<CatalogModel, "driver" | "accentColor">): string | undefined {
+	const accent = model.accentColor?.trim();
+	if (accent && /^#[0-9a-f]{6}$/i.test(accent)) return accent;
+	const color = BRAND_HIGHLIGHT[model.driver] ?? PROVIDER_MARKS[model.driver]?.color;
+	if (color === undefined) return undefined;
+	const [r, g, b] = [1, 3, 5].map((at) => Number.parseInt(color.slice(at, at + 2), 16));
+	return Math.min(r!, g!, b!) >= 0xd0 ? undefined : color;
+}
+
 /**
  * A model's provider mark at (x, y), as T3 Code's `ProviderInstanceIcon` draws it: the driver's mark, a
  * registry agent's own icon in one color (the generic ACP mark until it loads), or initials for an unknown
