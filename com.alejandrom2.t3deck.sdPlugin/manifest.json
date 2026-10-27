@@ -16,6 +16,7 @@
 	],
 	"Nodejs": { "Version": "24" },
 	"UUID": "com.alejandrom2.t3deck",
+	"Profiles": [{ "Name": "profiles/t3-deck-plus", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true }],
 	"Actions": [
 		{
 			"Name": "Thread",

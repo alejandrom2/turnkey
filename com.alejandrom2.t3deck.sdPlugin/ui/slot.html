@@ -58,12 +58,14 @@
 			.machine .where { margin: 0; font-size: 11px; color: var(--t3-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 			.machine .actions { display: flex; align-items: center; gap: 4px; }
 			.machine .detail { grid-column: 2 / 4; margin: 4px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-error); }
+			.machine .detail.muted { color: var(--t3-muted); }
 
 			.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
 			.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 			.pill.ready { color: var(--t3-success); background: rgb(16 185 129 / 12%); }
 			.pill.wait { color: var(--t3-warning); background: rgb(245 158 11 / 12%); }
 			.pill.muted { color: var(--t3-muted); background: var(--t3-accent); }
+			.t3 button.pill { padding: 2px 8px; border: 0; border-radius: 999px; font: 500 11px var(--t3-font); }
 
 			.t3 button, .t3 select, .t3 input { font: 500 12px var(--t3-font); border-radius: 8px; }
 			.t3 button { padding: 5px 11px; cursor: pointer; border: 1px solid transparent; transition: background-color .12s, border-color .12s; }
@@ -78,14 +80,12 @@
 
 			.add { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--t3-border); }
 			.add .label { margin-top: 0; }
-			.add input, .add select {
+			.add input {
 				width: 100%; box-sizing: border-box; padding: 7px 9px; color: var(--t3-foreground);
 				background: transparent; border: 1px solid var(--t3-input);
 			}
 			.add input::placeholder { color: var(--t3-muted); }
-			.add .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; margin-top: 6px; }
-			.add select { appearance: none; padding-right: 26px; background-image: linear-gradient(45deg, transparent 50%, var(--t3-muted) 50%), linear-gradient(135deg, var(--t3-muted) 50%, transparent 50%); background-position: calc(100% - 13px) 50%, calc(100% - 9px) 50%; background-size: 4px 4px; background-repeat: no-repeat; }
-			.add select option { background: #1c1c1c; }
+			.add .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
 			.add .access-help { margin: 6px 0 0; font-size: 11px; line-height: 1.4; color: var(--t3-muted); }
 			.add .result { margin: 6px 0 0; font-size: 11px; line-height: 1.4; }
 			.add .result.error { color: var(--t3-error); }
@@ -126,14 +126,11 @@
 				<div class="machines" id="t3-machines" role="radiogroup" aria-label="Machine for this action"></div>
 				<div class="add">
 					<p class="label">Add a machine</p>
-					<input id="t3-link" type="url" autocomplete="off" spellcheck="false" placeholder="Paste a pair link from Settings → Sharing &amp; access" />
 					<div class="controls">
-						<select id="t3-access" aria-label="What T3 Deck may do">
-							<option value="read-only">Read only</option><option value="approval-required" selected>Supervised</option><option value="auto-accept-edits">Auto-accept edits</option><option value="auto">Auto</option><option value="full-access">Full access</option>
-						</select>
+						<input id="t3-link" type="url" autocomplete="off" spellcheck="false" placeholder="Paste a pair link from Settings → Sharing &amp; access" />
 						<button class="primary" id="t3-pair" type="button" disabled>Connect</button>
 					</div>
-					<p class="access-help" id="t3-access-help"></p>
+					<p class="access-help">T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing &amp; access.</p>
 					<p class="result" id="t3-result" hidden></p>
 				</div>
 				<p class="note">Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.</p>
@@ -149,7 +146,6 @@
 		<script>
 			const client = SDPIComponents.streamDeckClient;
 			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
-			const ACCESS = {"read-only":"Read projects and threads. Cannot start, message or change anything.","approval-required":"Ask before commands and file changes.","auto-accept-edits":"Auto-approve edits, ask before other actions.","auto":"Supported providers approve routine actions; others still ask.","full-access":"Allow commands and edits without prompts."};
 			const icons = {
 				all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
 				local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
@@ -172,7 +168,7 @@
 				return node;
 			};
 
-			function tile({ url, icon, name, where, checked, actions = [], detail }) {
+			function tile({ url, icon, name, where, checked, actions = [], detail, detailTone }) {
 				const node = el("div", "machine");
 				node.setAttribute("role", "radio");
 				node.setAttribute("aria-checked", String(checked));
@@ -193,21 +189,32 @@
 				const right = el("div", "actions");
 				right.append(...actions);
 				node.append(glyph, text, right);
-				if (detail) node.append(el("p", "detail", detail));
+				if (detail) node.append(el("p", detailTone === "muted" ? "detail muted" : "detail", detail));
 				return node;
 			}
+
+			const focusLink = () => {
+				$("t3-link").focus();
+				$("t3-link").select();
+			};
 
 			function machineActions(env) {
 				const actions = [];
 				if (env.state === "ready") {
 					actions.push(el("span", env.access === "Can act" ? "pill ready" : "pill muted", env.access === "Can act" ? "Connected" : "Read only"));
 					actions.push(button("Sign out", "ghost", "signOut", env.url));
-				} else if (env.state === "approving") {
-					actions.push(el("span", "pill wait", "Approve in browser"));
 				} else if (env.state === "connecting") {
 					actions.push(el("span", "pill muted", "Connecting…"));
+				} else if (env.state === "error") {
+					actions.push(button("Try again", "primary", "retry", env.url));
 				} else {
-					actions.push(button(env.state === "error" ? "Try again" : "Sign in", "primary", "signIn", env.url));
+					const pill = el("button", "pill wait", "Needs pairing");
+					pill.type = "button";
+					pill.addEventListener("click", (click) => {
+						click.stopPropagation();
+						focusLink();
+					});
+					actions.push(pill);
 				}
 				if (!env.local) actions.push(button("Remove", "ghost", "remove", env.url));
 				return actions;
@@ -218,20 +225,16 @@
 				const environments = payload.environments ?? [];
 				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
 				const ready = environments.filter((env) => env.state === "ready");
-				const approving = environments.some((env) => env.state === "approving");
 				const failed = environments.some((env) => env.state === "error") || payload.pairing?.state === "error";
 
 				$("t3").dataset.tone = failed ? "error" : "pairing";
-				$("t3-title").textContent =
-					environments.length === 0 ? "Connect T3 Deck" : approving ? "Waiting for approval" : ready.length === 0 ? "Sign in to a machine" : "Choose a machine";
+				$("t3-title").textContent = environments.length === 0 ? "Connect T3 Deck" : ready.length === 0 ? "Pair T3 Deck" : "Choose a machine";
 				$("t3-lede").textContent =
 					environments.length === 0
 						? "T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below."
-						: approving
-							? "Finish the sign-in in your browser, then come back here."
-							: ready.length === 0
-								? "Sign in, then approve in your browser. Or paste a pair link below to skip the browser."
-								: "This action shows and acts on threads from the machine you pick.";
+						: ready.length === 0
+							? "In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below."
+							: "This action shows and acts on threads from the machine you pick.";
 
 				const tiles = [];
 				if (environments.length > 1 || selected === "") {
@@ -251,7 +254,8 @@
 						where: env.where,
 						checked: env.url === selected,
 						actions: machineActions(env),
-						detail: env.state === "error" ? env.message : undefined,
+						detail: env.state === "error" ? env.message : env.state === "signed-out" ? (env.message ?? "Paste a pair link from this machine below.") : undefined,
+						detailTone: env.state === "signed-out" ? "muted" : undefined,
 					}));
 				}
 				$("t3-machines").replaceChildren(...tiles);
@@ -273,18 +277,15 @@
 				$("t3-pair").disabled = working || !/[#?&]token=./.test($("t3-link").value);
 				$("t3-pair").textContent = working ? "Connecting…" : "Connect";
 			};
-			const syncAccessHelp = () => ($("t3-access-help").textContent = ACCESS[$("t3-access").value]);
 			$("t3-link").addEventListener("input", () => syncPairButton());
-			$("t3-access").addEventListener("change", syncAccessHelp);
 			$("t3-pair").addEventListener("click", () => {
 				pairedOnce = true;
-				send("pair", { link: $("t3-link").value.trim(), access: $("t3-access").value });
+				send("pair", { link: $("t3-link").value.trim() });
 				syncPairButton(true);
 			});
 			$("t3-link").addEventListener("keydown", (key) => {
 				if (key.key === "Enter" && !$("t3-pair").disabled) $("t3-pair").click();
 			});
-			syncAccessHelp();
 			send("status");
 		</script>
 	</body>

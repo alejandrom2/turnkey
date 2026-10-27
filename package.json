@@ -1,12 +1,13 @@
 {
 	"name": "t3-deck",
 	"private": true,
-	"description": "Stream Deck plugin for T3 Code environments, over T3 Code's MCP endpoint.",
+	"description": "Stream Deck plugin for T3 Code environments, over T3 Code's client API.",
 	"scripts": {
 		"build": "rollup -c",
 		"watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.alejandrom2.t3deck\"",
 		"typecheck": "tsc --noEmit",
-		"test": "vitest run"
+		"test": "vitest run",
+		"assets": "node --import ./scripts/resolve-ts.mjs scripts/icons.ts && node scripts/ui.ts && node scripts/profiles.ts"
 	},
 	"type": "module",
 	"devDependencies": {
@@ -25,7 +26,6 @@
 	},
 	"dependencies": {
 		"@elgato/streamdeck": "3.0.2",
-		"@elgato/utils": "0.6.1",
-		"@modelcontextprotocol/sdk": "1.32.1"
+		"@elgato/utils": "0.6.1"
 	}
 }
