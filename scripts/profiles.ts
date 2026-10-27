@@ -42,7 +42,8 @@ const DIALS: Placed[] = [
 	{ action: "dial.answer", name: "Answer Dial" },
 ];
 
-type Page = { name: string; keys: Placed[][] };
+/** A page's dials replace the shared ones when set. */
+type Page = { name: string; keys: Placed[][]; dials?: Placed[] };
 
 type Profile = { file: string; name: string; deviceModel: string; deviceType: number; columns: number; pages: Page[]; dials: boolean };
 
@@ -91,6 +92,24 @@ const PROFILES: Profile[] = [
 					],
 				],
 			},
+			{
+				name: "GIT",
+				keys: [
+					[
+						{ action: "git.commit", name: "Commit" },
+						{ action: "git.push", name: "Push" },
+						{ action: "git.pr", name: "Create PR" },
+						{ action: "git.pull", name: "Pull" },
+					],
+					[
+						{ action: "pr.fix", name: "Fix Findings" },
+						{ action: "pr.explain", name: "Explain PR" },
+						{ action: "editor", name: "Open in Editor" },
+						{ action: "pr", name: "Pull Request" },
+					],
+				],
+				dials: [DIALS[0]!, { action: "dial.pr", name: "PR Dial" }, DIALS[1]!, DIALS[3]!],
+			},
 		],
 	},
 ];
@@ -101,7 +120,7 @@ function pageManifest(profile: Profile, page: Page | undefined) {
 	);
 	const controllers: { Actions: Record<string, unknown> | null; Type: string }[] = [{ Actions: page ? keys : null, Type: "Keypad" }];
 	if (profile.dials) {
-		const dials = Object.fromEntries(DIALS.map((placed, x) => [`${x},0`, entry(`${profile.file}:${page?.name}:dial:${x}`, placed)]));
+		const dials = Object.fromEntries((page?.dials ?? DIALS).map((placed, x) => [`${x},0`, entry(`${profile.file}:${page?.name}:dial:${x}`, placed)]));
 		controllers.push({ Actions: page ? dials : null, Type: "Encoder" });
 	}
 	return { Controllers: controllers, Icon: "", Name: page?.name ?? "" };

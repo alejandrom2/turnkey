@@ -1,6 +1,10 @@
 import streamDeck from "@elgato/streamdeck";
 
 import { AnswerDial, ModelDial, PromptDial, ThreadDial } from "./actions/dials.js";
+import { OpenInEditor } from "./actions/editor.js";
+import { CommitKey, CreatePrKey, PullKey, PushKey } from "./actions/git.js";
+import "./actions/needs.js";
+import { AskPrKey, ExplainPrKey, FixFindingsKey, PrDial, ReviewGuideKey } from "./actions/pr.js";
 import {
 	Activity,
 	Approve,
@@ -47,10 +51,20 @@ for (const instance of [
 	new PullRequest(),
 	new Branch(),
 	new Health(),
+	new CommitKey(),
+	new PushKey(),
+	new CreatePrKey(),
+	new PullKey(),
+	new FixFindingsKey(),
+	new ExplainPrKey(),
+	new AskPrKey(),
+	new ReviewGuideKey(),
+	new OpenInEditor(),
 	new ThreadDial(),
 	new ModelDial(),
 	new PromptDial(),
 	new AnswerDial(),
+	new PrDial(),
 ]) {
 	streamDeck.actions.registerAction(instance);
 }
