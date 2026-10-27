@@ -114,7 +114,7 @@ export function gitSummary(status: VcsStatus, action: GitKeyAction): string | un
 	if (action === "pull") return status.behindCount > 0 ? t("repo.behind", { count: status.behindCount }) : undefined;
 	if (commits(action) && status.hasWorkingTreeChanges) {
 		const { files, insertions, deletions } = status.workingTree;
-		return t("repo.changes", { files: files.length, insertions, deletions });
+		return files.length === 1 ? t("repo.changesOne", { insertions, deletions }) : t("repo.changes", { files: files.length, insertions, deletions });
 	}
 	return status.aheadCount > 0 ? t("repo.ahead", { count: status.aheadCount }) : undefined;
 }
