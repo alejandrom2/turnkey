@@ -1,4 +1,15 @@
-import streamDeck, { type Action, action, type DialAction, type DidReceiveSettingsEvent, type KeyDownEvent, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, {
+	type Action,
+	action,
+	type DialAction,
+	type DidReceiveSettingsEvent,
+	type KeyDownEvent,
+	type KeyUpEvent,
+	type SendToPluginEvent,
+	type WillAppearEvent,
+	type WillDisappearEvent,
+} from "@elgato/streamdeck";
+import type { JsonValue } from "@elgato/utils";
 
 import { failureLabel } from "../core/feedback.js";
 import { gaugeStripArt, renderGaugeKey } from "../core/gauge.js";
@@ -12,7 +23,8 @@ import type { StripList } from "../core/styles.js";
 import type { Machine } from "../core/t3/machine.js";
 import { DIAGNOSTICS_SCOPE } from "../core/t3/pairing.js";
 import { type UsagePeriod, type UsageReader, UsageStore, usagePeriod } from "../core/usage/store.js";
-import { periodLabel, type UsageItem, usageDriver, usageItems, usageProvider } from "../core/usage/usageView.js";
+import { USAGE_PROVIDER_KINDS, type UsageProviderKind } from "../core/usage/types.js";
+import { periodLabel, type UsageItem, usageDriver, usageItems, usageKindOf, usageProvider } from "../core/usage/usageView.js";
 import { deck } from "../deck.js";
 import { connectionFace, DeckAction, LONG_PRESS_MS, pressWhileDisconnected } from "./base.js";
 import { connectionOf } from "./needs.js";
@@ -118,6 +130,27 @@ async function refreshUsage(url: string | undefined, period: UsagePeriod, prices
 	if (failed !== undefined && store.view(machines, period).merged === undefined) throw failed;
 }
 
+/**
+ * The Provider setting's choices: the usage providers set up on the instance's machines, then any with usage in the
+ * period, in T3 Code's order; a saved one that is neither stays listed as not available.
+ */
+async function sendUsageProviders(url: string | undefined, period: UsagePeriod, saved: string | undefined): Promise<void> {
+	const found = new Set<UsageProviderKind>();
+	for (const machine of deck.machines) {
+		if (machine.state.kind !== "ready" || (url !== undefined && machine.url !== url)) continue;
+		for (const provider of machine.modelConfig?.providers ?? []) {
+			const kind = usageKindOf(provider.driver ?? provider.instanceId);
+			if (kind !== undefined) found.add(kind);
+		}
+	}
+	for (const totals of store.view(readers(url), period).merged?.providers ?? []) found.add(totals.provider);
+	const kinds = USAGE_PROVIDER_KINDS.filter((kind) => found.has(kind));
+	const name = (kind: string) => providerDisplayName({ instanceId: usageDriver(kind as UsageProviderKind), driver: usageDriver(kind as UsageProviderKind) });
+	const items = [{ label: t("inspector.usage.allProviders"), value: "" }, ...kinds.map((kind) => ({ label: name(kind), value: kind }))];
+	if (saved && !kinds.some((kind) => kind === saved)) items.push({ label: t("needs.notAvailable", { value: usageProvider(saved) ? name(saved) : saved }), value: saved });
+	await streamDeck.ui.sendToPropertyInspector({ event: "getUsageProviders", items });
+}
+
 /** Whether the instance's machines may read usage at all; T3 Code needs diagnostics access for it. */
 const usageAccess = (url: string | undefined): boolean =>
 	deck.machines.some((machine) => machine.state.kind === "ready" && (url === undefined || machine.url === url) && grants(machine.scopes, DIAGNOSTICS_SCOPE));
@@ -171,7 +204,10 @@ export class UsageKey extends DeckAction<UsageSettings> {
 
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<UsageSettings>): void {
 		super.onDidReceiveSettings(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action), usagePeriod(this.settingsOf(ev.action).period));
+		const settings = this.settingsOf(ev.action);
+		watch.show(ev.action.id, this.machineOf(ev.action), usagePeriod(settings.period));
+		// The open inspector's provider list follows its machine and period.
+		if (streamDeck.ui.action?.id === ev.action.id) void sendUsageProviders(this.machineOf(ev.action), usagePeriod(settings.period), settings.provider);
 	}
 
 	override onKeyDown(ev: KeyDownEvent<UsageSettings>): void {
@@ -182,6 +218,12 @@ export class UsageKey extends DeckAction<UsageSettings> {
 		const long = this.wasLongPress(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		await this.run(ev.action, () => refreshUsage(this.machineOf(ev.action), usagePeriod(this.settingsOf(ev.action).period), long));
+	}
+
+	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, UsageSettings>): Promise<void> {
+		if ((ev.payload as { event?: string } | null)?.event !== "getUsageProviders") return super.onSendToPlugin(ev);
+		const settings = this.settingsOf(ev.action);
+		await sendUsageProviders(this.machineOf(ev.action), usagePeriod(settings.period), settings.provider);
 	}
 
 	override needs(action: Action<UsageSettings>): Need[] {
@@ -278,7 +320,16 @@ export class UsageDial extends StripDial<UsageDialSettings> {
 
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<UsageDialSettings>): void {
 		super.onDidReceiveSettings(ev);
-		watch.show(ev.action.id, this.machineOf(ev.action), usagePeriod(this.settingsOf(ev.action).period));
+		const settings = this.settingsOf(ev.action);
+		watch.show(ev.action.id, this.machineOf(ev.action), usagePeriod(settings.period));
+		// The open inspector's provider list follows its machine and period.
+		if (streamDeck.ui.action?.id === ev.action.id) void sendUsageProviders(this.machineOf(ev.action), usagePeriod(settings.period), settings.provider);
+	}
+
+	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, UsageDialSettings>): Promise<void> {
+		if ((ev.payload as { event?: string } | null)?.event !== "getUsageProviders") return super.onSendToPlugin(ev);
+		const settings = this.settingsOf(ev.action);
+		await sendUsageProviders(this.machineOf(ev.action), usagePeriod(settings.period), settings.provider);
 	}
 
 	override needs(action: Action<UsageDialSettings>): Need[] {

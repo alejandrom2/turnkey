@@ -16,6 +16,9 @@ export const periodLabel = (period: UsagePeriod): string => t(PERIOD_LABEL[perio
 /** Usage names Claude Code `claude`; its provider mark and limits know it as `claudeAgent`. */
 export const usageDriver = (provider: UsageProviderKind): string => (provider === "claude" ? "claudeAgent" : provider);
 
+/** The usage provider a configured driver reports as, if usage covers it. */
+export const usageKindOf = (driver: string): UsageProviderKind | undefined => usageProvider(driver === "claudeAgent" ? "claude" : driver);
+
 /** A Usage action's provider setting: one of T3 Code's usage providers, else all of them. */
 export const usageProvider = (value: unknown): UsageProviderKind | undefined => USAGE_PROVIDER_KINDS.find((kind) => kind === value);
 
