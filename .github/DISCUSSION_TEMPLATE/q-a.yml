@@ -1,0 +1,15 @@
+title: "[Question]: "
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What you're trying to do and where you got stuck. Setup questions are welcome.
+    validations:
+      required: true
+
+  - type: input
+    id: setup
+    attributes:
+      label: Your setup
+      description: Stream Deck model, Turnkey version, and how T3 Code is reached (this computer, network, Tailscale, T3 Connect).
