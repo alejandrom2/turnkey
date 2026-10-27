@@ -20,7 +20,9 @@ import { COLORS, type GlyphName, maxEffortStyle, type Paint, providerGradient, r
 import type { Need } from "../core/requirements.js";
 import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
+import { pinnedKey, pinnedName, resolveTarget, type Target, type TargetSettings } from "../core/target.js";
 import type { SendMode } from "../core/t3/machine.js";
+import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 
@@ -93,7 +95,27 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	#store(action: Action<T>, settings: T): void {
 		const migrated = this.migrateSettings(settings);
 		this.#settings.set(action.id, migrated ?? settings);
+		deck.board.pin(action.id, pinnedKey(migrated ?? settings));
 		if (migrated !== undefined) void action.setSettings(migrated);
+	}
+
+	/**
+	 * The thread this instance acts on: T3 Code's selection on its machine, or the thread its Target setting pins. A
+	 * pinned thread's title is kept in the settings, so the key can still name it once it is archived or deleted.
+	 */
+	protected target(action: Action<T>): Target<DeckThread> {
+		const settings = this.settingsOf(action);
+		const target = targetOf(settings, this.machineOf(action));
+		const title = target.pinned ? target.thread?.title : undefined;
+		if (title !== undefined && title !== settings.threadTitle) this.remember(action, { threadTitle: title });
+		return target;
+	}
+
+	/** Saves a setting the plugin learned (a pinned thread's or task's title), here and in the action's settings. */
+	protected remember(action: Action<T>, patch: JsonObject): void {
+		const next = { ...this.settingsOf(action), ...patch } as T;
+		this.#settings.set(action.id, next);
+		void action.setSettings(next);
 	}
 
 	protected settingsOf(action: Action<T>): T {
@@ -212,6 +234,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 
 	override onWillDisappear(ev: WillDisappearEvent<T>): void {
 		this.#settings.delete(ev.action.id);
+		deck.board.pin(ev.action.id, undefined);
 		this.#placed.delete(ev.action.id);
 		this.forgetSent(ev.action.id);
 		clearTimeout(this.#flashing.get(ev.action.id));
@@ -268,6 +291,8 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				return this.#sendModels(ev.action);
 			case "getEfforts":
 				return this.#sendEfforts(ev.action);
+			case "getThreads":
+				return this.#sendThreads(ev.action);
 		}
 	}
 
@@ -295,6 +320,28 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 			for (const effort of effortValues(machine.modelConfig)) if (!items.some((item) => item.value === effort.value)) items.push(effort);
 		}
 		await streamDeck.ui.sendToPropertyInspector({ event: "getEfforts", items });
+	}
+
+	/**
+	 * The Target setting's choices: every thread on the action's machine (or all), listed or settled or snoozed, newest
+	 * first. A pinned thread that is gone stays in the list as "Not available", so the saved choice keeps showing.
+	 */
+	async #sendThreads(action: Action<T>): Promise<void> {
+		const machines = this.#readyMachines(action);
+		const items = [{ label: t("datasource.chooseThread"), value: "" }];
+		for (const machine of machines) {
+			const where = machines.length > 1 && machine.state.kind === "ready" ? ` · ${machine.state.label}` : "";
+			const environmentId = machine.environmentId;
+			if (environmentId === undefined) continue;
+			for (const row of machine.everyRow) {
+				const project = machine.isScratch(row.projectId) ? t("datasource.noProject") : row.projectTitle;
+				items.push({ label: `${row.title}${project ? ` · ${project}` : ""}${where}`, value: `${environmentId}/${row.threadId}` });
+			}
+		}
+		const settings = this.settingsOf(action);
+		const saved = pinnedKey(settings);
+		if (saved && !items.some((item) => item.value === saved)) items.splice(1, 0, { label: t("reason.targetGone", { thread: pinnedName(settings) }), value: saved });
+		await streamDeck.ui.sendToPropertyInspector({ event: "getThreads", items });
 	}
 
 	/**
@@ -457,6 +504,12 @@ export const ultrathinkPrompt = (thread: DeckThread, text: string): string =>
 export const ultrathinkArmed = (thread: DeckThread | undefined): boolean =>
 	thread !== undefined && deck.ultrathink.armed(thread.key, findModel(thread.machine.modelConfig, thread.model));
 
+/** The thread's queue as last read, read again when it moved; only call it for a thread a visible face shows. */
+export const queueOf = (thread: DeckThread): ThreadQueue | undefined => deck.queues.of(thread, () => thread.machine.queue(thread));
+
+/** How many messages wait in the thread's queue, as far as the deck knows. */
+export const queuedCount = (thread: DeckThread): number => queueOf(thread)?.items.length ?? 0;
+
 /** Selects the thread the way T3 Code's own open does, and opens it in the desktop app. */
 export async function openThread(thread: DeckThread): Promise<void> {
 	selectThread(thread);
@@ -512,3 +565,7 @@ export const canOperate = (thread?: DeckThread): boolean =>
 
 /** The thread every "selected thread" action targets: T3 Code's selection on the action's machine, or across all. */
 export const selectedThread = (machine?: string): DeckThread | undefined => deck.board.selectedOn(machine);
+
+/** The thread an action with these settings acts on: the selection on `machine`, or the thread its Target pins. */
+export const targetOf = (settings: TargetSettings, machine?: string): Target<DeckThread> =>
+	resolveTarget(settings, () => selectedThread(machine), (key) => deck.board.lookup(key));

@@ -225,6 +225,8 @@ describe("listing", () => {
 		]);
 		expect(rows(state).map((row) => row.threadId)).toEqual(["woke"]);
 		expect(rows(state, {}).map((row) => row.threadId).sort()).toEqual(["settled", "snoozed", "woke"]);
+		// A key pinned to one thread follows it while settled or snoozed, never once deleted.
+		expect(shellRows(state, { threadSettlement: true, threadSnooze: true }, NOW, true).map((row) => row.threadId).sort()).toEqual(["settled", "snoozed", "woke"]);
 		expect(nextSnoozeWake(state, NOW)).toBe(Date.parse("2026-10-26T16:00:00.000Z"));
 	});
 

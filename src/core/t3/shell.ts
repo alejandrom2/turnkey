@@ -194,9 +194,10 @@ function effectiveSnoozed(thread: ThreadShell, childAsks: boolean, now: number):
 	return thread.snoozedAt != null && !(time(thread.latestRunCompletedAt ?? thread.updatedAt) > time(thread.snoozedAt));
 }
 
-/** A thread the deck lists: top-level, not deleted, settled or snoozed (archived ones never arrive). */
-function listed(thread: ThreadShell, childAsks: boolean, capabilities: ThreadCapabilities, now: number): boolean {
+/** A thread the deck lists: top-level, not deleted, settled or snoozed (archived ones never arrive); `all` keeps settled and snoozed ones. */
+function listed(thread: ThreadShell, childAsks: boolean, capabilities: ThreadCapabilities, now: number, all: boolean): boolean {
 	if (isSubagent(thread) || thread.deletedAt != null) return false;
+	if (all) return true;
 	if (capabilities.threadSettlement === true && thread.settledOverride === "settled") return false;
 	return !(capabilities.threadSnooze === true && effectiveSnoozed(thread, childAsks, now));
 }
@@ -253,6 +254,13 @@ export type ShellRow = {
 	updatedAt: number;
 	/** When T3 Code last opened this thread, in server ms; the board follows the newest one as the selection. */
 	openedAt: number | undefined;
+	/** Changes whenever the thread's runs move: the shell carries no queue, so the deck reads it again then. */
+	runStamp: string;
+	/**
+	 * Messages may wait in the queue. The shell's status is its latest run's, leaving out a held queue
+	 * (ProjectionStore.ts `selectShellThreadRows`), so a stopped thread may hold one too.
+	 */
+	mayQueue: boolean;
 };
 
 /**
@@ -286,12 +294,13 @@ export function deckState(thread: ThreadShell, runtime: ThreadStatus | null, blo
 	return "idle";
 }
 
-export function shellRows(state: ShellState, capabilities: ThreadCapabilities, now: number): ShellRow[] {
+/** The board's rows; `all` also keeps settled and snoozed threads, which a key aimed at one thread still follows. */
+export function shellRows(state: ShellState, capabilities: ThreadCapabilities, now: number, all = false): ShellRow[] {
 	const lifted = liftedRequests(state.threads);
 	const rows: ShellRow[] = [];
 	for (const thread of state.threads.values()) {
 		const child = lifted.get(thread.id);
-		if (!listed(thread, child !== undefined, capabilities, now)) continue;
+		if (!listed(thread, child !== undefined, capabilities, now, all)) continue;
 		const runtime = runtimeStatus(thread);
 		const own = thread.pendingRuntimeRequest;
 		const ownClass = own == null ? undefined : requestClass(own.kind);
@@ -340,6 +349,8 @@ export function shellRows(state: ShellState, capabilities: ThreadCapabilities, n
 			parentThreadId: thread.lineage?.parentThreadId ?? null,
 			updatedAt: time(thread.updatedAt),
 			openedAt: openedAt(thread),
+			runStamp: [thread.status, thread.latestRunId, thread.activeRunId, thread.activityRunStatus ?? ""].join("|"),
+			mayQueue: thread.status === "queued" || thread.status === "interrupted",
 		});
 	}
 	return rows;
