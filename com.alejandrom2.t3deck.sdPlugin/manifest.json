@@ -209,40 +209,53 @@
 			"States": [{ "Image": "imgs/actions/branch/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Commit",
+			"Name": "Git",
+			"UUID": "com.alejandrom2.t3deck.git",
+			"Icon": "imgs/actions/git/icon",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Git",
 			"UUID": "com.alejandrom2.t3deck.git.commit",
 			"Icon": "imgs/actions/git-commit/icon",
-			"Tooltip": "Commits the selected thread's changes, or also pushes them or opens a PR, with T3 Code's commit message unless you set one.",
-			"PropertyInspectorPath": "ui/git-commit.html",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-commit/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/git-commit/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Push",
+			"Name": "Git",
 			"UUID": "com.alejandrom2.t3deck.git.push",
 			"Icon": "imgs/actions/git-push/icon",
-			"Tooltip": "Pushes the selected thread's branch. Hold to push.",
-			"PropertyInspectorPath": "ui/git.html",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git-push.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-push/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/git-push/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Create PR",
+			"Name": "Git",
 			"UUID": "com.alejandrom2.t3deck.git.pr",
 			"Icon": "imgs/actions/git-pr/icon",
-			"Tooltip": "Pushes the selected thread's branch and opens a pull request for it. Hold to create.",
-			"PropertyInspectorPath": "ui/git.html",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git-pr.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-pr/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/git-pr/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
-			"Name": "Pull",
+			"Name": "Git",
 			"UUID": "com.alejandrom2.t3deck.git.pull",
 			"Icon": "imgs/actions/git-pull/icon",
-			"Tooltip": "Pulls the selected thread's branch when it is behind its upstream.",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
 			"PropertyInspectorPath": "ui/git-pull.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-pull/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/git-pull/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		},
 		{
 			"Name": "Fix Findings",

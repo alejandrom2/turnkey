@@ -82,21 +82,25 @@
 		"Name": "Branch",
 		"Tooltip": "Der Branch des ausgewählten Threads. Tippen öffnet den Thread in T3 Code."
 	},
+	"com.alejandrom2.t3deck.git": {
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
+	},
 	"com.alejandrom2.t3deck.git.commit": {
-		"Name": "Commit",
-		"Tooltip": "Committet die Änderungen des ausgewählten Threads, pusht sie optional oder öffnet einen PR, mit der Commit-Nachricht von T3 Code, sofern du keine festlegst."
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
 	},
 	"com.alejandrom2.t3deck.git.push": {
-		"Name": "Push",
-		"Tooltip": "Pusht den Branch des ausgewählten Threads. Zum Pushen halten."
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
 	},
 	"com.alejandrom2.t3deck.git.pr": {
-		"Name": "PR erstellen",
-		"Tooltip": "Pusht den Branch des ausgewählten Threads und öffnet einen Pull Request dafür. Zum Erstellen halten."
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
 	},
 	"com.alejandrom2.t3deck.git.pull": {
-		"Name": "Pull",
-		"Tooltip": "Pullt den Branch des ausgewählten Threads, wenn er hinter seinem Upstream liegt."
+		"Name": "Git",
+		"Tooltip": "Committet, pusht, erstellt einen PR oder pullt den Branch des ausgewählten Threads, je nach Einstellung Aktion. Zum Pushen halten."
 	},
 	"com.alejandrom2.t3deck.pr.fix": {
 		"Name": "Befunde beheben",
@@ -713,7 +717,10 @@
 				"tap": "Tippen",
 				"hold": "Halten",
 				"hint": "Wirkt auf den Worktree des ausgewählten Threads oder den Ordner seines Projekts. Ein Push auf den Standard-Branch braucht immer Halten; ein PR von dort wird abgelehnt, da T3 Code zuerst einen neuen Branch anbieten würde.",
-				"pullHint": "Pullt den Branch des ausgewählten Threads von seinem Upstream, wenn er dahinter liegt."
+				"pullHint": "Pullt den Branch des ausgewählten Threads von seinem Upstream, wenn er dahinter liegt.",
+				"push": "Push",
+				"createPr": "PR erstellen",
+				"pull": "Pull"
 			},
 			"card": {
 				"machine": "Gerät",

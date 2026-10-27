@@ -73,7 +73,9 @@ const speed = key("speed", "Speed");
 const health = key("health", "Health");
 const editor = key("editor", "Open in Editor");
 const branch = key("branch", "Branch");
-const createPr = key("git.pr", "Create PR");
+/** Git starts on Commit; other keys pick their action. */
+const git = (gitAction?: string): Placed => key("git", "Git", gitAction ? { gitAction } : undefined);
+const createPr = git("create_pr");
 const threadsDial = (filter: string): Placed => ({ action: "dial.threads", name: "Threads Dial", settings: { filter } });
 const queueDial: Placed = { action: "dial.queue", name: "Queue Dial" };
 const usageDial: Placed = { action: "dial.usage", name: "Usage Dial", settings: { period: "7" } };
@@ -107,7 +109,7 @@ const PAGES_8: Page[] = [
 	},
 	{
 		name: "GIT",
-		keys: [key("git.commit", "Commit"), key("git.push", "Push"), createPr, key("git.pull", "Pull"), branch, editor, organize("archive"), health],
+		keys: [git(), git("push"), createPr, git("pull"), branch, editor, organize("archive"), health],
 		dials: [DIALS[0]!, prDial, power("model"), DIALS[3]!],
 	},
 	{
@@ -151,7 +153,7 @@ const PAGES_15: Page[] = [
 	{ name: "SKILLS", keys: [skill(), skill(), skill(), skill(), task(), task(), task(), task(), editor, key("preview", "Open Preview"), key("update", "Update T3"), key("share", "Share Thread"), stop] },
 	{
 		name: "GIT",
-		keys: [key("git.commit", "Commit"), key("git.push", "Push"), createPr, key("git.pull", "Pull"), branch, key("pr", "Pull Request"), key("pr.fix", "Fix Findings"), key("pr.explain", "Explain PR"), key("pr.ask", "Ask about PR"), key("pr.guide", "Review Guide"), editor, stop, health],
+		keys: [git(), git("push"), createPr, git("pull"), branch, key("pr", "Pull Request"), key("pr.fix", "Fix Findings"), key("pr.explain", "Explain PR"), key("pr.ask", "Ask about PR"), key("pr.guide", "Review Guide"), editor, stop, health],
 	},
 	{ name: "USAGE", keys: [limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly"), usage("1"), usage("7"), usage("30"), script(), script(), script(), health, stop, approve, deny] },
 ];
@@ -174,10 +176,10 @@ const XL_HOME: Placed[] = [
 	health,
 	editor,
 	key("preview", "Open Preview"),
-	key("git.commit", "Commit"),
-	key("git.push", "Push"),
+	git(),
+	git("push"),
 	createPr,
-	key("git.pull", "Pull"),
+	git("pull"),
 	branch,
 	key("pr", "Pull Request"),
 	usage("7"),
