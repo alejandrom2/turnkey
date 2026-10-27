@@ -5,7 +5,7 @@
  * the tiles and any text that scrolls.
  */
 import { t } from "./i18n.js";
-import { BLANK_ART, COLORS, glyphArt, type MarkPainter, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, wrapText } from "./render.js";
+import { BLANK_ART, COLORS, glyphArt, type MarkPainter, type StripAppearance, stripCanvas, stripMarkIcon, svgDataUrl, svgText, textWidth, wrapText } from "./render.js";
 import { overflowIn, type ScrollLine, scrollLine, type StripContent, slotItems, type TextScroll, type TextSlot } from "./strip.js";
 
 export type StripStyle = "classic" | "list" | "carousel";
@@ -33,6 +33,8 @@ export type StripItem = {
 	label: string;
 	/** The list's leading glyph and the carousel tile's art. */
 	art: MarkPainter;
+	/** A short name the carousel writes under the tile, sliding with it, in place of the one title. */
+	caption?: string;
 	/** Washes the carousel tile, as thread keys tint by state. */
 	tint?: string;
 	/** The label's color while selected; white by default. */
@@ -87,7 +89,9 @@ export const shownItem = (list: StripList, position = list.index): StripItem | u
 /** The style's line that may scroll: the selected row, or the carousel's title. */
 export function styleLine(style: Exclude<StripStyle, "classic">, list: StripList, scroll: TextScroll, position?: number): ScrollLine | undefined {
 	const item = shownItem(list, position);
-	return item && scrollLine(item.label, style === "list" ? LIST_SELECTED : CAROUSEL_TITLE, scroll, style);
+	// Carousel captions are shortened to their column instead of scrolling.
+	if (item === undefined || (style === "carousel" && item.caption !== undefined)) return undefined;
+	return scrollLine(item.label, style === "list" ? LIST_SELECTED : CAROUSEL_TITLE, scroll, style);
 }
 
 export type StyleOptions = {
@@ -183,6 +187,15 @@ export function listFeedback(content: StripContent, list: StripList, options: St
 
 const TILE = { center: 68, side: 54, far: 42, gap: 72, cy: 39, radius: 12 } as const;
 
+/** A tile's name on the strip's bottom row, under `cx`: bolder and wider at the center, shortened to fit its column. */
+function tileCaption(text: string, cx: number, faded: number, color: string): string {
+	const size = 14 - 3 * faded;
+	const width = 84 - 20 * faded;
+	let shown = text;
+	while (shown.length > 1 && textWidth(shown, size) > width) shown = `${shown.slice(0, -2).trimEnd()}…`;
+	return svgText(shown, cx, 92, size, faded < 0.5 ? 700 : 600, color, ` text-anchor="middle"`);
+}
+
 /** One tile `distance` items from the center: smaller, dimmer and without the white border the further it is. */
 function tile(item: StripItem, distance: number): string {
 	const away = Math.abs(distance);
@@ -195,7 +208,8 @@ function tile(item: StripItem, distance: number): string {
 	const body = box(`fill="#26282E"`) + (item.tint ? box(`fill="${item.tint}" fill-opacity=".24"`) : "") + item.art(cx - art / 2, TILE.cy - art / 2, art);
 	const faded = Math.min(1, away);
 	const border = away < 1 ? box(`fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-opacity="${(1 - faded).toFixed(2)}"`) : "";
-	return `<g opacity="${(1 - 0.55 * faded).toFixed(2)}">${body}</g>${border}`;
+	const caption = item.caption === undefined ? "" : tileCaption(item.caption, cx, faded, away < 0.5 ? (item.color ?? "#FFFFFF") : "#B8BCC6");
+	return `<g opacity="${(1 - 0.55 * faded).toFixed(2)}">${body}${caption}</g>${border}`;
 }
 
 /** The tiles around `position`, nearest drawn last so the center sits on top. */
@@ -217,6 +231,7 @@ export function carouselFeedback(content: StripContent, list: StripList, options
 	if (options.reading) return { canvas, art: readingArt(list.heading, options.reading.lines, options.reading.top), title: blankRow, titleArt: BLANK_ART };
 	const position = options.position ?? list.index;
 	const item = shownItem(list, position);
+	if (item?.caption !== undefined) return { canvas, art: svg(carouselTiles(list, position)), title: blankRow, titleArt: BLANK_ART };
 	const line = styleLine("carousel", list, options.scroll, position);
 	const title = slotItems(item?.label ?? "", CAROUSEL_TITLE, item?.color ?? CAROUSEL_TITLE.color, line, options.offset);
 	return { canvas, art: svg(carouselTiles(list, position)), title: title.text, titleArt: title.art };
