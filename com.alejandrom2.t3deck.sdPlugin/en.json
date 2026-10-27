@@ -163,7 +163,6 @@
 			"holdToAllow": "Hold to allow",
 			"holdToAnswer": "Hold to answer",
 			"holdToSend": "Hold to send",
-			"holdToApply": "Hold to apply",
 			"resumed": "Resumed",
 			"notWebLink": "Not a web link"
 		},
@@ -187,13 +186,8 @@
 			"restart": "Restart with?",
 			"steer": "Steer?",
 			"newThread": "New thread?",
-			"model": "Switch model?",
-			"effort": "Set effort?",
-			"speed": "Switch speed?",
-			"access": "Set access?",
 			"pressAgain": "Press again",
 			"pressToSend": "Press again to send",
-			"pressToApply": "Press again to apply",
 			"to": "To {thread}"
 		},
 		"organize": {
@@ -590,7 +584,7 @@
 				"motion": "Motion",
 				"motionHint": "Full spins running threads, pulses threads waiting on you and flashes finishes and failures. Reduced spins slowly and doesn't pulse. Off keeps every face still.",
 				"confirm": "Confirm before sending",
-				"confirmHint": "Applies to prompts and to the Model, Effort, Speed and Power controls. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
+				"confirmHint": "Applies to Send Prompt, Steer, Quick Prompt and the Prompts dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
 			},
 			"field": {
 				"strip": "Strip",

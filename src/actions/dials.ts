@@ -144,10 +144,10 @@ export class ThreadDial extends StripDial<ThreadDialSettings> {
 
 type PowerSettings = DialSettings & { dialControls?: string };
 
-const CONTROL: Record<DialControl, { label: MessageKey; kind: ActionKind; glyph: GlyphName; review: MessageKey }> = {
-	model: { label: "face.model", kind: "model", glyph: "model", review: "review.model" },
-	effort: { label: "face.effort", kind: "effort", glyph: "effort", review: "review.effort" },
-	permissions: { label: "face.access", kind: "permissions", glyph: "modeSupervised", review: "review.access" },
+const CONTROL: Record<DialControl, { label: MessageKey; kind: ActionKind; glyph: GlyphName }> = {
+	model: { label: "face.model", kind: "model", glyph: "model" },
+	effort: { label: "face.effort", kind: "effort", glyph: "effort" },
+	permissions: { label: "face.access", kind: "permissions", glyph: "modeSupervised" },
 };
 
 /** The value a Power dial previews; it resets when the selected thread or the dial's setting changes. */
@@ -266,18 +266,6 @@ export class ModelDial extends StripDial<PowerSettings> {
 		});
 	}
 
-	/** What a press or tap on this dial would change: the previewed value, else Speed. */
-	#scope(action: Action<PowerSettings>): string | undefined {
-		const context = this.#context(action);
-		if (context.thread === undefined) return undefined;
-		const toggle = speedToggle(findModel(context.thread.machine.modelConfig, context.thread.model), context.thread.model);
-		return JSON.stringify([context.thread.key, context.control, context.pending?.key ?? "", toggle?.nextLabel ?? ""]);
-	}
-
-	protected override reviewScope(action: Action<PowerSettings>): string | undefined {
-		return this.#scope(action);
-	}
-
 	protected override rotated(dial: DialAction<PowerSettings>, ticks: number): void {
 		const context = this.#context(dial);
 		if (context.thread === undefined) return;
@@ -285,25 +273,17 @@ export class ModelDial extends StripDial<PowerSettings> {
 		context.preview.key = next?.key === context.state.current?.key ? undefined : next?.key;
 	}
 
-	protected override pressed(dial: DialAction<PowerSettings>, held: number): Promise<void> {
-		return this.#act(dial, held, this.#reviewed(dial) ?? (this.#context(dial).pending === undefined ? "speed" : "apply"));
+	protected override pressed(dial: DialAction<PowerSettings>): Promise<void> {
+		return this.#act(dial, this.#context(dial).pending === undefined ? "speed" : "apply");
 	}
 
 	protected override tapped(dial: DialAction<PowerSettings>): Promise<void> {
-		return this.#act(dial, 0, this.#reviewed(dial) ?? "speed");
+		return this.#act(dial, "speed");
 	}
 
-	/** What a showing review was for: the second press, press or tap, confirms that. */
-	#reviewed(dial: DialAction<PowerSettings>): "apply" | "speed" | undefined {
-		const detail = this.reviewed(dial, this.#scope(dial));
-		return detail === "apply" || detail === "speed" ? detail : undefined;
-	}
 
-	/**
-	 * Applies the previewed value or switches Speed, once the Confirm setting allows: a second press confirms what
-	 * the first one reviewed, press or tap.
-	 */
-	async #act(dial: DialAction<PowerSettings>, held: number, wants: "apply" | "speed"): Promise<void> {
+	/** Applies the previewed value, or switches Speed. */
+	async #act(dial: DialAction<PowerSettings>, wants: "apply" | "speed"): Promise<void> {
 		const machine = this.machineOf(dial);
 		if (await pressWhileDisconnected(machine)) return;
 		const context = this.#context(dial);
@@ -315,18 +295,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 		if (!(await this.allowed(dial, wants === "apply" ? context.check : speedCheck))) return;
 		const work = wants === "apply" && pending ? this.#apply(thread, pending, context.armed) : undefined;
 		if (wants === "apply" && work === undefined) return void (await this.flash(dial, true, pending?.label ?? ""));
-		const go = await this.guard(dial, {
-			scope: this.#scope(dial)!,
-			detail: wants,
-			held,
-			holdHint: t("result.holdToApply"),
-			card: () =>
-				wants === "apply"
-					? { glyph: CONTROL[control].glyph, verb: t(CONTROL[control].review), target: thread.title, body: pending!.label, footer: t("review.pressToApply") }
-					: { glyph: "speed", verb: t("review.speed"), target: thread.title, body: toggle!.nextLabel, footer: t("review.pressToApply") },
-		});
-		if (go === undefined) return;
-		if (go === "apply" && pending !== undefined && work !== undefined) {
+		if (wants === "apply" && pending !== undefined && work !== undefined) {
 			const { preview } = context;
 			return this.run(
 				dial,
