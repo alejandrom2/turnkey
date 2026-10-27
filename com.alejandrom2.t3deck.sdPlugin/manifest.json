@@ -9,14 +9,24 @@
 	"Icon": "imgs/plugin/marketplace",
 	"CodePath": "bin/plugin.js",
 	"SDKVersion": 3,
-	"Software": { "MinimumVersion": "7.1" },
+	"Software": { "MinimumVersion": "7.6" },
 	"OS": [
 		{ "Platform": "mac", "MinimumVersion": "12" },
 		{ "Platform": "windows", "MinimumVersion": "10" }
 	],
 	"Nodejs": { "Version": "24" },
 	"UUID": "com.alejandrom2.t3deck",
-	"Profiles": [{ "Name": "profiles/t3-deck-plus", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true }],
+	"Profiles": [
+		{ "Name": "profiles/t3-deck-plus", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-plus-all", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-neo", "DeviceType": 9, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-neo-all", "DeviceType": 9, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-15", "DeviceType": 0, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-15-all", "DeviceType": 0, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-xl", "DeviceType": 2, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-xl-all", "DeviceType": 2, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
+		{ "Name": "profiles/t3-deck-mini", "DeviceType": 1, "Readonly": false, "DontAutoSwitchWhenInstalled": true }
+	],
 	"Actions": [
 		{
 			"Name": "Activity",
@@ -24,7 +34,7 @@
 			"Icon": "imgs/actions/activity/icon",
 			"Tooltip": "The most urgent thread matching a filter. Tap opens it in T3 Code.",
 			"PropertyInspectorPath": "ui/activity.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/activity/key", "ShowTitle": false }]
 		},
 		{
@@ -357,7 +367,7 @@
 			"Icon": "imgs/actions/usage/icon",
 			"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices.",
 			"PropertyInspectorPath": "ui/usage.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/usage/key", "ShowTitle": false }]
 		},
 		{
