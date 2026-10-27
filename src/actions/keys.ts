@@ -2,23 +2,21 @@ import { type Action, action, type KeyDownEvent, type KeyUpEvent } from "@elgato
 import type { JsonObject } from "@elgato/utils";
 
 import type { DeckThread } from "../core/board.js";
-import { launch, organize, type OrganizeAction, send, stop } from "../core/commands.js";
-import { COLORS, elapsed, type GlyphName, renderKey, STATE_COLOR, STATE_GLYPH } from "../core/render.js";
-import { isActive } from "../core/t3.js";
+import { organize, type OrganizeAction } from "../core/commands.js";
+import { elapsed, type GlyphName, renderControlKey, renderNoticeKey, renderThreadKey } from "../core/render.js";
 import { deck } from "../deck.js";
-import { connectionFace, DeckAction, openThread, preferredThread } from "./base.js";
+import { canOperate, connectionFace, DeckAction, openThread, preferredThread, pressWhileDisconnected } from "./base.js";
 
 const ID = "com.alejandrom2.t3deck";
 
 function threadFace(thread: DeckThread | undefined, emptyLabel: string): string {
-	if (thread === undefined) return renderKey({ glyph: "idle", label: emptyLabel, color: COLORS.dim });
-	const detail = isActive(thread.status) ? elapsed(thread.activeSince, Date.now()) : thread.deck === "approval" ? "approve" : thread.deck === "question" ? "answer" : thread.projectTitle;
-	return renderKey({
-		glyph: STATE_GLYPH[thread.deck],
-		color: STATE_COLOR[thread.deck],
-		label: thread.title,
-		detail,
-		badge: thread.unseen ? STATE_COLOR[thread.deck] : undefined,
+	if (thread === undefined) return renderNoticeKey({ glyph: "chat", title: emptyLabel, tone: "muted" });
+	return renderThreadKey({
+		state: thread.deck,
+		title: thread.title,
+		meta: thread.active ? elapsed(thread.activeSince, Date.now()) : undefined,
+		diff: thread.active ? undefined : thread.machine.turnDiff(thread),
+		unseen: thread.unseen,
 	});
 }
 
@@ -27,15 +25,15 @@ type SlotSettings = { slot?: number | string; machine?: string };
 /** Slot N of the board (0 = the focused thread). Tap opens it in T3 Code; hold focuses it for the dials. */
 @action({ UUID: `${ID}.slot` })
 export class ThreadSlot extends DeckAction<SlotSettings> {
-	#threadFor(settings: SlotSettings): DeckThread | undefined {
-		const slot = Number(settings.slot ?? 1);
-		const machine = settings.machine || undefined;
+	#threadFor(action: Action<SlotSettings>): DeckThread | undefined {
+		const slot = Number(this.settingsOf(action).slot ?? 1);
+		const machine = this.machineOf(action);
 		return slot <= 0 ? deck.board.focusedOn(machine) : deck.board.threadsOn(machine)[slot - 1];
 	}
 
 	protected override async paint(action: Action<SlotSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		await this.setImage(action, connectionFace(this.machineOf(action)) ?? threadFace(this.#threadFor(this.settingsOf(action)), "No thread"));
+		await this.setImage(action, connectionFace(this.machineOf(action)) ?? threadFace(this.#threadFor(action), "No thread"));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<SlotSettings>): void {
@@ -44,39 +42,25 @@ export class ThreadSlot extends DeckAction<SlotSettings> {
 
 	override async onKeyUp(ev: KeyUpEvent<SlotSettings>): Promise<void> {
 		const long = this.wasLongPress(ev.action.id);
-		if (connectionFace(this.machineOf(ev.action)) !== undefined) return void (await deck.signIn(this.machineOf(ev.action)));
-		const thread = this.#threadFor(ev.payload.settings);
+		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
+		const thread = this.#threadFor(ev.action);
 		if (thread === undefined) return;
 		if (long) deck.board.focus(thread.key);
 		else await this.run(ev.action, () => openThread(thread));
 	}
 }
 
-/** Board summary: how many turns run and how many need you. Tap jumps to the thread that needs you most. */
+/** The thread that needs you most. Tap opens it. */
 @action({ UUID: `${ID}.activity` })
 export class Activity extends DeckAction {
 	protected override async paint(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
-		const face = connectionFace(machine);
-		if (face !== undefined) return void (await this.setImage(action, face));
-		const threads = deck.board.threadsOn(machine);
-		const blocked = threads.filter((thread) => thread.deck === "approval" || thread.deck === "question").length;
-		const running = threads.filter((thread) => isActive(thread.status)).length;
-		const unseen = threads.filter((thread) => thread.unseen).length;
-		const [glyph, color, label]: [GlyphName, string, string] =
-			blocked > 0
-				? ["shield", COLORS.attention, `${blocked} need you`]
-				: running > 0
-					? ["running", COLORS.accent, `${running} running`]
-					: unseen > 0
-						? ["check", COLORS.done, `${unseen} done`]
-						: ["idle", COLORS.muted, "All quiet"];
-		await this.setImage(action, renderKey({ glyph, color, label, detail: blocked > 0 && running > 0 ? `${running} running` : undefined }));
+		await this.setImage(action, connectionFace(machine) ?? threadFace(deck.board.threadsOn(machine)[0], "All quiet"));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		if (connectionFace(this.machineOf(ev.action)) !== undefined) return void (await deck.signIn(this.machineOf(ev.action)));
+		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const target = deck.board.threadsOn(this.machineOf(ev.action))[0];
 		if (target !== undefined) await this.run(ev.action, () => openThread(target));
 	}
@@ -84,21 +68,21 @@ export class Activity extends DeckAction {
 
 const stopTarget = (machine?: string): DeckThread | undefined => {
 	const focused = preferredThread(machine);
-	return focused !== undefined && isActive(focused.status) ? focused : deck.board.threadsOn(machine).find((thread) => isActive(thread.status));
+	return focused?.active ? focused : deck.board.threadsOn(machine).find((thread) => thread.active);
 };
 
-/** Interrupts the focused turn, or the most urgent running one. */
+/** Stops the focused turn, or the most urgent running one. */
 @action({ UUID: `${ID}.stop` })
 export class Stop extends DeckAction {
 	protected override async paint(action: Action<JsonObject>): Promise<void> {
 		if (!action.isKey()) return;
 		const target = stopTarget(this.machineOf(action));
-		await this.setImage(action, renderKey({ glyph: "stop", color: COLORS.error, dimmed: target === undefined || !deck.canOperate }));
+		await this.setImage(action, renderControlKey({ glyph: "stop", primary: true, available: target !== undefined && canOperate(target) }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
 		const target = stopTarget(this.machineOf(ev.action));
-		if (target !== undefined) await this.run(ev.action, () => stop(target));
+		if (target !== undefined) await this.run(ev.action, () => target.machine.stopRun(target));
 	}
 }
 
@@ -110,8 +94,9 @@ export class SendPrompt extends DeckAction<PromptSettings> {
 	protected override async paint(action: Action<PromptSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const { prompt, label } = this.settingsOf(action);
-		const ready = Boolean(prompt?.trim()) && preferredThread(this.machineOf(action)) !== undefined && deck.canOperate;
-		await this.setImage(action, renderKey({ glyph: "send", label: label || (prompt ? prompt : "Set prompt"), dimmed: !ready }));
+		const thread = preferredThread(this.machineOf(action));
+		const ready = Boolean(prompt?.trim()) && thread !== undefined && canOperate(thread);
+		await this.setImage(action, renderControlKey({ glyph: "send", primary: true, label: label || undefined, available: ready }));
 	}
 
 	override onKeyDown(ev: KeyDownEvent<PromptSettings>): void {
@@ -123,11 +108,25 @@ export class SendPrompt extends DeckAction<PromptSettings> {
 		const prompt = ev.payload.settings.prompt?.trim();
 		const thread = preferredThread(this.machineOf(ev.action));
 		if (!prompt || thread === undefined) return void (await ev.action.showAlert());
-		await this.run(ev.action, () => send(thread, prompt, restart ? "restart" : "auto"));
+		await this.run(ev.action, () => thread.machine.send(thread, prompt, restart ? "restart" : "auto"));
 	}
 }
 
 type NewThreadSettings = { prompt?: string; title?: string };
+
+/** The machine a new thread starts on when no thread is near: the action's machine, else the first ready one. */
+const launchMachine = (machine?: string) => deck.machines.find((candidate) => candidate.canOperate && (machine === undefined || candidate.url === machine));
+
+/**
+ * Starts a thread with `prompt` in `near`'s project, or in the scratch project when the board is empty.
+ * Focuses it once the shell lists it.
+ */
+export async function startThread(near: DeckThread | undefined, machine: string | undefined, prompt: string, title?: string): Promise<void> {
+	const target = near?.machine ?? launchMachine(machine);
+	if (target === undefined) throw new Error("No machine can start threads.");
+	const created = await target.launch(near ? { projectId: near.projectId } : { scratch: true }, prompt, { title, fallbackModel: near?.model });
+	deck.board.focus(`${target.environmentId}/${created.threadId}`);
+}
 
 /** Starts a new thread with a saved prompt in the focused thread's project. */
 @action({ UUID: `${ID}.new` })
@@ -135,21 +134,17 @@ export class NewThread extends DeckAction<NewThreadSettings> {
 	protected override async paint(action: Action<NewThreadSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const { prompt, title } = this.settingsOf(action);
-		const near = preferredThread(this.machineOf(action));
-		await this.setImage(action, 
-			renderKey({ glyph: "plus", label: title || "New thread", detail: near?.projectTitle, dimmed: !prompt?.trim() || near === undefined || !deck.canOperate }),
-		);
+		const machine = this.machineOf(action);
+		const near = preferredThread(machine);
+		const able = near !== undefined ? canOperate(near) : launchMachine(machine) !== undefined;
+		await this.setImage(action, renderControlKey({ glyph: "compose", label: title || undefined, available: Boolean(prompt?.trim()) && able }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<NewThreadSettings>): Promise<void> {
 		const prompt = ev.payload.settings.prompt?.trim();
-		const near = preferredThread(this.machineOf(ev.action));
-		if (!prompt || near === undefined) return void (await ev.action.showAlert());
-		const title = ev.payload.settings.title?.trim() || prompt.slice(0, 60);
-		await this.run(ev.action, async () => {
-			const created = await launch(near, prompt, title);
-			deck.board.focus(`${near.environmentId}/${created.threadId}`);
-		});
+		if (!prompt) return void (await ev.action.showAlert());
+		const machine = this.machineOf(ev.action);
+		await this.run(ev.action, () => startThread(preferredThread(machine), machine, prompt, ev.payload.settings.title));
 	}
 }
 
@@ -170,13 +165,14 @@ export class Organize extends DeckAction<OrganizeSettings> {
 	protected override async paint(action: Action<OrganizeSettings>): Promise<void> {
 		if (!action.isKey()) return;
 		const [glyph, label] = ORGANIZE_FACE[this.settingsOf(action).organize ?? "settle"];
-		await this.setImage(action, renderKey({ glyph, label, dimmed: preferredThread(this.machineOf(action)) === undefined || !deck.canOperate }));
+		const thread = preferredThread(this.machineOf(action));
+		await this.setImage(action, renderControlKey({ glyph, label, available: thread !== undefined && canOperate(thread) }));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<OrganizeSettings>): Promise<void> {
 		const thread = preferredThread(this.machineOf(ev.action));
 		if (thread === undefined) return;
 		const { organize: which = "settle", snoozeMinutes } = ev.payload.settings;
-		await this.run(ev.action, () => organize(thread, which, Number(snoozeMinutes ?? 60)));
+		await this.run(ev.action, () => organize(thread, which, Number(snoozeMinutes ?? 60) || 60));
 	}
 }
