@@ -6,7 +6,7 @@ import { type MessageKey, t } from "./i18n.js";
 import { ACCESS_SCOPE, DIAGNOSTICS_SCOPE, isOptInScope, MAINTAIN_SCOPE, PROVIDERS_SCOPE, SOURCE_CONTROL_SCOPE, TERMINAL_READ_SCOPE, TERMINAL_SCOPE } from "./t3/pairing.js";
 
 /** Why the action's machine can't be used: none found, removed, unpaired or unreachable (base.ts `ConnectionProblem`). */
-export type Connection = "ready" | "none" | "missing" | "pair" | "offline";
+export type Connection = "ready" | "loading" | "none" | "missing" | "pair" | "offline";
 
 /** One condition. `ok: undefined` means it is still being checked. */
 export type Need =
@@ -55,6 +55,7 @@ const SCOPE_LABEL: Record<string, MessageKey> = {
 };
 
 const CONNECTION_FIX: Record<Exclude<Connection, "ready">, MessageKey[]> = {
+	loading: [],
 	none: ["needs.fix.openT3", "needs.fix.addMachine"],
 	missing: ["needs.fix.pickMachine"],
 	pair: ["needs.fix.pairLink"],
@@ -72,7 +73,7 @@ function describe(need: Need): Requirement {
 	});
 	switch (need.kind) {
 		case "paired":
-			return make("paired", t("needs.paired"), need.connection === "ready", need.connection === "ready" ? [] : CONNECTION_FIX[need.connection]);
+			return make("paired", t("needs.paired"), need.connection === "loading" ? undefined : need.connection === "ready", need.connection === "ready" ? [] : CONNECTION_FIX[need.connection]);
 		case "operate":
 			return make("operate", t("needs.operate"), need.ok, ["needs.fix.canAct"]);
 		case "thread":
