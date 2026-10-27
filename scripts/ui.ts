@@ -119,6 +119,7 @@ const style = `
 			.note { margin: 12px 0 0; font-size: 11px; line-height: 1.5; color: var(--t3-muted); }
 
 			details.group { border-top: 1px solid #555; margin-top: 10px; padding-top: 8px; }
+			.switch { display: flex; align-items: center; gap: 6px; font-size: 9pt; }
 			details.group > summary {
 				cursor: pointer; margin: 0 0 8px; font-size: 8.5pt; font-weight: 600;
 				letter-spacing: .06em; text-transform: uppercase; color: #a8a8a8;
@@ -233,6 +234,21 @@ const card = `
 					</sdpi-select>
 				</sdpi-item>
 				<p class="hint"${text("inspector.advanced.confirmHint")}</p>
+			</details>
+			<details class="group">
+				<summary${text("inspector.diagnostics.title")}</summary>
+				<sdpi-item ${attr("label", "inspector.diagnostics.verbose")}>
+					<label class="switch"><input type="checkbox" id="t3-verbose" /><span${text("inspector.diagnostics.verboseLabel")}</span></label>
+				</sdpi-item>
+				<p class="hint" id="t3-verbose-state"${text("inspector.card.verboseOff")}</p>
+				<sdpi-item ${attr("label", "inspector.diagnostics.logs")}>
+					<sdpi-button id="t3-open-logs"><span${text("inspector.diagnostics.openLogs")}</span></sdpi-button>
+				</sdpi-item>
+				<sdpi-item ${attr("label", "inspector.diagnostics.report")}>
+					<sdpi-button id="t3-export"><span${text("inspector.diagnostics.export")}</span></sdpi-button>
+				</sdpi-item>
+				<p class="hint"${text("inspector.diagnostics.exportHint")}</p>
+				<p class="hint" id="t3-diagnostics-result" hidden${text("inspector.card.diagnosticsFailed")}</p>
 			</details>`;
 
 /** Shows the element `id` only while `setting` (a global one with `global`) passes `test`, as it is edited and as settings arrive. */
@@ -378,6 +394,11 @@ const script = (extra = "") => `
 			let lastStatus;
 			function renderStatus(payload) {
 				renderNeeds(payload.requirements);
+				const until = typeof payload.verboseUntil === "number" ? new Date(payload.verboseUntil) : undefined;
+				$("t3-verbose").checked = until !== undefined;
+				$("t3-verbose-state").textContent = until
+					? s("inspector.card.verboseUntil", { time: until.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) })
+					: s("inspector.card.verboseOff");
 				const environments = payload.environments ?? [];
 				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
 				const ready = environments.filter((env) => env.state === "ready");
@@ -442,10 +463,18 @@ const script = (extra = "") => `
 
 			client.sendToPropertyInspector.subscribe(({ payload }) => {
 				if (payload?.event === "strings") return applyStrings(payload.strings ?? {});
+				if (payload?.event === "diagnostics") {
+					$("t3-diagnostics-result").hidden = payload.ok === true;
+					return;
+				}
 				if (payload?.event !== "status") return;
 				lastStatus = payload;
 				renderStatus(payload);
 			});
+
+			$("t3-verbose").addEventListener("change", () => send("verbose", { on: $("t3-verbose").checked }));
+			$("t3-open-logs").addEventListener("click", () => send("openLogs"));
+			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
 
 			let pairedOnce = false;
 			const syncPairButton = (working = false) => {
@@ -716,7 +745,9 @@ const pages: Record<string, string> = {
 	"target.html": page("Target", targetField, targetScript),
 	"organize.html": page(
 		"Organize",
-		`${targetField}
+		`
+			<div id="organize-target">${targetField}
+			</div>
 			<sdpi-item ${attr("label", "inspector.organize.action")}>
 				<sdpi-select setting="organize" default="settle">
 					<option value="settle"${text("inspector.organize.settle")}</option>
@@ -724,6 +755,7 @@ const pages: Record<string, string> = {
 					<option value="snooze"${text("inspector.organize.snooze")}</option>
 					<option value="archive"${text("inspector.organize.archive")}</option>
 					<option value="mark_unread"${text("inspector.organize.markUnread")}</option>
+					<option value="wake"${text("inspector.organize.wake")}</option>
 				</sdpi-select>
 			</sdpi-item>
 			<sdpi-item ${attr("label", "inspector.organize.snoozeFor")} id="snooze-for">
@@ -744,7 +776,9 @@ const pages: Record<string, string> = {
 					<option value="off"${text("inspector.organize.confirmOff")}</option>
 				</sdpi-select>
 			</sdpi-item>`,
-		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) + targetScript,
+		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) +
+			showWhen("organize", "organize-target", `value !== "wake"`) +
+			targetScript,
 	),
 	"task.html": page(
 		"Run Task",
@@ -929,6 +963,18 @@ const pages: Record<string, string> = {
 		`${periodField}${usageProviderField}
 			<p class="hint"${text("inspector.usage.dialHint")}</p>${dialAppearance}`,
 		dialAppearanceScript,
+	),
+	"devices-dial.html": page(
+		"Devices Dial",
+		`${targetField}
+			<p class="hint"${text("inspector.devices.hint")}</p>${dialAppearance}`,
+		targetScript + dialAppearanceScript,
+	),
+	"preview.html": page(
+		"Open Preview",
+		`${targetField}
+			<p class="hint"${text("inspector.preview.hint")}</p>`,
+		targetScript,
 	),
 	"editor.html": page(
 		"Open in Editor",

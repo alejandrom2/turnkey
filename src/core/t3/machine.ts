@@ -5,6 +5,7 @@ import { type Credential, DIAGNOSTICS_SCOPE, OPERATE_SCOPE, PairingError, PROVID
 import { type VcsRef, worktreeBase } from "../git.js";
 import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun, type ProjectedTurnItem } from "../lineage.js";
 import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
+import { type HtmlRender, latestHtmlRender, type RenderItem } from "../preview.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
 import { type ProjectedSubagent, type RunningWorkflow, runningWorkflows, stopWorkflowFailure } from "../workflows.js";
 import { type QueueProjection, type ThreadQueue, threadQueue } from "./queue.js";
@@ -111,6 +112,9 @@ type WorkspaceRead = { snapshot?: WorkspaceSnapshot; requestedAt?: number; retry
 export const CONFIG_WATCH_LINGER_MS = 60_000;
 type ThreadRef = Pick<ShellRow, "threadId">;
 
+/** A stream something on the deck holds open; `rpc` is the connection it runs on, `ended` one that ended it. */
+type LiveWatch = { tag: string; payload: unknown; onValue: (value: unknown) => void; onOpen?: () => void; rpc?: RpcSocket; ended?: RpcSocket; stop?: () => void };
+
 const APPROVAL_HEADING: Record<string, MessageKey> = {
 	command: "approval.command",
 	"file-read": "approval.fileRead",
@@ -171,6 +175,7 @@ export class Machine {
 	#untaskTimer: ReturnType<typeof setTimeout> | undefined;
 	/** Bumped when the task list changes, so the deck repaints faces drawn from it. */
 	tasksVersion = 0;
+	readonly #live = new Set<LiveWatch>();
 	/** Per provider instance and checkout, its skills snapshot: config replies leave these out, so they are read on demand. */
 	readonly #workspaces = new Map<string, WorkspaceRead>();
 	readonly #now: () => number;
@@ -315,6 +320,7 @@ export class Machine {
 		this.#taskWatch = undefined;
 		clearTimeout(this.#snoozeTimer);
 		rpc?.stop();
+		this.#syncLive();
 	}
 
 	/** Reconnects now instead of waiting out the backoff, or after a fatal stop. */
@@ -702,7 +708,43 @@ export class Machine {
 
 	#set(state: MachineState): void {
 		this.state = state;
+		this.#syncLive();
 		this.onChange();
+	}
+
+	/**
+	 * Keeps a stream open while held: on the current connection, again on the next one (`onOpen` runs first, so the
+	 * holder can drop what it cached), never while offline. A stream T3 Code ends waits for the next connection.
+	 */
+	live(tag: string, payload: unknown, onValue: (value: unknown) => void, onOpen?: () => void): () => void {
+		const watch: LiveWatch = { tag, payload, onValue, onOpen };
+		this.#live.add(watch);
+		this.#syncLive();
+		return () => {
+			this.#live.delete(watch);
+			watch.stop?.();
+		};
+	}
+
+	#syncLive(): void {
+		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
+		for (const watch of this.#live) {
+			if (watch.rpc === rpc && (watch.stop !== undefined || watch.ended === rpc)) continue;
+			watch.stop?.();
+			watch.stop = undefined;
+			watch.rpc = rpc;
+			if (rpc === undefined || watch.ended === rpc) continue;
+			watch.onOpen?.();
+			watch.stop = rpc.subscribe(watch.tag, () => watch.payload, watch.onValue, {
+				persistent: true,
+				onEnd: () => {
+					if (watch.rpc !== rpc) return;
+					watch.stop?.();
+					watch.stop = undefined;
+					watch.ended = rpc;
+				},
+			});
+		}
 	}
 
 	get #capabilities(): Capabilities {
@@ -985,6 +1027,24 @@ export class Machine {
 			targetThreadId: into,
 			sourcePoint: { type: "run", runId: run.id },
 		});
+	}
+
+	/** The thread's newest HTML render, from one bounded snapshot, reading its tool output by id when the snapshot left it out. */
+	async htmlRender(thread: ThreadRef): Promise<HtmlRender | undefined> {
+		const rpc = this.#rpcFor(false);
+		const projection = (await this.#threadSnapshot(rpc, thread.threadId)) as { turnItems?: RenderItem[] } | undefined;
+		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
+		const found = latestHtmlRender(projection.turnItems ?? []);
+		if (found === undefined || !("omitted" in found)) return found;
+		const { item } = await rpc.request<{ item: RenderItem | null }>("orchestration.getTurnItem", { threadId: thread.threadId, itemId: found.itemId });
+		const read = item === null ? undefined : latestHtmlRender([item]);
+		return read === undefined || "omitted" in read ? undefined : read;
+	}
+
+	/** A signed link to one of the machine's files (`assets.createUrl`), resolved against its address as T3 Code's clients do. */
+	async assetUrl(resource: Record<string, unknown>): Promise<string> {
+		const { relativeUrl } = await this.call<{ relativeUrl: string }>("assets.createUrl", { resource });
+		return new URL(relativeUrl, this.url).href;
 	}
 
 	/** The thread's running workflows, from one bounded snapshot: the shell doesn't carry them. */

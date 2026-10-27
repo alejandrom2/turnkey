@@ -15,15 +15,24 @@ const provider = (patch: Partial<ProviderStatus> = {}): ProviderStatus => ({
 const machine = (patch: Partial<HealthMachine> = {}): HealthMachine => ({ name: "Studio", state: "ready", canOperate: true, providers: [provider()], ...patch });
 
 describe("providerProblem", () => {
-	it("follows T3 Code's order: disabled, not installed, signed out, then status", () => {
+	it("follows T3 Code's order: disabled, not found, not authenticated, then compatibility and status", () => {
 		expect(providerProblem(provider())).toBeUndefined();
 		expect(providerProblem(provider({ enabled: false, auth: { status: "unauthenticated" } }))).toBe("disabled");
 		expect(providerProblem(provider({ installed: false, auth: { status: "unauthenticated" } }))).toBe("notFound");
-		expect(providerProblem(provider({ status: "error", auth: { status: "unauthenticated" } }))).toBe("signedOut");
-		expect(providerProblem(provider({ status: "error", compatibilityAdvisory: { status: "broken" } }))).toBe("updateRequired");
-		expect(providerProblem(provider({ status: "error" }))).toBe("checkFailed");
+		expect(providerProblem(provider({ status: "error", auth: { status: "unauthenticated" } }))).toBe("unauthenticated");
+		expect(providerProblem(provider({ status: "error", compatibilityAdvisory: { status: "broken" } }))).toBe("broken");
+		expect(providerProblem(provider({ compatibilityAdvisory: { status: "unsupported" } }))).toBe("unsupported");
+		expect(providerProblem(provider({ status: "error" }))).toBe("unavailable");
+		expect(providerProblem(provider({ availability: "unavailable" }))).toBe("unavailable");
 		expect(providerProblem(provider({ status: "warning" }))).toBe("needsAttention");
 		expect(providerProblem(provider({ versionAdvisory: { status: "behind_latest" } }))).toBe("updateAvailable");
+	});
+
+	it("leaves Antigravity's unchecked sign-in alone, as T3 Code does", () => {
+		const antigravity = (auth: ProviderStatus["auth"]) => provider({ instanceId: "antigravity", driver: "antigravity", status: "warning", auth });
+		expect(providerProblem(antigravity({ status: "unknown" }))).toBeUndefined();
+		expect(providerProblem(antigravity({ status: "unknown", type: "oauth-personal" }))).toBeUndefined();
+		expect(providerProblem(antigravity({ status: "unknown", type: "api-key" }))).toBe("needsAttention");
 	});
 });
 
@@ -43,7 +52,7 @@ describe("summarizeHealth", () => {
 				],
 			}),
 		]);
-		expect(summary).toEqual({ level: "error", title: "Cursor", detail: "Check failed · +2 more" });
+		expect(summary).toEqual({ level: "error", title: "Cursor", detail: "Unavailable · +2 more" });
 	});
 
 	it("keeps a ready machine green with only notes, naming the note", () => {
@@ -63,7 +72,7 @@ describe("summarizeHealth", () => {
 		expect(summarizeHealth([machine({ providers: [provider({ auth: { status: "unauthenticated" } })] }), machine({ name: "Laptop" })])).toEqual({
 			level: "attention",
 			title: "Codex",
-			detail: "Signed out · Studio",
+			detail: "Not authenticated · Studio",
 		});
 	});
 

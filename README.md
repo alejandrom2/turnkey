@@ -17,7 +17,7 @@ T3 Deck asks to read threads and act on them, for source control access (git and
 
 Most actions act on the **selected thread**: the one you opened last in T3 Code, on the action's machine or across all of them. Opening a thread from the deck, holding a Thread key or turning the Threads dial selects it too, by visiting it in T3 Code. The selected thread's key is lit, and the other thread keys dim their titles.
 
-Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Permissions, Plan, Organize, Run Skill, Stop Workflow, Fork, Merge Back and the Skills dial can instead aim at one thread: set **Target** to **This thread** and pick it. The key then acts on that thread whatever is selected, even while it is settled or snoozed, and shows a small pin. Once that thread is archived or deleted the key says **Not available** with its name until you pick another.
+Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Permissions, Plan, Organize, Run Skill, Stop Workflow, Fork, Merge Back, Open Preview, the Skills dial and the Devices dial can instead aim at one thread: set **Target** to **This thread** and pick it. The key then acts on that thread whatever is selected, even while it is settled or snoozed, and shows a small pin. Once that thread is archived or deleted the key says **Not available** with its name until you pick another.
 
 | Action | Controller | What it does |
 |---|---|---|
@@ -35,7 +35,7 @@ Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Per
 | Approve | key | Answers the selected thread's approval as far as its **Approvals** setting allows: open it in T3 Code (default), allow once, for the session, or always. Answering needs a hold unless set to tap. |
 | Deny | key | Declines the selected thread's approval with a tap. |
 | Thread | key | A board thread. Keys fill by position, left to right and top to bottom, unless a slot is set (or **Selected thread**). Shows status, title and how long the turn has run (4m, 1.5h), tinted amber while it waits for an approval and indigo for a question (T3 Code's colors), red when it failed and green when a finished turn is unseen, with a dot when a failed or stopped turn is unseen, **+N** for messages waiting in its queue, a bot with a count while subagents run, and a small folder mark when it works in its own worktree. Tap opens it in T3 Code, hold selects it. |
-| Organize | key | Settle, pin, snooze, archive or mark unread. Pin toggles: it lights up while the selected thread is pinned, and pressing it then unpins. Settle and Snooze ask first: by default the first press shows which thread and, for Snooze, for how long (set in its settings, 15 minutes to 1 day; the key shows it too), and a second press goes ahead. Their settings can make it a hold or act right away. |
+| Organize | key | Settle, pin, snooze, archive or mark unread, or wake a snoozed thread. Pin toggles: it lights up while the selected thread is pinned, and pressing it then unpins. Settle and Snooze ask first: by default the first press shows which thread and, for Snooze, for how long (set in its settings, 15 minutes to 1 day; the key shows it too), and a second press goes ahead. Their settings can make it a hold or act right away. **Wake latest snoozed** names the thread snoozed last on the key's machine (or any) and wakes it, as T3 Code's Wake thread does; it is dimmed with **Nothing snoozed** otherwise. |
 | Pull Request | key | The selected thread's pull request and its state. Tap opens it in the browser. |
 | Branch | key | The selected thread's branch, with its changed files and commits ahead (↑) and behind (↓). Tap opens the thread. |
 | Commit | key | Commits the selected thread's changes, or commits and pushes, or also opens a pull request (**Action**). T3 Code writes the message unless you set one. Shows the changed files, or why it can't. |
@@ -47,7 +47,8 @@ Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Per
 | Ask about PR | key | Opens the thread that holds the pull request in T3 Code, to ask about it there. |
 | Review Guide | key | Writes T3 Code's review guide for the selected thread's pull request, shows its progress, then opens the thread. Needs **Review guides** on in T3 Code. |
 | Open in Editor | key | Opens the selected thread's worktree, or its project's folder, in an editor T3 Code found on that machine: the one you pick, or T3 Code's default. A key on a remote machine says where it opens. |
-| Health | key | The connection to the action's machine (or all) and their providers, worst problem first: offline, needs pairing, a provider signed out, needing an update, not installed or failing its check, then how many more. With nothing wrong it says connected or read only, and mentions a provider update available or a provider turned off. Tap reconnects. T3 Code doesn't tell clients when T3 Code itself has an update, so Health can't show that yet. |
+| Open Preview | key | Opens the thread's preview in this computer's browser: the page its preview panel shows (named by its title and host), else its newest HTML render. Dimmed with **No preview** when it has neither. A page on another machine's `localhost` can't be reached from here, so the key says **Only on <machine>** instead of opening it. The deck can't start a preview itself: that takes T3 Code's preview access. |
+| Health | key | The connection to the action's machine (or all) and their providers, worst problem first, in T3 Code's words: offline, needs pairing, a provider not found, unavailable, not authenticated, on an unsupported or known broken version, or needing attention, then how many more. With nothing wrong it says connected or read only, and mentions a provider update available or a provider turned off. Tap reconnects. T3 Code doesn't tell clients when T3 Code itself has an update, so Health can't show that yet. |
 | Run Task | key | One of T3 Code's scheduled tasks, picked in its settings: its name and when it runs next (in 4m, off, running, on webhook), red when its last run failed. Press runs it now; it keeps its schedule. A task deleted in T3 Code shows as **Not available**. |
 | Run Skill | key | One of the thread's provider skills, picked in its settings, with optional text to send after it. Press runs it the way picking it in T3 Code's composer and sending does (`$name`, which T3 Code hands to the provider), under **Confirm before sending**. Codex, Claude and Antigravity list skills, including the repository's own. |
 | Stop Workflow | key | Stops the workflows the thread runs, as T3 Code's Lineage panel does; only Claude's can be stopped. Shows how many subagents are out. Hold to stop. |
@@ -65,6 +66,7 @@ Stop, Send Prompt, Steer, Quick Prompt, Approve, Deny, Model, Effort, Speed, Per
 | Queue Dial | dial | The selected thread's queued messages. Rotate picks one; press sends it now, into the running turn where the provider takes steering or as the next turn when nothing runs (which also releases a queue that Stop held); hold removes it. Tap opens the thread. |
 | Tasks Dial | dial | T3 Code's scheduled tasks on the dial's machine (or all), with when each runs next. Rotate picks one, press runs it now, tap turns it off, and tapping again turns it back on. |
 | Skills Dial | dial | The thread's provider skills. Rotate picks one; press or tap runs it on the thread, under **Confirm before sending**; touch and hold reads its description. |
+| Devices Dial | dial | T3 Code's simulators and emulators on the thread's machine and its device hosts, with platform, version and whether each runs (**Open here** when it is open in the thread). Rotate picks one; press starts it, or opens a running one, in the thread's Device panel; hold powers it off. A cloud (EAS) device needs a hold to start, since Expo bills while it runs; a real device can't be powered off. Touch looks for devices again. Turning Devices on and adding hosts happens in T3 Code. |
 
 A key that can't act right now is dimmed, and pressing it says why. A press that works shows no confirmation: the key or strip just shows the new state. Each action's settings list **What this action needs**: every condition it checks (paired, can act, a selected thread, access, what the thread's model offers, a pull request…), met or not, with how to fix what isn't; a saved choice that no longer exists shows as **Not available**. Setting keys (Model, Effort, Permissions) set to one value are highlighted while the thread already has it. Effort shows where it sits on its model's ladder, Model where it sits among your favorites, and Permissions a small pill (filled when the key's mode is the thread's) with Full access in amber. Models and favorites are read again whenever a key's settings open.
 
@@ -99,6 +101,14 @@ Limits come from T3 Code's live server config: the same pooled figures as **Usag
 
 Board order: needs approval, has a question, running, queued, then unseen failures and completions, then everything else. Unread matches T3 Code: opening a thread from the deck marks it read everywhere.
 
+### Diagnostics
+
+Under **Diagnostics** in any action's settings:
+
+- **Verbose logging** writes more detail to the plugin's log for 24 hours, then turns itself off, across restarts too. It never logs tokens.
+- **Open logs folder** shows the plugin's logs.
+- **Export diagnostics** saves a file to the logs folder and shows it: plugin, Stream Deck, OS and Node versions, each machine's host, state, access and environment id, how many of each action are on the deck, and the last 50 warnings and errors. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report.
+
 ## Limits
 
 - **Free-text answers and approval feedback** need T3 Code; the dials pick from the offered choices.
@@ -110,6 +120,7 @@ Board order: needs approval, has a question, running, queued, then unseen failur
 - **Usage links**: T3 Code's desktop app has no link to its Usage page yet, so **Open Usage in T3 Code** only brings the app forward.
 - **Skills** come from the thread's provider for its checkout. T3 Code's server config leaves a checkout's skills out, so the deck asks for them when a skill key or dial shows the thread, and again after five minutes, as T3 Code's composer does. Skill names T3 Code can't read as a mention (such as `pdf.tools`) aren't offered.
 - **Stop Workflow, Fork and Merge Back** read one snapshot of the thread when pressed, for its workflows and runs; their faces use the thread list only.
+- **Previews and devices** are read and started, not driven: the deck can't open a new preview tab (that takes T3 Code's preview access), and a device started from the deck runs in the thread's Device panel, which T3 Code shows once you open the panel there.
 - **Moving a thread to another machine** isn't possible: T3 Code has no way to export a thread or move it between environments yet.
 - **Queues**: T3 Code's thread list doesn't count queued messages, so the deck reads a shown thread's queue from one snapshot of that thread when its runs change (while it is queued, stopped, or had messages waiting), and after its own queue presses. A message removed or reordered in T3 Code while the thread's runs stay the same shows on the deck after the next change.
 - **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { applyShellItem, nextSnoozeWake, type ProjectShell, type ShellItem, shellRows, type ShellState, type ThreadCapabilities, type ThreadShell } from "./shell.js";
+import { applyShellItem, latestSnoozed, nextSnoozeWake, type ProjectShell, type ShellItem, shellRows, type ShellState, type ThreadCapabilities, type ThreadShell } from "./shell.js";
 
 const project: ProjectShell = { id: "p-1", title: "app", workspaceRoot: "/Users/me/code/app", repositoryIdentity: null, defaultModelSelection: null };
 
@@ -251,5 +251,22 @@ describe("listing", () => {
 			]),
 		]);
 		expect(rows(state).map((row) => row.threadId)).toEqual(["asks"]);
+	});
+
+	it("finds the thread snoozed last among those still asleep", () => {
+		const state = reduce([
+			snapshot([
+				thread({ id: "earlier", snoozedUntil: "2026-10-26T18:00:00.000Z", snoozedAt: "2026-10-26T13:00:00.000Z" }),
+				thread({ id: "later", snoozedUntil: "2026-10-26T16:00:00.000Z", snoozedAt: "2026-10-26T14:30:00.000Z" }),
+				thread({ id: "woke", snoozedUntil: "2026-10-26T14:30:00.000Z", snoozedAt: "2026-10-26T14:45:00.000Z" }),
+				running("asks", { snoozedUntil: "2026-10-26T16:00:00.000Z", snoozedAt: "2026-10-26T14:50:00.000Z", pendingRuntimeRequest: { id: "rr", kind: "command", createdAt: "x" } }),
+				thread({ id: "unstamped", snoozedUntil: "2026-10-26T16:00:00.000Z", updatedAt: "2026-10-26T14:10:00.000Z" }),
+			]),
+		]);
+		const all = shellRows(state, { threadSnooze: true }, NOW, true);
+		expect(all.filter((row) => row.snoozedAt !== undefined).map((row) => row.threadId).sort()).toEqual(["earlier", "later", "unstamped"]);
+		expect(latestSnoozed(all)?.threadId).toBe("later");
+		// Without snooze support nothing counts as asleep.
+		expect(latestSnoozed(shellRows(state, {}, NOW, true))).toBeUndefined();
 	});
 });

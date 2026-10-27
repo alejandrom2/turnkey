@@ -93,6 +93,7 @@
 			.note { margin: 12px 0 0; font-size: 11px; line-height: 1.5; color: var(--t3-muted); }
 
 			details.group { border-top: 1px solid #555; margin-top: 10px; padding-top: 8px; }
+			.switch { display: flex; align-items: center; gap: 6px; font-size: 9pt; }
 			details.group > summary {
 				cursor: pointer; margin: 0 0 8px; font-size: 8.5pt; font-weight: 600;
 				letter-spacing: .06em; text-transform: uppercase; color: #a8a8a8;
@@ -198,11 +199,26 @@
 				</sdpi-item>
 				<p class="hint" data-i18n="inspector.advanced.confirmHint">Applies to Send Prompt, Steer, Quick Prompt, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this.</p>
 			</details>
+			<details class="group">
+				<summary data-i18n="inspector.diagnostics.title">Diagnostics</summary>
+				<sdpi-item label="Verbose logging" data-i18n-label="inspector.diagnostics.verbose">
+					<label class="switch"><input type="checkbox" id="t3-verbose" /><span data-i18n="inspector.diagnostics.verboseLabel">On for 24 hours</span></label>
+				</sdpi-item>
+				<p class="hint" id="t3-verbose-state" data-i18n="inspector.card.verboseOff">Logs more detail for 24 hours, then turns itself off. Never logs tokens.</p>
+				<sdpi-item label="Logs" data-i18n-label="inspector.diagnostics.logs">
+					<sdpi-button id="t3-open-logs"><span data-i18n="inspector.diagnostics.openLogs">Open logs folder</span></sdpi-button>
+				</sdpi-item>
+				<sdpi-item label="Report" data-i18n-label="inspector.diagnostics.report">
+					<sdpi-button id="t3-export"><span data-i18n="inspector.diagnostics.export">Export diagnostics</span></sdpi-button>
+				</sdpi-item>
+				<p class="hint" data-i18n="inspector.diagnostics.exportHint">Saves versions, machines (host, state and access only), action counts and recent errors to a file in the logs folder and shows it. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report.</p>
+				<p class="hint" id="t3-diagnostics-result" hidden data-i18n="inspector.card.diagnosticsFailed">That didn't work. Open the logs folder to look yourself.</p>
+			</details>
 		</main>
 		<script>
 			const client = SDPIComponents.streamDeckClient;
 			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
-			const strings = {"inspector.card.choose":"Choose a machine","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.shared":"Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.","inspector.card.connectTitle":"Connect T3 Deck","inspector.card.pairTitle":"Pair T3 Deck","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.picked":"This action shows and acts on threads from the machine you pick.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…","inspector.card.needsTitle":"What this action needs","inspector.card.needsNotMet":" · {count} not met","inspector.card.needsMet":"Met","inspector.card.needsUnmet":"Not met","inspector.card.needsChecking":"Checking"};
+			const strings = {"inspector.card.choose":"Choose a machine","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.shared":"Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.","inspector.card.connectTitle":"Connect T3 Deck","inspector.card.pairTitle":"Pair T3 Deck","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.picked":"This action shows and acts on threads from the machine you pick.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…","inspector.card.needsTitle":"What this action needs","inspector.card.needsNotMet":" · {count} not met","inspector.card.needsMet":"Met","inspector.card.needsUnmet":"Not met","inspector.card.needsChecking":"Checking","inspector.card.verboseUntil":"On until {time}, then back to normal logging.","inspector.card.verboseOff":"Logs more detail for 24 hours, then turns itself off. Never logs tokens.","inspector.card.diagnosticsFailed":"That didn't work. Open the logs folder to look yourself."};
 			const s = (key, params = {}) => (strings[key] ?? key).replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match));
 			const icons = {
 				all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
@@ -299,6 +315,11 @@
 			let lastStatus;
 			function renderStatus(payload) {
 				renderNeeds(payload.requirements);
+				const until = typeof payload.verboseUntil === "number" ? new Date(payload.verboseUntil) : undefined;
+				$("t3-verbose").checked = until !== undefined;
+				$("t3-verbose-state").textContent = until
+					? s("inspector.card.verboseUntil", { time: until.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) })
+					: s("inspector.card.verboseOff");
 				const environments = payload.environments ?? [];
 				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
 				const ready = environments.filter((env) => env.state === "ready");
@@ -363,10 +384,18 @@
 
 			client.sendToPropertyInspector.subscribe(({ payload }) => {
 				if (payload?.event === "strings") return applyStrings(payload.strings ?? {});
+				if (payload?.event === "diagnostics") {
+					$("t3-diagnostics-result").hidden = payload.ok === true;
+					return;
+				}
 				if (payload?.event !== "status") return;
 				lastStatus = payload;
 				renderStatus(payload);
 			});
+
+			$("t3-verbose").addEventListener("change", () => send("verbose", { on: $("t3-verbose").checked }));
+			$("t3-open-logs").addEventListener("click", () => send("openLogs"));
+			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
 
 			let pairedOnce = false;
 			const syncPairButton = (working = false) => {

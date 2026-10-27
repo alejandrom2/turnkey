@@ -175,7 +175,7 @@
 			"Name": "Organize",
 			"UUID": "com.alejandrom2.t3deck.organize",
 			"Icon": "imgs/actions/organize/icon",
-			"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread.",
+			"Tooltip": "Settles, pins, snoozes, archives or marks the selected thread unread, or wakes the thread snoozed last.",
 			"PropertyInspectorPath": "ui/organize.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/organize/key", "ShowTitle": false }]
@@ -280,10 +280,19 @@
 			"States": [{ "Image": "imgs/actions/editor/key", "ShowTitle": false }]
 		},
 		{
+			"Name": "Open Preview",
+			"UUID": "com.alejandrom2.t3deck.preview",
+			"Icon": "imgs/actions/preview/icon",
+			"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser.",
+			"PropertyInspectorPath": "ui/preview.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/preview/key", "ShowTitle": false }]
+		},
+		{
 			"Name": "Health",
 			"UUID": "com.alejandrom2.t3deck.health",
 			"Icon": "imgs/actions/health/icon",
-			"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, signed out, update required, check failed). Tap reconnects.",
+			"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects.",
 			"PropertyInspectorPath": "ui/environments.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/health/key", "ShowTitle": false }]
@@ -463,6 +472,20 @@
 				"TriggerDescription": { "Rotate": "Choose model", "Push": "Refresh (hold: prices too)", "Touch": "Refresh", "LongTouch": "Read details" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-usage/key" }]
+		},
+		{
+			"Name": "Devices Dial",
+			"UUID": "com.alejandrom2.t3deck.dial.devices",
+			"Icon": "imgs/actions/dial-devices/icon",
+			"Tooltip": "Rotate through T3 Code's simulators and emulators. Press starts the shown one, or opens it, in the thread's Device panel; hold powers it off. Touch looks for devices again.",
+			"PropertyInspectorPath": "ui/devices-dial.html",
+			"Controllers": ["Encoder"],
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"Icon": "imgs/actions/dial-devices/icon",
+				"TriggerDescription": { "Rotate": "Choose device", "Push": "Start or open (hold: power off)", "Touch": "Look again" }
+			},
+			"States": [{ "Image": "imgs/actions/dial-devices/key" }]
 		}
 	]
 }

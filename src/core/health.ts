@@ -3,16 +3,17 @@ import { type ConfigProvider, providerDisplayName } from "./models.js";
 
 /**
  * What can be wrong with a provider, from `ServerProvider` (packages/contracts/src/server.ts), in T3 Code's own order
- * (apps/web/src/components/settings/providerStatus.ts): disabled, not installed, signed out, then its status.
+ * and words (apps/web/src/components/settings/providerStatus.ts): disabled, not found, not authenticated, then its
+ * compatibility and status.
  */
-export type ProviderProblem = "disabled" | "notFound" | "signedOut" | "updateRequired" | "checkFailed" | "needsAttention" | "updateAvailable";
+export type ProviderProblem = "disabled" | "notFound" | "unauthenticated" | "unsupported" | "broken" | "unavailable" | "needsAttention" | "updateAvailable";
 
 /** How loud an issue is: `note` never colors the key. */
 export type HealthLevel = "error" | "attention" | "note";
 
 /** The `ServerProvider` status fields Health reads. */
 export type ProviderStatus = Pick<ConfigProvider, "instanceId" | "driver" | "displayName" | "enabled" | "installed" | "status" | "availability"> & {
-	auth?: { status?: string };
+	auth?: { status?: string; type?: string };
 	versionAdvisory?: { status?: string } | null;
 	compatibilityAdvisory?: { status?: string } | null;
 };
@@ -20,23 +21,31 @@ export type ProviderStatus = Pick<ConfigProvider, "instanceId" | "driver" | "dis
 /** `key` labels the problem under the provider's name; a note says both in one line (`note`, with `{provider}`). */
 const PROBLEM: Record<ProviderProblem, { level: HealthLevel; key: MessageKey; note?: MessageKey }> = {
 	notFound: { level: "error", key: "health.notFound" },
-	checkFailed: { level: "error", key: "health.checkFailed" },
-	signedOut: { level: "attention", key: "health.signedOut" },
-	updateRequired: { level: "attention", key: "health.updateRequired" },
+	unavailable: { level: "error", key: "health.unavailable" },
+	unauthenticated: { level: "attention", key: "health.unauthenticated" },
+	unsupported: { level: "attention", key: "health.unsupported" },
+	broken: { level: "attention", key: "health.broken" },
 	needsAttention: { level: "attention", key: "health.needsAttention" },
 	updateAvailable: { level: "note", key: "health.updateAvailable", note: "health.providerUpdate" },
 	disabled: { level: "note", key: "health.disabled", note: "health.providerOff" },
 };
 
+/** Antigravity's check sees the install, not the Google sign-in: T3 Code shows that warning as neutral ("Sign-in not checked"). */
+const signInUnchecked = (provider: ProviderStatus): boolean =>
+	provider.driver === "antigravity" &&
+	provider.status === "warning" &&
+	provider.auth?.status === "unknown" &&
+	(provider.auth.type === undefined || provider.auth.type === "oauth-personal" || provider.auth.type === "oauth-business");
+
 /** The one thing to say about a provider, worst first; undefined when it is ready. */
 export function providerProblem(provider: ProviderStatus): ProviderProblem | undefined {
 	if (provider.enabled === false || provider.status === "disabled") return "disabled";
-	if (provider.installed === false || provider.availability === "unavailable") return "notFound";
-	if (provider.auth?.status === "unauthenticated") return "signedOut";
+	if (provider.installed === false) return "notFound";
+	if (provider.auth?.status === "unauthenticated") return "unauthenticated";
 	const compatibility = provider.compatibilityAdvisory?.status;
-	if (compatibility === "unsupported" || compatibility === "broken") return "updateRequired";
-	if (provider.status === "error") return "checkFailed";
-	if (provider.status === "warning") return "needsAttention";
+	if (compatibility === "unsupported" || compatibility === "broken") return compatibility;
+	if (provider.status === "error" || provider.availability === "unavailable") return "unavailable";
+	if (provider.status === "warning" && !signInUnchecked(provider)) return "needsAttention";
 	if (provider.versionAdvisory?.status === "behind_latest") return "updateAvailable";
 	return undefined;
 }
