@@ -98,9 +98,23 @@
 				letter-spacing: .06em; text-transform: uppercase; color: #a8a8a8;
 			}
 		</style>
+		<style>
+			details.needs > summary .unmet { color: #f87171; text-transform: none; letter-spacing: 0; }
+			.needs ul { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 6px; }
+			.needs li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 6px; font-size: 9pt; line-height: 1.35; color: #d8d8d8; }
+			.needs li .mark { font-weight: 700; text-align: center; }
+			.needs li[data-state="met"] .mark { color: #34d399; }
+			.needs li[data-state="unmet"] .mark { color: #f87171; }
+			.needs li[data-state="checking"] .mark { color: #a8a8a8; }
+			.needs li .fix { grid-column: 2; color: #a8a8a8; }
+		</style>
 	</head>
 	<body>
 		<main>
+			<details class="group needs" id="needs" hidden>
+				<summary><span data-i18n="inspector.card.needsTitle">What this action needs</span><span class="unmet" id="needs-unmet"></span></summary>
+				<ul id="needs-list"></ul>
+			</details>
 			<section class="t3" id="t3" aria-live="polite">
 				<p class="eyebrow">T3 Code</p>
 				<h2 id="t3-title" data-i18n="inspector.card.choose">Choose a machine</h2>
@@ -158,7 +172,7 @@
 		<script>
 			const client = SDPIComponents.streamDeckClient;
 			const send = (event, extra) => client.send("sendToPlugin", { event, ...extra });
-			const strings = {"inspector.card.choose":"Choose a machine","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.shared":"Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.","inspector.card.connectTitle":"Connect T3 Deck","inspector.card.pairTitle":"Pair T3 Deck","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.picked":"This action shows and acts on threads from the machine you pick.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…"};
+			const strings = {"inspector.card.choose":"Choose a machine","inspector.card.looking":"Looking for T3 Code on this machine…","inspector.card.machineGroup":"Machine for this action","inspector.card.addMachine":"Add a machine","inspector.card.linkPlaceholder":"Paste a pair link from Settings → Sharing & access","inspector.card.connect":"Connect","inspector.card.connecting":"Connecting…","inspector.card.accessHelp":"T3 Deck asks to read threads and act on them, within what the link allows. Revoke it in Settings → Sharing & access.","inspector.card.shared":"Every machine you add is shared by all T3 Deck actions. Each action follows the machine picked above.","inspector.card.connectTitle":"Connect T3 Deck","inspector.card.pairTitle":"Pair T3 Deck","inspector.card.notRunning":"T3 Code isn't running on this machine. Open it, or paste a pair link from another machine below.","inspector.card.howToPair":"In T3 Code, open Settings → Sharing & access, create a pair link, and paste it below.","inspector.card.picked":"This action shows and acts on threads from the machine you pick.","inspector.card.allMachines":"All machines","inspector.card.noneYet":"None yet","inspector.card.connectedCount":"{ready} of {total} connected","inspector.card.connected":"Connected","inspector.card.readOnly":"Read only","inspector.card.signOut":"Sign out","inspector.card.tryAgain":"Try again","inspector.card.needsPairing":"Needs pairing","inspector.card.remove":"Remove","inspector.card.pasteFromMachine":"Paste a pair link from this machine below.","inspector.card.pairing":"Connecting with the pair link…","inspector.card.needsTitle":"What this action needs","inspector.card.needsNotMet":" · {count} not met","inspector.card.needsMet":"Met","inspector.card.needsUnmet":"Not met","inspector.card.needsChecking":"Checking"};
 			const s = (key, params = {}) => (strings[key] ?? key).replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match));
 			const icons = {
 				all: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
@@ -234,8 +248,27 @@
 				return actions;
 			}
 
+			const MARKS = { met: "✓", unmet: "✗", checking: "⋯" };
+			const STATES = { met: "inspector.card.needsMet", unmet: "inspector.card.needsUnmet", checking: "inspector.card.needsChecking" };
+			function renderNeeds(checklist) {
+				const items = checklist?.items ?? [];
+				$("needs").hidden = items.length === 0;
+				$("needs-unmet").textContent = checklist?.unmet > 0 ? s("inspector.card.needsNotMet", { count: checklist.unmet }) : "";
+				$("needs-list").replaceChildren(...items.map((item) => {
+					const row = el("li");
+					row.dataset.state = item.state;
+					const mark = el("span", "mark", MARKS[item.state] ?? "");
+					mark.setAttribute("aria-hidden", "true");
+					row.append(mark, el("span", "label", item.label));
+					for (const fix of item.fixes ?? []) row.append(el("span", "fix", fix));
+					row.setAttribute("aria-label", [item.label + ": " + s(STATES[item.state] ?? ""), ...(item.fixes ?? [])].join(". "));
+					return row;
+				}));
+			}
+
 			let lastStatus;
 			function renderStatus(payload) {
+				renderNeeds(payload.requirements);
 				const environments = payload.environments ?? [];
 				const selected = environments.some((env) => env.url === payload.selected) ? payload.selected : "";
 				const ready = environments.filter((env) => env.state === "ready");

@@ -29,6 +29,16 @@ const ACTIONS: Record<string, GlyphName> = {
 	"dial-model": "gauge",
 	"dial-prompts": "spark",
 	"dial-answer": "question",
+	"git-commit": "gitCommit",
+	"git-push": "gitPush",
+	"git-pr": "gitPrCreate",
+	"git-pull": "gitPull",
+	"pr-fix": "hammer",
+	"pr-explain": "book",
+	"pr-ask": "question",
+	"pr-guide": "spark",
+	editor: "editor",
+	"dial-pr": "pullRequest",
 };
 
 const svg = (size: number, body: string, background?: string) =>
