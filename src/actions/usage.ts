@@ -13,6 +13,7 @@ import type { JsonValue } from "@elgato/utils";
 
 import { failureLabel } from "../core/feedback.js";
 import { gaugeStripArt, renderGaugeKey } from "../core/gauge.js";
+import { renderNoticeBar, renderUsageBar } from "../core/infobar.js";
 import { type MessageKey, t } from "../core/i18n.js";
 import { providerDisplayName, providerMark } from "../core/models.js";
 import { COLORS, glyphArt, type MarkPainter, renderInfoKey, renderSkeletonKey } from "../core/render.js";
@@ -27,6 +28,7 @@ import { USAGE_PROVIDER_KINDS, type UsageProviderKind } from "../core/usage/type
 import { periodLabel, type UsageItem, usageDriver, usageItems, usageKindOf, usageProvider } from "../core/usage/usageView.js";
 import { deck } from "../deck.js";
 import { connectionFace, DeckAction, LONG_PRESS_MS, pressWhileDisconnected } from "./base.js";
+import { connectionNotice, InfobarWriter } from "./infobar.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, disconnectedStrip, StripDial } from "./strip.js";
 
@@ -109,6 +111,7 @@ class UsageWatch {
 }
 
 const watch = new UsageWatch();
+const infobar = new InfobarWriter();
 deck.onRepaint(() => watch.sync());
 
 /** A press reads the period again; a long one reloads T3 Code's model prices first, as its refresh button does. */
@@ -175,6 +178,7 @@ type UsageSettings = { machine?: string; period?: string; provider?: string };
 @action({ UUID: `${ID}.usage` })
 export class UsageKey extends DeckAction<UsageSettings> {
 	protected override async paint(action: Action<UsageSettings>): Promise<void> {
+		if (action.isNeoInfobar()) return this.#paintBar(action);
 		if (!action.isKey()) return;
 		const url = this.machineOf(action);
 		const offline = connectionFace(url);
@@ -192,13 +196,33 @@ export class UsageKey extends DeckAction<UsageSettings> {
 		await this.setImage(action, renderGaugeKey({ mark: total!.provider && itemMark(total!), label, value: total!.cost, lines: [total!.tokens, total!.detail], dim: loading }));
 	}
 
+	/** On the Neo info bar: the period, its cost on the right, and tokens under the period. */
+	async #paintBar(action: Action<UsageSettings>): Promise<void> {
+		const url = this.machineOf(action);
+		const notice = connectionNotice(url);
+		if (notice) return infobar.paint(action, renderNoticeBar(notice));
+		const period = usagePeriod(this.settingsOf(action).period);
+		const label = periodLabel(period);
+		if (!usageAccess(url)) return infobar.paint(action, renderUsageBar({ label, detail: needsAccessLabel(DIAGNOSTICS_SCOPE), available: false }));
+		const { merged, loading, error, mismatch } = store.view(readers(url), period);
+		if (mismatch !== undefined) return infobar.paint(action, renderUsageBar({ label, detail: t(MISMATCH[mismatch]), available: false }));
+		if (merged === undefined) {
+			const failed = !loading && error !== undefined;
+			return infobar.paint(action, renderUsageBar({ label, detail: failed ? failureLabel(error) : t("result.loading"), available: !failed }));
+		}
+		const [total] = usageItems(merged, usageProvider(this.settingsOf(action).provider));
+		await infobar.paint(action, renderUsageBar({ mark: total!.provider && itemMark(total!), label, value: total!.cost, detail: total!.tokens, dim: loading }));
+	}
+
 	override onWillAppear(ev: WillAppearEvent<UsageSettings>): void {
+		infobar.forget(ev.action.id);
 		super.onWillAppear(ev);
 		watch.show(ev.action.id, this.machineOf(ev.action), usagePeriod(this.settingsOf(ev.action).period));
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<UsageSettings>): void {
 		watch.hide(ev.action.id);
+		infobar.forget(ev.action.id);
 		super.onWillDisappear(ev);
 	}
 

@@ -17,8 +17,10 @@ T3 Deck asks to read threads and act on them, for source control access (git and
 
 T3 Deck comes with ready-made profiles. Stream Deck offers them when the plugin is installed, and they stay in its profile list; none switches your deck by itself.
 
-- **T3 Deck** is one page of the everyday set. On Stream Deck +: Activity, Steer, Speed and Model over Send "Continue", New Thread, Stop and Effort, with the Threads, Usage, Power and Skills dials. On the 15-key Stream Deck: four thread keys, Activity, New Thread, Send "Continue", Steer, Stop, Approve, Deny, Model, Effort, Speed and Health. Stream Deck XL adds more threads and the git and usage keys; Stream Deck Mini keeps two threads, Activity, Send "Continue", Stop and Approve; Stream Deck Neo takes the Stream Deck + keys.
+- **T3 Deck** is one page of the everyday set. On Stream Deck +: Activity, Steer, Speed and Model over Send "Continue", New Thread, Stop and Effort, with the Threads, Usage, Power and Skills dials. On the 15-key Stream Deck: four thread keys, Activity, New Thread, Send "Continue", Steer, Stop, Approve, Deny, Model, Effort, Speed and Health. Stream Deck XL adds more threads and the git and usage keys; Stream Deck Mini keeps two threads, Activity, Send "Continue", Stop and Approve; Stream Deck Neo takes the Stream Deck + keys, with Activity on its info bar.
 - **T3 Deck (All actions)** has every action, a page per area: threads, controls, prompts, skills, git, pull requests, devices, tasks, admin and usage on Stream Deck + and Neo, and fewer, fuller pages on the 15-key Stream Deck and XL. Stream Deck + turns pages with a swipe on the touch strip and Neo with its page buttons; on the 15-key Stream Deck and XL, Stream Deck's own **Previous Page** and **Next Page** keys sit in the bottom corners. Mini has no All actions profile.
+
+On Stream Deck Neo, drag **Activity** or **Usage** onto the info bar. Activity shows the most urgent thread matching its filter, with its state, and dots counting threads that need an approval (amber), have a question (indigo) or are working (blue). Usage shows its period's cost, with tokens under it. The info bar only shows; press a key to act.
 
 ## Actions
 
@@ -153,7 +155,7 @@ Under **Diagnostics** in any action's settings:
 
 ## Development
 
-Requires Node 24+ and the Stream Deck app 7.1+.
+Requires Node 24+ and the Stream Deck app 7.6+ (the first with plugin info bar actions on Stream Deck Neo).
 
 ```sh
 npm install
