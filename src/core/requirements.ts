@@ -26,7 +26,7 @@ export type Need =
 	| { kind: "repo"; ok: boolean | undefined; reason?: string }
 	| { kind: "editor"; ok: boolean }
 	| { kind: "limits"; ok: boolean }
-	/** Every provider ready; `problems` names what isn't ("Claude: Signed out"). */
+	/** Every provider ready; `problems` names what isn't ("Claude: Not authenticated"). */
 	| { kind: "providers"; problems: string[] }
 	/** A saved setting that no longer matches anything: a model, effort, mode, project or editor. */
 	| { kind: "value"; value: string; ok: boolean };

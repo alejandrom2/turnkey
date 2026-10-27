@@ -120,7 +120,7 @@
 	},
 	"com.alejandrom2.t3deck.health": {
 		"Name": "Health",
-		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, signed out, update required, check failed). Tap reconnects."
+		"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects."
 	},
 	"com.alejandrom2.t3deck.task": {
 		"Name": "Run Task",
@@ -282,10 +282,11 @@
 			"readOnly": "Read only",
 			"connecting": "Connecting…",
 			"needsPairing": "Needs pairing",
-			"notFound": "Not installed",
-			"checkFailed": "Check failed",
-			"signedOut": "Signed out",
-			"updateRequired": "Update required",
+			"notFound": "Not found",
+			"unavailable": "Unavailable",
+			"unauthenticated": "Not authenticated",
+			"unsupported": "Unsupported version",
+			"broken": "Known broken version",
 			"needsAttention": "Needs attention",
 			"updateAvailable": "Update available",
 			"disabled": "Disabled",
