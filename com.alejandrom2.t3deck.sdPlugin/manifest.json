@@ -97,19 +97,20 @@
 			"Name": "Fork",
 			"UUID": "com.alejandrom2.t3deck.fork",
 			"Icon": "imgs/actions/fork/icon",
-			"Tooltip": "Forks the thread from its newest finished reply and opens the fork.",
+			"Tooltip": "Forks the thread from its newest finished reply and opens the fork, or merges a fork back into the thread it came from (hold).",
 			"PropertyInspectorPath": "ui/fork.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/fork/key" }]
 		},
 		{
-			"Name": "Merge Back",
+			"Name": "Fork",
 			"UUID": "com.alejandrom2.t3deck.merge",
 			"Icon": "imgs/actions/merge/icon",
-			"Tooltip": "Merges a forked thread back into the thread it came from. Hold to merge.",
+			"Tooltip": "Forks the thread from its newest finished reply and opens the fork, or merges a fork back into the thread it came from (hold).",
 			"PropertyInspectorPath": "ui/merge.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/merge/key" }]
+			"States": [{ "Image": "imgs/actions/merge/key" }],
+			"VisibleInActionsList": false
 		},
 		{
 			"Name": "Model",

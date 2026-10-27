@@ -32,11 +32,11 @@
 	},
 	"com.alejandrom2.t3deck.fork": {
 		"Name": "分叉",
-		"Tooltip": "从对话最新完成的回复处分叉，并打开分叉。"
+		"Tooltip": "从对话最新完成的回复处分叉并打开分叉，或将分叉合并回其来源对话（长按）。"
 	},
 	"com.alejandrom2.t3deck.merge": {
-		"Name": "合并回去",
-		"Tooltip": "将分叉的对话合并回其来源对话。长按合并。"
+		"Name": "分叉",
+		"Tooltip": "从对话最新完成的回复处分叉并打开分叉，或将分叉合并回其来源对话（长按）。"
 	},
 	"com.alejandrom2.t3deck.model": {
 		"Name": "模型",
@@ -826,7 +826,8 @@
 				"model": "模型",
 				"effort": "推理强度",
 				"access": "权限",
-				"confirm": "确认"
+				"confirm": "确认",
+				"does": "功能"
 			},
 			"background": {
 				"global": "使用全局设置",
@@ -1054,7 +1055,9 @@
 			},
 			"lineage": {
 				"forkHint": "从对话最新完成的回复处分叉出一个新对话，与 T3 Code 中该回复上的分叉按钮相同，然后打开分叉。",
-				"mergeHint": "将分叉的对话合并回其来源对话，与 T3 Code 的“Merge”相同，然后打开该对话。长按按键合并。"
+				"mergeHint": "将分叉的对话合并回其来源对话，与 T3 Code 的“Merge”相同，然后打开该对话。长按按键合并。",
+				"fork": "分叉",
+				"merge": "合并回去"
 			},
 			"update": {
 				"hint": "显示下方所选机器上的 T3 Code 版本（未选择时为本机）。长按更新到其渠道的最新版本；桌面应用会自行安装更新并重新启动。T3 Code 不会向 Deck 通知更新，因此按键无法显示有待安装的更新。",

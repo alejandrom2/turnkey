@@ -813,6 +813,19 @@ const stopPage = (fallback: string) =>
 		targetScript + inModes("mode", "workflow-hint", fallback, ["workflow"]),
 	);
 
+/** Fork's panel, starting in `fallback`, with each mode's hint. */
+const forkPage = (fallback: string) =>
+	page(
+		"Fork",
+		`${targetField}${modeField("mode", "inspector.field.does", fallback, [
+			["fork", "inspector.lineage.fork"],
+			["merge", "inspector.lineage.merge"],
+		])}
+			<p class="hint" id="fork-hint" hidden${text("inspector.lineage.forkHint")}</p>
+			<p class="hint" id="merge-hint" hidden${text("inspector.lineage.mergeHint")}</p>`,
+		targetScript + inModes("mode", "fork-hint", fallback, ["fork"]) + inModes("mode", "merge-hint", fallback, ["merge"]),
+	);
+
 /** Git's panel, starting in `fallback`: the message only for commits, and Pull's own hint. */
 const gitPage = (fallback: string) =>
 	page(
@@ -1089,18 +1102,8 @@ const pages: Record<string, string> = {
 	),
 	"stop.html": stopPage("turn"),
 	"workflow.html": stopPage("workflow"),
-	"fork.html": page(
-		"Fork",
-		`${targetField}
-			<p class="hint"${text("inspector.lineage.forkHint")}</p>`,
-		targetScript,
-	),
-	"merge.html": page(
-		"Merge Back",
-		`${targetField}
-			<p class="hint"${text("inspector.lineage.mergeHint")}</p>`,
-		targetScript,
-	),
+	"fork.html": forkPage("fork"),
+	"merge.html": forkPage("merge"),
 	"tasks-dial.html": page(
 		"Tasks Dial",
 		`
