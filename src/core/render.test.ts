@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	COLORS,
 	dotsCue,
 	fitSize,
 	ladderCue,
@@ -15,6 +16,7 @@ import {
 	renderResultKey,
 	renderReviewKey,
 	renderThreadKey,
+	stripCanvas,
 	textWidth,
 	wrapText,
 } from "./render.js";
@@ -233,5 +235,16 @@ describe("effortTone", () => {
 	it("builds any provider's gradient from its color, gray for white marks", () => {
 		expect(providerGradient("#D97757")).toEqual([[0, sampleStops([[0, "#D97757"], [1, "#FFFFFF"]], 0.45)], [1, "#D97757"]]);
 		expect(providerGradient(undefined)[1]).toEqual([1, "#8E9199"]);
+	});
+});
+
+describe("stripCanvas", () => {
+	it("draws the idle pet over the background and under the state line, and without it is the plain canvas again", () => {
+		const appearance = { background: "flow" as const, hairline: true, run: { length: 2, position: 1 } };
+		const plain = stripCanvas(COLORS.accent, appearance);
+		const walked = svg(stripCanvas(COLORS.accent, { ...appearance, pet: `<g id="pet"/>` }));
+		expect(walked.indexOf(`<g id="pet"/>`)).toBeGreaterThan(walked.indexOf("flow-field"));
+		expect(walked.indexOf(`<g id="pet"/>`)).toBeLessThan(walked.indexOf(`y="95"`));
+		expect(stripCanvas(COLORS.accent, { ...appearance, pet: undefined })).toBe(plain);
 	});
 });

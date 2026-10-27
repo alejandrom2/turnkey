@@ -641,8 +641,8 @@ export function renderInfoKey(input: InfoKeyInput): string {
 
 /** How a dial strip's background looks: T3 Code's card, Flow (one picture across adjacent dials), tinted by thread state, or one color. */
 export type StripBackground = "t3" | "flow" | "state" | "custom";
-/** `run` places a dial in its run of adjacent dials, for Flow. */
-export type StripAppearance = { background: StripBackground; color?: string; hairline: boolean; run?: Run };
+/** `run` places a dial in its run of adjacent dials, for Flow; `pet` is the idle pet's art while it crosses this strip. */
+export type StripAppearance = { background: StripBackground; color?: string; hairline: boolean; run?: Run; pet?: string };
 /** What a strip is about, for the State background: done, failed, waiting on you, or nothing to report. */
 export type StripTone = "done" | "failed" | "attention" | "neutral";
 
@@ -694,7 +694,7 @@ function stripFill(appearance: StripAppearance, tone: StripTone): string {
 export function stripCanvas(accent: string = COLORS.accent, appearance: StripAppearance = DEFAULT_APPEARANCE, tone: StripTone = "neutral", ultrathink = false): string {
 	const hairline = appearance.hairline ? `<rect y="95" width="200" height="5" fill="${accent}"/>` : "";
 	return svgDataUrl(
-		`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${stripFill(appearance, tone)}${hairline}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}</svg>`,
+		`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100">${stripFill(appearance, tone)}${appearance.pet ?? ""}${hairline}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}</svg>`,
 	);
 }
 

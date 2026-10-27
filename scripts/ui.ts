@@ -228,6 +228,13 @@ const card = `
 					</sdpi-select>
 				</sdpi-item>
 				<p class="hint"${text("inspector.advanced.motionHint")}</p>
+				<sdpi-item ${attr("label", "inspector.advanced.idlePet")}>
+					<sdpi-select setting="idlePet" global default="off">
+						<option value="off"${text("inspector.idlePet.off")}</option>
+						<option value="on"${text("inspector.idlePet.on")}</option>
+					</sdpi-select>
+				</sdpi-item>
+				<p class="hint"${text("inspector.advanced.idlePetHint")}</p>
 				<sdpi-item ${attr("label", "inspector.advanced.maxEffort")}>
 					<sdpi-select setting="maxEffort" global default="gradient">
 						<option value="gradient"${text("inspector.maxEffort.gradient")}</option>
