@@ -19,6 +19,7 @@ import {
 	type VcsStatus,
 } from "../core/git.js";
 import { type MessageKey, t } from "../core/i18n.js";
+import { modeOf } from "../core/modes.js";
 import { COLORS, type GlyphName, renderInfoKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { grants, needsAccessLabel } from "../core/scopes.js";
@@ -110,13 +111,15 @@ export function holdRequired(setting: unknown, action: GitKeyAction, status: Vcs
 type Check = { ok: true; target: GitTarget & { cwd: string }; status: VcsStatus | undefined } | { ok: false; reason: string; target?: GitTarget };
 
 /**
- * A key that runs one git action on the selected thread's checkout. Push and PR actions need a hold by default,
- * and always on the default branch; the face shows what the action would act on, or why it can't.
+ * A key that runs one git action on the selected thread's checkout, picked by its Action setting. Push and PR actions
+ * need a hold by default, and always on the default branch; the face shows what it would act on, or why it can't.
  */
-abstract class GitKey extends DeckAction<GitSettings> {
+abstract class GitAction extends DeckAction<GitSettings> {
 	readonly #busy = new Map<string, string>();
 
-	protected abstract gitAction(settings: GitSettings): GitKeyAction;
+	protected gitAction(settings: GitSettings): GitKeyAction {
+		return modeOf("git", this.manifestId, settings);
+	}
 
 	#check(action: Action<GitSettings>): Check {
 		const target = gitTarget(this.machineOf(action));
@@ -228,36 +231,19 @@ abstract class GitKey extends DeckAction<GitSettings> {
 	}
 }
 
-const COMMIT_ACTIONS = ["commit", "commit_push", "commit_push_pr"] as const;
+/** Commits, commits and pushes, opens a PR, pushes or pulls; T3 Code writes the commit message unless one is set. */
+@action({ UUID: `${ID}.git` })
+export class GitKey extends GitAction {}
 
-/** Commits the selected thread's changes, or commits and pushes, or also opens a PR; T3 Code writes the message unless one is set. */
+// The single-purpose git keys Git replaced: hidden from the actions list, still on decks and in older profiles.
 @action({ UUID: `${ID}.git.commit` })
-export class CommitKey extends GitKey {
-	protected gitAction(settings: GitSettings): GitKeyAction {
-		return COMMIT_ACTIONS.find((candidate) => candidate === settings.gitAction) ?? "commit";
-	}
-}
+export class CommitKey extends GitAction {}
 
-/** Pushes the selected thread's branch. */
 @action({ UUID: `${ID}.git.push` })
-export class PushKey extends GitKey {
-	protected gitAction(): GitKeyAction {
-		return "push";
-	}
-}
+export class PushKey extends GitAction {}
 
-/** Pushes the selected thread's branch and opens a pull request for it. */
 @action({ UUID: `${ID}.git.pr` })
-export class CreatePrKey extends GitKey {
-	protected gitAction(): GitKeyAction {
-		return "create_pr";
-	}
-}
+export class CreatePrKey extends GitAction {}
 
-/** Pulls the selected thread's branch from its upstream. */
 @action({ UUID: `${ID}.git.pull` })
-export class PullKey extends GitKey {
-	protected gitAction(): GitKeyAction {
-		return "pull";
-	}
-}
+export class PullKey extends GitAction {}

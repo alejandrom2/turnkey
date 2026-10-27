@@ -29,6 +29,15 @@
 	],
 	"Actions": [
 		{
+			"Name": "Thread",
+			"UUID": "com.alejandrom2.t3deck.slot",
+			"Icon": "imgs/actions/slot/icon",
+			"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it.",
+			"PropertyInspectorPath": "ui/slot.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/slot/key", "ShowTitle": true, "TitleAlignment": "top" }]
+		},
+		{
 			"Name": "Activity",
 			"UUID": "com.alejandrom2.t3deck.activity",
 			"Icon": "imgs/actions/activity/icon",
@@ -50,7 +59,7 @@
 			"Name": "Send Prompt",
 			"UUID": "com.alejandrom2.t3deck.send",
 			"Icon": "imgs/actions/send/icon",
-			"Tooltip": "Sends a saved prompt to the selected thread. Hold to interrupt and restart with it.",
+			"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it.",
 			"PropertyInspectorPath": "ui/send.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/send/key", "ShowTitle": false }]
@@ -65,49 +74,22 @@
 			"States": [{ "Image": "imgs/actions/steer/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Quick Prompt",
-			"UUID": "com.alejandrom2.t3deck.quick",
-			"Icon": "imgs/actions/quick/icon",
-			"Tooltip": "Sends an everyday prompt to the selected thread: continue, fix tests, diagnose, explain, commit, or your own.",
-			"PropertyInspectorPath": "ui/quick.html",
+			"Name": "Run Skill",
+			"UUID": "com.alejandrom2.t3deck.skill",
+			"Icon": "imgs/actions/skill/icon",
+			"Tooltip": "Runs one of the thread's provider skills, the way picking it in T3 Code's composer and sending does.",
+			"PropertyInspectorPath": "ui/skill.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/quick/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/skill/key" }]
 		},
 		{
 			"Name": "Stop",
 			"UUID": "com.alejandrom2.t3deck.stop",
 			"Icon": "imgs/actions/stop/icon",
-			"Tooltip": "Stops the running turn of the thread selected in T3 Code.",
-			"PropertyInspectorPath": "ui/target.html",
+			"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow.",
+			"PropertyInspectorPath": "ui/stop.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/stop/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Stop Workflow",
-			"UUID": "com.alejandrom2.t3deck.workflow.stop",
-			"Icon": "imgs/actions/workflow-stop/icon",
-			"Tooltip": "Stops the workflows the thread runs (Claude). Hold to stop.",
-			"PropertyInspectorPath": "ui/workflow.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/workflow-stop/key" }]
-		},
-		{
-			"Name": "Fork",
-			"UUID": "com.alejandrom2.t3deck.fork",
-			"Icon": "imgs/actions/fork/icon",
-			"Tooltip": "Forks the thread from its newest finished reply and opens the fork.",
-			"PropertyInspectorPath": "ui/fork.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/fork/key" }]
-		},
-		{
-			"Name": "Merge Back",
-			"UUID": "com.alejandrom2.t3deck.merge",
-			"Icon": "imgs/actions/merge/icon",
-			"Tooltip": "Merges a forked thread back into the thread it came from. Hold to merge.",
-			"PropertyInspectorPath": "ui/merge.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/merge/key" }]
 		},
 		{
 			"Name": "Model",
@@ -173,15 +155,6 @@
 			"States": [{ "Image": "imgs/actions/deny/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Thread",
-			"UUID": "com.alejandrom2.t3deck.slot",
-			"Icon": "imgs/actions/slot/icon",
-			"Tooltip": "One thread from the board, filled by key position: status, title and timer. Tap opens it in T3 Code; hold selects it.",
-			"PropertyInspectorPath": "ui/slot.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/slot/key", "ShowTitle": true, "TitleAlignment": "top" }]
-		},
-		{
 			"Name": "Organize",
 			"UUID": "com.alejandrom2.t3deck.organize",
 			"Icon": "imgs/actions/organize/icon",
@@ -191,13 +164,13 @@
 			"States": [{ "Image": "imgs/actions/organize/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Pull Request",
-			"UUID": "com.alejandrom2.t3deck.pr",
-			"Icon": "imgs/actions/pr/icon",
-			"Tooltip": "The selected thread's pull request and its state. Tap opens it.",
-			"PropertyInspectorPath": "ui/environments.html",
+			"Name": "Fork",
+			"UUID": "com.alejandrom2.t3deck.fork",
+			"Icon": "imgs/actions/fork/icon",
+			"Tooltip": "Forks the thread from its newest finished reply and opens the fork, or merges a fork back into the thread it came from (hold).",
+			"PropertyInspectorPath": "ui/fork.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/fork/key" }]
 		},
 		{
 			"Name": "Branch",
@@ -209,103 +182,22 @@
 			"States": [{ "Image": "imgs/actions/branch/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Commit",
-			"UUID": "com.alejandrom2.t3deck.git.commit",
-			"Icon": "imgs/actions/git-commit/icon",
-			"Tooltip": "Commits the selected thread's changes, or also pushes them or opens a PR, with T3 Code's commit message unless you set one.",
-			"PropertyInspectorPath": "ui/git-commit.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-commit/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Push",
-			"UUID": "com.alejandrom2.t3deck.git.push",
-			"Icon": "imgs/actions/git-push/icon",
-			"Tooltip": "Pushes the selected thread's branch. Hold to push.",
+			"Name": "Git",
+			"UUID": "com.alejandrom2.t3deck.git",
+			"Icon": "imgs/actions/git/icon",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
 			"PropertyInspectorPath": "ui/git.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-push/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/git/key", "ShowTitle": false }]
 		},
 		{
-			"Name": "Create PR",
-			"UUID": "com.alejandrom2.t3deck.git.pr",
-			"Icon": "imgs/actions/git-pr/icon",
-			"Tooltip": "Pushes the selected thread's branch and opens a pull request for it. Hold to create.",
-			"PropertyInspectorPath": "ui/git.html",
+			"Name": "Pull Request",
+			"UUID": "com.alejandrom2.t3deck.pr",
+			"Icon": "imgs/actions/pr/icon",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-pr/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Pull",
-			"UUID": "com.alejandrom2.t3deck.git.pull",
-			"Icon": "imgs/actions/git-pull/icon",
-			"Tooltip": "Pulls the selected thread's branch when it is behind its upstream.",
-			"PropertyInspectorPath": "ui/git-pull.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/git-pull/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Fix Findings",
-			"UUID": "com.alejandrom2.t3deck.pr.fix",
-			"Icon": "imgs/actions/pr-fix/icon",
-			"Tooltip": "Sends T3 Code's Fix findings task for the selected thread's pull request: unresolved reviews and failing checks. Hold to send.",
-			"PropertyInspectorPath": "ui/pr-fix.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-fix/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Explain PR",
-			"UUID": "com.alejandrom2.t3deck.pr.explain",
-			"Icon": "imgs/actions/pr-explain/icon",
-			"Tooltip": "Asks the selected thread to walk through its pull request, as T3 Code's Explain does.",
-			"PropertyInspectorPath": "ui/environments.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-explain/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Ask about PR",
-			"UUID": "com.alejandrom2.t3deck.pr.ask",
-			"Icon": "imgs/actions/pr-ask/icon",
-			"Tooltip": "Opens the thread that holds the pull request in T3 Code, to ask about it there.",
-			"PropertyInspectorPath": "ui/environments.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-ask/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Review Guide",
-			"UUID": "com.alejandrom2.t3deck.pr.guide",
-			"Icon": "imgs/actions/pr-guide/icon",
-			"Tooltip": "Writes T3 Code's review guide for the selected thread's pull request, then opens the thread.",
-			"PropertyInspectorPath": "ui/environments.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/pr-guide/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Open in Editor",
-			"UUID": "com.alejandrom2.t3deck.editor",
-			"Icon": "imgs/actions/editor/icon",
-			"Tooltip": "Opens the selected thread's worktree or project in an editor, on the machine T3 Code runs on.",
-			"PropertyInspectorPath": "ui/editor.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/editor/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Open Preview",
-			"UUID": "com.alejandrom2.t3deck.preview",
-			"Icon": "imgs/actions/preview/icon",
-			"Tooltip": "Opens the thread's preview page, or its newest HTML render, in this computer's browser.",
-			"PropertyInspectorPath": "ui/preview.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/preview/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Health",
-			"UUID": "com.alejandrom2.t3deck.health",
-			"Icon": "imgs/actions/health/icon",
-			"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects.",
-			"PropertyInspectorPath": "ui/environments.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/health/key", "ShowTitle": false }]
+			"States": [{ "Image": "imgs/actions/pr/key", "ShowTitle": false }]
 		},
 		{
 			"Name": "Run Task",
@@ -317,13 +209,40 @@
 			"States": [{ "Image": "imgs/actions/task/key" }]
 		},
 		{
-			"Name": "Run Skill",
-			"UUID": "com.alejandrom2.t3deck.skill",
-			"Icon": "imgs/actions/skill/icon",
-			"Tooltip": "Runs one of the thread's provider skills, the way picking it in T3 Code's composer and sending does.",
-			"PropertyInspectorPath": "ui/skill.html",
+			"Name": "Usage",
+			"UUID": "com.alejandrom2.t3deck.usage",
+			"Icon": "imgs/actions/usage/icon",
+			"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices.",
+			"PropertyInspectorPath": "ui/usage.html",
+			"Controllers": ["Keypad", "Neo"],
+			"States": [{ "Image": "imgs/actions/usage/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Limits",
+			"UUID": "com.alejandrom2.t3deck.limits",
+			"Icon": "imgs/actions/limits/icon",
+			"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset.",
+			"PropertyInspectorPath": "ui/limits.html",
 			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/skill/key" }]
+			"States": [{ "Image": "imgs/actions/limits/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Open",
+			"UUID": "com.alejandrom2.t3deck.open",
+			"Icon": "imgs/actions/open/icon",
+			"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks.",
+			"PropertyInspectorPath": "ui/open.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/open/key", "ShowTitle": false }]
+		},
+		{
+			"Name": "Health",
+			"UUID": "com.alejandrom2.t3deck.health",
+			"Icon": "imgs/actions/health/icon",
+			"Tooltip": "The connection to T3 Code and its providers: the worst problem first (offline, needs pairing, not authenticated, unsupported version, unavailable). Tap reconnects.",
+			"PropertyInspectorPath": "ui/environments.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/health/key", "ShowTitle": false }]
 		},
 		{
 			"Name": "Update T3",
@@ -351,24 +270,6 @@
 			"PropertyInspectorPath": "ui/share.html",
 			"Controllers": ["Keypad"],
 			"States": [{ "Image": "imgs/actions/share/key" }]
-		},
-		{
-			"Name": "Limits",
-			"UUID": "com.alejandrom2.t3deck.limits",
-			"Icon": "imgs/actions/limits/icon",
-			"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset.",
-			"PropertyInspectorPath": "ui/limits.html",
-			"Controllers": ["Keypad"],
-			"States": [{ "Image": "imgs/actions/limits/key", "ShowTitle": false }]
-		},
-		{
-			"Name": "Usage",
-			"UUID": "com.alejandrom2.t3deck.usage",
-			"Icon": "imgs/actions/usage/icon",
-			"Tooltip": "A period's API-estimate cost, tokens and sessions, as T3 Code's Usage shows them, on one machine or all. Tap refreshes; hold also reloads model prices.",
-			"PropertyInspectorPath": "ui/usage.html",
-			"Controllers": ["Keypad", "Neo"],
-			"States": [{ "Image": "imgs/actions/usage/key", "ShowTitle": false }]
 		},
 		{
 			"Name": "Threads Dial",
@@ -523,6 +424,136 @@
 				"TriggerDescription": { "Rotate": "Choose device", "Push": "Start or open (hold: power off)", "Touch": "Look again" }
 			},
 			"States": [{ "Image": "imgs/actions/dial-devices/key" }]
+		},
+		{
+			"Name": "Git",
+			"UUID": "com.alejandrom2.t3deck.git.commit",
+			"Icon": "imgs/actions/git-commit/icon",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-commit/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Git",
+			"UUID": "com.alejandrom2.t3deck.git.push",
+			"Icon": "imgs/actions/git-push/icon",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git-push.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-push/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Git",
+			"UUID": "com.alejandrom2.t3deck.git.pr",
+			"Icon": "imgs/actions/git-pr/icon",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git-pr.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-pr/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Git",
+			"UUID": "com.alejandrom2.t3deck.git.pull",
+			"Icon": "imgs/actions/git-pull/icon",
+			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
+			"PropertyInspectorPath": "ui/git-pull.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/git-pull/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Pull Request",
+			"UUID": "com.alejandrom2.t3deck.pr.fix",
+			"Icon": "imgs/actions/pr-fix/icon",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr-fix.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-fix/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Pull Request",
+			"UUID": "com.alejandrom2.t3deck.pr.explain",
+			"Icon": "imgs/actions/pr-explain/icon",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr-explain.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-explain/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Pull Request",
+			"UUID": "com.alejandrom2.t3deck.pr.ask",
+			"Icon": "imgs/actions/pr-ask/icon",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr-ask.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-ask/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Pull Request",
+			"UUID": "com.alejandrom2.t3deck.pr.guide",
+			"Icon": "imgs/actions/pr-guide/icon",
+			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
+			"PropertyInspectorPath": "ui/pr-guide.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/pr-guide/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Send Prompt",
+			"UUID": "com.alejandrom2.t3deck.quick",
+			"Icon": "imgs/actions/quick/icon",
+			"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it.",
+			"PropertyInspectorPath": "ui/quick.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/quick/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Stop",
+			"UUID": "com.alejandrom2.t3deck.workflow.stop",
+			"Icon": "imgs/actions/workflow-stop/icon",
+			"Tooltip": "Stops the selected thread's running turn, or the workflows it runs (Claude), as its Stops setting picks. Hold to stop a workflow.",
+			"PropertyInspectorPath": "ui/workflow.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/workflow-stop/key" }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Fork",
+			"UUID": "com.alejandrom2.t3deck.merge",
+			"Icon": "imgs/actions/merge/icon",
+			"Tooltip": "Forks the thread from its newest finished reply and opens the fork, or merges a fork back into the thread it came from (hold).",
+			"PropertyInspectorPath": "ui/merge.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/merge/key" }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Open",
+			"UUID": "com.alejandrom2.t3deck.editor",
+			"Icon": "imgs/actions/editor/icon",
+			"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks.",
+			"PropertyInspectorPath": "ui/open.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/editor/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
+		},
+		{
+			"Name": "Open",
+			"UUID": "com.alejandrom2.t3deck.preview",
+			"Icon": "imgs/actions/preview/icon",
+			"Tooltip": "Opens the selected thread's worktree in an editor, or its preview page in this computer's browser, as its In setting picks.",
+			"PropertyInspectorPath": "ui/preview.html",
+			"Controllers": ["Keypad"],
+			"States": [{ "Image": "imgs/actions/preview/key", "ShowTitle": false }],
+			"VisibleInActionsList": false
 		}
 	]
 }

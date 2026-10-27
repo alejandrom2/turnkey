@@ -1,0 +1,296 @@
+import streamDeck, { type Action, action, type DidReceiveSettingsEvent, type KeyUpEvent, type SendToPluginEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import type { JsonValue } from "@elgato/utils";
+
+import type { DeckThread } from "../core/board.js";
+import { editorLabel, knownEditors, openInEditorInput, pickEditor } from "../core/editors.js";
+import { gitCwd } from "../core/git.js";
+import { t } from "../core/i18n.js";
+import { modeOf } from "../core/modes.js";
+import { applyPreviewEvent, currentPreview, type HtmlRender, htmlRenderFileName, type PreviewEvent, type PreviewSession, reachableHere } from "../core/preview.js";
+import { renderInfoKey, renderSkeletonKey } from "../core/render.js";
+import type { Need } from "../core/requirements.js";
+import type { Machine } from "../core/t3/machine.js";
+import { isThisComputer, OPERATE_SCOPE } from "../core/t3/pairing.js";
+import { pinnedName } from "../core/target.js";
+import { deck } from "../deck.js";
+import { canOperate, connectionFace, DeckAction, pressWhileDisconnected, selectedThread } from "./base.js";
+import { threadNeeds } from "./needs.js";
+
+const ID = "com.alejandrom2.t3deck";
+
+type OpenSettings = { machine?: string; mode?: string; editor?: string; target?: string; thread?: string; threadTitle?: string };
+
+const machineName = (machine: Machine): string => (machine.state.kind === "ready" ? machine.state.label : new URL(machine.url).host);
+const isHere = (machine: Machine): boolean => isThisComputer(new URL(machine.url).hostname);
+const folderName = (path: string): string => path.split(/[\\/]/).filter(Boolean).at(-1) ?? path;
+
+/** What the deck knows of one thread's preview: its tabs (from `preview.list`, then events) and its newest HTML render. */
+type ThreadPreview = {
+	sessions?: PreviewSession[];
+	revision: number;
+	listing: boolean;
+	/** null once read and none found. */
+	render?: HtmlRender | null;
+	/** The runs the render was read at; it is read again when they move. */
+	renderStamp?: string;
+	rendering: boolean;
+};
+
+/**
+ * Previews of the threads visible Open keys in Preview show. Each machine's preview events stream only while such a key
+ * shows; a thread's tabs are listed when a key first shows it, its HTML render read when its runs move and it has no
+ * preview tab.
+ */
+class PreviewWatch {
+	readonly #shown = new Map<string, string | undefined>();
+	readonly #streams = new Map<string, () => void>();
+	readonly #threads = new Map<string, ThreadPreview>();
+
+	show(id: string, url: string | undefined): void {
+		this.#shown.set(id, url);
+		this.sync();
+	}
+
+	hide(id: string): void {
+		this.#shown.delete(id);
+		this.sync();
+	}
+
+	sync(): void {
+		const urls = [...this.#shown.values()];
+		const wanted = new Set(deck.machines.filter((machine) => urls.some((url) => url === undefined || url === machine.url)).map((machine) => machine.url));
+		for (const [url, release] of this.#streams) {
+			if (wanted.has(url)) continue;
+			release();
+			this.#streams.delete(url);
+			this.#forget(url);
+		}
+		for (const machine of deck.machines) {
+			if (!wanted.has(machine.url) || this.#streams.has(machine.url)) continue;
+			this.#streams.set(
+				machine.url,
+				machine.live("subscribePreviewEvents", {}, (value) => this.#apply(machine, value as PreviewEvent), () => this.#forget(machine.url)),
+			);
+		}
+	}
+
+	/** A new connection may have missed events: list again on next use. */
+	#forget(url: string): void {
+		const environmentId = deck.machines.find((machine) => machine.url === url)?.environmentId;
+		for (const key of this.#threads.keys()) if (key.startsWith(`${environmentId}/`)) this.#threads.delete(key);
+	}
+
+	#apply(machine: Machine, event: PreviewEvent): void {
+		const entry = this.#threads.get(`${machine.environmentId}/${event.threadId}`);
+		if (entry?.sessions === undefined || event.revision <= entry.revision) return;
+		entry.sessions = applyPreviewEvent(entry.sessions, event);
+		entry.revision = event.revision;
+		deck.repaint();
+	}
+
+	/** The thread's preview as last known; starts the reads it is missing. Only call it for a thread a visible key shows. */
+	of(thread: DeckThread): { preview?: { url: string; title: string }; render?: HtmlRender; loading: boolean } {
+		const entry = this.#threads.get(thread.key) ?? { revision: 0, listing: false, rendering: false };
+		this.#threads.set(thread.key, entry);
+		if (entry.sessions === undefined) {
+			this.#list(thread, entry);
+			return { loading: true };
+		}
+		const preview = currentPreview(entry.sessions);
+		if (preview !== undefined) return { preview, loading: false };
+		const stamp = `${thread.latestRunId}|${thread.active}`;
+		if (entry.renderStamp !== stamp) this.#readRender(thread, entry, stamp);
+		return { render: entry.render ?? undefined, loading: entry.render === undefined };
+	}
+
+	#list(thread: DeckThread, entry: ThreadPreview): void {
+		if (entry.listing) return;
+		entry.listing = true;
+		thread.machine
+			.call<{ sessions?: PreviewSession[]; revision?: number }>("preview.list", { threadId: thread.threadId })
+			.then(
+				(listed) => {
+					entry.sessions = listed.sessions ?? [];
+					entry.revision = listed.revision ?? 0;
+				},
+				// An older T3 Code has no previews: treat it as none.
+				() => {
+					entry.sessions = [];
+				},
+			)
+			.finally(() => {
+				entry.listing = false;
+				deck.repaint();
+			});
+	}
+
+	#readRender(thread: DeckThread, entry: ThreadPreview, stamp: string): void {
+		if (entry.rendering) return;
+		entry.rendering = true;
+		thread.machine
+			.htmlRender(thread)
+			.then(
+				(render) => {
+					entry.render = render ?? null;
+				},
+				() => {
+					entry.render ??= null;
+				},
+			)
+			.finally(() => {
+				entry.rendering = false;
+				entry.renderStamp = stamp;
+				deck.repaint();
+			});
+	}
+}
+
+const watch = new PreviewWatch();
+deck.onRepaint(() => watch.sync());
+
+/**
+ * Opens the selected thread's worktree (else its project's root) in an editor through `shell.openInEditor`, or the
+ * target thread's preview in this computer's browser: the page its preview panel shows, else its newest HTML render
+ * (its In setting). T3 Code launches an editor on its own machine, and a page on the loopback address of another
+ * machine only opens there, so the key says where.
+ */
+abstract class OpenAction extends DeckAction<OpenSettings> {
+	#previews(action: Action<OpenSettings>): boolean {
+		return modeOf("open", this.manifestId, this.settingsOf(action)) === "preview";
+	}
+
+	#editorState(action: Action<OpenSettings>) {
+		const thread = selectedThread(this.machineOf(action));
+		const cwd = thread && gitCwd(thread, thread.machine.project(thread.projectId)?.workspaceRoot);
+		const pick = thread && pickEditor(this.settingsOf(action).editor, thread.machine.editors);
+		const reason =
+			thread === undefined
+				? t("reason.noThread")
+				: !canOperate(thread)
+					? t("reason.readOnly")
+					: pick === undefined
+						? t("editor.none")
+						: pick.missing !== undefined
+							? t("needs.notAvailable", { value: pick.missing })
+							: cwd === undefined
+								? t("editor.noFolder")
+								: undefined;
+		return { thread, cwd, pick, editor: pick?.editor, reason };
+	}
+
+	#previewState(action: Action<OpenSettings>) {
+		const { thread, gone, pinned } = this.target(action);
+		const found = thread === undefined || gone !== undefined ? { loading: false } : watch.of(thread);
+		const remoteOnly = found.preview !== undefined && !reachableHere(found.preview.url, isHere(thread!.machine));
+		const reason =
+			gone ??
+			(thread === undefined
+				? t("reason.noThread")
+				: found.loading
+					? undefined
+					: remoteOnly
+						? t("openPreview.onlyOn", { machine: machineName(thread.machine) })
+						: found.preview === undefined && found.render === undefined
+							? t("openPreview.none")
+							: undefined);
+		return { thread, pinned, ...found, reason };
+	}
+
+	override needs(action: Action<OpenSettings>): Need[] {
+		const machine = this.machineOf(action);
+		if (this.#previews(action)) {
+			const { thread, pinned, preview, render, loading } = this.#previewState(action);
+			return [
+				...threadNeeds(machine, thread, false, pinned ? pinnedName(this.settingsOf(action)) : undefined),
+				{ kind: "preview", ok: thread === undefined ? false : loading ? undefined : preview !== undefined || render !== undefined },
+			];
+		}
+		const { thread, pick } = this.#editorState(action);
+		const saved = this.settingsOf(action).editor;
+		return [
+			...threadNeeds(machine, thread),
+			{ kind: "editor", ok: thread !== undefined && knownEditors(thread.machine.editors).length > 0 },
+			...(saved && thread ? [{ kind: "value", value: editorLabel(saved), ok: pick?.missing === undefined } satisfies Need] : []),
+		];
+	}
+
+	protected override async paint(action: Action<OpenSettings>): Promise<void> {
+		if (!action.isKey()) return;
+		const offline = connectionFace(this.machineOf(action));
+		if (offline) return void (await this.setImage(action, offline));
+		if (this.#previews(action)) {
+			const { preview, render, loading, reason, pinned } = this.#previewState(action);
+			if (loading && reason === undefined) return void (await this.setImage(action, renderSkeletonKey()));
+			const title = preview?.title ?? render?.title ?? t("openPreview.title");
+			const detail = reason ?? (preview !== undefined ? new URL(preview.url).host : t("openPreview.htmlRender"));
+			return void (await this.setImage(action, renderInfoKey({ glyph: "preview", title, detail, available: reason === undefined, pinned })));
+		}
+		const { thread, cwd, editor, reason } = this.#editorState(action);
+		const title = editor ? editorLabel(editor) : t("editor.title");
+		if (reason !== undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "editor", title, detail: reason, available: false })));
+		const detail = isHere(thread!.machine) ? folderName(cwd!) : t("editor.opensOn", { machine: machineName(thread!.machine) });
+		await this.setImage(action, renderInfoKey({ glyph: "editor", title, detail }));
+	}
+
+	override async onKeyUp(ev: KeyUpEvent<OpenSettings>): Promise<void> {
+		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
+		if (this.#previews(ev.action)) {
+			const { thread, preview, render, loading, reason } = this.#previewState(ev.action);
+			if (reason !== undefined) return void (await this.flash(ev.action, false, reason));
+			if (loading) return void (await this.flash(ev.action, false, t("result.loading")));
+			return void (await this.run(ev.action, async () => {
+				const url =
+					preview?.url ??
+					(await thread!.machine.assetUrl({ _tag: "attachment", attachmentId: render!.attachmentId, fileName: htmlRenderFileName(render!.title), mimeType: "text/html", disposition: "inline" }));
+				await streamDeck.system.openUrl(url);
+			}));
+		}
+		const { thread, cwd, editor, reason } = this.#editorState(ev.action);
+		if (reason !== undefined) return void (await this.flash(ev.action, false, reason));
+		await this.run(ev.action, () => thread!.machine.call("shell.openInEditor", openInEditorInput(cwd!, editor!), OPERATE_SCOPE));
+	}
+
+	/** The Editor setting's choices: T3 Code's default, then every editor the action's machines have. */
+	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, OpenSettings>): Promise<void> {
+		const payload = ev.payload as { event?: string } | null;
+		if (payload?.event !== "getEditors") return super.onSendToPlugin(ev);
+		await deck.refreshConfigs(this.machineOf(ev.action));
+		const machine = this.machineOf(ev.action);
+		const available = [...new Set(deck.machines.filter((candidate) => machine === undefined || candidate.url === machine).flatMap((candidate) => knownEditors(candidate.editors)))];
+		const items = [{ label: t("datasource.defaultEditor"), value: "" }, ...knownEditors(available).map((id) => ({ label: editorLabel(id), value: id }))];
+		const saved = this.settingsOf(ev.action).editor;
+		if (saved && !available.some((id) => id === saved)) items.push({ label: t("needs.notAvailable", { value: editorLabel(saved) }), value: saved });
+		await streamDeck.ui.sendToPropertyInspector({ event: "getEditors", items });
+	}
+
+	/** Only a key in Preview streams its machine's preview events. */
+	#watch(action: Action<OpenSettings>): void {
+		if (this.#previews(action)) watch.show(action.id, this.machineOf(action));
+		else watch.hide(action.id);
+	}
+
+	override onWillAppear(ev: WillAppearEvent<OpenSettings>): void {
+		super.onWillAppear(ev);
+		this.#watch(ev.action);
+	}
+
+	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<OpenSettings>): void {
+		super.onDidReceiveSettings(ev);
+		this.#watch(ev.action);
+	}
+
+	override onWillDisappear(ev: WillDisappearEvent<OpenSettings>): void {
+		watch.hide(ev.action.id);
+		super.onWillDisappear(ev);
+	}
+}
+
+@action({ UUID: `${ID}.open` })
+export class OpenKey extends OpenAction {}
+
+// Open in Editor and Open Preview, which Open replaced: hidden from the actions list, still on decks and in older profiles.
+@action({ UUID: `${ID}.editor` })
+export class OpenInEditor extends OpenAction {}
+
+@action({ UUID: `${ID}.preview` })
+export class OpenPreview extends OpenAction {}
