@@ -88,12 +88,13 @@ describe("renderThreadKey", () => {
 		expect(svg(renderThreadKey({ state: "done", title: "Done" }))).toContain(`fill="#363636"`);
 	});
 
-	it("shades the tile and colors the glyph of threads that want attention: amber waiting, red failed", () => {
-		for (const state of ["approval", "question"] as const) {
-			const out = svg(renderThreadKey({ state, title: "Work" }));
-			expect(out).toContain(`fill="#5B3322"`);
-			expect(out).toContain(`stroke="#FF8549"`);
-		}
+	it("shades the tile and colors the glyph of threads that want attention: amber approval, indigo question, red failed", () => {
+		const approval = svg(renderThreadKey({ state: "approval", title: "Work" }));
+		expect(approval).toContain(`fill="#4E4114"`);
+		expect(approval).toContain(`stroke="#FCD34D"`);
+		const question = svg(renderThreadKey({ state: "question", title: "Work" }));
+		expect(question).toContain(`fill="#2F3360"`);
+		expect(question).toContain(`stroke="#A5B4FC"`);
 		const failed = svg(renderThreadKey({ state: "failed", title: "Work" }));
 		expect(failed).toContain(`fill="#5C2328"`);
 		expect(failed).toContain(`stroke="#FF6764"`);
@@ -114,7 +115,7 @@ describe("renderThreadKey", () => {
 
 	it("turns the spinner and swaps the wash for motion", () => {
 		expect(svg(renderThreadKey({ state: "running", title: "Work", motion: { spin: 90 } }))).toContain("rotate(90 12 12)");
-		expect(svg(renderThreadKey({ state: "approval", title: "Work", motion: { wash: 0.3 } }))).toContain(`fill="#FF8549" fill-opacity="0.3"`);
+		expect(svg(renderThreadKey({ state: "approval", title: "Work", motion: { wash: 0.3 } }))).toContain(`fill="#FCD34D" fill-opacity="0.3"`);
 		expect(svg(renderThreadKey({ state: "done", title: "Work", motion: { wash: 0.4 } }))).toContain(`fill="#40C977" fill-opacity="0.4"`);
 	});
 
