@@ -8,7 +8,7 @@ import { findLocalEnvironment, parsePairingLink, preferLoopback } from "../core/
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
-import { Keys, threadKind } from "./keys.js";
+import { Keys } from "./keys.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { keyPng } from "./raster.js";
 import { stopFace, stopTarget, urgentFace } from "./ring.js";
@@ -31,7 +31,6 @@ const board = new ThreadBoard(() => [...machines.values()]);
 const failed = (what: string) => (error: unknown) => log("warn", `Couldn't ${what}: ${error instanceof Error ? error.message : String(error)}`);
 const keys = new Keys(
 	{
-		thread: threadKind(() => board.threads),
 		urgent: {
 			face: () => urgentFace(board.threads),
 			press: () => {

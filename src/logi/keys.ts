@@ -1,10 +1,4 @@
-import type { DeckThread } from "../core/board.js";
-import { t } from "../core/i18n.js";
-import { renderThreadKey } from "../core/render.js";
 import type { HostMessage, SidecarMessage } from "./protocol.js";
-
-/** What a thread key reads from a thread. */
-export type KeyThread = Pick<DeckThread, "deck" | "title" | "unseen">;
 
 /** One kind of action: its face for a key's place, and what a press does, returning the key's next place or nothing to keep it. */
 export type KeyKind = {
@@ -14,16 +8,6 @@ export type KeyKind = {
 
 /** `face` is the last SVG sent: comparing it skips resvg, the expensive part, when nothing shown changed. */
 type Key = { kind: KeyKind; size: number; index: number; face?: string };
-
-/** A key showing one thread; a press steps to the next. */
-export const threadKind = (threads: () => readonly KeyThread[]): KeyKind => ({
-	face(index) {
-		const list = threads();
-		const thread = list[index % Math.max(list.length, 1)];
-		return thread ? renderThreadKey({ state: thread.deck, title: thread.title, unseen: thread.unseen }) : renderThreadKey({ state: "idle", title: t("strip.noThreads") });
-	},
-	press: (index) => (index + 1) % Math.max(threads().length, 1),
-});
 
 /** The plugin's keys and ring slots by action id, `<kind>:<parameter>`, each painted by its kind. */
 export class Keys {

@@ -105,15 +105,6 @@ namespace Loupedeck.TurnkeyPlugin
         }
     }
 
-    // A key showing one T3 Code thread; a press steps to the next thread.
-    public class ThreadKeyCommand : SidecarCommand
-    {
-        public ThreadKeyCommand()
-            : base("thread", "Turnkey Thread", "Shows a T3 Code thread. Press for the next one.")
-        {
-        }
-    }
-
     // The thread that needs you most, as a color and an icon; choosing it opens the thread in T3 Code.
     public class MostUrgentCommand : SidecarCommand
     {

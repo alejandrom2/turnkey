@@ -1,79 +1,68 @@
 import { describe, expect, it } from "vitest";
 
-import { t } from "../core/i18n.js";
-import { renderThreadKey } from "../core/render.js";
-import type { DeckState } from "../core/t3/shell.js";
-import { type KeyThread, Keys, threadKind } from "./keys.js";
+import { type KeyKind, Keys } from "./keys.js";
 import type { SidecarMessage } from "./protocol.js";
 
-const thread = (title: string, deck: DeckState = "idle"): KeyThread => ({ title, deck, unseen: false });
 const raster = (dataUrl: string, size: number) => `${size}:${dataUrl}`;
-const face = (title: string, deck: DeckState = "idle") => raster(renderThreadKey({ state: deck, title, unseen: false }), 80);
 
-function keys(threads: KeyThread[]) {
+/** A kind whose face is `<shown>@<place>` and whose press steps to the next place. */
+function keys() {
 	const sent: SidecarMessage[] = [];
-	const list = { threads };
-	const subject = new Keys({ thread: threadKind(() => list.threads) }, (message) => sent.push(message), raster);
-	return { subject, sent, list };
+	const state = { shown: "a", rasterized: 0 };
+	const counter: KeyKind = { face: (index) => `${state.shown}@${index}`, press: (index) => index + 1 };
+	const subject = new Keys(
+		{ counter },
+		(message) => sent.push(message),
+		(dataUrl, size) => {
+			state.rasterized++;
+			return raster(dataUrl, size);
+		},
+	);
+	return { subject, sent, state };
 }
 
 describe("Keys", () => {
 	it("paints a key when it appears", () => {
-		const { subject, sent } = keys([thread("a", "running")]);
-		subject.handle({ type: "appear", action: "thread:k", size: 80 });
-		expect(sent).toEqual([{ type: "image", action: "thread:k", png: face("a", "running") }]);
+		const { subject, sent } = keys();
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		expect(sent).toEqual([{ type: "image", action: "counter:", png: raster("a@0", 80) }]);
 	});
 
-	it("shows No threads when there are none", () => {
-		const { subject, sent } = keys([]);
-		subject.handle({ type: "appear", action: "thread:k", size: 80 });
-		expect(sent).toEqual([{ type: "image", action: "thread:k", png: raster(renderThreadKey({ state: "idle", title: t("strip.noThreads") }), 80) }]);
+	it("moves a key to the place its kind's press returns", () => {
+		const { subject, sent } = keys();
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		subject.handle({ type: "press", action: "counter:" });
+		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", png: raster("a@1", 80) });
 	});
 
-	it("a press steps to the next thread and wraps", () => {
-		const { subject, sent } = keys([thread("a"), thread("b")]);
-		subject.handle({ type: "appear", action: "thread:k", size: 80 });
-		subject.handle({ type: "press", action: "thread:k" });
-		subject.handle({ type: "press", action: "thread:k" });
-		expect(sent.map((message) => message.type === "image" && message.png)).toEqual([face("a"), face("b"), face("a")]);
-	});
-
-	it("sends nothing when the face didn't change", () => {
-		const { subject, sent } = keys([thread("a")]);
-		subject.handle({ type: "appear", action: "thread:k", size: 80 });
+	it("sends nothing, and skips the rasterizer, when the face didn't change", () => {
+		const { subject, sent, state } = keys();
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
 		subject.repaint();
 		subject.repaint();
 		expect(sent).toHaveLength(1);
+		expect(state.rasterized).toBe(1);
 	});
 
-	it("skips the rasterizer when the face is unchanged", () => {
-		let rasterized = 0;
-		const subject = new Keys({ thread: threadKind(() => [thread("a")]) }, () => undefined, (dataUrl, size) => `${++rasterized}:${size}:${dataUrl}`);
-		subject.handle({ type: "appear", action: "thread:k", size: 80 });
+	it("repaints when what it shows changes", () => {
+		const { subject, sent, state } = keys();
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		state.shown = "b";
 		subject.repaint();
-		subject.repaint();
-		expect(rasterized).toBe(1);
-	});
-
-	it("repaints when the thread changes", () => {
-		const { subject, sent, list } = keys([thread("a", "running")]);
-		subject.handle({ type: "appear", action: "thread:k", size: 80 });
-		list.threads = [thread("a", "approval")];
-		subject.repaint();
-		expect(sent.at(-1)).toEqual({ type: "image", action: "thread:k", png: face("a", "approval") });
+		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", png: raster("b@0", 80) });
 	});
 
 	it("forgets a key that disappeared", () => {
-		const { subject, sent, list } = keys([thread("a")]);
-		subject.handle({ type: "appear", action: "thread:k", size: 80 });
-		subject.handle({ type: "disappear", action: "thread:k" });
-		list.threads = [thread("b")];
+		const { subject, sent, state } = keys();
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		subject.handle({ type: "disappear", action: "counter:" });
+		state.shown = "b";
 		subject.repaint();
-		subject.handle({ type: "press", action: "thread:k" });
+		subject.handle({ type: "press", action: "counter:" });
 		expect(sent).toHaveLength(1);
 	});
 
-	it("routes a press to its kind, which keeps the key's place when it returns nothing", () => {
+	it("keeps a key's place when its kind's press returns nothing", () => {
 		const pressed: number[] = [];
 		const sent: SidecarMessage[] = [];
 		const subject = new Keys({ urgent: { face: () => "face", press: (index) => void pressed.push(index) } }, (message) => sent.push(message), raster);
