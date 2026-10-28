@@ -79,7 +79,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.version.outputs.tag }}" -m "Turnkey for T3 Code ${{ steps.version.outputs.tag }}"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Turnkey ${{ steps.version.outputs.tag }}"
           git push origin "${{ steps.version.outputs.tag }}"
           echo "created=true" >> "$GITHUB_OUTPUT"
       # A tag pushed with the workflow token starts no other workflow, so ask for the publish run directly.

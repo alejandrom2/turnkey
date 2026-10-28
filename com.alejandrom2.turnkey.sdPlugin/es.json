@@ -1,7 +1,7 @@
 {
-	"Name": "Turnkey for T3 Code",
+	"Name": "Turnkey",
 	"Description": "Sigue y dirige los hilos de T3 Code desde Stream Deck: estado del hilo, detener, prompts, opciones de modelo y respuestas, con todos los proveedores.",
-	"Category": "Turnkey for T3 Code",
+	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Hilo",
 		"Tooltip": "Un hilo del tablero, según la posición de la tecla: estado, título y tiempo. Pulsar lo abre en T3 Code; mantener lo selecciona."

@@ -1,7 +1,7 @@
 {
-	"Name": "Turnkey for T3 Code",
+	"Name": "Turnkey",
 	"Description": "Stream Deck에서 T3 Code 스레드를 확인하고 조작하세요. 스레드 상태, 중지, 프롬프트, 모델 옵션과 응답까지 모든 프로바이더에서 사용할 수 있습니다.",
-	"Category": "Turnkey for T3 Code",
+	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "스레드",
 		"Tooltip": "키 위치에 따라 채워지는 보드의 스레드 하나: 상태, 제목, 타이머. 탭하면 T3 Code에서 열고, 길게 누르면 선택합니다."

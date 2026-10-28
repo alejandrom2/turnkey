@@ -1,7 +1,7 @@
 {
-	"Name": "Turnkey for T3 Code",
+	"Name": "Turnkey",
 	"Description": "在 Stream Deck 上查看并操控 T3 Code 对话：对话状态、停止、提示词、模型选项与回答，支持所有提供方。",
-	"Category": "Turnkey for T3 Code",
+	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "对话",
 		"Tooltip": "看板中的一个对话，按按键位置填充：状态、标题和计时。轻触在 T3 Code 中打开；长按选中。"

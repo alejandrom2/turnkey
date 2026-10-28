@@ -54,7 +54,7 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/*.streamDeckPlugin --clobber
           else
-            gh release create "$TAG" dist/*.streamDeckPlugin --title "Turnkey for T3 Code $VERSION" --notes-file notes.md --verify-tag $prerelease
+            gh release create "$TAG" dist/*.streamDeckPlugin --title "Turnkey $VERSION" --notes-file notes.md --verify-tag $prerelease
           fi
         env:
           GH_TOKEN: ${{ github.token }}
