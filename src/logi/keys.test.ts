@@ -63,6 +63,18 @@ describe("Keys", () => {
 		expect(sent).toEqual([{ type: "image", action: "urgent:", svg: "face" }]);
 	});
 
+	it("routes a scroll to its kind and repaints", () => {
+		const turned: number[] = [];
+		const sent: SidecarMessage[] = [];
+		const level = { value: 0 };
+		const subject = new Keys({ effort: { face: () => `level ${level.value}`, turn: (ticks) => void turned.push((level.value += ticks)) } }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "effort:", size: 80 });
+		subject.handle({ type: "turn", action: "effort:", ticks: 2 });
+		subject.handle({ type: "turn", action: "nope:", ticks: 1 });
+		expect(turned).toEqual([2]);
+		expect(sent.at(-1)).toEqual({ type: "image", action: "effort:", svg: "level 2" });
+	});
+
 	it("ignores an action of a kind it doesn't know", () => {
 		const sent: SidecarMessage[] = [];
 		const subject = new Keys({}, (message) => sent.push(message));

@@ -11,6 +11,12 @@ describe("parseHostMessage", () => {
 		expect(parseHostMessage('{"type":"appear","action":"thread","size":80}')).toEqual({ type: "appear", action: "thread", size: 80 });
 	});
 
+	it("parses a scroll on an adjustment, in whole ticks", () => {
+		expect(parseHostMessage('{"type":"turn","action":"effort:","ticks":-2}')).toEqual({ type: "turn", action: "effort:", ticks: -2 });
+		expect(parseHostMessage('{"type":"turn","action":"effort:","ticks":1.5}')).toBeUndefined();
+		expect(parseHostMessage('{"type":"turn","action":"effort:"}')).toBeUndefined();
+	});
+
 	it("parses the plugin's language", () => {
 		expect(parseHostMessage('{"type":"language","language":"de-DE"}')).toEqual({ type: "language", language: "de-DE" });
 		expect(parseHostMessage('{"type":"language","language":7}')).toBeUndefined();

@@ -3,6 +3,8 @@ export type HostMessage =
 	| { type: "appear"; action: string; size: number }
 	| { type: "disappear"; action: string }
 	| { type: "press"; action: string }
+	/** A scroll on an adjustment: whole ticks, negative for back. */
+	| { type: "turn"; action: string; ticks: number }
 	| { type: "language"; language: string };
 
 /** A moment worth a buzz on an MX Master 4; the plugin raises it as a Logi event of the same name. */
@@ -27,7 +29,7 @@ export function parseHostMessage(line: string): HostMessage | undefined {
 		return undefined;
 	}
 	if (typeof value !== "object" || value === null) return undefined;
-	const { type, action, size, language } = value as Record<string, unknown>;
+	const { type, action, size, language, ticks } = value as Record<string, unknown>;
 	if (type === "language") return typeof language === "string" ? { type, language } : undefined;
 	if (typeof action !== "string") return undefined;
 	switch (type) {
@@ -36,6 +38,8 @@ export function parseHostMessage(line: string): HostMessage | undefined {
 		case "disappear":
 		case "press":
 			return { type, action };
+		case "turn":
+			return Number.isInteger(ticks) ? { type, action, ticks: ticks as number } : undefined;
 		default:
 			return undefined;
 	}

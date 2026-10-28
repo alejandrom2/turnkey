@@ -1,9 +1,10 @@
 import type { HostMessage, SidecarMessage } from "./protocol.js";
 
-/** One kind of action: its face for a key's place, and what a press does, returning the key's next place or nothing to keep it. */
+/** One kind of action: its face for a key's place, what a press does (returning the key's next place, or nothing to keep it), and what a scroll does. */
 export type KeyKind = {
 	face(index: number): string;
 	press?(index: number): number | void;
+	turn?(ticks: number): void;
 };
 
 /** `face` is the last SVG sent, so a repaint that changes nothing sends nothing. */
@@ -33,6 +34,12 @@ export class Keys {
 				const key = this.#keys.get(message.action);
 				if (key === undefined) return;
 				key.index = key.kind.press?.(key.index) ?? key.index;
+				break;
+			}
+			case "turn": {
+				const key = this.#keys.get(message.action);
+				if (key === undefined) return;
+				key.kind.turn?.(message.ticks);
 				break;
 			}
 		}
