@@ -97,6 +97,32 @@ const logo = (size: number, tile: boolean) => {
 };
 write("plugin/category-icon.svg", logo(56, false));
 
+/**
+ * Logi's action symbols, beside each action's name in Options+: black on transparent, as Logi asks, with the glyph its
+ * ring face wears. Named by the action's class, and for a fixed parameter `<class>___<parameter>`.
+ */
+const SYMBOLS: Record<string, GlyphName> = {
+	MostUrgentCommand: "shield",
+	StatusCommand: "queued",
+	ContinueCommand: "play",
+	StopRunCommand: "stop",
+	StopAllCommand: "stop",
+	QuickPromptCommand: "chat",
+	QuickPromptCommand___test: "scriptTest",
+	QuickPromptCommand___fix: "hammer",
+	QuickPromptCommand___explain: "book",
+	QuickPromptCommand___commit: "gitCommit",
+	SendPromptCommand: "send",
+	AccessAdjustment: "permissions",
+	EffortAdjustment: "effort",
+	LimitsCommand: "gauge",
+	SettingsCommand: "sliders",
+};
+const symbols = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "actionsymbols");
+mkdirSync(symbols, { recursive: true });
+for (const [name, mark] of Object.entries(SYMBOLS)) writeFileSync(join(symbols, `Loupedeck.TurnkeyPlugin.${name}.svg`), svg(24, glyph(mark, 0, 0, 24, "#000000", 2)));
+console.log(`wrote ${Object.keys(SYMBOLS).length} Logi action symbols`);
+
 // Logi's plugin icon: a 256 px PNG of the category icon's white keys, which Options+ shows on a black card.
 const logiIcon = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "metadata", "Icon256x256.png");
 writeFileSync(logiIcon, new Resvg(logo(256, false)).render().asPng());
