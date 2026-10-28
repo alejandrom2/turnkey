@@ -11,7 +11,7 @@ namespace Loupedeck.TurnkeyPlugin
         public override Boolean UsesApplicationApiOnly => true;
 
         // Gets a value indicating whether this is a Universal plugin or an Application plugin.
-        public override Boolean HasNoApplication => true;
+        public override Boolean HasNoApplication => false;
 
         public Sidecar Sidecar { get; } = new Sidecar();
 

@@ -50,7 +50,7 @@ supportedDevices:
 # List of plugin capabilities.
 pluginCapabilities:
     # Uncomment the following line if this plugin is an application plugin.
-    #- HasApplication
+    - HasApplication
 
     # Uncomment the following line if the plugin sends keyboard shortcuts to the target application.
     #- ActivatesApplication
