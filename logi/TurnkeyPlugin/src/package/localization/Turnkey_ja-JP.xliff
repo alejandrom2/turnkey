@@ -12,14 +12,6 @@
   <file original="$Turnkey___main" source-language="en-US" target-language="ja-JP" datatype="plaintext">
     <body>
       <group id="@commands">
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.HapticsCommand" translate="yes">
-          <source>Haptics on/off</source>
-          <target>触覚フィードバック オン/オフ</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.HapticsCommand###description" translate="yes">
-          <source>Turns Turnkey's buzzes on an MX Master 4 on or off.</source>
-          <target>MX Master 4 での Turnkey の振動をオン/オフします。</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
           <source>Most urgent thread</source>
           <target>最優先のスレッド</target>
@@ -47,13 +39,13 @@
       </group>
       <group id="@adjustments" />
       <group id="@groups">
-        <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
-          <source>Settings</source>
-          <target>設定</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___AED0D0FDAA3E69A00007" translate="yes">
           <source>Threads</source>
           <target>スレッド</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
+          <source>Settings</source>
+          <target>設定</target>
         </trans-unit>
       </group>
     </body>

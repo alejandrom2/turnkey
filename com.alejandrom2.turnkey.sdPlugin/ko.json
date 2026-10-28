@@ -1262,10 +1262,6 @@
 					"name": "실행 중지",
 					"description": "T3 Code에서 마지막으로 시작된 실행을 중지합니다."
 				},
-				"haptics": {
-					"name": "햅틱 켜기/끄기",
-					"description": "MX Master 4에서 Turnkey의 진동을 켜거나 끕니다."
-				},
 				"settings": {
 					"description": "Turnkey 설정을 엽니다: 기기, 페어링, 햅틱."
 				},

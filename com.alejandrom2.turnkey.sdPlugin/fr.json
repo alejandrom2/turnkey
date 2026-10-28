@@ -1262,10 +1262,6 @@
 					"name": "Arrêter l'exécution",
 					"description": "Arrête la dernière exécution lancée dans T3 Code."
 				},
-				"haptics": {
-					"name": "Haptique oui/non",
-					"description": "Active ou désactive les vibrations de Turnkey sur une MX Master 4."
-				},
 				"settings": {
 					"description": "Ouvre les réglages de Turnkey : machines, association et haptique."
 				},

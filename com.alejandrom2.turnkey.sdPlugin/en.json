@@ -1262,10 +1262,6 @@
 					"name": "Stop run",
 					"description": "Stops the T3 Code run that started last."
 				},
-				"haptics": {
-					"name": "Haptics on/off",
-					"description": "Turns Turnkey's buzzes on an MX Master 4 on or off."
-				},
 				"settings": {
 					"description": "Opens Turnkey Settings: machines, pairing and haptics."
 				},

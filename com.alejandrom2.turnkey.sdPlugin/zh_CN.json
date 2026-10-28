@@ -1262,10 +1262,6 @@
 					"name": "停止运行",
 					"description": "停止 T3 Code 中最后开始的那次运行。"
 				},
-				"haptics": {
-					"name": "触感开/关",
-					"description": "开启或关闭 Turnkey 在 MX Master 4 上的振动。"
-				},
 				"settings": {
 					"description": "打开 Turnkey 设置：设备、配对和触感。"
 				},

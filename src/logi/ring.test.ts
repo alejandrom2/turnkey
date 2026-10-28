@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { COLORS, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
-import { hapticsFace, ringFace, settingsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { ringFace, settingsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 
 const thread = (deck: DeckState, unseen = false) => ({ deck, unseen });
 
@@ -43,12 +43,6 @@ describe("stop", () => {
 	});
 });
 
-describe("hapticsFace", () => {
-	it("says whether Turnkey buzzes the mouse", () => {
-		expect(hapticsFace(true)).toBe(ringFace(COLORS.accent, "vibrate"));
-		expect(hapticsFace(false)).toBe(ringFace(COLORS.accent, "vibrateOff", { dim: true }));
-	});
-});
 
 describe("settingsFace", () => {
 	it("is Turnkey's sliders in its accent", () => {

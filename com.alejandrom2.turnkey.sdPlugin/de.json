@@ -1262,10 +1262,6 @@
 					"name": "Lauf stoppen",
 					"description": "Stoppt den zuletzt gestarteten Lauf in T3 Code."
 				},
-				"haptics": {
-					"name": "Haptik an/aus",
-					"description": "Schaltet Turnkeys Vibrationen auf einer MX Master 4 ein oder aus."
-				},
 				"settings": {
 					"description": "Öffnet die Turnkey-Einstellungen: Geräte, Kopplung und Haptik."
 				},

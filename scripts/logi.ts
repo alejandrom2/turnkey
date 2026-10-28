@@ -14,8 +14,6 @@ const KEYS = [
 	"logi.actions.urgent.description",
 	"logi.actions.stop.name",
 	"logi.actions.stop.description",
-	"logi.actions.haptics.name",
-	"logi.actions.haptics.description",
 	"inspector.settings.title",
 	"logi.actions.settings.description",
 	"logi.actions.group.threads",

@@ -13,7 +13,7 @@ import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
 import { type MachineRow, startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { hapticsFace, settingsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { settingsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
@@ -47,10 +47,6 @@ const keys = new Keys(
 		settings: {
 			face: settingsFace,
 			press: () => void openExternal(page.url).catch(failed("open Turnkey Settings")),
-		},
-		haptics: {
-			face: () => hapticsFace(settings.haptics),
-			press: () => void settings.setHaptics(!settings.haptics).catch(failed("save the haptics setting")),
 		},
 		stop: {
 			face: () => stopFace(stopTarget(board.threads)?.machine.canOperate === true),
@@ -133,11 +129,7 @@ const page = await startPairingPage({
 	machines: machineRows,
 	remove: removeMachine,
 	haptics: () => settings.haptics,
-	setHaptics: async (on) => {
-		await settings.setHaptics(on);
-		// The Haptics key shows the switch too.
-		changed();
-	},
+	setHaptics: (on) => settings.setHaptics(on),
 });
 let lastStatus = "";
 function sendStatus(): void {

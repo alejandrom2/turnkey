@@ -1262,10 +1262,6 @@
 					"name": "実行を停止",
 					"description": "T3 Code で最後に始まった実行を停止します。"
 				},
-				"haptics": {
-					"name": "触覚フィードバック オン/オフ",
-					"description": "MX Master 4 での Turnkey の振動をオン/オフします。"
-				},
 				"settings": {
 					"description": "Turnkey の設定を開きます：マシン、ペアリング、触覚フィードバック。"
 				},
