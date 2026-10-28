@@ -25,7 +25,11 @@ namespace Loupedeck.TurnkeyPlugin
         }
 
         // This method is called when the plugin is loaded.
-        public override void Load() => this.Sidecar.Start(FindNode(), this.FindScript(), this.GetPluginDataDirectory());
+        public override void Load()
+        {
+            this.Sidecar.Haptic += this.PluginEvents.RaiseEvent;
+            this.Sidecar.Start(FindNode(), this.FindScript(), this.GetPluginDataDirectory());
+        }
 
         // This method is called when the plugin is unloaded.
         public override void Unload() => this.Sidecar.Dispose();

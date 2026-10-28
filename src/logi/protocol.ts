@@ -1,8 +1,14 @@
 /** Lines the Logitech plugin sends: `action` is its action instance's id, `size` the key's pixel width. */
 export type HostMessage = { type: "appear"; action: string; size: number } | { type: "disappear"; action: string } | { type: "press"; action: string };
 
+/** A moment worth a buzz on an MX Master 4; the plugin raises it as a Logi event of the same name. */
+export type HapticEvent = "approvalNeeded" | "questionAsked" | "runFinished" | "runFailed";
+
 /** Lines sent back: `png` is base64. Log lines are the only way to log, since stdout is the channel. */
-export type SidecarMessage = { type: "image"; action: string; png: string } | { type: "log"; level: "info" | "warn"; message: string };
+export type SidecarMessage =
+	| { type: "image"; action: string; png: string }
+	| { type: "haptic"; event: HapticEvent }
+	| { type: "log"; level: "info" | "warn"; message: string };
 
 const isSize = (size: unknown): size is number => Number.isInteger(size) && (size as number) >= 16 && (size as number) <= 512;
 

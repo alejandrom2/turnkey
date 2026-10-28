@@ -27,6 +27,9 @@ namespace Loupedeck.TurnkeyPlugin
 
         public event Action Stopped;
 
+        // A haptic event's name, as declared in events/DefaultEventSource.yaml.
+        public event Action<String> Haptic;
+
         public Boolean IsRunning
         {
             get
@@ -184,6 +187,9 @@ namespace Loupedeck.TurnkeyPlugin
                         // A sidecar that draws is healthy: crashes days apart shouldn't use up the restarts.
                         this._restarts = 0;
                         this.Image?.Invoke(root.GetProperty("action").GetString(), root.GetProperty("png").GetString());
+                        break;
+                    case "haptic":
+                        this.Haptic?.Invoke(root.GetProperty("event").GetString());
                         break;
                     case "log":
                         var message = $"Turnkey sidecar: {root.GetProperty("message").GetString()}";

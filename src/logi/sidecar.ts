@@ -6,6 +6,7 @@ import { Machine } from "../core/t3/machine.js";
 import { findLocalEnvironment, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
+import { HapticCues } from "./haptics.js";
 import { ThreadKeys } from "./keys.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { keyPng } from "./raster.js";
@@ -26,9 +27,11 @@ const log = (level: "info" | "warn", message: string) => send({ type: "log", lev
 const machines = new Map<string, Machine>();
 const board = new ThreadBoard(() => [...machines.values()]);
 const keys = new ThreadKeys(() => board.threads, send, keyPng);
+const haptics = new HapticCues(send);
 const changed = batched(
 	() => {
 		board.update();
+		haptics.update(board.threads);
 		keys.repaint();
 	},
 	(error) => log("warn", `Couldn't update the keys: ${error instanceof Error ? error.message : String(error)}`),

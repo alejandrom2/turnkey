@@ -1,0 +1,10 @@
+haptics:
+    # Alert family for what needs you; knock is the attention tap.
+    approvalNeeded:
+        DEFAULT: knock
+    questionAsked:
+        DEFAULT: knock
+    runFinished:
+        DEFAULT: completed
+    runFailed:
+        DEFAULT: angry_alert

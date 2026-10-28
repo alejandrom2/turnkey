@@ -1,0 +1,15 @@
+displayName: Turnkey
+description: Moments in T3 Code worth feeling, raised by Turnkey's sidecar (src/logi/haptics.ts)
+events:
+    - name: approvalNeeded
+      displayName: Needs approval
+      description: A thread started waiting for you to allow a command or an edit
+    - name: questionAsked
+      displayName: Has a question
+      description: A thread asked you something
+    - name: runFinished
+      displayName: Run finished
+      description: A run completed
+    - name: runFailed
+      displayName: Run failed
+      description: A run failed

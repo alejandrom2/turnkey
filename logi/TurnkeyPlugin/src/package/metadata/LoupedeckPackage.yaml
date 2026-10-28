@@ -55,6 +55,9 @@ pluginCapabilities:
     # Uncomment the following line if the plugin sends keyboard shortcuts to the target application.
     #- ActivatesApplication
 
+    # Raises haptic events (events/) for the MX Master 4.
+    - HasHapticMapping
+
 # Minimum Logi Plugin Service version supported by the plugin.
 minimumLoupedeckVersion: 6.4
 
