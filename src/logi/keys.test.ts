@@ -124,6 +124,20 @@ describe("Keys", () => {
 		expect(sent).toEqual([{ type: "image", action: "counter:fresh", svg: "b" }]);
 	});
 
+	it("a key that appears again after being forgotten paints again", () => {
+		let time = 0;
+		const sent: SidecarMessage[] = [];
+		const subject = new Keys({ counter: { face: () => "a" } }, (message) => sent.push(message), () => time);
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		time = STALE_MS + 1;
+		subject.repaint();
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		expect(sent).toEqual([
+			{ type: "image", action: "counter:", svg: "a" },
+			{ type: "image", action: "counter:", svg: "a" },
+		]);
+	});
+
 	it("a press revives a key forgotten as stale", () => {
 		let time = 0;
 		const sent: SidecarMessage[] = [];
