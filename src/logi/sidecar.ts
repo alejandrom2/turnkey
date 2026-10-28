@@ -12,7 +12,8 @@ import { HapticCues } from "./haptics.js";
 import { Keys } from "./keys.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { stopFace, stopTarget, urgentFace } from "./ring.js";
+import { hapticsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { FileSettings } from "./settings.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
 
@@ -24,6 +25,7 @@ if (dataDir === undefined) {
 }
 
 const store = new FileCredentials(join(dataDir, "credentials.json"));
+const settings = new FileSettings(join(dataDir, "settings.json"));
 // stdout is the channel to the plugin, so logging goes through it as messages.
 const send = (message: SidecarMessage) => process.stdout.write(encodeMessage(message));
 const log = (level: "info" | "warn", message: string) => send({ type: "log", level, message });
@@ -40,6 +42,10 @@ const keys = new Keys(
 				if (top) void openExternal(threadDeepLink(top)).catch(failed("open the thread"));
 			},
 		},
+		haptics: {
+			face: () => hapticsFace(settings.haptics),
+			press: () => void settings.setHaptics(!settings.haptics).catch(failed("save the haptics setting")),
+		},
 		stop: {
 			face: () => stopFace(stopTarget(board.threads)?.machine.canOperate === true),
 			press: () => {
@@ -50,7 +56,8 @@ const keys = new Keys(
 	},
 	send,
 );
-const haptics = new HapticCues(send);
+// Cues keep following threads while haptics are off, so turning them on doesn't buzz for old changes.
+const haptics = new HapticCues((message) => settings.haptics && send(message));
 const changed = batched(
 	() => {
 		board.update();

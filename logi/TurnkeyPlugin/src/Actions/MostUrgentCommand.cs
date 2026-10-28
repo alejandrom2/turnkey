@@ -6,7 +6,7 @@ namespace Loupedeck.TurnkeyPlugin
     public class MostUrgentCommand : SidecarCommand
     {
         public MostUrgentCommand()
-            : base("urgent", "Most urgent thread", "Shows what needs you in T3 Code. Choose it to open that thread.")
+            : base("urgent", "Most urgent thread", "Shows what needs you in T3 Code. Choose it to open that thread.", "Threads")
         {
         }
     }

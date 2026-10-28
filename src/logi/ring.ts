@@ -42,3 +42,5 @@ export function urgentFace(threads: readonly RingThread[]): string {
 export const stopTarget = <T extends Pick<DeckThread, "deck">>(threads: readonly T[]): T | undefined => threads.find((thread) => thread.deck === "running");
 
 export const stopFace = (available: boolean): string => ringFace(COLORS.accent, "stop", { dim: !available });
+
+export const hapticsFace = (on: boolean): string => ringFace(COLORS.accent, on ? "vibrate" : "vibrateOff", { dim: !on });

@@ -10,8 +10,8 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly ConcurrentDictionary<String, String> _images = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
 
-        protected SidecarCommand(String kind, String displayName, String description)
-            : base(displayName: displayName, description: description, groupName: "Turnkey")
+        protected SidecarCommand(String kind, String displayName, String description, String groupName)
+            : base(displayName: displayName, description: description, groupName: groupName)
         {
             this._kind = kind;
         }
