@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/alejandrom2/turnkey/compare/v0.9.2...v0.10.0) (2026-10-28)
+
+
+### Features
+
+* a 3D keycap logo and app icon ([f4938a0](https://github.com/alejandrom2/turnkey/commit/f4938a033ebc362f2384515a7929e37c856b4ff8))
+* strips drop the colored state line and its setting ([#13](https://github.com/alejandrom2/turnkey/issues/13)) ([2ac35a3](https://github.com/alejandrom2/turnkey/commit/2ac35a3fb3f1e568ab28047e1957ac78dfbab85f))
+
+
+### Fixes
+
+* bound caches that grew for days, and finish the audit leftovers ([#11](https://github.com/alejandrom2/turnkey/issues/11)) ([0c0d231](https://github.com/alejandrom2/turnkey/commit/0c0d231c8fbf507fcbac4777847f443b5a47a41b))
+
 ## [0.9.2](https://github.com/alejandrom2/turnkey/compare/v0.9.1...v0.9.2) (2026-10-27)
 
 
