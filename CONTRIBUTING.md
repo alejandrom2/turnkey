@@ -21,6 +21,17 @@ npm run watch          # rebuilds and restarts the plugin as you edit
 
 Turn on Stream Deck's developer mode (`npx streamdeck dev`) if linking complains. Then open any Turnkey action's settings and pair with a link from T3 Code (Settings → Sharing & access → Create link).
 
+## How the code is laid out
+
+- `src/core/` has no Stream Deck dependency: the client API in `t3/` (pairing, RPC socket, shell reducer, `Machine`), the thread board, commands, and SVG rendering. `npm test` covers it without a Stream Deck.
+- `src/actions/` maps SDK events onto it.
+- `scripts/` generates the manifest images, settings pages and profiles. Turnkey's mark (three stacked keys, the front one turning with a prompt whose cursor is a spark in T3 Code's blue) is drawn flat by `scripts/icons.ts`, and the category icon is the same mark in plain white. The logo (`docs/logo.png`) and the app icon (`imgs/plugin/marketplace.png`, `docs/marketplace/icon.png`) are the same keys rendered in Blender by `node scripts/marketplace/logo.ts`, which needs Chrome, Blender and the Stream Deck + model.
+- Logs are in `com.alejandrom2.turnkey.sdPlugin/logs/`. Keep the log level below `trace`, because trace would log access tokens.
+
+The visual style follows Stream Deck's native agent plugins: flat near-black keys, one white line glyph, a single status accent, and a gradient touch strip. The glyphs and art are drawn for this plugin.
+
+To try a build without linking, `npx streamdeck pack com.alejandrom2.turnkey.sdPlugin` makes a `.streamDeckPlugin` you can double-click.
+
 ## Before you open a pull request
 
 ```sh
@@ -48,6 +59,10 @@ A few house rules keep the plugin consistent:
 Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org): `fix: the Power dial no longer flashes red without a fast mode`, `feat: …`, `docs: …`. Pull requests are squash-merged, so the title becomes the commit and the release note. `git config core.hooksPath .githooks` checks your messages locally.
 
 Keep a pull request to one change. For anything you can see on a key or strip, add a photo or short video from your Stream Deck, and say which model you tested on.
+
+## Releases
+
+`feat:` adds a minor version, `fix:` a patch, and `!` or `BREAKING CHANGE:` a major once past 1.0. On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it lets the release workflow tag that version (`vX.Y.Z`); every `v*` tag, from the workflow or pushed by hand, runs the publish workflow, which checks the tag matches `package.json`, packs `com.alejandrom2.turnkey.streamDeckPlugin` with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`) and creates the GitHub Release with that version's changelog section. `npm run assets` keeps the manifest's version in step with `package.json`.
 
 ## Using a coding agent
 
