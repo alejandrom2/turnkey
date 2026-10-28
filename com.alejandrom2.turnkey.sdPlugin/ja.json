@@ -1266,8 +1266,8 @@
 					"name": "触覚フィードバック オン/オフ",
 					"description": "MX Master 4 での Turnkey の振動をオン/オフします。"
 				},
-				"machines": {
-					"description": "Turnkey のマシンページを開き、T3 Code のマシンをペアリング、再ペアリング、削除します。"
+				"settings": {
+					"description": "Turnkey の設定を開きます：マシン、ペアリング、触覚フィードバック。"
 				},
 				"group": {
 					"threads": "スレッド",
@@ -1275,6 +1275,8 @@
 				}
 			},
 			"page": {
+				"haptics": "触覚フィードバック",
+				"hapticsHint": "スレッドが承認待ちになったとき、質問したとき、完了または失敗したときに MX Master 4 を振動させます。各振動は Options+ の Turnkey のイベントにあります。",
 				"paired": "{name} とペアリングしました。このページは閉じてかまいません。"
 			}
 		}

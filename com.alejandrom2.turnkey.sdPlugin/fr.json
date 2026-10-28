@@ -1266,8 +1266,8 @@
 					"name": "Haptique oui/non",
 					"description": "Active ou désactive les vibrations de Turnkey sur une MX Master 4."
 				},
-				"machines": {
-					"description": "Ouvre la page des machines de Turnkey pour associer, réassocier ou retirer des machines T3 Code."
+				"settings": {
+					"description": "Ouvre les réglages de Turnkey : machines, association et haptique."
 				},
 				"group": {
 					"threads": "Fils",
@@ -1275,6 +1275,8 @@
 				}
 			},
 			"page": {
+				"haptics": "Haptique",
+				"hapticsHint": "Fait vibrer une MX Master 4 quand un fil attend une approbation, pose une question, se termine ou échoue. Options+ liste chaque vibration dans les événements de Turnkey.",
 				"paired": "Associé à {name}. Vous pouvez fermer cette page."
 			}
 		}

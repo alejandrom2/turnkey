@@ -20,14 +20,6 @@
           <source>Turns Turnkey's buzzes on an MX Master 4 on or off.</source>
           <target>MX Master 4 での Turnkey の振動をオン/オフします。</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MachinesCommand" translate="yes">
-          <source>Machines</source>
-          <target>マシン一覧</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MachinesCommand###description" translate="yes">
-          <source>Opens Turnkey's machines page, to pair, re-pair or remove T3 Code machines.</source>
-          <target>Turnkey のマシンページを開き、T3 Code のマシンをペアリング、再ペアリング、削除します。</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
           <source>Most urgent thread</source>
           <target>最優先のスレッド</target>
@@ -35,6 +27,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand###description" translate="yes">
           <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
           <target>T3 Code で対応が必要なものを表示します。選ぶとそのスレッドを開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand" translate="yes">
+          <source>Turnkey Settings</source>
+          <target>Turnkey 設定</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
+          <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
+          <target>Turnkey の設定を開きます：マシン、ペアリング、触覚フィードバック。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand" translate="yes">
           <source>Stop run</source>

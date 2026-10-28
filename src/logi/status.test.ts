@@ -5,7 +5,7 @@ import { pluginStatus } from "./status.js";
 
 const PAGE = "http://127.0.0.1:5000/pair/abc";
 const pair = { url: PAGE, urlTitle: t("logi.status.pair") };
-const machines = { url: PAGE, urlTitle: t("inspector.card.machines") };
+const machines = { url: PAGE, urlTitle: t("inspector.settings.title") };
 
 describe("pluginStatus", () => {
 	it("asks for a pair link while nothing is paired", () => {

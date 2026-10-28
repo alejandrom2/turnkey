@@ -1266,8 +1266,8 @@
 					"name": "Haptics on/off",
 					"description": "Turns Turnkey's buzzes on an MX Master 4 on or off."
 				},
-				"machines": {
-					"description": "Opens Turnkey's machines page, to pair, re-pair or remove T3 Code machines."
+				"settings": {
+					"description": "Opens Turnkey Settings: machines, pairing and haptics."
 				},
 				"group": {
 					"threads": "Threads",
@@ -1275,6 +1275,8 @@
 				}
 			},
 			"page": {
+				"haptics": "Haptics",
+				"hapticsHint": "Buzz an MX Master 4 when a thread needs approval, asks a question, finishes or fails. Options+ lists each buzz under Turnkey's events.",
 				"paired": "Paired with {name}. You can close this page."
 			}
 		}

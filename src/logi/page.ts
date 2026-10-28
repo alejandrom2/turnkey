@@ -10,11 +10,13 @@ export type PairingPage = { url: string; close(): void };
 /** A machine as the page lists it; `detail` says what's wrong when it has a problem. */
 export type MachineRow = { url: string; label: string; state: "connected" | "connecting" | "needsPairing" | "problem"; detail?: string };
 
-/** What the page does: spend a pair link (adding a machine or re-pairing one), list the machines, forget one. */
+/** What the page does: spend a pair link (adding a machine or re-pairing one), list the machines, forget one, switch haptics. */
 export type PageActions = {
 	pair(link: string): Promise<string>;
 	machines(): readonly MachineRow[];
 	remove(url: string): Promise<void>;
+	haptics(): boolean;
+	setHaptics(on: boolean): Promise<void>;
 };
 
 /** A pair link is a URL; anything much longer isn't one. */
@@ -41,6 +43,9 @@ h2{margin:22px 0 8px;font-size:15px}ul{list-style:none;margin:0 0 6px;padding:0}
 li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}li:first-child{border-top:0}
 li div{flex:1;min-width:0}li strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li span{font-size:14px;color:var(--muted)}
 li form button{margin:0;width:auto;padding:6px 12px;background:transparent;color:var(--bad);border:1px solid var(--line)}
+.switch{display:flex;gap:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;width:max-content}
+.switch button{margin:0;width:auto;padding:8px 18px;border-radius:0;background:transparent;color:inherit}
+.switch button[aria-pressed="true"]{background:var(--accent);color:#fff}
 </style></head><body><main>${body}</main></body></html>`;
 }
 
@@ -56,12 +61,18 @@ function list(machines: readonly MachineRow[]): string {
 	return `<ul>${machines.map(row).join("")}</ul>`;
 }
 
-function page(machines: readonly MachineRow[], notice?: { ok: boolean; text: string }): string {
+function haptics(on: boolean): string {
+	const choice = (value: "on" | "off", label: string) => `<button name="haptics" value="${value}" aria-pressed="${on === (value === "on")}">${escapeXml(label)}</button>`;
+	return `<h2>${escapeXml(t("logi.page.haptics"))}</h2><p>${escapeXml(t("logi.page.hapticsHint"))}</p><form method="post" class="switch">${choice("on", t("option.on"))}${choice("off", t("option.off"))}</form>`;
+}
+
+function page(actions: PageActions, notice?: { ok: boolean; text: string }): string {
 	return html(
-		`<h1>${escapeXml(t("inspector.card.machines"))}</h1>${list(machines)}` +
+		`<h1>${escapeXml(t("inspector.settings.title"))}</h1><h2>${escapeXml(t("inspector.card.machines"))}</h2>${list(actions.machines())}` +
 			`<h2>${escapeXml(t("inspector.card.addMachine"))}</h2><p>${escapeXml(t("needs.fix.newPairLink"))}</p>` +
 			(notice ? `<p class="${notice.ok ? "ok" : "bad"}">${escapeXml(notice.text)}</p>` : "") +
-			`<form method="post"><input name="link" type="url" required autofocus autocomplete="off" placeholder="${escapeXml(t("inspector.card.linkPlaceholder"))}"><button>${escapeXml(t("inspector.card.connect"))}</button></form>`,
+			`<form method="post"><input name="link" type="url" required autocomplete="off" placeholder="${escapeXml(t("inspector.card.linkPlaceholder"))}"><button>${escapeXml(t("inspector.card.connect"))}</button></form>` +
+			haptics(actions.haptics()),
 	);
 }
 
@@ -81,8 +92,9 @@ function readBody(request: IncomingMessage): Promise<string | undefined> {
 }
 
 /**
- * Serves Turnkey's machines on this computer only, at a random address the plugin's banner opens: the list, Remove, and a
- * pair link field that adds a machine or re-pairs one. The Host and Origin checks keep other sites, and DNS rebinding, out.
+ * Serves Turnkey Settings on this computer only, at a random address the banner and the settings action open: machines
+ * (list, Remove, and a pair link field that adds one or re-pairs it) and haptics. The Host and Origin checks keep other
+ * sites, and DNS rebinding, out.
  */
 export async function startPairingPage(actions: PageActions): Promise<PairingPage> {
 	const path = `/pair/${randomBytes(16).toString("hex")}`;
@@ -94,24 +106,29 @@ export async function startPairingPage(actions: PageActions): Promise<PairingPag
 		};
 		if (request.url !== path) return void response.writeHead(404).end();
 		if (`http://${request.headers.host}` !== origin) return void response.writeHead(403).end();
-		if (request.method === "GET") return reply(200, page(actions.machines()));
+		if (request.method === "GET") return reply(200, page(actions));
 		if (request.method !== "POST") return void response.writeHead(405).end();
 		if (request.headers.origin !== undefined && request.headers.origin !== origin) return void response.writeHead(403).end();
 		const body = await readBody(request);
 		if (body === undefined) return void response.writeHead(413).end();
 		const fields = new URLSearchParams(body);
 		const removing = fields.get("remove");
+		const buzz = fields.get("haptics");
 		try {
+			if (buzz === "on" || buzz === "off") {
+				await actions.setHaptics(buzz === "on");
+				return reply(200, page(actions));
+			}
 			if (removing !== null) {
 				// Only a machine the page lists can be removed, whatever the form says.
 				if (!actions.machines().some((machine) => machine.url === removing)) return void response.writeHead(400).end();
 				await actions.remove(removing);
-				return reply(200, page(actions.machines()));
+				return reply(200, page(actions));
 			}
 			const name = await actions.pair(fields.get("link")?.trim() ?? "");
-			reply(200, page(actions.machines(), { ok: true, text: t("logi.page.paired", { name }) }));
+			reply(200, page(actions, { ok: true, text: t("logi.page.paired", { name }) }));
 		} catch (error) {
-			reply(400, page(actions.machines(), { ok: false, text: error instanceof Error ? error.message : String(error) }));
+			reply(400, page(actions, { ok: false, text: error instanceof Error ? error.message : String(error) }));
 		}
 	}
 

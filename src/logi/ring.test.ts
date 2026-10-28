@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { COLORS, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
-import { hapticsFace, machinesFace, ringFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { hapticsFace, ringFace, settingsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 
 const thread = (deck: DeckState, unseen = false) => ({ deck, unseen });
 
@@ -50,8 +50,8 @@ describe("hapticsFace", () => {
 	});
 });
 
-describe("machinesFace", () => {
-	it("is a computer in Turnkey's accent", () => {
-		expect(machinesFace()).toBe(ringFace(COLORS.accent, "laptop"));
+describe("settingsFace", () => {
+	it("is Turnkey's sliders in its accent", () => {
+		expect(settingsFace()).toBe(ringFace(COLORS.accent, "sliders"));
 	});
 });

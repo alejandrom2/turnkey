@@ -1266,8 +1266,8 @@
 					"name": "Haptik an/aus",
 					"description": "Schaltet Turnkeys Vibrationen auf einer MX Master 4 ein oder aus."
 				},
-				"machines": {
-					"description": "Öffnet Turnkeys Geräteseite, um T3-Code-Geräte zu koppeln, neu zu koppeln oder zu entfernen."
+				"settings": {
+					"description": "Öffnet die Turnkey-Einstellungen: Geräte, Kopplung und Haptik."
 				},
 				"group": {
 					"threads": "Threads",
@@ -1275,6 +1275,8 @@
 				}
 			},
 			"page": {
+				"haptics": "Haptik",
+				"hapticsHint": "Lässt eine MX Master 4 vibrieren, wenn ein Thread eine Freigabe braucht, eine Frage stellt, fertig wird oder fehlschlägt. Options+ zeigt jede Vibration unter den Ereignissen von Turnkey.",
 				"paired": "Mit {name} gekoppelt. Du kannst diese Seite schließen."
 			}
 		}

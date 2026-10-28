@@ -1266,8 +1266,8 @@
 					"name": "觸感開/關",
 					"description": "開啟或關閉 Turnkey 在 MX Master 4 上的震動。"
 				},
-				"machines": {
-					"description": "開啟 Turnkey 的裝置頁面，配對、重新配對或移除 T3 Code 裝置。"
+				"settings": {
+					"description": "開啟 Turnkey 設定：裝置、配對和觸感。"
 				},
 				"group": {
 					"threads": "對話",
@@ -1275,6 +1275,8 @@
 				}
 			},
 			"page": {
+				"haptics": "觸感",
+				"hapticsHint": "對話等待核准、提出問題、完成或失敗時讓 MX Master 4 震動。每種震動都列在 Options+ 的 Turnkey 事件中。",
 				"paired": "已與 {name} 配對。可以關閉此頁面。"
 			}
 		}

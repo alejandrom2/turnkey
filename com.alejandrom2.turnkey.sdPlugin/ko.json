@@ -1266,8 +1266,8 @@
 					"name": "햅틱 켜기/끄기",
 					"description": "MX Master 4에서 Turnkey의 진동을 켜거나 끕니다."
 				},
-				"machines": {
-					"description": "Turnkey의 기기 페이지를 열어 T3 Code 기기를 페어링, 다시 페어링하거나 제거합니다."
+				"settings": {
+					"description": "Turnkey 설정을 엽니다: 기기, 페어링, 햅틱."
 				},
 				"group": {
 					"threads": "스레드",
@@ -1275,6 +1275,8 @@
 				}
 			},
 			"page": {
+				"haptics": "햅틱",
+				"hapticsHint": "스레드가 승인을 기다리거나, 질문하거나, 완료되거나 실패하면 MX Master 4를 진동시킵니다. 각 진동은 Options+의 Turnkey 이벤트에 있습니다.",
 				"paired": "{name}와 페어링했습니다. 이 페이지를 닫아도 됩니다."
 			}
 		}

@@ -16,8 +16,8 @@ const KEYS = [
 	"logi.actions.stop.description",
 	"logi.actions.haptics.name",
 	"logi.actions.haptics.description",
-	"inspector.card.machines",
-	"logi.actions.machines.description",
+	"inspector.settings.title",
+	"logi.actions.settings.description",
 	"logi.actions.group.threads",
 	"logi.actions.group.settings",
 ] as const;

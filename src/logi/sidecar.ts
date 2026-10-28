@@ -13,7 +13,7 @@ import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
 import { type MachineRow, startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { hapticsFace, machinesFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { hapticsFace, settingsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
@@ -44,9 +44,9 @@ const keys = new Keys(
 			},
 		},
 		// Logi shows the banner, and its button, only for a warning or an error: this is the way to the page once paired.
-		machines: {
-			face: machinesFace,
-			press: () => void openExternal(page.url).catch(failed("open the machines page")),
+		settings: {
+			face: settingsFace,
+			press: () => void openExternal(page.url).catch(failed("open Turnkey Settings")),
 		},
 		haptics: {
 			face: () => hapticsFace(settings.haptics),
@@ -128,7 +128,17 @@ async function removeMachine(url: string): Promise<void> {
 	changed();
 }
 
-const page = await startPairingPage({ pair: pairLink, machines: machineRows, remove: removeMachine });
+const page = await startPairingPage({
+	pair: pairLink,
+	machines: machineRows,
+	remove: removeMachine,
+	haptics: () => settings.haptics,
+	setHaptics: async (on) => {
+		await settings.setHaptics(on);
+		// The Haptics key shows the switch too.
+		changed();
+	},
+});
 let lastStatus = "";
 function sendStatus(): void {
 	const status = pluginStatus([...machines.values()].map((each) => each.state), page.url);
