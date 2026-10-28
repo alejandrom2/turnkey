@@ -1253,6 +1253,24 @@
 				"pair": "Pair with T3 Code",
 				"connected": "Connected to {name}."
 			},
+			"actions": {
+				"urgent": {
+					"name": "Most urgent thread",
+					"description": "Shows what needs you in T3 Code. Choose it to open that thread."
+				},
+				"stop": {
+					"name": "Stop run",
+					"description": "Stops the T3 Code run that started last."
+				},
+				"haptics": {
+					"name": "Haptics on/off",
+					"description": "Turns Turnkey's buzzes on an MX Master 4 on or off."
+				},
+				"group": {
+					"threads": "Threads",
+					"settings": "Settings"
+				}
+			},
 			"page": {
 				"paired": "Paired with {name}. You can close this page."
 			}

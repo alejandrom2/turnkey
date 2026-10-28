@@ -1253,6 +1253,24 @@
 				"pair": "T3 Code とペアリング",
 				"connected": "{name} に接続しました。"
 			},
+			"actions": {
+				"urgent": {
+					"name": "最優先のスレッド",
+					"description": "T3 Code で対応が必要なものを表示します。選ぶとそのスレッドを開きます。"
+				},
+				"stop": {
+					"name": "実行を停止",
+					"description": "T3 Code で最後に始まった実行を停止します。"
+				},
+				"haptics": {
+					"name": "触覚フィードバック オン/オフ",
+					"description": "MX Master 4 での Turnkey の振動をオン/オフします。"
+				},
+				"group": {
+					"threads": "スレッド",
+					"settings": "設定"
+				}
+			},
 			"page": {
 				"paired": "{name} とペアリングしました。このページは閉じてかまいません。"
 			}

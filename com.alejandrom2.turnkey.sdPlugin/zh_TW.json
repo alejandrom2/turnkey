@@ -1253,6 +1253,24 @@
 				"pair": "與 T3 Code 配對",
 				"connected": "已連線到 {name}。"
 			},
+			"actions": {
+				"urgent": {
+					"name": "最緊急的對話",
+					"description": "顯示 T3 Code 中需要你處理的內容。選擇即可開啟該對話。"
+				},
+				"stop": {
+					"name": "停止執行",
+					"description": "停止 T3 Code 中最後開始的執行。"
+				},
+				"haptics": {
+					"name": "觸感開/關",
+					"description": "開啟或關閉 Turnkey 在 MX Master 4 上的震動。"
+				},
+				"group": {
+					"threads": "對話",
+					"settings": "設定"
+				}
+			},
 			"page": {
 				"paired": "已與 {name} 配對。可以關閉此頁面。"
 			}

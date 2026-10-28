@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2">
+  <file original="$Turnkey___@general" source-language="en-US" target-language="de-DE" datatype="plaintext">
+    <body>
+      <group id="@general">
+      </group>
+      <group id="@modes">
+      </group>
+      <group id="@resources" />
+    </body>
+  </file>
+  <file original="$Turnkey___main" source-language="en-US" target-language="de-DE" datatype="plaintext">
+    <body>
+      <group id="@commands">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.HapticsCommand" translate="yes">
+          <source>Haptics on/off</source>
+          <target>Haptik an/aus</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.HapticsCommand###description" translate="yes">
+          <source>Turns Turnkey's buzzes on an MX Master 4 on or off.</source>
+          <target>Schaltet Turnkeys Vibrationen auf einer MX Master 4 ein oder aus.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
+          <source>Most urgent thread</source>
+          <target>Dringendster Thread</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand###description" translate="yes">
+          <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
+          <target>Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand" translate="yes">
+          <source>Stop run</source>
+          <target>Lauf stoppen</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
+          <source>Stops the T3 Code run that started last.</source>
+          <target>Stoppt den zuletzt gestarteten Lauf in T3 Code.</target>
+        </trans-unit>
+      </group>
+      <group id="@adjustments" />
+      <group id="@groups">
+        <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
+          <source>Settings</source>
+          <target>Einstellungen</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___AED0D0FDAA3E69A00007" translate="yes">
+          <source>Threads</source>
+          <target>Threads</target>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>

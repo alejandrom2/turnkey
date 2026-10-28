@@ -1253,6 +1253,24 @@
 				"pair": "Associer à T3 Code",
 				"connected": "Connecté à {name}."
 			},
+			"actions": {
+				"urgent": {
+					"name": "Fil le plus urgent",
+					"description": "Montre ce qui vous attend dans T3 Code. Choisissez-le pour ouvrir ce fil."
+				},
+				"stop": {
+					"name": "Arrêter l'exécution",
+					"description": "Arrête la dernière exécution lancée dans T3 Code."
+				},
+				"haptics": {
+					"name": "Haptique oui/non",
+					"description": "Active ou désactive les vibrations de Turnkey sur une MX Master 4."
+				},
+				"group": {
+					"threads": "Fils",
+					"settings": "Réglages"
+				}
+			},
 			"page": {
 				"paired": "Associé à {name}. Vous pouvez fermer cette page."
 			}

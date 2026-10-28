@@ -1253,6 +1253,24 @@
 				"pair": "Mit T3 Code koppeln",
 				"connected": "Verbunden mit {name}."
 			},
+			"actions": {
+				"urgent": {
+					"name": "Dringendster Thread",
+					"description": "Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen."
+				},
+				"stop": {
+					"name": "Lauf stoppen",
+					"description": "Stoppt den zuletzt gestarteten Lauf in T3 Code."
+				},
+				"haptics": {
+					"name": "Haptik an/aus",
+					"description": "Schaltet Turnkeys Vibrationen auf einer MX Master 4 ein oder aus."
+				},
+				"group": {
+					"threads": "Threads",
+					"settings": "Einstellungen"
+				}
+			},
 			"page": {
 				"paired": "Mit {name} gekoppelt. Du kannst diese Seite schließen."
 			}
