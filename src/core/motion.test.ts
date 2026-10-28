@@ -54,9 +54,7 @@ describe("Transitions", () => {
 		transitions.update([{ key: "a", deck: "done" }]);
 		expect(transitions.age("a")).toBeUndefined();
 	});
-});
 
-describe("Transitions changes", () => {
 	it("reports what changed since the last look", () => {
 		const transitions = new Transitions(() => 0);
 		expect(transitions.update([{ key: "a", deck: "running" }])).toEqual([]);

@@ -257,6 +257,15 @@ describe("Machine connection", () => {
 		expect(h.calls).toEqual([]);
 	});
 
+	it("reports a failed save when it forgets an expired pairing", async () => {
+		const warn = vi.fn();
+		const store: CredentialStore = { load: () => ({ ...CREDENTIAL, expiresAt: NOW - 1 }), save: () => Promise.reject(new Error("disk full")), urls: () => [URL_] };
+		const { fetch } = fakeFetch({});
+		new Machine(URL_, store, { fetch, socket: fakeSockets().factory, clientLabel: "Turnkey (Test)", warn }, () => undefined).start();
+		await flush();
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining("disk full"));
+	});
+
 	it("is read-only when the pairing did not grant orchestration:operate", async () => {
 		const h = setup({ credential: { ...CREDENTIAL, scopes: ["orchestration:read"] } });
 		await connect(h);

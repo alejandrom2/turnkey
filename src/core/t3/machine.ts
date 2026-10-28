@@ -283,7 +283,7 @@ export class Machine {
 		const credential = this.credential;
 		if (credential === undefined) return this.#set({ kind: "signed-out" });
 		if (credential.expiresAt <= this.#now()) {
-			void this.store.save(this.url, undefined);
+			this.#forgetPairing();
 			return this.#set({ kind: "signed-out", message: t("machine.pairingExpired") });
 		}
 		const rpc: RpcSocket = new RpcSocket({
@@ -365,13 +365,18 @@ export class Machine {
 				this.#rpc = undefined;
 				this.#subscribed = false;
 				if (error instanceof PairingError && error.kind === "repair") {
-					void this.store.save(this.url, undefined);
+					this.#forgetPairing();
 					this.#reset();
 					return this.#set({ kind: "signed-out", message: error.message });
 				}
 				return this.#set({ kind: "error", message: error.message });
 			}
 		}
+	}
+
+	/** Unawaited, so a disk error is reported here rather than becoming an unhandled rejection in the host. */
+	#forgetPairing(): void {
+		void this.store.save(this.url, undefined).catch((error: unknown) => this.deps.warn?.(`Couldn't forget the pairing: ${error instanceof Error ? error.message : String(error)}`));
 	}
 
 	async #opened(rpc: RpcSocket, credential: Credential): Promise<void> {

@@ -11,7 +11,7 @@ import { QUICK_PROMPTS } from "../core/prompts.js";
 import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
 import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
 import { Machines } from "../core/t3/machines.js";
-import { UltrathinkArming } from "../core/ultrathink.js";
+import { UltrathinkArming, ultrathinkControl } from "../core/ultrathink.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
@@ -19,7 +19,7 @@ import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { continueStep } from "./controls.js";
+import { continueStep, nextChoice } from "./controls.js";
 import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
@@ -83,12 +83,8 @@ function pick(control: "effort" | "permissions", choose: (state: PowerState) => 
 	const state = powerOf(thread, control);
 	const choice = choose(state);
 	if (choice === undefined || choice.key === state.current?.key) return;
-	const ultrathink = { armed: arming.armed(thread.key, modelOf(thread)), arm: () => arming.arm(thread.key), disarm: () => arming.disarm(thread.key) };
-	void applyChoice(thread, choice, ultrathink)?.().catch(failed(choice.kind === "mode" ? "change the access mode" : "change the effort"));
+	void applyChoice(thread, choice, ultrathinkControl(arming, thread.key, arming.armed(thread.key, modelOf(thread))))?.().catch(failed(choice.kind === "mode" ? "change the access mode" : "change the effort"));
 }
-
-/** The choice after the current one, wrapping, as the Stream Deck's keys step. */
-const nextChoice = (state: PowerState) => state.choices[(state.choices.findIndex((choice) => choice.key === state.current?.key) + 1) % state.choices.length];
 
 /**
  * Limits keep each machine on T3 Code's config subscription once a Limits slot has shown, and refresh when the ring

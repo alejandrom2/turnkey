@@ -40,6 +40,7 @@ import { pinnedKey, pinnedName, resolveTarget, type Target, type TargetSettings 
 import type { Machine, SendMode } from "../core/t3/machine.js";
 import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
+import { ultrathinkControl as coreUltrathinkControl } from "../core/ultrathink.js";
 import { deck } from "../deck.js";
 import { exportDiagnostics, openLogsFolder } from "../diagnostics.js";
 import type { MachineWatch } from "./watch.js";
@@ -612,11 +613,7 @@ export const ultrathinkArmed = (thread: DeckThread | undefined): boolean =>
 	thread !== undefined && deck.ultrathink.armed(thread.key, findModel(thread.machine.modelConfig, thread.model));
 
 /** The deck's Ultrathink for `thread`, as core's applyChoice takes it. */
-export const ultrathinkControl = (thread: DeckThread, armed: boolean): UltrathinkControl => ({
-	armed,
-	arm: () => deck.ultrathink.arm(thread.key),
-	disarm: () => deck.ultrathink.disarm(thread.key),
-});
+export const ultrathinkControl = (thread: DeckThread, armed: boolean): UltrathinkControl => coreUltrathinkControl(deck.ultrathink, thread.key, armed);
 
 /** The thread's queue as last read, read again when it moved; only call it for a thread a visible face shows. */
 export const queueOf = (thread: DeckThread): ThreadQueue | undefined => deck.queues.of(thread, () => thread.machine.queue(thread));

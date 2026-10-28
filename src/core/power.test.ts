@@ -125,6 +125,18 @@ describe("applyChoice", () => {
 		expect(machine.setRuntimeMode).not.toHaveBeenCalled();
 	});
 
+	it("does nothing for Ultrathink while it's armed", () => {
+		const { target, ultrathink, choice } = setup(true);
+		expect(applyChoice(target, choice("effort", "ultrathink"), ultrathink)).toBeUndefined();
+	});
+
+	it("only disarms for the thread's own effort while Ultrathink is armed", async () => {
+		const { machine, target, ultrathink, choice } = setup(true);
+		await applyChoice(target, choice("effort", "high"), ultrathink)?.();
+		expect(ultrathink.disarm).toHaveBeenCalled();
+		expect(machine.setModelSelection).not.toHaveBeenCalled();
+	});
+
 	it("does nothing for the current effort", () => {
 		const { target, ultrathink, choice } = setup();
 		expect(applyChoice(target, choice("effort", "high"), ultrathink)).toBeUndefined();

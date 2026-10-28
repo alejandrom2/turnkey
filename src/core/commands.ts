@@ -23,7 +23,11 @@ export async function openThread(
 	scheme?: string,
 	open: (url: string) => Promise<void> = openExternal,
 ): Promise<void> {
-	void select(thread.key, thread.machine.url).catch(() => undefined);
+	try {
+		void select(thread.key, thread.machine.url).catch(() => undefined);
+	} catch {
+		// A select that throws before returning its promise mustn't keep the thread from opening either.
+	}
 	await open(threadDeepLink(thread, scheme));
 }
 

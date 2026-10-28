@@ -4,6 +4,7 @@
  * memory; the thread's real effort stays as it is.
  */
 import { type CatalogModel, effortOption } from "./models.js";
+import type { UltrathinkControl } from "./power.js";
 
 export const ULTRATHINK = "ultrathink";
 
@@ -48,3 +49,10 @@ export class UltrathinkArming {
 		return this.armed(key, model) ? applyPromptEffortPrefix(text, ULTRATHINK) : text;
 	}
 }
+
+/** `key`'s Ultrathink in `arming`, as core's applyChoice takes it; `armed` is what the caller showed, so the press acts on that. */
+export const ultrathinkControl = (arming: UltrathinkArming, key: string, armed: boolean): UltrathinkControl => ({
+	armed,
+	arm: () => arming.arm(key),
+	disarm: () => arming.disarm(key),
+});

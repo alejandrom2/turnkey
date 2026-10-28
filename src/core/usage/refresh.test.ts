@@ -58,4 +58,10 @@ describe("refreshLimits", () => {
 		await refreshLimits(new LimitsRefresher(), { environmentId: undefined, refreshProviders: async () => void calls++ } as never, false);
 		expect(calls).toBe(0);
 	});
+
+	it("refreshes the providers once for a machine with an environment", async () => {
+		let calls = 0;
+		await refreshLimits(new LimitsRefresher(), { environmentId: "env", refreshProviders: async () => void calls++ }, false);
+		expect(calls).toBe(1);
+	});
 });
