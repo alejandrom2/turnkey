@@ -17,6 +17,8 @@ See every agent thread at a glance, approve and answer from a key, switch models
 
 </div>
 
+<!-- The video tour: drag video.mp4 (turnkey-marketing's listing/) into GitHub's editor here, so it plays inline. -->
+
 ## What it does
 
 - **Threads on keys and dials.** Status, title and run time for every thread, tinted when one waits for an approval or has a question. Tap to open it in T3 Code.
@@ -31,15 +33,7 @@ Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, t
 <table>
 <tr>
 <td><img src="docs/marketplace/gallery-2-approve.png" alt="Allow once and Deny keys for an agent's command approval"></td>
-<td><img src="docs/marketplace/gallery-3-brain.png" alt="Model and effort keys, from a model to Max effort"></td>
-</tr>
-<tr>
 <td><img src="docs/marketplace/gallery-4-dial.png" alt="The Power dial's strip: model, effort, speed and access mode"></td>
-<td><img src="docs/marketplace/gallery-5-steer.png" alt="Steer, Continue and Stop keys on a Stream Deck +"></td>
-</tr>
-<tr>
-<td><img src="docs/marketplace/gallery-6-ship.png" alt="Branch, Commit, pull request and Fix findings keys"></td>
-<td><img src="docs/marketplace/gallery-7-usage.png" alt="Usage and limit keys and dials on a Stream Deck +"></td>
 </tr>
 </table>
 
