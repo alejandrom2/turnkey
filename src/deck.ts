@@ -24,7 +24,6 @@ type GlobalSettings = {
 	scheme?: string;
 	stripBackground?: string;
 	stripColor?: string;
-	stripHairline?: boolean;
 	stripStyle?: string;
 	textScroll?: string;
 	/** Full (default), Reduced or Off. */
@@ -42,10 +41,9 @@ type GlobalSettings = {
 	verboseUntil?: number;
 };
 
-const appearanceOf = ({ stripBackground, stripColor, stripHairline, stripStyle, textScroll, motion, idlePet, confirmSend, maxEffort }: GlobalSettings) => ({
+const appearanceOf = ({ stripBackground, stripColor, stripStyle, textScroll, motion, idlePet, confirmSend, maxEffort }: GlobalSettings) => ({
 	stripBackground,
 	stripColor,
-	stripHairline,
 	stripStyle,
 	textScroll,
 	motion,

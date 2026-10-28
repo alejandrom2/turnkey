@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
 	sparkles,
 	accessTone,
-	COLORS,
 	dotsCue,
 	fit,
 	fitSize,
@@ -251,13 +250,12 @@ describe("effortTone", () => {
 });
 
 describe("stripCanvas", () => {
-	it("draws the idle pet over the background and under the state line, and without it is the plain canvas again", () => {
-		const appearance = { background: "flow" as const, hairline: true, run: { length: 2, position: 1 } };
-		const plain = stripCanvas(COLORS.accent, appearance);
-		const walked = svg(stripCanvas(COLORS.accent, { ...appearance, pet: `<g id="pet"/>` }));
+	it("draws the idle pet over the background, and without it is the plain canvas again", () => {
+		const appearance = { background: "flow" as const, run: { length: 2, position: 1 } };
+		const plain = stripCanvas(appearance);
+		const walked = svg(stripCanvas({ ...appearance, pet: `<g id="pet"/>` }));
 		expect(walked.indexOf(`<g id="pet"/>`)).toBeGreaterThan(walked.indexOf("flow-field"));
-		expect(walked.indexOf(`<g id="pet"/>`)).toBeLessThan(walked.indexOf(`y="95"`));
-		expect(stripCanvas(COLORS.accent, { ...appearance, pet: undefined })).toBe(plain);
+		expect(stripCanvas({ ...appearance, pet: undefined })).toBe(plain);
 	});
 });
 

@@ -21,7 +21,7 @@ import {
 const svg = (dataUrl: unknown) => Buffer.from(String(dataUrl).replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
 
 const LONG = "Refactor the websocket reconnect logic so tunnels survive sleep";
-const content: StripContent = { header: "Threads", icon: glyphArt("check"), accent: "#5B8CFF", value: "Short", detail: "Done" };
+const content: StripContent = { header: "Threads", icon: glyphArt("check"), value: "Short", detail: "Done" };
 const list = (count: number, index: number, patch: Partial<StripList> = {}): StripList => ({
 	heading: "Needs you",
 	items: Array.from({ length: count }, (_, at) => ({ key: `t${at}`, label: `Thread ${at + 1}`, art: glyphArt("check") })),

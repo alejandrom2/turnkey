@@ -44,9 +44,9 @@ describe("mergeGlobalSettings", () => {
 	});
 
 	it("never writes the plugin's own keys", () => {
-		expect(mergeGlobalSettings(current, { auth: {}, environments: "", scopeRequests: { x: 1 }, verboseUntil: 9, stripHairline: false })).toEqual({
+		expect(mergeGlobalSettings(current, { auth: {}, environments: "", scopeRequests: { x: 1 }, verboseUntil: 9, stripStyle: "list" })).toEqual({
 			...current,
-			stripHairline: false,
+			stripStyle: "list",
 		});
 	});
 

@@ -494,7 +494,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	/** A dial's press result; strip dials draw it in their own appearance. */
 	protected flashFeedback(_action: Action<T>, ok: boolean, label: string): FeedbackPayload {
 		const color = ok ? COLORS.done : COLORS.error;
-		return { canvas: stripCanvas(color), header: ok ? t("strip.done") : t("strip.notNow"), glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" };
+		return { canvas: stripCanvas(), header: ok ? t("strip.done") : t("strip.notNow"), glyph: stripIcon(ok ? "check" : "error", color), value: label, detail: "" };
 	}
 
 	/** The action's Confirm before sending setting, else the global one. */
@@ -556,7 +556,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 
 	/** A dial's review card. */
 	protected reviewFeedback(_action: Action<T>, card: ReviewCard): FeedbackPayload {
-		return { canvas: stripCanvas(COLORS.accent), header: card.verb, glyph: stripIcon(card.glyph, COLORS.accent), value: card.body ?? card.target, detail: card.footer };
+		return { canvas: stripCanvas(), header: card.verb, glyph: stripIcon(card.glyph, COLORS.accent), value: card.body ?? card.target, detail: card.footer };
 	}
 
 	/** Flashes why the action can't act when `check` says so; true when it may go ahead. */

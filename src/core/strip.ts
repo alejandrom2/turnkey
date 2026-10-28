@@ -14,8 +14,6 @@ export type StripContent = {
 	header: string;
 	/** Drawn in the 38×38 icon slot: a glyph or a provider mark. */
 	icon: MarkPainter;
-	/** Hairline color. */
-	accent: string;
 	value: string;
 	detail?: string;
 	detailColor?: string;
@@ -110,7 +108,7 @@ const skeletonBar = (slot: Pick<TextSlot, "width" | "height">, width: number, x 
 
 export function stripFeedback(content: StripContent, options: StripOptions): Record<string, string | { value: string; color: string }> {
 	const base = {
-		canvas: stripCanvas(content.accent, options.appearance, content.tone ?? "neutral", content.ultrathink === true),
+		canvas: stripCanvas(options.appearance, content.tone ?? "neutral", content.ultrathink === true),
 		header: content.header,
 		glyph: stripMarkIcon(content.icon),
 	};

@@ -62,7 +62,7 @@ export function recentProblems(log: string, limit = RECENT_PROBLEMS): string[] {
 }
 
 /** The settings worth reporting: appearance and behavior. Tokens, scope requests and machine URLs are never read. */
-const REPORTED_SETTINGS = ["scheme", "stripBackground", "stripStyle", "stripHairline", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"] as const;
+const REPORTED_SETTINGS = ["scheme", "stripBackground", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"] as const;
 
 type DiagnosticsMachine = {
 	url: string;

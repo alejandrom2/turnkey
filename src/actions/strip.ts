@@ -79,16 +79,16 @@ const SKELETON_MARK: MarkPainter = (x, y, size) => `<circle cx="${x + size / 2}"
 
 /** The strip shown instead of a dial's content while its machine is not usable. */
 function disconnectedStrip(header: string, machine: string | undefined): StripContent | undefined {
-	const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("plug", COLORS.muted), accent: COLORS.muted, value, detail });
+	const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("plug", COLORS.muted), value, detail });
 	switch (connectionProblem(machine)) {
 		case "loading":
-			return { header, icon: SKELETON_MARK, accent: COLORS.muted, value: "", loading: true };
+			return { header, icon: SKELETON_MARK, value: "", loading: true };
 		case "missing":
 			return muted(t("notice.machineRemoved"), t("notice.pickAnotherInSettings"));
 		case "none":
 			return muted(t("notice.notFound"), t("notice.openThenPress"));
 		case "pair":
-			return { header, icon: glyphArt("key", COLORS.attention), accent: COLORS.attention, value: t("notice.pairDeck"), detail: t("notice.pastePairLink"), tone: "attention" };
+			return { header, icon: glyphArt("key", COLORS.attention), value: t("notice.pairDeck"), detail: t("notice.pastePairLink"), tone: "attention" };
 		case "offline":
 			return muted(t("notice.connecting"), t("notice.pressToRetry"));
 		default:
@@ -184,7 +184,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		const appearance = { ...this.#appearance(action), pet: walking ? petArt(walk, action.id) : undefined };
 		this.animate(action, (content.moving === true && reading === undefined && picture === undefined) || walking);
 		if (presentation === "slider") {
-			const canvas = stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
+			const canvas = stripCanvas(appearance, content.tone ?? "neutral", content.ultrathink === true);
 			if (reading?.lines) return this.setFeedback(action, carouselFeedback(content, listFromContent(content), { appearance, scroll: "off", reading: { lines: reading.lines, top: reading.top } }));
 			if (picture !== undefined) return this.setFeedback(action, { canvas, art: picture, title: { value: "", color: "#FFFFFF" }, titleArt: BLANK_ART });
 			const line = scroll === "off" ? undefined : scrollLine(sliderLabelText(slider!), sliderLabelSlot(slider!), "horizontal", "slider");
@@ -211,7 +211,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		const presentation = this.#layouts.get(action.id) ?? "classic";
 		if (presentation !== "classic") return styleFlash(presentation === "slider" ? "carousel" : presentation, ok, label, this.#appearance(action));
 		const color = ok ? COLORS.done : COLORS.error;
-		const content: StripContent = { header: ok ? t("strip.done") : t("strip.notNow"), icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
+		const content: StripContent = { header: ok ? t("strip.done") : t("strip.notNow"), icon: glyphArt(ok ? "check" : "error", color), value: label, tone: ok ? "done" : "failed" };
 		return stripFeedback(content, { appearance: this.#appearance(action), full: label });
 	}
 
@@ -220,7 +220,7 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		marquee.stop(action.id, false);
 		const appearance = this.#appearance(action);
 		const presentation = this.#layouts.get(action.id) ?? "classic";
-		const content: StripContent = { header: card.verb, icon: glyphArt(card.glyph, COLORS.accent), accent: COLORS.accent, value: card.body ?? card.target, detail: card.footer, detailColor: COLORS.accent };
+		const content: StripContent = { header: card.verb, icon: glyphArt(card.glyph, COLORS.accent), value: card.body ?? card.target, detail: card.footer, detailColor: COLORS.accent };
 		const target = t("review.to", { thread: card.target });
 		if (presentation === "classic") return stripFeedback({ ...content, detail: `${card.footer} · ${target}` }, { appearance });
 		if (presentation === "list") return listFeedback(content, { heading: card.verb, items: [{ key: "review", label: content.value, art: content.icon }], index: 0, note: { text: card.footer, color: COLORS.accent } }, { appearance, scroll: "off" });
