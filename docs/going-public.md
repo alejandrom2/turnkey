@@ -10,5 +10,5 @@ Steps for the day the repository becomes public. Until then everything stays pri
 4. Security (Settings → Code security): turn on private vulnerability reporting, secret scanning with push protection, and Dependabot alerts.
 5. Discussions: make sure an **Ideas** category exists; the issue form links to it.
 6. Add `"URL": "https://github.com/alejandrom2/turnkey"` to the manifest (validation checks it answers) and set the repository's homepage.
-7. Upload `docs/marketplace/thumbnail.png` as the social preview (Settings → General → Social preview; there's no API for it).
+7. Upload `docs/social-preview.png` (from `scripts/marketplace/logo.ts`) as the social preview (Settings → General → Social preview; there's no API for it).
 8. Submit to Elgato from Maker Console with the latest release's `.streamDeckPlugin` and `docs/listing.md`.

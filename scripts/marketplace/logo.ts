@@ -96,6 +96,18 @@ shoot(
 	tile,
 );
 
+// GitHub's social preview, 1280×640: the logo on the icon's backdrop, the name beside it. Uploaded by hand in Settings.
+const social = join(root, "docs", "social-preview.png");
+writeFileSync(
+	join(work, "social.html"),
+	`<html><body style="margin:0;width:1280px;height:640px;overflow:hidden;position:relative;background:radial-gradient(120% 120% at 25% 10%,#ffffff 0%,#e9e8ef 40%,#c9c6d6 85%,#b3afc4 100%);font-family:-apple-system,'SF Pro Display',sans-serif">
+<img src="logo.png" style="position:absolute;width:600px;left:60px;top:30px">
+<div style="position:absolute;left:660px;top:205px;color:#111"><div style="font-size:92px;font-weight:700;letter-spacing:-3px">Turnkey</div><div style="font-size:40px;font-weight:600;opacity:.55;margin-top:4px">for T3 Code</div><div style="font-size:26px;font-weight:500;opacity:.7;margin-top:28px;width:600px;line-height:1.35">Your coding agents on Stream Deck keys and dials.</div></div>
+</body></html>`,
+);
+const socialRun = spawnSync(CHROME, ["--headless=new", "--hide-scrollbars", "--allow-file-access-from-files", "--virtual-time-budget=5000", "--window-size=1280,640", `--screenshot=${social}`, pathToFileURL(join(work, "social.html")).href], { encoding: "utf8" });
+if (socialRun.status !== 0) throw new Error(`Chrome failed on the social preview:\n${socialRun.stderr}`);
+
 /** `source` scaled to `size`, its corners rounded by `radius` of its width. */
 const scaled = (name: string, source: string, size: number, radius: number, out: string) =>
 	shoot(name, `<img src="${pathToFileURL(source).href}" width="${size}" height="${size}" style="display:block;border-radius:${radius * size}px">`, size, out);
@@ -104,4 +116,4 @@ scaled("logo-512", logo, 512, 0, join(root, "docs", "logo.png"));
 scaled("icon-288", tile, 288, 0.08, join(root, "docs", "marketplace", "icon.png"));
 scaled("icon-256", tile, 256, 0.08, join(plugin, "marketplace.png"));
 scaled("icon-512", tile, 512, 0.08, join(plugin, "marketplace@2x.png"));
-console.log("Wrote docs/logo.png, docs/marketplace/icon.png and the plugin's marketplace.png.");
+console.log("Wrote docs/logo.png, docs/social-preview.png, docs/marketplace/icon.png and the plugin's marketplace.png.");
