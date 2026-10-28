@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { LIMITS_REFRESH_GAP_MS, LimitsRefresher } from "./refresh.js";
+import { LIMITS_REFRESH_GAP_MS, LimitsRefresher, refreshLimits } from "./refresh.js";
 
 const deferred = () => {
 	let resolve!: (value: string) => void;
@@ -49,5 +49,13 @@ describe("LimitsRefresher", () => {
 		gate.reject(new Error("first failed"));
 		await expect(first).rejects.toThrow("first failed");
 		expect(await after).toBe("second");
+	});
+});
+
+describe("refreshLimits", () => {
+	it("does nothing for a machine with no environment", async () => {
+		let calls = 0;
+		await refreshLimits(new LimitsRefresher(), { environmentId: undefined, refreshProviders: async () => void calls++ } as never, false);
+		expect(calls).toBe(0);
 	});
 });

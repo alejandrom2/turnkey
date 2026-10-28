@@ -4,6 +4,7 @@
  */
 import { type MessageKey, t } from "../i18n.js";
 import type { ConfigProvider } from "../models.js";
+import type { Machine } from "../t3/machine.js";
 import { collectLimitAccounts, collectLimitPools, displayLimitWindows, type LimitAccount, type LimitPool, type LimitPoolWindow, type LimitPresentations, limitsStale, paceRemainingPercent } from "./limits.js";
 import { knownWindows, type ResetCreditOutcome, type UsageLimitSourceSnapshot } from "./types.js";
 
@@ -39,6 +40,18 @@ function limitPresentations(sources: readonly LimitsSource[]): LimitPresentation
 
 /** Every provider's pool across `sources`, as T3 Code's Limits page pools them. */
 export const limitPools = (sources: readonly LimitsSource[], now: number): readonly LimitPool[] => collectLimitPools(collectLimitAccounts(limitPresentations(sources)), now);
+
+/** Pools from every ready machine among `machines`; the rest have nothing to read yet. */
+export function machineLimitPools(machines: readonly Pick<Machine, "url" | "state" | "environmentId" | "modelConfig" | "limitSources">[], now: number): readonly LimitPool[] {
+	return limitPools(
+		machines.flatMap((machine) =>
+			machine.state.kind === "ready" && machine.environmentId !== undefined
+				? [{ environmentId: machine.environmentId, label: machine.state.label, providers: machine.modelConfig?.providers, sources: machine.limitSources }]
+				: [],
+		),
+		now,
+	);
+}
 
 type LimitsShow = "left" | "used";
 export const limitsShow = (value: unknown): LimitsShow => (value === "used" ? "used" : "left");

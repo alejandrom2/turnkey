@@ -8,8 +8,8 @@ import { COLORS } from "../core/render.js";
 import { findModel } from "../core/models.js";
 import { applyChoice, type PowerChoice, type PowerState, powerState, stepChoice } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
-import { limitGauge, limitPools, tightestWindow } from "../core/usage/limitsView.js";
-import { LimitsRefresher } from "../core/usage/refresh.js";
+import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
+import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
 import { Machines } from "../core/t3/machines.js";
 import { UltrathinkArming } from "../core/ultrathink.js";
 import type { SocketLike } from "../core/t3/rpc.js";
@@ -89,20 +89,12 @@ function showLimits(): void {
 			watchingConfig.add(each.url);
 			each.watchConfig();
 		}
-		void refresher.refresh(each.environmentId!, () => each.refreshProviders(), true).then(changed, failed("refresh limits"));
+		void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 	}
 }
 function tightestLimit(): { percent: number; stale: boolean } | undefined {
 	const now = Date.now();
-	const pools = limitPools(
-		ready().map((each) => ({
-			environmentId: each.environmentId!,
-			label: each.state.kind === "ready" ? each.state.label : each.url,
-			providers: each.modelConfig?.providers,
-			sources: each.limitSources,
-		})),
-		now,
-	);
+	const pools = machineLimitPools(machines.all, now);
 	const tightest = tightestWindow(pools);
 	if (tightest === undefined) return undefined;
 	const gauge = limitGauge(tightest.pool, tightest.window, now, "used");
