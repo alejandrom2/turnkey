@@ -6,31 +6,50 @@ import type { HostMessage, SidecarMessage } from "./protocol.js";
 /** What a thread key reads from a thread. */
 export type KeyThread = Pick<DeckThread, "deck" | "title" | "unseen">;
 
-/** `face` is the last SVG sent: comparing it skips resvg, the expensive part, when nothing shown changed. */
-type Key = { size: number; index: number; face?: string };
+/** One kind of action: its face for a key's place, and what a press does, returning the key's next place or nothing to keep it. */
+export type KeyKind = {
+	face(index: number): string;
+	press?(index: number): number | void;
+};
 
-/** The spike's one action: a key showing a thread, and a press stepping to the next. */
-export class ThreadKeys {
+/** `face` is the last SVG sent: comparing it skips resvg, the expensive part, when nothing shown changed. */
+type Key = { kind: KeyKind; size: number; index: number; face?: string };
+
+/** A key showing one thread; a press steps to the next. */
+export const threadKind = (threads: () => readonly KeyThread[]): KeyKind => ({
+	face(index) {
+		const list = threads();
+		const thread = list[index % Math.max(list.length, 1)];
+		return thread ? renderThreadKey({ state: thread.deck, title: thread.title, unseen: thread.unseen }) : renderThreadKey({ state: "idle", title: t("strip.noThreads") });
+	},
+	press: (index) => (index + 1) % Math.max(threads().length, 1),
+});
+
+/** The plugin's keys and ring slots by action id, `<kind>:<parameter>`, each painted by its kind. */
+export class Keys {
 	readonly #keys = new Map<string, Key>();
 
 	constructor(
-		private readonly threads: () => readonly KeyThread[],
+		private readonly kinds: Readonly<Record<string, KeyKind>>,
 		private readonly send: (message: SidecarMessage) => void,
 		private readonly raster: (dataUrl: string, size: number) => string,
 	) {}
 
 	handle(message: HostMessage): void {
 		switch (message.type) {
-			case "appear":
-				this.#keys.set(message.action, { size: message.size, index: this.#keys.get(message.action)?.index ?? 0 });
+			case "appear": {
+				const kind = this.kinds[message.action.split(":")[0]!];
+				if (kind === undefined) return;
+				this.#keys.set(message.action, { kind, size: message.size, index: this.#keys.get(message.action)?.index ?? 0 });
 				break;
+			}
 			case "disappear":
 				this.#keys.delete(message.action);
 				return;
 			case "press": {
 				const key = this.#keys.get(message.action);
 				if (key === undefined) return;
-				key.index = (key.index + 1) % Math.max(this.threads().length, 1);
+				key.index = key.kind.press?.(key.index) ?? key.index;
 				break;
 			}
 		}
@@ -44,9 +63,7 @@ export class ThreadKeys {
 	#paint(action: string): void {
 		const key = this.#keys.get(action);
 		if (key === undefined) return;
-		const threads = this.threads();
-		const thread = threads[key.index % Math.max(threads.length, 1)];
-		const face = thread ? renderThreadKey({ state: thread.deck, title: thread.title, unseen: thread.unseen }) : renderThreadKey({ state: "idle", title: t("strip.noThreads") });
+		const face = key.kind.face(key.index);
 		if (face === key.face) return;
 		key.face = face;
 		this.send({ type: "image", action, png: this.raster(face, key.size) });

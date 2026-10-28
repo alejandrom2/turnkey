@@ -2,14 +2,16 @@ import { join } from "node:path";
 import { createInterface } from "node:readline";
 
 import { ThreadBoard } from "../core/board.js";
+import { openExternal, threadDeepLink } from "../core/commands.js";
 import { Machine } from "../core/t3/machine.js";
 import { findLocalEnvironment, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
-import { ThreadKeys } from "./keys.js";
+import { Keys, threadKind } from "./keys.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { keyPng } from "./raster.js";
+import { stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileCredentials } from "./store.js";
 
 // Run by the Logitech plugin as `sidecar.js <dataDir>`, or once by hand as `sidecar.js <dataDir> pair <link>`.
@@ -26,7 +28,28 @@ const log = (level: "info" | "warn", message: string) => send({ type: "log", lev
 
 const machines = new Map<string, Machine>();
 const board = new ThreadBoard(() => [...machines.values()]);
-const keys = new ThreadKeys(() => board.threads, send, keyPng);
+const failed = (what: string) => (error: unknown) => log("warn", `Couldn't ${what}: ${error instanceof Error ? error.message : String(error)}`);
+const keys = new Keys(
+	{
+		thread: threadKind(() => board.threads),
+		urgent: {
+			face: () => urgentFace(board.threads),
+			press: () => {
+				const top = board.threads[0];
+				if (top) void openExternal(threadDeepLink(top)).catch(failed("open the thread"));
+			},
+		},
+		stop: {
+			face: () => stopFace(stopTarget(board.threads)?.machine.canOperate === true),
+			press: () => {
+				const target = stopTarget(board.threads);
+				if (target?.machine.canOperate) void target.machine.stopRun(target).catch(failed("stop the run"));
+			},
+		},
+	},
+	send,
+	keyPng,
+);
 const haptics = new HapticCues(send);
 const changed = batched(
 	() => {
