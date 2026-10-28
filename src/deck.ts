@@ -270,6 +270,10 @@ class Deck implements CredentialStore {
 		return this.#auth[url];
 	}
 
+	urls(): readonly string[] {
+		return Object.keys(this.#auth);
+	}
+
 	async save(url: string, credential: Credential | undefined): Promise<void> {
 		const { [url]: _previous, ...rest } = this.#auth;
 		this.#auth = credential === undefined ? rest : { ...rest, [url]: credential };

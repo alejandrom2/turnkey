@@ -99,6 +99,7 @@ function memoryStore(initial?: Credential) {
 	const store: CredentialStore = {
 		load: (url) => saved.get(url),
 		save: async (url, credential) => void (credential ? saved.set(url, credential) : saved.delete(url)),
+		urls: () => [...saved.keys()],
 	};
 	return { store, saved };
 }

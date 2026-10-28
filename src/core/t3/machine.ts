@@ -55,6 +55,7 @@ export type MachineState =
 export interface CredentialStore {
 	load(url: string): Credential | undefined;
 	save(url: string, credential: Credential | undefined): Promise<void>;
+	urls(): readonly string[];
 }
 
 /** Everything that touches the outside world, injected so tests never reach a real server. */
