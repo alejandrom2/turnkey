@@ -26,6 +26,12 @@
     <PackageReference Include="LogiPluginApi" Version="6.*" ExcludeAssets="runtime;native" />
   </ItemGroup>
 
+  <!-- Turnkey's core, built by `npm run build`; it runs in Node beside the plugin. -->
+  <Target Name="CopySidecar" AfterTargets="PostBuildEvent">
+    <Error Condition="!Exists('..\..\bin\sidecar.mjs')" Text="Run `npm run build` first: logi/bin/sidecar.mjs is missing." />
+    <Copy SourceFiles="..\..\bin\sidecar.mjs" DestinationFolder="$(OutputPath)" />
+  </Target>
+
   <Target Name="CopyPackage" AfterTargets="PostBuildEvent">
     <Message Text="📦 Copying package files..." Importance="High" />
     <ItemGroup>

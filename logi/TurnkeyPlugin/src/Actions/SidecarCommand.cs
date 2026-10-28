@@ -104,22 +104,4 @@ namespace Loupedeck.TurnkeyPlugin
             this.ActionImageChanged();
         }
     }
-
-    // The thread that needs you most, as a color and an icon; choosing it opens the thread in T3 Code.
-    public class MostUrgentCommand : SidecarCommand
-    {
-        public MostUrgentCommand()
-            : base("urgent", "Most urgent thread", "Shows what needs you in T3 Code. Choose it to open that thread.")
-        {
-        }
-    }
-
-    // Stops the run that started last; dimmed while nothing runs.
-    public class StopRunCommand : SidecarCommand
-    {
-        public StopRunCommand()
-            : base("stop", "Stop run", "Stops the T3 Code run that started last.")
-        {
-        }
-    }
 }

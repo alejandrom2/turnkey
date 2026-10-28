@@ -2,6 +2,7 @@ namespace Loupedeck.TurnkeyPlugin
 {
     using System;
     using System.IO;
+    using System.Linq;
 
     // Turnkey for Logitech devices: the actions here are thin, and Turnkey's Node core in the sidecar does the work.
     public class TurnkeyPlugin : Plugin
@@ -34,13 +35,31 @@ namespace Loupedeck.TurnkeyPlugin
         // This method is called when the plugin is unloaded.
         public override void Unload() => this.Sidecar.Dispose();
 
-        // shortcut: needs Node installed, since Logi Plugin Service doesn't see the shell's PATH; Milestone 6 bundles it.
+        // Logi Plugin Service installs Node for its own Node.js plugins; Turnkey runs on the newest it has, else on the system's.
         private static String FindNode()
         {
             var configured = Environment.GetEnvironmentVariable("TURNKEY_NODE");
             if (!String.IsNullOrEmpty(configured))
             {
                 return configured;
+            }
+
+            var windows = OperatingSystem.IsWindows();
+            var hosts = windows
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Logi", "LogiPluginService", "PluginHosts")
+                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "Logi", "LogiPluginService", "PluginHosts");
+            if (Directory.Exists(hosts))
+            {
+                // node22, node24, ...: the highest number is the newest.
+                var bundled = Directory.GetDirectories(hosts, "node*")
+                    .Select(directory => (Directory: directory, Version: Int32.TryParse(Path.GetFileName(directory).Substring(4), out var number) ? number : 0))
+                    .OrderByDescending(host => host.Version)
+                    .Select(host => windows ? Path.Combine(host.Directory, "node", "node.exe") : Path.Combine(host.Directory, "node", "bin", "node"))
+                    .FirstOrDefault(File.Exists);
+                if (bundled != null)
+                {
+                    return bundled;
+                }
             }
 
             foreach (var candidate in new[] { "/opt/homebrew/bin/node", "/usr/local/bin/node" })
@@ -54,18 +73,11 @@ namespace Loupedeck.TurnkeyPlugin
             return "node";
         }
 
-        // shortcut: runs the repo's build (logi/bin/sidecar.js) through the dev link, so resvg resolves from node_modules; Milestone 6 packages it.
+        // The build copies sidecar.mjs next to the plugin's assembly; the service loads that from memory, so Assembly.Location is empty.
         private String FindScript()
         {
             var configured = Environment.GetEnvironmentVariable("TURNKEY_SIDECAR");
-            if (!String.IsNullOrEmpty(configured))
-            {
-                return configured;
-            }
-
-            // The assembly sits in logi/TurnkeyPlugin/bin/<Configuration>/bin/. The service loads it from memory, so Assembly.Location is empty.
-            var directory = Path.GetDirectoryName(this.AssemblyFilePath) ?? ".";
-            return Path.GetFullPath(Path.Combine(directory, "..", "..", "..", "..", "bin", "sidecar.js"));
+            return String.IsNullOrEmpty(configured) ? Path.Combine(Path.GetDirectoryName(this.AssemblyFilePath) ?? ".", "sidecar.mjs") : configured;
         }
     }
 }

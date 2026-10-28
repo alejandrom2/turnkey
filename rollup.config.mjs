@@ -54,8 +54,9 @@ const config = {
 const sidecar = {
 	...config,
 	input: "src/logi/sidecar.ts",
-	output: { ...config.output, file: "logi/bin/sidecar.js" },
-	plugins: config.plugins.filter((plugin) => plugin && plugin.name !== "watch-externals"),
+	// .mjs, so it runs as a module without a package.json beside it in the plugin.
+	output: { ...config.output, file: "logi/bin/sidecar.mjs" },
+	plugins: config.plugins.filter((plugin) => plugin && plugin.name !== "watch-externals" && plugin.name !== "emit-module-package-file"),
 };
 
 export default [config, sidecar];
