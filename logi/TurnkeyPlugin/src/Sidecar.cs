@@ -64,7 +64,7 @@ namespace Loupedeck.TurnkeyPlugin
                 process = this._process;
             }
 
-            if (process == null)
+            if (process == null || process.HasExited)
             {
                 return;
             }
@@ -105,7 +105,7 @@ namespace Loupedeck.TurnkeyPlugin
             {
                 // Closing stdin is the sidecar's signal to stop its connections and exit.
                 // A write stuck on a full pipe must not hold up the kill.
-                if (Monitor.TryEnter(this._writeLock, 2000))
+                if (Monitor.TryEnter(this._writeLock, 1000))
                 {
                     try
                     {
@@ -117,7 +117,7 @@ namespace Loupedeck.TurnkeyPlugin
                     }
                 }
 
-                if (!process.WaitForExit(2000))
+                if (!process.WaitForExit(1000))
                 {
                     process.Kill();
                 }
@@ -193,7 +193,7 @@ namespace Loupedeck.TurnkeyPlugin
 
             PluginLog.Warning($"The Turnkey sidecar exited with code {process.ExitCode}");
             this.Stopped?.Invoke();
-            if (this._restarts++ < MaxRestarts)
+            if (Interlocked.Increment(ref this._restarts) <= MaxRestarts)
             {
                 Task.Delay(RestartDelayMs).ContinueWith(_ => this.Launch());
             }
@@ -223,7 +223,7 @@ namespace Loupedeck.TurnkeyPlugin
                 {
                     case "image":
                         // A sidecar that draws is healthy: crashes days apart shouldn't use up the restarts.
-                        this._restarts = 0;
+                        Interlocked.Exchange(ref this._restarts, 0);
                         this.Image?.Invoke(root.GetProperty("action").GetString(), root.GetProperty("svg").GetString());
                         break;
                     case "haptic":
