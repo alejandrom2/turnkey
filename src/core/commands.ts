@@ -16,14 +16,14 @@ export function openExternal(url: string): Promise<void> {
 	return new Promise((resolve, reject) => execFile(command, args, (error) => (error ? reject(error) : resolve())));
 }
 
-/** Selects the thread the way T3 Code's own open does, then opens it in the desktop app; a failed select still opens. */
+/** Selects the thread the way T3 Code's own open does, then opens it in the desktop app, without waiting on the select; a failed select still opens. */
 export async function openThread(
 	thread: Pick<DeckThread, "key" | "environmentId" | "threadId"> & { machine: Pick<Machine, "url"> },
 	select: (key: string, url: string) => Promise<unknown>,
 	scheme?: string,
 	open: (url: string) => Promise<void> = openExternal,
 ): Promise<void> {
-	await select(thread.key, thread.machine.url).catch(() => undefined);
+	void select(thread.key, thread.machine.url).catch(() => undefined);
 	await open(threadDeepLink(thread, scheme));
 }
 

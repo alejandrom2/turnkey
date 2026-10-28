@@ -47,4 +47,10 @@ describe("openThread", () => {
 		await openThread(thread, () => Promise.reject(new Error("no")), "t3code-dev", async (url) => void opened.push(url));
 		expect(opened).toEqual(["t3code-dev://threads/env/thread"]);
 	});
+
+	it("opens without waiting for the selection", async () => {
+		const opened: string[] = [];
+		await openThread(thread, () => new Promise(() => undefined), undefined, async (url) => void opened.push(url));
+		expect(opened).toEqual(["t3code://threads/env/thread"]);
+	});
 });
