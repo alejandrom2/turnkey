@@ -15,6 +15,8 @@ See every agent thread at a glance, approve and answer from a key, switch models
 
 [Guide](docs/guide.md) · [Discussions](https://github.com/alejandrom2/turnkey/discussions) · [Contributing](CONTRIBUTING.md)
 
+<sub><b>Coming soon:</b> Logitech MX Creative Console, the Actions Ring and MX Master 4 haptics.</sub>
+
 <img src="docs/marketplace/gallery-1-threads.png" alt="Turnkey on a Stream Deck +, showing agent threads on its keys" width="800">
 
 </div>
