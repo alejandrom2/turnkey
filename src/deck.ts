@@ -166,6 +166,7 @@ class Deck implements CredentialStore {
 		streamDeck.system.onSystemDidWakeUp(() => void this.retry());
 		this.board.subscribe(() => {
 			this.transitions.update(this.board.threads);
+			this.queues.retain(this.board.threads.map((thread) => thread.key));
 			this.repaint();
 		});
 		await this.#apply(await streamDeck.settings.getGlobalSettings<GlobalSettings>());
@@ -266,7 +267,10 @@ class Deck implements CredentialStore {
 		} catch (error) {
 			if (existing === undefined) {
 				machine.stop();
-				if (this.#machines.get(url) === machine) this.#machines.delete(url);
+				if (this.#machines.get(url) === machine) {
+					this.#machines.delete(url);
+					this.#loggedStates.delete(url);
+				}
 			}
 			if (!(error instanceof PairingError)) logger.warn(`Pairing with ${new URL(url).host} failed`, error instanceof Error ? error.message : error);
 			this.#setPairing({ state: "error", message: error instanceof Error ? error.message : String(error) });
@@ -482,6 +486,7 @@ class Deck implements CredentialStore {
 		const [from, credential] = moved;
 		this.#machines.get(from)?.stop();
 		this.#machines.delete(from);
+		this.#loggedStates.delete(from);
 		await this.save(from, undefined);
 		await this.save(url, credential);
 	}

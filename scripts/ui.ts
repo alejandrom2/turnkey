@@ -1,13 +1,10 @@
-// Writes the property inspectors and the Turnkey Settings window they open: `node scripts/ui.ts`.
+// Writes the property inspectors and the Turnkey Settings window they open: `node --import ./scripts/resolve-ts.mjs scripts/ui.ts`.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { FEATURES } from "../src/core/features.ts";
 import { machineSummary, mergeGlobalSettings, needsFirstPairing } from "../src/core/panel.ts";
-import "./resolve-ts.mjs";
-
-// After the hook above: render.ts imports its neighbors as `.js`.
-const { COLORS } = await import("../src/core/render.ts");
+import { COLORS } from "../src/core/render.ts";
 
 const plugin = join(import.meta.dirname, "..", "com.alejandrom2.turnkey.sdPlugin");
 const dir = join(plugin, "ui");
@@ -42,7 +39,7 @@ const manifest: { Version: string } = JSON.parse(readFileSync(join(plugin, "mani
 
 /** sdpi-components' font and Stream Deck's grays, shared by the panels and the settings window. */
 const baseStyle = `
-			:root { color-scheme: dark; --t3-ok: ${COLORS.done}; --t3-warning: ${COLORS.attention}; --t3-error: #f87171; }
+			:root { color-scheme: dark; --t3-ok: ${COLORS.done}; --t3-warning: ${COLORS.attention}; --t3-error: ${COLORS.error}; }
 			body { font-family: "Segoe UI", Arial, Roboto, Helvetica, sans-serif; font-size: 9pt; }
 			[hidden] { display: none !important; }
 			.native { width: 100%; box-sizing: border-box; height: 24px; padding: 0 6px; font: inherit; color: #d8d8d8; background: #3d3d3d; border: 0; border-radius: 3px; }

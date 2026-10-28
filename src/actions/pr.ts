@@ -36,6 +36,7 @@ import { deck } from "../deck.js";
 import { canOperate, DeckAction, errorMessage, held, openThread, pressWhileDisconnected, readyMachines, selectedThread, selectNew, ultrathinkPrompt } from "./base.js";
 import { connectionOf, threadNeeds } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
+import { setCapped } from "../core/capped.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("pr");
@@ -239,7 +240,7 @@ function guideEntry(thread: DeckThread, ref: PullRequestRef) {
 	let entry = guides.get(key);
 	if (entry === undefined) {
 		entry = { loading: true, polling: false };
-		guides.set(key, entry);
+		setCapped(guides, key, entry);
 		const created = entry;
 		void prRequests
 			.reviewGuide(thread.machine, ref)
@@ -447,6 +448,11 @@ export class PrDial extends StripDial<PrDialSettings> {
 	/** The pull request each dial shows, by key, so it stays put as the list changes. */
 	readonly #shown = new Map<string, string>();
 	readonly #lists = new Map<string, { entries: { machine: Machine; entry: PullRequestListEntry }[]; loadedAt: number; loading: boolean }>();
+
+	override onWillDisappear(ev: Parameters<StripDial<PrDialSettings>["onWillDisappear"]>[0]): void {
+		this.#shown.delete(ev.action.id);
+		super.onWillDisappear(ev);
+	}
 
 	#list(action: Action<PrDialSettings>) {
 		const machine = this.machineOf(action);

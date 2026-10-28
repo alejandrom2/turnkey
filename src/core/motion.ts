@@ -167,7 +167,8 @@ export class Animator {
 
 	#tick(): void {
 		this.#timer = undefined;
-		for (const frame of [...this.#frames.values()]) frame();
+		// A copy: painting a frame registers or unregisters instances.
+		for (const frame of Array.from(this.#frames.values())) frame();
 		this.#schedule();
 	}
 

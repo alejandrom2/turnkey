@@ -573,19 +573,61 @@ export function sparkles(t: number, x: number, y: number, width: number, height:
 		.join("");
 }
 
-/** Stops along a track (y 110 to 128): `index` filled up to, in the accent, T3 Code's Ultrathink spectrum or a given paint. */
+/** A stepped track, 18 px tall, with the stops inset so the 11 px thumb stays over its ends. */
+const TRACK = { height: 18, inset: 12, thumb: 11 } as const;
+
+/** The center of stop `index` of `stops` along a track at `x`, `width` wide. */
+export const trackStopX = (x: number, width: number, index: number, stops: number): number =>
+	+(x + TRACK.inset + (index * (width - 2 * TRACK.inset)) / Math.max(1, stops - 1)).toFixed(2);
+
+type SteppedTrack = {
+	x: number;
+	y: number;
+	width: number;
+	stops: number;
+	/** Filled up to with a solid thumb; undefined leaves the track empty. */
+	current?: number;
+	/** A hollow thumb where a press would move it. */
+	preview?: number;
+	paint: Paint;
+	/** The gradient's id, when `paint` is one. */
+	id: string;
+	/** Spread a gradient over the stops alone, so a short track still shows most of it at the top stop. */
+	gradientOverStops?: boolean;
+	/** Sparkles over the fill for an effort this far up its ladder (0 to 1). */
+	sparkle?: number;
+	/** The sparkles' twinkle step; undefined keeps them still. */
+	twinkle?: number;
+};
+
+/** Stop dots on a track, the fill up to the current stop under a solid thumb, and an effort's sparkles. */
+export function steppedTrack(track: SteppedTrack): string {
+	const { x, y, width, stops, current } = track;
+	const { height, thumb } = TRACK;
+	const stopX = (index: number) => trackStopX(x, width, index, stops);
+	const cy = y + height / 2;
+	const parts = [`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
+	if (current !== undefined) {
+		const [from, to] = track.gradientOverStops ? [stopX(0), stopX(stops - 1)] : [x, x + width];
+		const fill = paintFill(track.paint, track.id, from, to, parts);
+		const filled = +(stopX(current) - x + height / 2).toFixed(2);
+		parts.push(`<rect x="${x}" y="${y}" width="${filled}" height="${height}" rx="${height / 2}" fill="${fill}"/>`);
+		// Sparkles stop short of the thumb, which covers the filled end.
+		if (track.sparkle !== undefined) parts.push(sparkles(track.sparkle, x + 2, y, filled - height / 2 - thumb - 4, height, track.twinkle));
+	}
+	for (let index = 0; index < stops; index++) parts.push(`<circle cx="${stopX(index)}" cy="${cy}" r="2" fill="#FFFFFF" fill-opacity="${current !== undefined && index <= current ? ".5" : ".28"}"/>`);
+	if (current !== undefined) parts.push(`<circle cx="${stopX(current)}" cy="${cy}" r="${thumb}" fill="#FFFFFF"/>`);
+	const preview = track.preview;
+	if (preview !== undefined && preview >= 0 && preview < stops && preview !== current) {
+		parts.push(`<circle cx="${stopX(preview)}" cy="${cy}" r="9.5" fill="${COLORS.key}" fill-opacity=".55" stroke="#FFFFFF" stroke-width="2.5"/>`);
+	}
+	return parts.join("");
+}
+
+/** A ladder's track under a key's label (y 110 to 128), filled to `index` in the accent, T3 Code's Ultrathink spectrum or a given paint. */
 export function ladderCue(count: number, index: number, spectrum = false, paint?: Paint, sparkle?: number, twinkle?: number): string {
 	const stops = Math.max(2, count);
-	const at = Math.max(0, Math.min(stops - 1, index));
-	const step = 92 / (stops - 1);
-	const x = (i: number) => +(26 + i * step).toFixed(2);
-	const defs: string[] = [];
-	const fill = paintFill(spectrum ? { gradient: SPECTRUM } : (paint ?? COLORS.accent), "cue-fill", x(0), x(stops - 1), defs);
-	const dots = Array.from({ length: stops }, (_, i) => `<circle cx="${x(i)}" cy="119" r="2" fill="#FFFFFF" fill-opacity="${i <= at ? ".55" : ".25"}"/>`).join("");
-	const filled = +(x(at) - 16 + 9).toFixed(2);
-	// Sparkles stop short of the thumb, which covers the filled end.
-	const glitter = sparkle === undefined ? "" : sparkles(sparkle, 18, 110, filled - 22, 18, twinkle);
-	return `${defs.join("")}<rect x="16" y="110" width="112" height="18" rx="9" fill="#FFFFFF" fill-opacity=".1"/><rect x="16" y="110" width="${filled}" height="18" rx="9" fill="${fill}"/>${glitter}${dots}<circle cx="${x(at)}" cy="119" r="10" fill="#FFFFFF"/>`;
+	return steppedTrack({ x: 16, y: 110, width: 112, stops, current: Math.max(0, Math.min(stops - 1, index)), paint: spectrum ? { gradient: SPECTRUM } : (paint ?? COLORS.accent), id: "cue-fill", gradientOverStops: true, sparkle, twinkle });
 }
 
 /**

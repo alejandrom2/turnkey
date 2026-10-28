@@ -17,7 +17,6 @@ type EnvironmentId = string;
 
 export interface EnvironmentUsage {
 	readonly environmentId: EnvironmentId;
-	readonly label: string;
 	readonly summary: UsageSummary;
 }
 
@@ -25,23 +24,21 @@ interface ProviderTotals {
 	readonly provider: UsageProviderKind;
 	readonly costUsd: number;
 	readonly totalTokens: number;
-	readonly records: number;
 	readonly sessions: number;
-	readonly costShare: number;
-	readonly tokenShare: number;
 }
+
+type InputTokens = Pick<UsageTokenTotals, "uncachedInputTokens" | "cachedInputTokens" | "cacheCreationTokens">;
 
 interface ModelTotals {
 	readonly model: string;
 	readonly provider: UsageProviderKind;
 	readonly costUsd: number;
 	readonly totalTokens: number;
-	readonly tokens: UsageTokenTotals;
+	readonly tokens: InputTokens;
 	readonly records: number;
 	readonly unpricedRecords: number;
 	readonly unpricedTokens: number;
 	readonly costShare: number;
-	readonly tokenShare: number;
 }
 
 /** When every record lacks rates, costUsd is unknown and must not be displayed as a dollar figure. */
@@ -50,25 +47,15 @@ export function isModelCostUnknown(model: ModelTotals): boolean {
 }
 
 interface UsageContractMismatch {
-	readonly environmentId: EnvironmentId;
 	readonly direction: "serverBehind" | "clientBehind";
-	readonly contractVersion: number;
 }
 
 export interface MergedUsage {
 	readonly costUsd: number;
-	readonly uncachedInputTokens: number;
-	readonly cachedInputTokens: number;
-	readonly cacheCreationTokens: number;
-	readonly outputTokens: number;
-	readonly reasoningTokens: number;
 	readonly totalTokens: number;
-	readonly records: number;
 	readonly sessions: number;
 	readonly providers: readonly ProviderTotals[];
 	readonly models: readonly ModelTotals[];
-	readonly duplicateSources: readonly string[];
-	readonly contributingEnvironments: readonly EnvironmentId[];
 	readonly contractMismatches: readonly UsageContractMismatch[];
 }
 
@@ -102,7 +89,6 @@ function claimSources(environments: readonly EnvironmentUsage[]): {
 	readonly ownerByFingerprint: ReadonlyMap<string, EnvironmentId>;
 	readonly supplementalBucketsByEnvironment: ReadonlyMap<EnvironmentId, ReadonlySet<UsageBucket>>;
 	readonly sessionsByFingerprint: ReadonlyMap<string, number>;
-	readonly duplicates: readonly string[];
 } {
 	const ownerByFingerprint = new Map<string, EnvironmentId>();
 	const ownerScanByFingerprint = new Map<
@@ -112,7 +98,6 @@ function claimSources(environments: readonly EnvironmentUsage[]): {
 	const seenBucketKeysByFingerprint = new Map<string, Set<string>>();
 	const supplementalBucketsByEnvironment = new Map<EnvironmentId, Set<UsageBucket>>();
 	const sessionsByFingerprint = new Map<string, number>();
-	const duplicates: string[] = [];
 
 	const ordered = [...environments].sort(
 		(a, b) =>
@@ -125,10 +110,7 @@ function claimSources(environments: readonly EnvironmentUsage[]): {
 			for (const source of environment.summary.sources) {
 				if (source.status !== status) continue;
 				const key = fingerprintKey(source.fingerprint);
-				if (ownerByFingerprint.has(key)) {
-					duplicates.push(`${environment.label}: ${source.fingerprint.resolvedHomePath}`);
-					continue;
-				}
+				if (ownerByFingerprint.has(key)) continue;
 				ownerByFingerprint.set(key, environment.environmentId);
 				ownerScanByFingerprint.set(key, { environment, source });
 				sessionsByFingerprint.set(key, source.distinctSessions);
@@ -176,7 +158,6 @@ function claimSources(environments: readonly EnvironmentUsage[]): {
 		ownerByFingerprint,
 		supplementalBucketsByEnvironment,
 		sessionsByFingerprint,
-		duplicates,
 	};
 }
 
@@ -235,18 +216,10 @@ function isCompatibleUsageContractVersion(version: number, expected: number): bo
 
 const EMPTY_MERGED: MergedUsage = {
 	costUsd: 0,
-	uncachedInputTokens: 0,
-	cachedInputTokens: 0,
-	cacheCreationTokens: 0,
-	outputTokens: 0,
-	reasoningTokens: 0,
 	totalTokens: 0,
-	records: 0,
 	sessions: 0,
 	providers: [],
 	models: [],
-	duplicateSources: [],
-	contributingEnvironments: [],
 	contractMismatches: [],
 };
 
@@ -265,12 +238,10 @@ export function mergeUsage(
 			current.push(environment);
 		} else {
 			contractMismatches.push({
-				environmentId: environment.environmentId,
 				direction:
 					environment.summary.contractVersion < expectedContractVersion
 						? "serverBehind"
 						: "clientBehind",
-				contractVersion: environment.summary.contractVersion,
 			});
 		}
 	}
@@ -279,21 +250,15 @@ export function mergeUsage(
 		ownerByFingerprint,
 		supplementalBucketsByEnvironment,
 		sessionsByFingerprint,
-		duplicates,
 	} = claimSources(current);
 
 	let costUsd = 0;
-	let uncachedInputTokens = 0;
-	let cachedInputTokens = 0;
-	let cacheCreationTokens = 0;
-	let outputTokens = 0;
-	let reasoningTokens = 0;
-	let records = 0;
+	let totalTokens = 0;
 	let sessions = 0;
 
 	const providerAccumulator = new Map<
 		UsageProviderKind,
-		{ costUsd: number; totalTokens: number; records: number; sessions: number }
+		{ costUsd: number; totalTokens: number; sessions: number }
 	>();
 	const modelAccumulator = new Map<
 		string,
@@ -301,13 +266,12 @@ export function mergeUsage(
 			provider: UsageProviderKind;
 			costUsd: number;
 			totalTokens: number;
-			tokens: UsageTokenTotals;
+			tokens: InputTokens;
 			records: number;
 			unpricedRecords: number;
 			unpricedTokens: number;
 		}
 	>();
-	const contributingEnvironments: EnvironmentId[] = [];
 
 	for (const environment of current) {
 		const { buckets, sessionsByProvider } = ownedContribution(
@@ -316,7 +280,6 @@ export function mergeUsage(
 			supplementalBucketsByEnvironment.get(environment.environmentId) ?? new Set(),
 			sessionsByFingerprint,
 		);
-		if (buckets.length > 0) contributingEnvironments.push(environment.environmentId);
 
 		for (const [providerKind, providerSessions] of sessionsByProvider) {
 			sessions += providerSessions;
@@ -324,7 +287,6 @@ export function mergeUsage(
 			const provider = providerAccumulator.get(providerKind) ?? {
 				costUsd: 0,
 				totalTokens: 0,
-				records: 0,
 				sessions: 0,
 			};
 			provider.sessions += providerSessions;
@@ -335,22 +297,15 @@ export function mergeUsage(
 			const tokens = bucketTokens(bucket);
 
 			costUsd += bucket.costUsd;
-			uncachedInputTokens += bucket.totals.uncachedInputTokens;
-			cachedInputTokens += bucket.totals.cachedInputTokens;
-			cacheCreationTokens += bucket.totals.cacheCreationTokens;
-			outputTokens += bucket.totals.outputTokens;
-			reasoningTokens += bucket.totals.reasoningTokens;
-			records += bucket.records;
+			totalTokens += tokens;
 
 			const provider = providerAccumulator.get(bucket.provider) ?? {
 				costUsd: 0,
 				totalTokens: 0,
-				records: 0,
 				sessions: 0,
 			};
 			provider.costUsd += bucket.costUsd;
 			provider.totalTokens += tokens;
-			provider.records += bucket.records;
 			providerAccumulator.set(bucket.provider, provider);
 
 			const modelKey = `${bucket.provider} ${bucket.model}`;
@@ -362,8 +317,6 @@ export function mergeUsage(
 					uncachedInputTokens: 0,
 					cachedInputTokens: 0,
 					cacheCreationTokens: 0,
-					outputTokens: 0,
-					reasoningTokens: 0,
 				},
 				records: 0,
 				unpricedRecords: 0,
@@ -375,8 +328,6 @@ export function mergeUsage(
 				uncachedInputTokens: model.tokens.uncachedInputTokens + bucket.totals.uncachedInputTokens,
 				cachedInputTokens: model.tokens.cachedInputTokens + bucket.totals.cachedInputTokens,
 				cacheCreationTokens: model.tokens.cacheCreationTokens + bucket.totals.cacheCreationTokens,
-				outputTokens: model.tokens.outputTokens + bucket.totals.outputTokens,
-				reasoningTokens: model.tokens.reasoningTokens + bucket.totals.reasoningTokens,
 			};
 			model.records += bucket.records;
 			model.unpricedRecords += bucket.unpricedRecords;
@@ -387,17 +338,12 @@ export function mergeUsage(
 		}
 	}
 
-	const totalTokens = uncachedInputTokens + cachedInputTokens + cacheCreationTokens + outputTokens;
-
 	const providers: ProviderTotals[] = [...providerAccumulator.entries()]
 		.map(([provider, totals]) => ({
 			provider,
 			costUsd: totals.costUsd,
 			totalTokens: totals.totalTokens,
-			records: totals.records,
 			sessions: totals.sessions,
-			costShare: costUsd === 0 ? 0 : totals.costUsd / costUsd,
-			tokenShare: totalTokens === 0 ? 0 : totals.totalTokens / totalTokens,
 		}))
 		.sort((a, b) => b.costUsd - a.costUsd);
 
@@ -412,26 +358,10 @@ export function mergeUsage(
 			unpricedRecords: totals.unpricedRecords,
 			unpricedTokens: totals.unpricedTokens,
 			costShare: costUsd === 0 ? 0 : totals.costUsd / costUsd,
-			tokenShare: totalTokens === 0 ? 0 : totals.totalTokens / totalTokens,
 		}))
 		.sort((a, b) => b.costUsd - a.costUsd || b.totalTokens - a.totalTokens);
 
-	return {
-		costUsd,
-		uncachedInputTokens,
-		cachedInputTokens,
-		cacheCreationTokens,
-		outputTokens,
-		reasoningTokens,
-		totalTokens,
-		records,
-		sessions,
-		providers,
-		models,
-		duplicateSources: duplicates,
-		contributingEnvironments,
-		contractMismatches,
-	};
+	return { costUsd, totalTokens, sessions, providers, models, contractMismatches };
 }
 
 /** Returns null without input; cache writes count as misses because input was fully processed. */

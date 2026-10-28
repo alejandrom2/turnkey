@@ -65,4 +65,18 @@ describe("QueueStore", () => {
 		expect(store.of({ key: "a", runStamp: "3", mayQueue: false }, read)).toBe(EMPTY_QUEUE);
 		expect(read).toHaveBeenCalledTimes(3);
 	});
+
+	it("forgets threads that left the board, and reads one again if it comes back", async () => {
+		const { read, resolve } = reads();
+		const store = new QueueStore(() => undefined);
+		store.of({ key: "a", runStamp: "1", mayQueue: true }, read);
+		store.of({ key: "b", runStamp: "1", mayQueue: true }, read);
+		await resolve(queue("a"));
+		await resolve(queue("b"));
+		store.retain(["b"]);
+		expect(store.of({ key: "b", runStamp: "1", mayQueue: true }, read)?.items).toHaveLength(1);
+		expect(read).toHaveBeenCalledTimes(2);
+		expect(store.of({ key: "a", runStamp: "1", mayQueue: true }, read)).toBeUndefined();
+		expect(read).toHaveBeenCalledTimes(3);
+	});
 });

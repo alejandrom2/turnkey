@@ -33,7 +33,6 @@ function reader(answers: ((input: UsageSummaryInput) => Promise<UsageSummary>)[]
 	const machine: UsageReader & { inputs: UsageSummaryInput[]; usageSettingsStamp: string } = {
 		url,
 		environmentId: url,
-		label: url,
 		usageSettingsStamp: "s1",
 		inputs,
 		usageSummary: (input) => {

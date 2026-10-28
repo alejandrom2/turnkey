@@ -666,7 +666,8 @@ export function requestFor(thread: DeckThread): PendingRequest | undefined {
 	const id = `${thread.key}#${pending.id}`;
 	const cached = requests.get(id);
 	if (cached !== undefined) return cached === "loading" ? undefined : cached;
-	for (const key of requests.keys()) if (key.startsWith(`${thread.key}#`)) requests.delete(key);
+	const live = new Set(deck.board.threads.flatMap((other) => (other.pendingRequest ? [`${other.key}#${other.pendingRequest.id}`] : [])));
+	for (const key of requests.keys()) if (!live.has(key)) requests.delete(key);
 	requests.set(id, "loading");
 	thread.machine
 		.pendingRequest(thread)

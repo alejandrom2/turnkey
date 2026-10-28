@@ -164,7 +164,7 @@ npx streamdeck pack com.alejandrom2.turnkey.sdPlugin
 
 - `src/core/` has no Stream Deck dependency: the client API in `t3/` (pairing, RPC socket, shell reducer, `Machine`), the thread board, commands, and SVG rendering.
 - `src/actions/` maps SDK events onto it.
-- `node scripts/icons.ts` and `node scripts/ui.ts` regenerate the manifest images and property inspectors.
+- `npm run assets` regenerates the manifest version, images, property inspectors and profiles.
 - The marketplace icon is a PNG rendered from `imgs/plugin/marketplace.svg`. Turnkey's mark (three stacked keys, the front one turning with a prompt whose cursor is a spark in T3 Code's blue) is drawn by `scripts/icons.ts`; the category icon is the same mark in plain white.
 - Logs are in `com.alejandrom2.turnkey.sdPlugin/logs/`. Keep the log level below `trace`, because trace would log access tokens.
 
@@ -178,7 +178,7 @@ The translations are machine-translated. Corrections are welcome: open an issue 
 
 Every string lives in `com.alejandrom2.turnkey.sdPlugin/en.json`, with one file per language beside it (`de.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh_CN.json`, `zh_TW.json`). The top-level `Name`, `Description`, `Category` and per-action entries translate the manifest for the Stream Deck app, and `Localization` holds everything drawn on keys, strips and settings pages. Keep keys and `{placeholders}` as they are.
 
-`npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and every language file has exactly English's keys, the same placeholders per key and no empty strings. After changing settings-page copy, run `node scripts/ui.ts`.
+`npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and every language file has exactly English's keys, the same placeholders per key and no empty strings. After changing settings-page copy, run `npm run assets`.
 
 ## Releases
 

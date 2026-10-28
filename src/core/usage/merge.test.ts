@@ -66,7 +66,7 @@ function summary(
 }
 
 function environment(id: string, usageSummary: UsageSummary): EnvironmentUsage {
-	return { environmentId: id, label: id, summary: usageSummary };
+	return { environmentId: id, summary: usageSummary };
 }
 
 describe("mergeUsage", () => {
@@ -102,7 +102,6 @@ describe("mergeUsage", () => {
 			["cursor", 10],
 			["opencode", 10],
 		]);
-		expect(merged.duplicateSources).toHaveLength(1);
 	});
 
 	it("counts a shared transcript directory once", () => {
@@ -116,10 +115,8 @@ describe("mergeUsage", () => {
 		);
 
 		expect(merged.costUsd).toBe(10);
-		expect(merged.records).toBe(5);
+		expect(merged.totalTokens).toBe(1160);
 		expect(merged.sessions).toBe(1);
-		expect(merged.duplicateSources).toHaveLength(1);
-		expect(merged.contributingEnvironments).toEqual(["env-a"]);
 	});
 
 	it("drops only the duplicated provider, keeping the environment's other one", () => {
@@ -193,10 +190,8 @@ describe("mergeUsage", () => {
 		for (const ordered of [environments, environments.toReversed()]) {
 			const merged = mergeUsage(ordered, USAGE_CONTRACT_VERSION);
 			expect(merged.costUsd).toBe(10);
-			expect(merged.records).toBe(5);
+			expect(merged.models[0]?.records).toBe(5);
 			expect(merged.sessions).toBe(1);
-			expect(merged.contributingEnvironments).toEqual(["env-b"]);
-			expect(merged.duplicateSources).toEqual(["env-a: /home/theo/.claude"]);
 		}
 	});
 
@@ -216,8 +211,7 @@ describe("mergeUsage", () => {
 		]) {
 			const merged = mergeUsage(ordered, USAGE_CONTRACT_VERSION);
 			expect(merged.costUsd).toBe(10);
-			expect(merged.contributingEnvironments).toEqual(["old"]);
-			expect(merged.duplicateSources).toEqual(["new: /home/theo/.claude"]);
+			expect(merged.models[0]?.records).toBe(5);
 		}
 		expect(mergeUsage([partial], USAGE_CONTRACT_VERSION).costUsd).toBe(4);
 	});
@@ -252,12 +246,8 @@ describe("mergeUsage", () => {
 		]) {
 			const merged = mergeUsage(ordered, USAGE_CONTRACT_VERSION);
 			expect(merged.costUsd).toBe(13);
-			expect(merged.records).toBe(6);
+			expect(merged.totalTokens).toBe(2320);
 			expect(merged.sessions).toBe(2);
-			expect(merged.contributingEnvironments).toEqual(
-				ordered.map(({ environmentId }) => environmentId),
-			);
-			expect(merged.duplicateSources).toEqual(["new: /home/theo/.claude"]);
 		}
 	});
 
@@ -289,9 +279,8 @@ describe("mergeUsage", () => {
 		const merged = mergeUsage([complete, partial], USAGE_CONTRACT_VERSION);
 		expect(merged.costUsd).toBe(10);
 		expect(merged.totalTokens).toBe(1160);
-		expect(merged.records).toBe(5);
+		expect(merged.models[0]?.records).toBe(5);
 		expect(merged.sessions).toBe(1);
-		expect(merged.contributingEnvironments).toEqual(["old"]);
 	});
 
 	it("identifies an environment reporting an older contract version", () => {
@@ -315,11 +304,7 @@ describe("mergeUsage", () => {
 
 		expect(merged.costUsd).toBe(10);
 		expect(merged.contractMismatches).toEqual([
-			{
-				environmentId: "env-b",
-				direction: "serverBehind",
-				contractVersion: USAGE_MERGE_COMPATIBLE_SINCE - 1,
-			},
+			{ direction: "serverBehind" },
 		]);
 	});
 
@@ -340,11 +325,7 @@ describe("mergeUsage", () => {
 
 		expect(merged.costUsd).toBe(0);
 		expect(merged.contractMismatches).toEqual([
-			{
-				environmentId: "env-a",
-				direction: "clientBehind",
-				contractVersion: USAGE_CONTRACT_VERSION + 1,
-			},
+			{ direction: "clientBehind" },
 		]);
 	});
 
@@ -520,7 +501,6 @@ describe("mergeUsage", () => {
 		);
 
 		expect(merged.costUsd).toBe(20);
-		expect(merged.duplicateSources).toHaveLength(0);
 	});
 
 	it("totals sessions from per-directory distinct counts, not per-bucket sums", () => {
@@ -567,6 +547,6 @@ describe("model detail", () => {
 		expect(cacheHitRate(priced)).toBeCloseTo(1000 / 1110);
 		expect(costPerMillionTokens(priced)).toBeCloseTo((10 / 1160) * 1_000_000);
 		expect(costPerMillionTokens(merged.models.find((model) => model.model === "free")!)).toBeNull();
-		expect(cacheHitRate({ tokens: { uncachedInputTokens: 0, cachedInputTokens: 0, cacheCreationTokens: 0, outputTokens: 9, reasoningTokens: 0 } })).toBeNull();
+		expect(cacheHitRate({ tokens: { uncachedInputTokens: 0, cachedInputTokens: 0, cacheCreationTokens: 0 } })).toBeNull();
 	});
 });
