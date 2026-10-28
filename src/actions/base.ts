@@ -16,6 +16,7 @@ import type { DeckThread } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
+import { INFOBAR } from "../core/infobar.js";
 import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
 import { powerArt } from "../core/power.js";
 import {
@@ -258,6 +259,15 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		if (!action.isKey() || this.#held(action) || this.#sent.get(action.id) === image || this.#throttled(action.id)) return;
 		this.#sent.set(action.id, image);
 		await action.setImage(image);
+	}
+
+	/** Paints the Neo info bar: its layout once per appearance (`forgetSent` resets it), then the picture only when it changed. */
+	protected async setBar(action: Action<T>, face: string): Promise<void> {
+		if (!action.isNeoInfobar() || this.#sent.get(action.id) === face) return;
+		const first = !this.#sent.has(action.id);
+		this.#sent.set(action.id, face);
+		if (first) await action.setFeedbackLayout(INFOBAR.layout);
+		await action.setFeedback({ canvas: face });
 	}
 
 	/** Asks for frames while the face moves (a spinner, a pulse, a flash), and stops asking once it is still. */

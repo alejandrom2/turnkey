@@ -60,7 +60,7 @@
 			"Icon": "imgs/actions/send/icon",
 			"Tooltip": "Sends your own prompt, or an everyday one (continue, fix tests, explain, commit…), to the selected thread. Hold to interrupt and restart with it.",
 			"PropertyInspectorPath": "ui/send.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/send/key", "ShowTitle": false }]
 		},
 		{
@@ -96,7 +96,7 @@
 			"Icon": "imgs/actions/model/icon",
 			"Tooltip": "Switches the selected thread to a favorite model, or to the next of T3 Code's favorites.",
 			"PropertyInspectorPath": "ui/model.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/model/key", "ShowTitle": false }]
 		},
 		{
@@ -186,7 +186,7 @@
 			"Icon": "imgs/actions/git/icon",
 			"Tooltip": "Commits, pushes, creates a PR or pulls the selected thread's branch, as its Action setting picks. Hold to push.",
 			"PropertyInspectorPath": "ui/git.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/git/key", "ShowTitle": false }]
 		},
 		{
@@ -195,7 +195,7 @@
 			"Icon": "imgs/actions/pr/icon",
 			"Tooltip": "The selected thread's pull request and its state; tap opens it. Or hands it to an agent: fix findings (hold), explain, ask, or a review guide.",
 			"PropertyInspectorPath": "ui/pr.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/pr/key", "ShowTitle": false }]
 		},
 		{
@@ -222,7 +222,7 @@
 			"Icon": "imgs/actions/limits/icon",
 			"Tooltip": "A provider's subscription limit, pooled like T3 Code's Limits: % left, next reset and banked resets. Tap refreshes; hold opens T3 Code's Usage or uses a reset.",
 			"PropertyInspectorPath": "ui/limits.html",
-			"Controllers": ["Keypad"],
+			"Controllers": ["Keypad", "Neo"],
 			"States": [{ "Image": "imgs/actions/limits/key", "ShowTitle": false }]
 		},
 		{

@@ -377,6 +377,10 @@
 			"active": "作業中",
 			"unread": "未読"
 		},
+		"infobar": {
+			"queued": "{count} 件待機中",
+			"held": "保留中"
+		},
 		"strip": {
 			"done": "完了",
 			"notNow": "後で",

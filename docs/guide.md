@@ -20,14 +20,22 @@ Turnkey comes with a ready-made **Turnkey** profile for each Stream Deck. Stream
 The first page holds the everyday set; the rest hold a page or folder per area, so every action is somewhere.
 
 - **Stream Deck +**: Activity, Steer, Speed and Model over Send "Continue", New Thread, Stop and Effort, with the Threads, Usage, Power and Skills dials. Swipe the touch strip to the second page, a menu of folders: Threads, Controls, Prompts, Skills, Git, Pull Requests, Usage and More (devices, tasks and admin). Each folder brings its own dials; its top-left key goes back.
-- **Stream Deck Neo**: the Stream Deck + pages, with Activity (or Usage) on the info bar. Its page buttons turn pages.
+- **Stream Deck Neo**: the Stream Deck + pages. Its page buttons turn pages, and the info bar follows the page: Activity on home, the menu, Threads and More; the selected thread's model in Controls, its queue in Prompts and Skills, its branch in Git, its pull request in Pull Requests, and the tightest limit in Usage.
 - **15-key Stream Deck**: four thread keys, Activity, New Thread, Send "Continue", Steer, Stop, Approve, Deny, Model, Effort and Speed, then threads, controls, skills, git and usage pages.
 - **Stream Deck XL**: eight threads with the everyday, git and usage keys, then a second page with the rest.
 - **Stream Deck Mini**: two threads, Activity, Approve and Stop, then a page of controls and a page with New Thread, Steer, Git, Usage and Health.
 
 On the 15-key Stream Deck, XL and Mini, Stream Deck's own **Previous Page** and **Next Page** keys sit in the bottom corners.
 
-On Stream Deck Neo, drag **Activity** or **Usage** onto the info bar. Activity shows the most urgent thread matching its filter, with its state, and dots counting threads that need an approval (amber), have a question (indigo) or are working (blue). Usage shows its period's cost, with tokens under it. The info bar only shows; press a key to act.
+On Stream Deck Neo, drag one of these onto the info bar. The info bar only shows; press a key to act.
+
+- **Activity**: the most urgent thread matching its filter, with its state, and dots counting threads that need an approval (amber), have a question (indigo) or are working (blue).
+- **Usage**: its period's cost, with tokens under it.
+- **Limits**: a window's percent on a bar that turns amber past 60% used and red past 80%, with even pace marked and when it resets. With no Provider or Window set, it shows whichever window is nearest its limit.
+- **Model**: the selected thread's model, effort and, when on, Fast.
+- **Git**: the selected thread's branch, its changed files and commits ahead or behind, and its pull request's number in its state's color.
+- **Pull Request**: the selected thread's pull request, with its state, checks and review.
+- **Send Prompt**: how many messages wait in the thread's queue, and Held when a stop holds them.
 
 ## Actions
 

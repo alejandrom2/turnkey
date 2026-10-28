@@ -3,6 +3,7 @@ import { type Action, action, type KeyUpEvent } from "@elgato/streamdeck";
 import type { DeckThread } from "../core/board.js";
 import { failureLabel } from "../core/feedback.js";
 import {
+	branchSummary,
 	type GitKeyAction,
 	gitBlocker,
 	gitCwd,
@@ -17,6 +18,8 @@ import {
 	type VcsStatus,
 } from "../core/git.js";
 import { type MessageKey, t } from "../core/i18n.js";
+import { renderInfoBar, renderNoticeBar } from "../core/infobar.js";
+import { threadPullRequest } from "../core/pr.js";
 import { modeOf } from "../core/modes.js";
 import { COLORS, type GlyphName, renderInfoKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
@@ -25,7 +28,9 @@ import type { Machine } from "../core/t3/machine.js";
 import { SOURCE_CONTROL_SCOPE } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 import { canOperate, DeckAction, held, pressWhileDisconnected, selectedThread } from "./base.js";
+import { connectionNotice } from "./infobar.js";
 import { threadNeeds } from "./needs.js";
+import { prLook } from "./pr.js";
 import { setCapped } from "../core/capped.js";
 
 const ID = "com.alejandrom2.turnkey";
@@ -132,6 +137,7 @@ abstract class GitAction extends DeckAction<GitSettings> {
 	}
 
 	protected override async draw(action: Action<GitSettings>): Promise<void> {
+		if (action.isNeoInfobar()) return this.#paintBar(action);
 		if (!action.isKey()) return;
 		const settings = this.settingsOf(action);
 		const which = this.gitAction(settings);
@@ -148,6 +154,29 @@ abstract class GitAction extends DeckAction<GitSettings> {
 					? t("repo.holdOnDefault", { branch: status.refName ?? "" })
 					: (gitSummary(status, which) ?? status.refName ?? undefined);
 		await this.setImage(action, renderInfoKey({ glyph: GLYPH[which], title, detail }));
+	}
+
+	/** On the Neo info bar: the selected thread's branch, its changes and commits ahead or behind, and its pull request. */
+	async #paintBar(action: Action<GitSettings>): Promise<void> {
+		const notice = connectionNotice(this.machineOf(action));
+		if (notice) return this.setBar(action, renderNoticeBar(notice));
+		const check = this.#check(action);
+		const thread = check.target?.thread;
+		const status = check.ok ? check.status : undefined;
+		const branch = status?.refName ?? thread?.branch;
+		if (thread === undefined || branch === undefined || (!check.ok && check.target?.cwd === undefined))
+			return this.setBar(action, renderInfoBar({ icon: { glyph: "branch", color: COLORS.muted }, title: branch ?? t("face.branch"), detail: check.ok ? "" : check.reason, available: false }));
+		const pr = threadPullRequest(thread.pullRequests, thread.branch);
+		const look = pr && prLook(thread, pr);
+		await this.setBar(
+			action,
+			renderInfoBar({
+				icon: { glyph: "branch", color: COLORS.text },
+				title: branch,
+				detail: status === undefined ? "" : (branchSummary(status) ?? t("repo.reason.upToDate")),
+				...(pr && look ? { right: { text: `#${pr.number}`, color: look.color } } : {}),
+			}),
+		);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<GitSettings>): Promise<void> {

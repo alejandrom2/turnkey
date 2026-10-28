@@ -17,7 +17,7 @@ import { USAGE_PROVIDER_KINDS, type UsageProviderKind } from "../core/usage/type
 import { periodLabel, type UsageItem, usageDriver, usageItems, usageKindOf, usageProvider } from "../core/usage/usageView.js";
 import { deck } from "../deck.js";
 import { DeckAction, driverMark, driverName, errorMessage, LONG_PRESS_MS, pressWhileDisconnected, readyMachines, sendChoices } from "./base.js";
-import { connectionNotice, InfobarWriter } from "./infobar.js";
+import { connectionNotice } from "./infobar.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
 import { MachineWatch } from "./watch.js";
@@ -48,7 +48,6 @@ const store = new UsageStore(
 
 /** The shown machines' settings stay live, so a price or alias change reads again, as in T3 Code. */
 const watch = new MachineWatch({ open: (machine) => machine.watchConfig() });
-const infobar = new InfobarWriter();
 
 /** A shown period's usage, read on a machine that hasn't yet (one newly ready) or whose settings moved. */
 function usageView(url: string | undefined, period: UsagePeriod) {
@@ -155,29 +154,23 @@ export class UsageKey extends DeckAction<UsageSettings> {
 	async #paintBar(action: Action<UsageSettings>): Promise<void> {
 		const url = this.machineOf(action);
 		const notice = connectionNotice(url);
-		if (notice) return infobar.paint(action, renderNoticeBar(notice));
+		if (notice) return this.setBar(action, renderNoticeBar(notice));
 		const period = usagePeriod(this.settingsOf(action).period);
 		const label = periodLabel(period);
-		if (!usageAccess(url)) return infobar.paint(action, renderUsageBar({ label, detail: needsAccessLabel(DIAGNOSTICS_SCOPE), available: false }));
+		if (!usageAccess(url)) return this.setBar(action, renderUsageBar({ label, detail: needsAccessLabel(DIAGNOSTICS_SCOPE), available: false }));
 		const { merged, loading, error, mismatch } = usageView(url, period);
-		if (mismatch !== undefined) return infobar.paint(action, renderUsageBar({ label, detail: t(MISMATCH[mismatch]), available: false }));
+		if (mismatch !== undefined) return this.setBar(action, renderUsageBar({ label, detail: t(MISMATCH[mismatch]), available: false }));
 		if (merged === undefined) {
 			const failed = !loading && error !== undefined;
-			return infobar.paint(action, renderUsageBar({ label, detail: failed ? failureLabel(error) : t("result.loading"), available: !failed }));
+			return this.setBar(action, renderUsageBar({ label, detail: failed ? failureLabel(error) : t("result.loading"), available: !failed }));
 		}
 		const [total] = usageItems(merged, usageProvider(this.settingsOf(action).provider));
-		await infobar.paint(action, renderUsageBar({ mark: total!.provider && itemMark(total!), label, value: total!.cost, detail: total!.tokens, dim: loading }));
+		await this.setBar(action, renderUsageBar({ mark: total!.provider && itemMark(total!), label, value: total!.cost, detail: total!.tokens, dim: loading }));
 	}
 
 	override onWillAppear(ev: WillAppearEvent<UsageSettings>): void {
-		infobar.forget(ev.action.id);
 		super.onWillAppear(ev);
 		readShown(this.machineOf(ev.action), usagePeriod(this.settingsOf(ev.action).period));
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<UsageSettings>): void {
-		infobar.forget(ev.action.id);
-		super.onWillDisappear(ev);
 	}
 
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<UsageSettings>): void {

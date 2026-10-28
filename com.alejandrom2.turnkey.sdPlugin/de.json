@@ -377,6 +377,10 @@
 			"active": "Aktiv",
 			"unread": "Ungelesen"
 		},
+		"infobar": {
+			"queued": "{count} in der Warteschlange",
+			"held": "Angehalten"
+		},
 		"strip": {
 			"done": "Fertig",
 			"notNow": "Nicht jetzt",

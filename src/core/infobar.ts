@@ -1,6 +1,7 @@
 /**
  * Faces for Stream Deck Neo's info bar: one 232 × 50 picture between the page buttons, drawn like a strip row. Activity
- * shows the most urgent thread and how many wait on you or work; Usage shows a period's cost.
+ * shows the most urgent thread and how many wait on you or work; Usage shows a period's cost. Model, Git, Pull Request,
+ * Limits and Send Prompt show their key's subject, so each page of a profile can bring its own bar.
  */
 import type { DeckState } from "./board.js";
 import { elapsed, type MessageKey, t } from "./i18n.js";
@@ -106,6 +107,74 @@ export function renderUsageBar(input: UsageBarInput): string {
 	parts.push(svgText(fit(input.label, room, 15), x, 22, 15, 650, input.available === false ? COLORS.muted : COLORS.text));
 	parts.push(svgText(fit(input.detail, room, 13), x, 40, 13, 600, COLORS.muted));
 	return bar(parts.join(""));
+}
+
+type InfoBarInput = {
+	icon: { glyph: GlyphName; color: string } | MarkPainter;
+	/** Tints the icon's tile, as Activity does for a thread that needs you. */
+	wash?: string;
+	title: string;
+	detail: string;
+	detailColor?: string;
+	/** Right of the title: a short word (Held, #19) or a glyph (Fast's bolt), in its color. */
+	right?: { text: string; color: string } | { glyph: GlyphName; color: string };
+	available?: boolean;
+};
+
+/** A titled bar with a detail line, for the bars that follow a key: Model, Git, Pull Request and Send Prompt. */
+export function renderInfoBar(input: InfoBarInput): string {
+	const x = 52;
+	const right = INFOBAR.width - 10;
+	const muted = input.available === false;
+	let room = right - x;
+	let side = "";
+	if (input.right && "text" in input.right) {
+		const width = textWidth(input.right.text, 14, 700);
+		side = svgText(input.right.text, right, 22, 14, 700, input.right.color, ` text-anchor="end"`);
+		room -= width + 8;
+	} else if (input.right) {
+		side = glyph(input.right.glyph, right - 16, 9, 16, input.right.color);
+		room -= 24;
+	}
+	return bar(
+		tile(muted ? { glyph: typeof input.icon === "function" ? "cube" : input.icon.glyph, color: COLORS.muted } : input.icon, muted ? undefined : input.wash) +
+			svgText(fit(input.title, room, 15), x, 22, 15, 650, muted ? COLORS.muted : COLORS.text) +
+			side +
+			svgText(fit(input.detail, right - x, 13), x, 40, 13, 600, input.detailColor ?? COLORS.muted),
+	);
+}
+
+type LimitBarInput = {
+	mark?: MarkPainter;
+	label: string;
+	/** Shown as is: left or used, as the Limits setting says. */
+	percent: number;
+	/** How full the window is, 0–1, which sets the color: green, amber from 60%, red from 80%. */
+	used: number;
+	/** Where even pace would put the bar, 0–1, on the same scale as `percent`. */
+	pace?: number;
+	detail: string;
+	dim?: boolean;
+};
+
+/** Limits on the info bar: the window and its percent, a bar with the pace marker, and when it resets. */
+export function renderLimitBar(input: LimitBarInput): string {
+	const x = 52;
+	const right = INFOBAR.width - 10;
+	const track = right - x;
+	const color = input.used >= 0.8 ? COLORS.error : input.used >= 0.6 ? COLORS.attention : COLORS.done;
+	const value = `${input.percent}%`;
+	const filled = Math.round((track * Math.min(Math.max(input.percent, 0), 100)) / 100);
+	const marker = input.pace === undefined ? "" : `<rect x="${Math.round(x + track * input.pace) - 1}" y="25" width="2" height="8" rx="1" fill="${COLORS.text}"/>`;
+	return bar(
+		tile(input.mark ?? { glyph: "gauge", color }, undefined) +
+			`<g${input.dim ? ` opacity=".45"` : ""}>` +
+			svgText(fit(input.label, track - textWidth(value, 15, 700) - 8, 15), x, 20, 15, 650, COLORS.text) +
+			svgText(value, right, 20, 15, 700, color, ` text-anchor="end"`) +
+			`<rect x="${x}" y="27" width="${track}" height="4" rx="2" fill="${COLORS.dim}"/><rect x="${x}" y="27" width="${filled}" height="4" rx="2" fill="${color}"/>${marker}` +
+			`</g>` +
+			svgText(fit(input.detail, track, 12), x, 45, 12, 600, COLORS.muted),
+	);
 }
 
 const STATUS: Record<DeckState, MessageKey> = {
