@@ -301,6 +301,8 @@ class Deck implements CredentialStore {
 			if (!isLoopbackUrl(url) && !parseList(this.#settings.environments).includes(url)) {
 				this.#settings = { ...this.#settings, environments: [...parseList(this.#settings.environments), url].join("\n") };
 				await this.#persist();
+				// A sync in the gap between pairing and listing it can drop the machine; the next one brings it back.
+				if (this.#machines.get(url) === undefined) void this.#apply();
 			}
 			this.#setPairing({ state: "idle" });
 		} catch (error) {
