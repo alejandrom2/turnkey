@@ -1265,6 +1265,30 @@
 				"settings": {
 					"description": "開啟 Turnkey 設定：裝置、配對和觸感。"
 				},
+				"status": {
+					"name": "對話狀態",
+					"description": "顯示有多少 T3 Code 對話在等你、有多少在執行。選擇即可開啟最緊急的對話。"
+				},
+				"stopAll": {
+					"name": "停止所有執行",
+					"description": "停止所有正在執行的 T3 Code 對話。"
+				},
+				"prompt": {
+					"name": "快捷提示詞",
+					"description": "向 T3 Code 中開啟的對話傳送提示詞。"
+				},
+				"continue": {
+					"description": "讓 T3 Code 中開啟的對話繼續；如果它在等你，則開啟它。"
+				},
+				"limits": {
+					"description": "顯示你在 T3 Code 中最緊的用量限額。"
+				},
+				"access": {
+					"description": "捲動以變更 T3 Code 中開啟的對話的權限；按下切換到下一個。"
+				},
+				"effort": {
+					"description": "捲動以變更 T3 Code 中開啟的對話的強度；按下切換到下一級。"
+				},
 				"group": {
 					"threads": "對話",
 					"settings": "設定"

@@ -1265,6 +1265,30 @@
 				"settings": {
 					"description": "Turnkey の設定を開きます：マシン、ペアリング、触覚フィードバック。"
 				},
+				"status": {
+					"name": "スレッドの状況",
+					"description": "対応待ちと実行中の T3 Code スレッドの数を表示します。選ぶと最優先のスレッドを開きます。"
+				},
+				"stopAll": {
+					"name": "すべての実行を停止",
+					"description": "実行中のすべての T3 Code スレッドを停止します。"
+				},
+				"prompt": {
+					"name": "クイックプロンプト",
+					"description": "T3 Code で開いているスレッドにプロンプトを送ります。"
+				},
+				"continue": {
+					"description": "T3 Code で開いているスレッドに続行を促します。対応待ちならそのスレッドを開きます。"
+				},
+				"limits": {
+					"description": "T3 Code で最も余裕のない使用量の上限を表示します。"
+				},
+				"access": {
+					"description": "スクロールで T3 Code で開いているスレッドのアクセスを変更します。押すと次へ。"
+				},
+				"effort": {
+					"description": "スクロールで T3 Code で開いているスレッドのエフォートを変更します。押すと次のレベルへ。"
+				},
 				"group": {
 					"threads": "スレッド",
 					"settings": "設定"

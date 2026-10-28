@@ -1265,6 +1265,30 @@
 				"settings": {
 					"description": "Opens Turnkey Settings: machines, pairing and haptics."
 				},
+				"status": {
+					"name": "Thread status",
+					"description": "Shows how many T3 Code threads wait on you and how many run. Choose it to open the most urgent."
+				},
+				"stopAll": {
+					"name": "Stop all runs",
+					"description": "Stops every running T3 Code thread."
+				},
+				"prompt": {
+					"name": "Quick prompt",
+					"description": "Sends a prompt to the thread open in T3 Code."
+				},
+				"continue": {
+					"description": "Nudges the thread open in T3 Code to continue; opens it when it waits on you."
+				},
+				"limits": {
+					"description": "Shows your tightest T3 Code usage limit."
+				},
+				"access": {
+					"description": "Scroll to change the access mode of the thread open in T3 Code; press for the next one."
+				},
+				"effort": {
+					"description": "Scroll to change the effort of the thread open in T3 Code; press for the next level."
+				},
 				"group": {
 					"threads": "Threads",
 					"settings": "Settings"

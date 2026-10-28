@@ -1265,6 +1265,30 @@
 				"settings": {
 					"description": "Ouvre les réglages de Turnkey : machines, association et haptique."
 				},
+				"status": {
+					"name": "État des fils",
+					"description": "Montre combien de fils T3 Code vous attendent et combien s'exécutent. Choisissez-le pour ouvrir le plus urgent."
+				},
+				"stopAll": {
+					"name": "Tout arrêter",
+					"description": "Arrête chaque fil T3 Code en cours d'exécution."
+				},
+				"prompt": {
+					"name": "Prompt rapide",
+					"description": "Envoie un prompt au fil ouvert dans T3 Code."
+				},
+				"continue": {
+					"description": "Relance le fil ouvert dans T3 Code ; l'ouvre s'il vous attend."
+				},
+				"limits": {
+					"description": "Montre votre limite d'utilisation T3 Code la plus serrée."
+				},
+				"access": {
+					"description": "Faites défiler pour changer l'accès du fil ouvert dans T3 Code ; appuyez pour le suivant."
+				},
+				"effort": {
+					"description": "Faites défiler pour changer l'effort du fil ouvert dans T3 Code ; appuyez pour le niveau suivant."
+				},
 				"group": {
 					"threads": "Fils",
 					"settings": "Réglages"

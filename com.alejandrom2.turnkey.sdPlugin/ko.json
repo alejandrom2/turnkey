@@ -1265,6 +1265,30 @@
 				"settings": {
 					"description": "Turnkey 설정을 엽니다: 기기, 페어링, 햅틱."
 				},
+				"status": {
+					"name": "스레드 상태",
+					"description": "확인이 필요한 T3 Code 스레드와 실행 중인 스레드 수를 보여 줍니다. 선택하면 가장 급한 스레드를 엽니다."
+				},
+				"stopAll": {
+					"name": "모든 실행 중지",
+					"description": "실행 중인 모든 T3 Code 스레드를 중지합니다."
+				},
+				"prompt": {
+					"name": "빠른 프롬프트",
+					"description": "T3 Code에서 열려 있는 스레드에 프롬프트를 보냅니다."
+				},
+				"continue": {
+					"description": "T3 Code에서 열려 있는 스레드에 계속하라고 보냅니다. 확인이 필요하면 스레드를 엽니다."
+				},
+				"limits": {
+					"description": "T3 Code에서 가장 빠듯한 사용량 한도를 보여 줍니다."
+				},
+				"access": {
+					"description": "스크롤해 T3 Code에서 열려 있는 스레드의 권한을 바꿉니다. 누르면 다음 권한으로."
+				},
+				"effort": {
+					"description": "스크롤해 T3 Code에서 열려 있는 스레드의 강도를 바꿉니다. 누르면 다음 단계로."
+				},
 				"group": {
 					"threads": "스레드",
 					"settings": "설정"

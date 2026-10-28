@@ -1265,6 +1265,30 @@
 				"settings": {
 					"description": "Abre los ajustes de Turnkey: equipos, vinculación y hápticos."
 				},
+				"status": {
+					"name": "Estado de hilos",
+					"description": "Muestra cuántos hilos de T3 Code te esperan y cuántos están en ejecución. Elígelo para abrir el más urgente."
+				},
+				"stopAll": {
+					"name": "Detener todas las ejecuciones",
+					"description": "Detiene todos los hilos de T3 Code en ejecución."
+				},
+				"prompt": {
+					"name": "Prompt rápido",
+					"description": "Envía un prompt al hilo abierto en T3 Code."
+				},
+				"continue": {
+					"description": "Pide al hilo abierto en T3 Code que continúe; lo abre si te está esperando."
+				},
+				"limits": {
+					"description": "Muestra tu límite de uso más ajustado en T3 Code."
+				},
+				"access": {
+					"description": "Desplaza para cambiar el acceso del hilo abierto en T3 Code; pulsa para el siguiente."
+				},
+				"effort": {
+					"description": "Desplaza para cambiar el esfuerzo del hilo abierto en T3 Code; pulsa para el siguiente nivel."
+				},
 				"group": {
 					"threads": "Hilos",
 					"settings": "Ajustes"

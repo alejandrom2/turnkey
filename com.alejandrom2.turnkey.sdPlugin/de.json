@@ -1265,6 +1265,30 @@
 				"settings": {
 					"description": "Öffnet die Turnkey-Einstellungen: Geräte, Kopplung und Haptik."
 				},
+				"status": {
+					"name": "Thread-Status",
+					"description": "Zeigt, wie viele T3-Code-Threads auf dich warten und wie viele laufen. Wähle es, um den dringendsten zu öffnen."
+				},
+				"stopAll": {
+					"name": "Alle Läufe stoppen",
+					"description": "Stoppt jeden laufenden T3-Code-Thread."
+				},
+				"prompt": {
+					"name": "Schnell-Prompt",
+					"description": "Sendet einen Prompt an den in T3 Code geöffneten Thread."
+				},
+				"continue": {
+					"description": "Bittet den in T3 Code geöffneten Thread weiterzumachen; öffnet ihn, wenn er auf dich wartet."
+				},
+				"limits": {
+					"description": "Zeigt dein knappstes Nutzungslimit in T3 Code."
+				},
+				"access": {
+					"description": "Scrolle, um den Zugriff des in T3 Code geöffneten Threads zu ändern; drücke für den nächsten."
+				},
+				"effort": {
+					"description": "Scrolle, um den Aufwand des in T3 Code geöffneten Threads zu ändern; drücke für die nächste Stufe."
+				},
 				"group": {
 					"threads": "Threads",
 					"settings": "Einstellungen"
