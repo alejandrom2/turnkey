@@ -61,13 +61,13 @@ describe("settingsFace", () => {
 });
 
 describe("the controls' faces", () => {
-	it("draws each prompt as its own glyph, dimmed without a thread to send to", () => {
-		expect(promptFace("test", true)).toBe(ringFace(COLORS.accent, "scriptTest"));
-		expect(promptFace("commit", false)).toBe(ringFace(COLORS.accent, "gitCommit", { dim: true }));
-		expect(new Set((["test", "fix", "explain", "commit"] as const).map((name) => promptFace(name, true))).size).toBe(4);
+	it("draws each prompt as its own glyph, in full color so it always says which prompt it is", () => {
+		expect(promptFace("test")).toBe(ringFace(COLORS.accent, "scriptTest"));
+		expect(promptFace("commit")).toBe(ringFace(COLORS.accent, "gitCommit"));
+		expect(new Set((["test", "fix", "explain", "commit"] as const).map((name) => promptFace(name))).size).toBe(4);
 	});
 
-	it("draws a custom prompt as Send's arrow, dimmed without a thread or a prompt", () => {
+	it("draws a custom prompt as Send's arrow, dimmed only while it has no text", () => {
 		expect(customPromptFace(true)).toBe(ringFace(COLORS.accent, "send"));
 		expect(customPromptFace(false)).toBe(ringFace(COLORS.accent, "send", { dim: true }));
 	});

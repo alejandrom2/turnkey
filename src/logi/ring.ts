@@ -51,7 +51,8 @@ export const settingsFace = (): string => ringFace(COLORS.accent, "sliders");
 /** The prompts a ring slot can send, each as its own glyph; Continue is its own action. */
 export const PROMPT_GLYPHS = { test: "scriptTest", fix: "hammer", explain: "book", commit: "gitCommit" } as const satisfies Record<string, GlyphName>;
 
-export const promptFace = (name: keyof typeof PROMPT_GLYPHS, available: boolean): string => ringFace(COLORS.accent, PROMPT_GLYPHS[name], { dim: !available });
+/** Always in full color, so a placed prompt always says which one it is; a press with no thread open just does nothing. */
+export const promptFace = (name: keyof typeof PROMPT_GLYPHS): string => ringFace(COLORS.accent, PROMPT_GLYPHS[name]);
 
 /** Continue opens a thread that waits on you, so it wears that thread's approval look then. */
 export const continueFace = (step: "open" | "send" | undefined): string =>
@@ -97,5 +98,5 @@ export function effortFace(level: { index: number; count: number } | undefined):
 	return svgMarkup(144, 144, mark + dots);
 }
 
-/** A prompt the user wrote in the action's editor, drawn as Stream Deck's Send arrow. */
-export const customPromptFace = (available: boolean): string => ringFace(COLORS.accent, "send", { dim: !available });
+/** A prompt the user wrote in the action's editor, drawn as Stream Deck's Send arrow; dimmed only while it has no text. */
+export const customPromptFace = (hasText: boolean): string => ringFace(COLORS.accent, "send", { dim: !hasText });

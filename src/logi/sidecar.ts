@@ -117,7 +117,7 @@ const operable = () => board.threads.filter((thread) => thread.deck === "running
 const keys = new Keys(
 	{
 		prompt: {
-			face: (_index, name) => (isPrompt(name) ? promptFace(name, selected() !== undefined) : ringFace(COLORS.muted, "chat", { dim: true })),
+			face: (_index, name) => (isPrompt(name) ? promptFace(name) : ringFace(COLORS.muted, "chat", { dim: true })),
 			press: (_index, name) => {
 				const thread = selected();
 				if (thread && isPrompt(name)) void sendPrompt(thread, QUICK_PROMPTS[name].text).catch(failed("send the prompt"));
@@ -125,7 +125,7 @@ const keys = new Keys(
 		},
 		// A prompt written in the action's editor travels as its parameter, so each placed copy is its own key.
 		send: {
-			face: (_index, text) => customPromptFace(selected() !== undefined && text.trim() !== ""),
+			face: (_index, text) => customPromptFace(text.trim() !== ""),
 			press: (_index, text) => {
 				const thread = selected();
 				if (thread && text.trim()) void sendPrompt(thread, text.trim()).catch(failed("send the prompt"));
