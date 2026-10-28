@@ -2,8 +2,9 @@
 export function throttled(work: () => void, gapMs: number, now: () => number = Date.now): () => void {
 	let last = -Infinity;
 	return () => {
-		if (now() - last < gapMs) return;
-		last = now();
+		const at = now();
+		if (at - last < gapMs) return;
+		last = at;
 		work();
 	};
 }

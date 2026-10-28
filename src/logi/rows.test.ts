@@ -16,6 +16,11 @@ describe("machineRows", () => {
 		expect(row).toMatchObject({ state: "problem", detail: "Revoked" });
 	});
 
+	it("says what went wrong with a machine", () => {
+		const [row] = machineRows([{ url: "https://studio.example", state: { kind: "error", message: "Unreachable" } }], () => "Studio");
+		expect(row).toMatchObject({ label: "Studio", state: "problem", detail: "Unreachable" });
+	});
+
 	it("asks this computer to pair", () => {
 		const [row] = machineRows([{ url: "http://127.0.0.1:3773", state: { kind: "signed-out" } }], none);
 		expect(row).toMatchObject({ label: t("machine.thisMachine"), state: "needsPairing" });

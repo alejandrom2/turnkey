@@ -39,6 +39,20 @@ const settings = new FileSettings(join(dataDir, "settings.json"));
 // stdout is the channel to the plugin, so logging goes through it as messages.
 const send = (message: SidecarMessage) => process.stdout.write(encodeMessage(message));
 const log = (level: "info" | "warn", message: string) => send({ type: "log", level, message });
+// As the Stream Deck plugin does, so a stray rejection is logged instead of ending the sidecar.
+process.on("unhandledRejection", (reason) => log("warn", `Unhandled rejection: ${reason instanceof Error ? reason.message : String(reason)}`));
+
+// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
+const machines = new Machines(
+	store,
+	{
+		fetch,
+		socket: (url) => new WebSocket(url) as unknown as SocketLike,
+		clientLabel: "Turnkey (Logitech)",
+		warn: (url, message) => log("warn", `${new URL(url).host}: ${message}`),
+	},
+	() => changed(),
+);
 
 const board = new ThreadBoard(() => machines.all);
 const failed = (what: string) => (error: unknown) => log("warn", `Couldn't ${what}: ${error instanceof Error ? error.message : String(error)}`);
@@ -48,7 +62,8 @@ const selected = () => {
 	const thread = board.selectedOn();
 	return thread?.machine.canOperate ? thread : undefined;
 };
-const open = (thread: Parameters<typeof openThread>[0]) => void openThread(thread, board.select.bind(board)).catch(failed("open the thread"));
+const selectThread = (key: string, url: string) => board.select(key, url).catch(failed("select the thread"));
+const open = (thread: Parameters<typeof openThread>[0]) => void openThread(thread, selectThread).catch(failed("open the thread"));
 const isPrompt = (name: string): name is keyof typeof PROMPT_GLYPHS => Object.hasOwn(PROMPT_GLYPHS, name);
 
 type Thread = NonNullable<ReturnType<typeof selected>>;
@@ -198,18 +213,6 @@ const changed = batched(
 	(error) => log("warn", `Couldn't update the keys: ${error instanceof Error ? error.message : String(error)}`),
 );
 
-// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
-const machines = new Machines(
-	store,
-	{
-		fetch,
-		socket: (url) => new WebSocket(url) as unknown as SocketLike,
-		clientLabel: "Turnkey (Logitech)",
-		warn: (url, message) => log("warn", `${new URL(url).host}: ${message}`),
-	},
-	changed,
-);
-
 /** Machines removed on the settings page, until they pair again; others stay listed when their pairing ends. */
 const removed = new Set<string>();
 const kept = () => keptMachines(store.urls(), machines.all.map((each) => each.url), removed);
@@ -244,11 +247,11 @@ function sendStatus(): void {
 	send(status);
 }
 
-await machines.sync(kept);
+// At startup, then only when a key shows and no machine is ready: a lost T3 Code, or one that moved port, is found again without polling.
+const resync = throttled(() => void machines.sync(kept).then(() => machines.wake()).catch(failed("look for T3 Code")), 10_000);
+resync();
 // With no machine yet, nothing else would show the banner asking for a pair link.
 changed();
-// Only when a key shows and no machine is ready: a lost T3 Code, or one that moved port, is found again without polling.
-const resync = throttled(() => void machines.sync(kept).then(() => machines.wake()).catch(failed("look for T3 Code")), 10_000);
 
 const input = createInterface({ input: process.stdin });
 input.on("line", (line) => {
