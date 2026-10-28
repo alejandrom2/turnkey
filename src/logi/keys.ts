@@ -34,8 +34,7 @@ export class Keys {
 			case "appear": {
 				const key = this.#seen(message.action);
 				if (key === undefined) return;
-				// Logi asked for an image, so it gets one even when the face didn't change.
-				key.face = undefined;
+				// An unchanged face isn't resent: the plugin still holds it, and each image makes Logi ask again.
 				key.kind.appear?.();
 				break;
 			}

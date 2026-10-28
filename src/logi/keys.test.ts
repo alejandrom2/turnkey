@@ -19,11 +19,11 @@ describe("Keys", () => {
 		expect(sent).toEqual([{ type: "image", action: "counter:", svg: "a@0" }]);
 	});
 
-	it("paints a key again each time it appears", () => {
+	it("doesn't resend an unchanged face when the key appears again, so Logi's redraw can't loop", () => {
 		const { subject, sent } = keys();
 		subject.handle({ type: "appear", action: "counter:", size: 80 });
 		subject.handle({ type: "appear", action: "counter:", size: 80 });
-		expect(sent).toHaveLength(2);
+		expect(sent).toHaveLength(1);
 	});
 
 	it("moves a key to the place its kind's press returns", () => {
