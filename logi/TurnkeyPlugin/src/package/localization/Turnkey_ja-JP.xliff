@@ -36,14 +36,6 @@
           <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
           <target>T3 Code で対応が必要なものを表示します。選ぶとそのスレッドを開きます。</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.QuickPromptCommand" translate="yes">
-          <source>Quick prompt</source>
-          <target>クイックプロンプト</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.QuickPromptCommand###description" translate="yes">
-          <source>Sends a prompt to the thread open in T3 Code.</source>
-          <target>T3 Code で開いているスレッドにプロンプトを送ります。</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand" translate="yes">
           <source>Turnkey Settings</source>
           <target>Turnkey 設定</target>
@@ -75,6 +67,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>T3 Code で最後に始まった実行を停止します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___QuickPrompt" translate="yes">
+          <source>Quick prompt</source>
+          <target>クイックプロンプト</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___QuickPrompt###description" translate="yes">
+          <source>Sends a prompt to the thread open in T3 Code.</source>
+          <target>T3 Code で開いているスレッドにプロンプトを送ります。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___SendPrompt" translate="yes">
           <source>Send prompt</source>
@@ -112,13 +112,13 @@
           <source>Usage</source>
           <target>使用量</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
-          <source>Prompts</source>
-          <target>プロンプト</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
           <source>Settings</source>
           <target>設定</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
+          <source>Prompts</source>
+          <target>プロンプト</target>
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
           <source>Model</source>
