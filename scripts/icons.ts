@@ -113,6 +113,8 @@ const SYMBOLS: Record<string, GlyphName> = {
 	QuickPromptCommand___explain: "book",
 	QuickPromptCommand___commit: "gitCommit",
 	SendPromptCommand: "send",
+	// An action editor action may be looked up by its Name rather than its class.
+	SendPrompt: "send",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
 	LimitsCommand: "gauge",
@@ -120,7 +122,20 @@ const SYMBOLS: Record<string, GlyphName> = {
 };
 const symbols = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "actionsymbols");
 mkdirSync(symbols, { recursive: true });
-for (const [name, mark] of Object.entries(SYMBOLS)) writeFileSync(join(symbols, `Loupedeck.TurnkeyPlugin.${name}.svg`), svg(24, glyph(mark, 0, 0, 24, "#000000", 2)));
+// Options+ ignores styling on a <g>: each shape carries its own, or strokes fill solid and lines vanish.
+const SHAPE = /<(path|circle|rect|line|polyline|polygon|ellipse)\b([^>]*?)(\/?)>/g;
+const STROKE = ' stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const symbol = (mark: GlyphName) =>
+	svg(
+		24,
+		glyph(mark, 0, 0, 24)
+			.replace(/^<g[^>]*>|<\/g>$/g, "")
+			.replace(SHAPE, (_match, tag: string, attributes: string, close: string) => {
+				const own = attributes.replace(/currentColor/g, "#000000");
+				return `<${tag}${own}${/\bfill=/.test(own) ? "" : ' fill="none"'}${/\bstroke=/.test(own) ? "" : STROKE}${close}>`;
+			}),
+	);
+for (const [name, mark] of Object.entries(SYMBOLS)) writeFileSync(join(symbols, `Loupedeck.TurnkeyPlugin.${name}.svg`), symbol(mark));
 console.log(`wrote ${Object.keys(SYMBOLS).length} Logi action symbols`);
 
 // Logi's plugin icon: a 256 px PNG of the category icon's white keys, which Options+ shows on a black card.
