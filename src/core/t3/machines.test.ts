@@ -48,10 +48,17 @@ function setup(store: CredentialStore, routes: Record<string, FakeRoute>) {
 describe("Machines", () => {
 	it("follows this computer's T3 Code to a new port, keeping its pairing", async () => {
 		const store = memoryStore({ "http://127.0.0.1:3773": credential() });
-		const m = setup(store, { "/.well-known/t3/environment": environmentAt("http://127.0.0.1:3774") });
+		let running: string[] = [];
+		const m = setup(store, { "/.well-known/t3/environment": (request) => environmentAt(...running)(request) });
+		await m.sync(() => []);
+		const old = m.get("http://127.0.0.1:3773");
+		if (old === undefined) throw new Error("the stored machine wasn't started");
+		const stop = vi.spyOn(old, "stop");
+		running = ["http://127.0.0.1:3774"];
 		await m.sync(() => []);
 		expect(store.urls()).toEqual(["http://127.0.0.1:3774"]);
 		expect(m.all.map((machine) => machine.url)).toEqual(["http://127.0.0.1:3774"]);
+		expect(stop).toHaveBeenCalled();
 	});
 
 	it("doesn't move a pairing onto a port that has one", async () => {
@@ -98,6 +105,21 @@ describe("Machines", () => {
 		expect(m.get(REMOTE)).toBeDefined();
 		expect(store.load(REMOTE)).toEqual(fresh);
 		expect(fresh.token).toBe("fresh");
+	});
+
+	it("keeps a machine wanted while a second pairing to it runs", async () => {
+		const answers: ((response: Response) => void)[] = [];
+		const m = setup(memoryStore(), { "/.well-known/t3/environment": environmentAt(REMOTE), "/oauth/token": () => new Promise<Response>((resolve) => answers.push(resolve)) });
+		const first = m.pair(LINK);
+		const second = m.pair(LINK);
+		await vi.waitFor(() => expect(answers).toHaveLength(2));
+		answers[0]?.(tokenRoute());
+		await first;
+		await m.sync(() => []);
+		expect(m.get(REMOTE)).toBeDefined();
+		answers[1]?.(tokenRoute());
+		await second;
+		expect(m.get(REMOTE)).toBeDefined();
 	});
 
 	it("doesn't drop a machine that paired while it looked for this computer", async () => {
