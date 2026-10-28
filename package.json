@@ -25,6 +25,7 @@
 		"@tsconfig/node20": "20.1.10",
 		"@types/node": "24.19.2",
 		"esbuild": "0.28.2",
+		"imagetracerjs": "1.2.6",
 		"oxlint": "1.90.0",
 		"rollup": "4.65.0",
 		"rollup-plugin-esbuild": "6.2.1",

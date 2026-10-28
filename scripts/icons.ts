@@ -1,5 +1,6 @@
 // Writes the manifest's static images from the runtime glyph set: `node scripts/icons.ts`.
 import { mkdirSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 
 import { Resvg } from "@resvg/resvg-js";
@@ -113,8 +114,6 @@ const SYMBOLS: Record<string, GlyphName> = {
 	QuickPromptCommand___explain: "book",
 	QuickPromptCommand___commit: "gitCommit",
 	SendPromptCommand: "send",
-	// An action editor action may be looked up by its Name rather than its class.
-	SendPrompt: "send",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
 	LimitsCommand: "gauge",
@@ -122,19 +121,25 @@ const SYMBOLS: Record<string, GlyphName> = {
 };
 const symbols = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "actionsymbols");
 mkdirSync(symbols, { recursive: true });
-// Options+ ignores styling on a <g>: each shape carries its own, or strokes fill solid and lines vanish.
-const SHAPE = /<(path|circle|rect|line|polyline|polygon|ellipse)\b([^>]*?)(\/?)>/g;
-const STROKE = ' stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-const symbol = (mark: GlyphName) =>
-	svg(
-		24,
-		glyph(mark, 0, 0, 24)
-			.replace(/^<g[^>]*>|<\/g>$/g, "")
-			.replace(SHAPE, (_match, tag: string, attributes: string, close: string) => {
-				const own = attributes.replace(/currentColor/g, "#000000");
-				return `<${tag}${own}${/\bfill=/.test(own) ? "" : ' fill="none"'}${/\bstroke=/.test(own) ? "" : STROKE}${close}>`;
-			}),
+// Options+ paints only fills, as Logitech's own symbols are drawn: Lucide's strokes would stay black or fill solid. So each
+// glyph is rendered large and traced back into filled outlines, white on a 32-unit box like theirs.
+const TRACE_SIZE = 256;
+const ImageTracer = createRequire(import.meta.url)("imagetracerjs") as {
+	imagedataToSVG(image: { width: number; height: number; data: Uint8ClampedArray }, options: Record<string, unknown>): string;
+};
+function symbol(mark: GlyphName): string {
+	const art = new Resvg(svg(32, glyph(mark, 4, 4, 24, "#FFFFFF", 2)), { fitTo: { mode: "width", value: TRACE_SIZE } }).render();
+	const traced = ImageTracer.imagedataToSVG(
+		{ width: art.width, height: art.height, data: new Uint8ClampedArray(art.pixels) },
+		{ numberofcolors: 2, colorsampling: 0, pal: [{ r: 0, g: 0, b: 0, a: 0 }, { r: 255, g: 255, b: 255, a: 255 }], ltres: 0.2, qtres: 0.2, pathomit: 16, roundcoords: 1, strokewidth: 0, viewbox: true },
 	);
+	// The transparent layer comes back with opacity 0; the rest is the glyph, holes as subpaths.
+	const paths = [...traced.matchAll(/<path [^>]*\/>/g)]
+		.map(([path]) => path)
+		.filter((path) => !/opacity="0"/.test(path))
+		.map((path) => `<path fill-rule="evenodd" d="${/ d="([^"]+)"/.exec(path)![1]}" fill="white"/>`);
+	return svg(32, `<g transform="scale(${32 / TRACE_SIZE})">${paths.join("")}</g>`);
+}
 for (const [name, mark] of Object.entries(SYMBOLS)) writeFileSync(join(symbols, `Loupedeck.TurnkeyPlugin.${name}.svg`), symbol(mark));
 console.log(`wrote ${Object.keys(SYMBOLS).length} Logi action symbols`);
 
