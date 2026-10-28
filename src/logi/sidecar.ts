@@ -13,7 +13,7 @@ import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
 import { type MachineRow, startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { hapticsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { hapticsFace, machinesFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
@@ -42,6 +42,11 @@ const keys = new Keys(
 				const top = board.threads[0];
 				if (top) void openExternal(threadDeepLink(top)).catch(failed("open the thread"));
 			},
+		},
+		// Logi shows the banner, and its button, only for a warning or an error: this is the way to the page once paired.
+		machines: {
+			face: machinesFace,
+			press: () => void openExternal(page.url).catch(failed("open the machines page")),
 		},
 		haptics: {
 			face: () => hapticsFace(settings.haptics),

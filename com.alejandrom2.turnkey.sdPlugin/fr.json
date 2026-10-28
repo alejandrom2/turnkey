@@ -1266,6 +1266,9 @@
 					"name": "Haptique oui/non",
 					"description": "Active ou désactive les vibrations de Turnkey sur une MX Master 4."
 				},
+				"machines": {
+					"description": "Ouvre la page des machines de Turnkey pour associer, réassocier ou retirer des machines T3 Code."
+				},
 				"group": {
 					"threads": "Fils",
 					"settings": "Réglages"

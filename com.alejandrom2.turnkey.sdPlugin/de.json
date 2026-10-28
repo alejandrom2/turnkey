@@ -1266,6 +1266,9 @@
 					"name": "Haptik an/aus",
 					"description": "Schaltet Turnkeys Vibrationen auf einer MX Master 4 ein oder aus."
 				},
+				"machines": {
+					"description": "Öffnet Turnkeys Geräteseite, um T3-Code-Geräte zu koppeln, neu zu koppeln oder zu entfernen."
+				},
 				"group": {
 					"threads": "Threads",
 					"settings": "Einstellungen"

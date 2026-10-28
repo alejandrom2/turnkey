@@ -40,6 +40,7 @@ const NAME = {
   pulse: "activity", // closest: T3 shows a status dot
   vibrate: "vibrate", // not in T3: the Logitech plugin's haptics switch
   vibrateOff: "vibrate-off", // not in T3
+  laptop: "laptop", // not in T3: the Logitech plugin's machines page
   health: "activity",
   eye: "mail-open", // T3's "Mark unread"
   pin: "pin",

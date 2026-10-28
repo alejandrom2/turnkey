@@ -1266,6 +1266,9 @@
 					"name": "触覚フィードバック オン/オフ",
 					"description": "MX Master 4 での Turnkey の振動をオン/オフします。"
 				},
+				"machines": {
+					"description": "Turnkey のマシンページを開き、T3 Code のマシンをペアリング、再ペアリング、削除します。"
+				},
 				"group": {
 					"threads": "スレッド",
 					"settings": "設定"

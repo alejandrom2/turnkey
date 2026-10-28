@@ -1266,6 +1266,9 @@
 					"name": "觸感開/關",
 					"description": "開啟或關閉 Turnkey 在 MX Master 4 上的震動。"
 				},
+				"machines": {
+					"description": "開啟 Turnkey 的裝置頁面，配對、重新配對或移除 T3 Code 裝置。"
+				},
 				"group": {
 					"threads": "對話",
 					"settings": "設定"

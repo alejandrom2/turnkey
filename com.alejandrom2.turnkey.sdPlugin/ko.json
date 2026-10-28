@@ -1266,6 +1266,9 @@
 					"name": "햅틱 켜기/끄기",
 					"description": "MX Master 4에서 Turnkey의 진동을 켜거나 끕니다."
 				},
+				"machines": {
+					"description": "Turnkey의 기기 페이지를 열어 T3 Code 기기를 페어링, 다시 페어링하거나 제거합니다."
+				},
 				"group": {
 					"threads": "스레드",
 					"settings": "설정"

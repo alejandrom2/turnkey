@@ -20,6 +20,14 @@
           <source>Turns Turnkey's buzzes on an MX Master 4 on or off.</source>
           <target>Active ou désactive les vibrations de Turnkey sur une MX Master 4.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MachinesCommand" translate="yes">
+          <source>Machines</source>
+          <target>Machines</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MachinesCommand###description" translate="yes">
+          <source>Opens Turnkey's machines page, to pair, re-pair or remove T3 Code machines.</source>
+          <target>Ouvre la page des machines de Turnkey pour associer, réassocier ou retirer des machines T3 Code.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
           <source>Most urgent thread</source>
           <target>Fil le plus urgent</target>

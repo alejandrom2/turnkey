@@ -1266,6 +1266,9 @@
 					"name": "Hápticos sí/no",
 					"description": "Activa o desactiva las vibraciones de Turnkey en un MX Master 4."
 				},
+				"machines": {
+					"description": "Abre la página de equipos de Turnkey para vincular, volver a vincular o quitar equipos con T3 Code."
+				},
 				"group": {
 					"threads": "Hilos",
 					"settings": "Ajustes"

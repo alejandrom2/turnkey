@@ -20,6 +20,14 @@
           <source>Turns Turnkey's buzzes on an MX Master 4 on or off.</source>
           <target>開啟或關閉 Turnkey 在 MX Master 4 上的震動。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MachinesCommand" translate="yes">
+          <source>Machines</source>
+          <target>裝置列表</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MachinesCommand###description" translate="yes">
+          <source>Opens Turnkey's machines page, to pair, re-pair or remove T3 Code machines.</source>
+          <target>開啟 Turnkey 的裝置頁面，配對、重新配對或移除 T3 Code 裝置。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
           <source>Most urgent thread</source>
           <target>最緊急的對話</target>
