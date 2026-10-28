@@ -3,11 +3,14 @@
 	"Name": "Turnkey",
 	"Version": "0.10.0.0",
 	"Author": "Alejandro Martinez",
+	"URL": "https://github.com/alejandrom2/turnkey",
 	"Description": "Watch and steer T3 Code threads from Stream Deck: thread status, stop, prompts, model options and answers, across every provider.",
 	"Category": "Turnkey",
 	"CategoryIcon": "imgs/plugin/category-icon",
 	"Icon": "imgs/plugin/marketplace",
 	"CodePath": "bin/plugin.js",
+	"ApplicationsToMonitor": { "mac": ["com.t3tools.t3code"], "windows": ["T3 Code (Beta).exe", "T3 Code (Nightly).exe"] },
+	"DefaultWindowSize": [760, 640],
 	"SDKVersion": 3,
 	"Software": { "MinimumVersion": "7.6" },
 	"OS": [
@@ -18,13 +21,9 @@
 	"UUID": "com.alejandrom2.turnkey",
 	"Profiles": [
 		{ "Name": "profiles/turnkey-plus", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
-		{ "Name": "profiles/turnkey-plus-all", "DeviceType": 7, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
 		{ "Name": "profiles/turnkey-neo", "DeviceType": 9, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
-		{ "Name": "profiles/turnkey-neo-all", "DeviceType": 9, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
 		{ "Name": "profiles/turnkey-15", "DeviceType": 0, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
-		{ "Name": "profiles/turnkey-15-all", "DeviceType": 0, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
 		{ "Name": "profiles/turnkey-xl", "DeviceType": 2, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
-		{ "Name": "profiles/turnkey-xl-all", "DeviceType": 2, "Readonly": false, "DontAutoSwitchWhenInstalled": true },
 		{ "Name": "profiles/turnkey-mini", "DeviceType": 1, "Readonly": false, "DontAutoSwitchWhenInstalled": true }
 	],
 	"Actions": [

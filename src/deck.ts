@@ -34,6 +34,8 @@ type GlobalSettings = {
 	confirmSend?: string;
 	/** How a model's top effort level stands out: gradient (default), solid, model or off. */
 	maxEffort?: string;
+	/** "off" keeps each deck on its profile when T3 Code opens; on by default. */
+	autoSwitch?: string;
 	auth?: Record<string, JsonValue>;
 	/** Per machine, broader scopes its next pairing asks for (`ScopeRequests`); written only by the plugin. */
 	scopeRequests?: Record<string, JsonValue>;
@@ -53,6 +55,9 @@ const appearanceOf = ({ stripBackground, stripColor, stripStyle, textScroll, mot
 });
 
 const logger = streamDeck.logger.createScope("deck");
+
+/** Each device type's bundled profile, named as in the manifest; other types have none. */
+const PROFILES: Partial<Record<number, string>> = { 0: "profiles/turnkey-15", 1: "profiles/turnkey-mini", 2: "profiles/turnkey-xl", 7: "profiles/turnkey-plus", 9: "profiles/turnkey-neo" };
 
 /** A URL scheme as RFC 3986 spells one: anything else in the setting could turn the app link into another command. */
 const SCHEME = /^[a-z][a-z0-9+.-]*$/i;
@@ -129,7 +134,10 @@ class Deck implements CredentialStore {
 	/** Queues of the threads visible faces show, read only when one changes. */
 	readonly queues = new QueueStore(() => this.repaint());
 	readonly #machines = new Map<string, Machine>();
-	readonly #visible = new Set<string>();
+	/** Visible actions by id, with the device each is on. */
+	readonly #visible = new Map<string, string>();
+	/** Devices put on their Turnkey profile when T3 Code opened, to put back when it quits. */
+	readonly #switched = new Set<string>();
 	readonly #painters = new Set<() => void>();
 	#settings: GlobalSettings = {};
 	#auth: Record<string, Credential> = {};
@@ -168,6 +176,29 @@ class Deck implements CredentialStore {
 			this.repaint();
 		});
 		await this.#apply(await streamDeck.settings.getGlobalSettings<GlobalSettings>());
+		// After settings load: Stream Deck reports an already-running T3 Code at startup, and Auto-switch may be off.
+		streamDeck.system.onApplicationDidLaunch(() => {
+			void this.retry();
+			this.#switchProfiles(true);
+		});
+		streamDeck.system.onApplicationDidTerminate(() => this.#switchProfiles(false));
+	}
+
+	/**
+	 * Puts each deck on its bundled Turnkey profile when T3 Code opens, and back on the profile before when it quits:
+	 * only decks it switched that still show a Turnkey action, so a deck the user moved elsewhere stays put.
+	 */
+	#switchProfiles(open: boolean): void {
+		if (this.#settings.autoSwitch === "off") return;
+		const showing = new Set(this.#visible.values());
+		for (const device of streamDeck.devices) {
+			const profile = PROFILES[device.type];
+			if (profile === undefined || !device.isConnected) continue;
+			if (open) {
+				this.#switched.add(device.id);
+				void streamDeck.profiles.switchToProfile(device.id, profile);
+			} else if (this.#switched.delete(device.id) && showing.has(device.id)) void streamDeck.profiles.switchToProfile(device.id);
+		}
 	}
 
 	/**
@@ -329,9 +360,9 @@ class Deck implements CredentialStore {
 		void this.pushStatus();
 	}
 
-	/** Actions call this from onWillAppear/onWillDisappear; it only drives the elapsed-time clock. */
-	setVisible(id: string, visible: boolean): void {
-		if (visible) this.#visible.add(id);
+	/** Actions call this from onWillAppear (with their device) and onWillDisappear; it drives the elapsed-time clock and Auto-switch. */
+	setVisible(id: string, device: string | undefined): void {
+		if (device !== undefined) this.#visible.set(id, device);
 		else this.#visible.delete(id);
 		this.#syncClock();
 	}

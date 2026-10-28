@@ -815,6 +815,8 @@
 				"idlePet": "Compagnon au repos",
 				"previewPet": "Aperçu du compagnon",
 				"idlePetHint": "Après deux minutes sans appui, rotation ni toucher, un petit robot traverse votre plus longue rangée de bandeaux de molettes voisines, jusqu'à trois fois, à quatre minutes d'intervalle. Tout appui, rotation ou toucher sur une action Turnkey le fait partir. Il suit Animation : Réduite le fait marcher calmement, Désactivée le tient à l'écart.",
+				"autoSwitch": "Changement automatique",
+				"autoSwitchHint": "Place chaque Stream Deck sur son profil Turnkey à l’ouverture de T3 Code, puis le remet sur le profil précédent quand il se ferme. Un deck que vous avez mis sur un autre profil entre-temps reste où il est.",
 				"confirm": "Confirmer avant d'envoyer",
 				"confirmHint": "S'applique à Envoyer prompt, Orienter, Lancer skill, la Molette prompts et la Molette skills ; Modèle, Effort, Vitesse, Accès et la Molette puissance s'appliquent toujours immédiatement. Vérifier montre quoi va où au premier appui ; rappuyez dans les 10 secondes pour envoyer. Maintenir envoie sur un appui maintenu, donc maintenir ne peut plus aussi relancer ou démarrer un fil. Chaque action peut remplacer ce choix."
 			},
