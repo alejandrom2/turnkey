@@ -23,7 +23,7 @@ import { continueStep } from "./controls.js";
 import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
-import { machineRows } from "./rows.js";
+import { keptMachines, machineRows } from "./rows.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
 
@@ -210,13 +210,22 @@ const machines = new Machines(
 	changed,
 );
 
+/** Machines removed on the settings page, until they pair again; others stay listed when their pairing ends. */
+const removed = new Set<string>();
+const kept = () => keptMachines(store.urls(), machines.all.map((each) => each.url), removed);
+
 /** Spends a pair link from the pairing page and returns the label T3 Code gave the pairing. */
-const pairLink = async (link: string): Promise<string> => (await machines.pair(link)).credential.label;
+async function pairLink(link: string): Promise<string> {
+	const { url, credential } = await machines.pair(link);
+	removed.delete(url);
+	return credential.label;
+}
 
 /** Forgets a machine here; T3 Code keeps the pairing listed under Sharing & access until it's revoked there. */
 async function removeMachine(url: string): Promise<void> {
 	await machines.get(url)?.signOut();
-	await machines.sync(() => store.urls());
+	removed.add(url);
+	await machines.sync(kept);
 }
 
 const page = await startPairingPage({
@@ -235,11 +244,11 @@ function sendStatus(): void {
 	send(status);
 }
 
-await machines.sync(() => store.urls());
+await machines.sync(kept);
 // With no machine yet, nothing else would show the banner asking for a pair link.
 changed();
 // Only when a key shows and no machine is ready: a lost T3 Code, or one that moved port, is found again without polling.
-const resync = throttled(() => void machines.sync(() => store.urls()).then(() => machines.wake()).catch(failed("look for T3 Code")), 10_000);
+const resync = throttled(() => void machines.sync(kept).then(() => machines.wake()).catch(failed("look for T3 Code")), 10_000);
 
 const input = createInterface({ input: process.stdin });
 input.on("line", (line) => {

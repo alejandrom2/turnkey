@@ -20,3 +20,11 @@ export function machineRows(machines: readonly Pick<Machine, "url" | "state">[],
 		}
 	});
 }
+
+/**
+ * The machines the sidecar's syncs keep: those stored, and listed remote ones whose pairing expired or was revoked,
+ * so their row still says why, less those removed here. This computer stays only while stored or found.
+ */
+export function keptMachines(stored: readonly string[], listed: readonly string[], removed: ReadonlySet<string>): string[] {
+	return [...new Set([...stored, ...listed.filter((url) => !isLoopbackUrl(url))])].filter((url) => !removed.has(url));
+}

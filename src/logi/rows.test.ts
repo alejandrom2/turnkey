@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { t } from "../core/i18n.js";
-import { machineRows } from "./rows.js";
+import { keptMachines, machineRows } from "./rows.js";
 
 const none = () => undefined;
 
@@ -25,5 +25,20 @@ describe("machineRows", () => {
 		const machine = { url: "http://laptop:3773", state: { kind: "connecting" } } as const;
 		expect(machineRows([machine], () => "Laptop")[0]).toMatchObject({ label: "Laptop", state: "connecting" });
 		expect(machineRows([machine], none)[0]?.label).toBe("laptop:3773");
+	});
+});
+
+describe("keptMachines", () => {
+	it("keeps a remote machine whose pairing expired", () => {
+		expect(keptMachines(["https://a.example"], ["https://a.example", "https://b.example"], new Set())).toEqual(["https://a.example", "https://b.example"]);
+	});
+
+	it("drops a removed machine", () => {
+		expect(keptMachines([], ["https://b.example"], new Set(["https://b.example"]))).toEqual([]);
+	});
+
+	it("keeps this computer only while stored or found", () => {
+		expect(keptMachines([], ["http://127.0.0.1:3773"], new Set())).toEqual([]);
+		expect(keptMachines(["http://127.0.0.1:3773"], ["http://127.0.0.1:3773"], new Set())).toEqual(["http://127.0.0.1:3773"]);
 	});
 });
