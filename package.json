@@ -7,7 +7,7 @@
 		"build": "rollup -c",
 		"watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.alejandrom2.turnkey\"",
 		"typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json",
-		"lint": "oxlint src scripts --ignore-pattern 'scripts/marketplace/**'",
+		"lint": "oxlint src scripts",
 		"test": "vitest run",
 		"i18n:check": "vitest run src/core/i18n.test.ts",
 		"assets": "node scripts/version.ts && node --import ./scripts/resolve-ts.mjs scripts/icons.ts && node --import ./scripts/resolve-ts.mjs scripts/ui.ts && node scripts/profiles.ts",
