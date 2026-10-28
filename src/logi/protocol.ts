@@ -1,5 +1,9 @@
-/** Lines the Logitech plugin sends: `action` is its action instance's id, `size` the key's pixel width. */
-export type HostMessage = { type: "appear"; action: string; size: number } | { type: "disappear"; action: string } | { type: "press"; action: string };
+/** Lines the Logitech plugin sends: `action` is its action instance's id, `size` the key's pixel width, `language` Logi's id such as "de-DE". */
+export type HostMessage =
+	| { type: "appear"; action: string; size: number }
+	| { type: "disappear"; action: string }
+	| { type: "press"; action: string }
+	| { type: "language"; language: string };
 
 /** A moment worth a buzz on an MX Master 4; the plugin raises it as a Logi event of the same name. */
 export type HapticEvent = "approvalNeeded" | "questionAsked" | "runFinished" | "runFailed";
@@ -23,7 +27,8 @@ export function parseHostMessage(line: string): HostMessage | undefined {
 		return undefined;
 	}
 	if (typeof value !== "object" || value === null) return undefined;
-	const { type, action, size } = value as Record<string, unknown>;
+	const { type, action, size, language } = value as Record<string, unknown>;
+	if (type === "language") return typeof language === "string" ? { type, language } : undefined;
 	if (typeof action !== "string") return undefined;
 	switch (type) {
 		case "appear":

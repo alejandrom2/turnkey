@@ -11,6 +11,11 @@ describe("parseHostMessage", () => {
 		expect(parseHostMessage('{"type":"appear","action":"thread","size":80}')).toEqual({ type: "appear", action: "thread", size: 80 });
 	});
 
+	it("parses the plugin's language", () => {
+		expect(parseHostMessage('{"type":"language","language":"de-DE"}')).toEqual({ type: "language", language: "de-DE" });
+		expect(parseHostMessage('{"type":"language","language":7}')).toBeUndefined();
+	});
+
 	it("drops what isn't a host message", () => {
 		for (const line of [
 			"not json",

@@ -10,6 +10,7 @@ import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
 import { Keys } from "./keys.js";
+import { useLanguage } from "./language.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { hapticsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
@@ -115,7 +116,11 @@ const input = createInterface({ input: process.stdin });
 input.on("line", (line) => {
 	const message = parseHostMessage(line);
 	if (message === undefined) return log("warn", "Dropped a line that isn't a host message.");
-	keys.handle(message);
+	if (message.type !== "language") return keys.handle(message);
+	useLanguage(message.language);
+	// The banner is worded in the old language; the pairing page reads the new one on its next load.
+	lastStatus = "";
+	changed();
 });
 // The plugin closing stdin is the signal to quit.
 input.on("close", () => {

@@ -18,7 +18,7 @@ export class Keys {
 		private readonly send: (message: SidecarMessage) => void,
 	) {}
 
-	handle(message: HostMessage): void {
+	handle(message: Exclude<HostMessage, { type: "language" }>): void {
 		switch (message.type) {
 			case "appear": {
 				const kind = this.kinds[message.action.split(":")[0]!];

@@ -30,8 +30,14 @@ namespace Loupedeck.TurnkeyPlugin
         {
             this.Sidecar.Haptic += this.PluginEvents.RaiseEvent;
             this.Sidecar.Status += this.OnStatus;
+
+            // A fresh sidecar speaks English until told otherwise, as on every restart.
+            this.Sidecar.Started += this.SendLanguage;
+            this.Localization.LanguageChanged += (_, _) => this.SendLanguage();
             this.Sidecar.Start(FindNode(), this.FindScript(), this.GetPluginDataDirectory());
         }
+
+        private void SendLanguage() => this.Sidecar.Send(new { type = "language", language = this.Localization.CurrentLanguage });
 
         private void OnStatus(String level, String message, String url, String urlTitle)
         {
