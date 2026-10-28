@@ -12,16 +12,16 @@ describe("urgentFace", () => {
 		expect(urgentFace([thread("question"), thread("running")])).toBe(ringFace(STATE_COLOR.question, "question"));
 	});
 
-	it("shows a running thread, then an unseen result", () => {
-		expect(urgentFace([thread("running")])).toBe(ringFace(STATE_COLOR.running, "running"));
+	it("shows work in progress, then a failure you haven't seen", () => {
+		expect(urgentFace([thread("running")])).toBe(ringFace(STATE_COLOR.running, "pulse"));
 		expect(urgentFace([thread("failed", true)])).toBe(ringFace(STATE_COLOR.failed, "error"));
-		expect(urgentFace([thread("done", true)])).toBe(ringFace(STATE_COLOR.done, "checkBare"));
 	});
 
-	it("is all clear when nothing needs you", () => {
-		const clear = ringFace(COLORS.muted, "checkBare");
-		expect(urgentFace([])).toBe(clear);
-		expect(urgentFace([thread("done"), thread("idle")])).toBe(clear);
+	it("is all done when nothing waits, runs or failed unseen, without a check that reads as approving", () => {
+		const done = ringFace(STATE_COLOR.done, "spark");
+		expect(urgentFace([])).toBe(done);
+		expect(urgentFace([thread("done", true)])).toBe(done);
+		expect(urgentFace([thread("done"), thread("failed"), thread("idle")])).toBe(done);
 	});
 
 	it("caps the badge", () => {

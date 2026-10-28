@@ -20,7 +20,7 @@ export function ringFace(color: string, name: GlyphName, options: { badge?: numb
 
 const waiting = (deck: DeckThread["deck"]) => deck === "approval" || deck === "question";
 
-/** The board's first thread is the most urgent; the face says what it needs and how many threads wait on you. */
+/** The board's first thread is the most urgent: what waits on you (and how many), work in progress, a failure you haven't seen, or all done. */
 export function urgentFace(threads: readonly RingThread[]): string {
 	const top = threads[0];
 	const count = threads.filter((thread) => waiting(thread.deck)).length;
@@ -31,15 +31,12 @@ export function urgentFace(threads: readonly RingThread[]): string {
 		case "question":
 			return ringFace(STATE_COLOR.question, "question", { badge });
 		case "running":
-			return ringFace(STATE_COLOR.running, "running");
+			return ringFace(STATE_COLOR.running, "pulse");
 		case "failed":
 			if (top.unseen) return ringFace(STATE_COLOR.failed, "error");
-			break;
-		case "done":
-			if (top.unseen) return ringFace(STATE_COLOR.done, "checkBare");
-			break;
 	}
-	return ringFace(COLORS.muted, "checkBare");
+	// A spark, not a check: on the ring a check reads as approving something.
+	return ringFace(STATE_COLOR.done, "spark");
 }
 
 /** The board lists running threads newest first, so this is the run that started last. */
