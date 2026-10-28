@@ -116,6 +116,11 @@
 				<section id="section-behavior" hidden>
 					<h1 data-i18n="inspector.settings.behavior">Behavior</h1>
 					<div class="field">
+						<label data-i18n="inspector.advanced.autoSwitch">Auto-switch</label>
+						<div class="control"><select class="native" data-setting="autoSwitch"><option value="on" data-i18n="inspector.idlePet.on">On</option><option value="off" data-i18n="inspector.idlePet.off">Off</option></select></div>
+					</div>
+					<p class="hint" data-i18n="inspector.advanced.autoSwitchHint">Puts each Stream Deck on its Turnkey profile when T3 Code opens, and back on the profile before when it quits. A deck you moved to another profile meanwhile stays where it is.</p>
+					<div class="field">
 						<label data-i18n="inspector.advanced.confirm">Confirm before sending</label>
 						<div class="control"><select class="native" data-setting="confirmSend"><option value="review" data-i18n="inspector.confirm.review">Review, then press again</option><option value="hold" data-i18n="inspector.confirm.hold">Hold to send</option><option value="off" data-i18n="inspector.confirm.off">Send right away</option></select></div>
 					</div>
@@ -186,7 +191,7 @@ function needsFirstPairing(environments ) {
 	return environments.every((env) => env.state === "signed-out");
 }
 function mergeGlobalSettings(current , patch ) {
-	const editable = ["scheme", "stripBackground", "stripColor", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
+	const editable = ["scheme", "stripBackground", "stripColor", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort", "autoSwitch"];
 	const next = { ...current };
 	for (const key of editable) if (key in patch) next[key] = patch[key];
 	return next;
@@ -337,7 +342,7 @@ function mergeGlobalSettings(current , patch ) {
 			}
 
 			/** What Stream Deck's own fields showed for a setting never saved. */
-			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "#121212", stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
+			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "#121212", stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient", autoSwitch: "on" };
 			const globals = {};
 			function renderGlobals(settings) {
 				Object.assign(globals, settings);

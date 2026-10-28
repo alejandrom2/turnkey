@@ -6,6 +6,8 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, ut
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { type GlyphName, renderControlKey } from "../src/core/render.ts";
+
 const root = join(import.meta.dirname, "..");
 const pluginDir = join(root, "com.alejandrom2.turnkey.sdPlugin");
 const manifest = JSON.parse(readFileSync(join(pluginDir, "manifest.json"), "utf8")) as { UUID: string; Name: string; Version: string };
@@ -16,7 +18,8 @@ const uuid = (seed: string) => {
 	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
 };
 
-type Placed = { action: string; name: string; settings?: Record<string, string> };
+/** A key, or with `folder` a Stream Deck folder key that opens that page. */
+type Placed = { action: string; name: string; settings?: Record<string, string>; folder?: Page; glyph?: GlyphName };
 
 const state = { FontFamily: "", FontSize: 12, FontStyle: "", FontUnderline: false, OutlineThickness: 2, ShowTitle: false, TitleAlignment: "bottom", TitleColor: "#ffffff" };
 
@@ -93,51 +96,41 @@ const prDial: Placed = { action: "dial.pr", name: "PR Dial" };
  */
 type Page = { name: string; keys: Placed[]; dials?: Placed[]; infobar?: Placed };
 
-/** The 8-key pages shared by Stream Deck + and Neo. */
-const PAGES_8: Page[] = [
-	{ name: "TURNKEY", keys: [slot(), slot(), slot(), slot(), activity, newThread, sendContinue, stop] },
-	{
-		name: "THREADS",
-		keys: [slot(5), slot(6), slot(7), slot(8), slot(9), slot(10), slot(11), slot(12)],
-		dials: [threadsDial("all"), threadsDial("active"), threadsDial("unread"), DIALS[3]!],
-	},
-	{ name: "CONTROLS", keys: [model, effort, speed, key("permissions", "Permissions"), key("plan", "Plan"), steer, approve, deny], dials: [power("model"), power("effort"), power("permissions"), DIALS[3]!] },
-	{
-		name: "PROMPTS",
-		keys: [quick("continue"), quick("test"), quick("fix"), quick("explain"), quick("commit"), organize("settle"), organize("pin"), organize("snooze")],
-		dials: [DIALS[0]!, DIALS[2]!, queueDial, DIALS[3]!],
-	},
-	{
-		name: "SKILLS",
-		keys: [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("fork", "Fork", { mode: "merge" }), stopWorkflow, branch],
-		dials: [skillsDial, DIALS[0]!, queueDial, DIALS[3]!],
-	},
-	{
-		name: "GIT",
-		keys: [git(), git("push"), createPr, git("pull"), branch, editor, organize("archive"), health],
-		dials: [DIALS[0]!, prDial, power("model"), DIALS[3]!],
-	},
-	{
-		name: "PULL REQUESTS",
-		keys: [key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), createPr, editor, stop],
-		dials: [prDial, DIALS[0]!, DIALS[2]!, DIALS[3]!],
-	},
-	{
-		name: "DEVICES",
-		keys: [preview, editor, quick("test"), stop, organize("snooze"), organize("wake"), approve, health],
-		dials: [{ action: "dial.devices", name: "Devices Dial" }, DIALS[0]!, queueDial, DIALS[3]!],
-	},
-	{ name: "TASKS", keys: [task(), task(), task(), task(), quick("continue"), stop, approve, health], dials: [{ action: "dial.tasks", name: "Tasks Dial" }, queueDial, DIALS[0]!, DIALS[3]!] },
-	{ name: "ADMIN", keys: [key("update", "Update T3"), script(), script(), script(), key("share", "Share Thread"), health, editor, stop] },
-	{
-		name: "USAGE",
-		keys: [limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly"), usage("1"), usage("7"), usage("30"), health],
-		dials: [{ action: "dial.limits", name: "Limits Dial" }, usageDial, DIALS[0]!, DIALS[3]!],
-		infobar: key("usage", "Usage", { period: "7" }),
-	},
-];
+/** A folder key drawn like a Turnkey key; its page opens with Stream Deck's Back key first, so it holds seven keys. */
+const folder = (name: string, glyph: GlyphName, keys: Placed[], dials: Placed[], infobar?: Placed): Placed => ({
+	action: "",
+	name,
+	glyph,
+	folder: { name: name.toUpperCase(), keys, dials, infobar },
+});
 
-/** The everyday set for Stream Deck +. */
+/** Stream Deck + and Neo: the second page is a menu of folders, so any job is two presses from home. */
+const MENU_8: Page = {
+	name: "MENU",
+	keys: [
+		folder("Threads", "chat", [slot(1), slot(2), slot(3), slot(4), slot(5), slot(6), slot(7)], [threadsDial("all"), threadsDial("active"), threadsDial("unread"), DIALS[3]!]),
+		folder("Controls", "sliders", [model, effort, speed, key("permissions", "Permissions"), key("plan", "Plan"), approve, deny], [power("model"), power("effort"), power("permissions"), DIALS[3]!]),
+		folder("Prompts", "spark", [quick("test"), quick("fix"), quick("explain"), quick("commit"), organize("settle"), organize("pin"), organize("snooze")], [DIALS[0]!, DIALS[2]!, queueDial, DIALS[3]!]),
+		folder("Skills", "skill", [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("fork", "Fork", { mode: "merge" }), stopWorkflow], [skillsDial, DIALS[0]!, queueDial, DIALS[3]!]),
+		folder("Git", "branch", [git(), git("push"), createPr, git("pull"), branch, editor, organize("archive")], [DIALS[0]!, prDial, power("model"), DIALS[3]!]),
+		folder("Pull Requests", "pullRequest", [key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), createPr, editor], [prDial, DIALS[0]!, DIALS[2]!, DIALS[3]!]),
+		folder(
+			"Usage",
+			"usage",
+			[limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly"), usage("1"), usage("7"), usage("30")],
+			[{ action: "dial.limits", name: "Limits Dial" }, usageDial, DIALS[0]!, DIALS[3]!],
+			key("usage", "Usage", { period: "7" }),
+		),
+		folder("More", "device", [preview, task(), script(), key("update", "Update T3"), key("share", "Share Thread"), organize("wake"), health], [
+			{ action: "dial.devices", name: "Devices Dial" },
+			{ action: "dial.tasks", name: "Tasks Dial" },
+			queueDial,
+			DIALS[3]!,
+		]),
+	],
+};
+
+/** The everyday home page for Stream Deck + and Neo. */
 const CURATED_8: Page = {
 	name: "TURNKEY",
 	keys: [activity, steer, speed, model, sendContinue, newThread, stop, effort],
@@ -248,25 +241,35 @@ const MINI: Device = { model: "20GAI9901", type: 1, columns: 3, rows: 2 };
 /** `seed` keeps action and page ids stable when a file is renamed. */
 type Profile = { file: string; seed: string; name: string; device: Device; pages: Page[] };
 
-const CURATED = "Turnkey";
-const ALL = "Turnkey (All actions)";
-
-/** Every action appears at least once in an All actions profile, so it doubles as a tour of what the deck can do. */
-const PROFILES: Profile[] = [
-	{ file: "turnkey-plus", seed: "turnkey-plus-curated", name: CURATED, device: PLUS, pages: [CURATED_8] },
-	{ file: "turnkey-plus-all", seed: "turnkey-plus", name: ALL, device: PLUS, pages: PAGES_8 },
-	{ file: "turnkey-neo", seed: "turnkey-neo", name: CURATED, device: NEO, pages: [{ ...CURATED_8, infobar: activity }] },
-	{ file: "turnkey-neo-all", seed: "turnkey-neo-all", name: ALL, device: NEO, pages: PAGES_8.map((page) => ({ ...page, infobar: page.infobar ?? activity })) },
-	{ file: "turnkey-15", seed: "turnkey-15", name: CURATED, device: { ...MK2, nav: false }, pages: [{ name: "TURNKEY", keys: HOME_15 }] },
-	{ file: "turnkey-15-all", seed: "turnkey-15-all", name: ALL, device: MK2, pages: PAGES_15 },
-	{ file: "turnkey-xl", seed: "turnkey-xl", name: CURATED, device: { ...XL, nav: false }, pages: [{ name: "TURNKEY", keys: XL_HOME }] },
-	{ file: "turnkey-xl-all", seed: "turnkey-xl-all", name: ALL, device: XL, pages: [{ name: "TURNKEY", keys: XL_HOME.slice(0, 31) }, { name: "MORE", keys: XL_MORE }] },
-	{ file: "turnkey-mini", seed: "turnkey-mini", name: CURATED, device: MINI, pages: [{ name: "TURNKEY", keys: [slot(), slot(), activity, sendContinue, stop, approve] }] },
+/** Three pages for the Mini's six keys, around Stream Deck's page keys. */
+const PAGES_MINI: Page[] = [
+	{ name: "TURNKEY", keys: [slot(), slot(), activity, approve, stop] },
+	{ name: "CONTROLS", keys: [sendContinue, deny, model, effort] },
+	{ name: "MORE", keys: [newThread, steer, git(), usage("7"), health] },
 ];
 
-const NAV = { previous: { uuid: "com.elgato.streamdeck.page.previous", name: "Previous Page" }, next: { uuid: "com.elgato.streamdeck.page.next", name: "Next Page" } } as const;
+const NAME = "Turnkey";
 
-/** Stream Deck's own page key: no plugin, no image of ours. */
+/**
+ * One profile per device: the everyday keys on its first page, then a page (or on Stream Deck + and Neo, a folder) per job. Every action in the actions list
+ * (dials only on Stream Deck +) appears at least once on every device but the Mini, so the pages double as a tour of
+ * what the deck can do. The seeds are the old everyday profiles', so an update replaces them.
+ */
+const PROFILES: Profile[] = [
+	{ file: "turnkey-plus", seed: "turnkey-plus-curated", name: NAME, device: PLUS, pages: [CURATED_8, MENU_8] },
+	{ file: "turnkey-neo", seed: "turnkey-neo", name: NAME, device: NEO, pages: [CURATED_8, MENU_8] },
+	{ file: "turnkey-15", seed: "turnkey-15", name: NAME, device: MK2, pages: PAGES_15 },
+	{ file: "turnkey-xl", seed: "turnkey-xl", name: NAME, device: XL, pages: [{ name: "TURNKEY", keys: XL_HOME.slice(0, 31) }, { name: "MORE", keys: XL_MORE }] },
+	{ file: "turnkey-mini", seed: "turnkey-mini", name: NAME, device: { ...MINI, nav: true }, pages: PAGES_MINI },
+];
+
+const NAV = {
+	previous: { uuid: "com.elgato.streamdeck.page.previous", name: "Previous Page" },
+	next: { uuid: "com.elgato.streamdeck.page.next", name: "Next Page" },
+	back: { uuid: "com.elgato.streamdeck.profile.backtoparent", name: "Parent Folder" },
+} as const;
+
+/** Stream Deck's own page or folder key: no plugin, no image of ours. */
 const navEntry = (seed: string, which: keyof typeof NAV) => ({
 	ActionID: uuid(seed),
 	LinkedTitle: true,
@@ -277,14 +280,37 @@ const navEntry = (seed: string, which: keyof typeof NAV) => ({
 	UUID: NAV[which].uuid,
 });
 
-/** Lays a page's keys out row by row, around Previous (bottom left, after the first page) and Next (bottom right, before the last). */
-function keypad(profile: Profile, index: number): Record<string, unknown> {
-	const { device, pages, seed } = profile;
-	const page = pages[index]!;
+const folderId = (seed: string, page: Page) => uuid(`${seed}:folder:${page.name}`);
+
+/** A folder key's face, written into the Images folder of the page that holds it. */
+const folderImage = (profileSeed: string, page: Page) => `Images/${folderId(profileSeed, page).toUpperCase()}.svg`;
+
+const folderFace = (placed: Placed) =>
+	Buffer.from(renderControlKey({ glyph: placed.glyph!, label: placed.name, shrink: placed.name.length > 8 }).split(",")[1]!, "base64").toString();
+
+/** Stream Deck's folder key, opening the folder page written beside the profile's pages. The face carries the title. */
+const folderEntry = (profileSeed: string, seed: string, placed: Placed) => ({
+	ActionID: uuid(seed),
+	LinkedTitle: true,
+	Name: "Create Folder",
+	Resources: null,
+	Settings: { ProfileUUID: folderId(profileSeed, placed.folder!) },
+	State: 0,
+	States: [{ ...state, Image: folderImage(profileSeed, placed.folder!), Title: placed.name }],
+	UUID: "com.elgato.streamdeck.profile.openchild",
+});
+
+/**
+ * Lays a page's keys out row by row, around Previous (bottom left, after the first page), Next (bottom right, before
+ * the last) and, in a folder, Back (top left).
+ */
+function keypad(profile: Profile, page: Page, at: { first: boolean; last: boolean; folder: boolean }): Record<string, unknown> {
+	const { device, seed } = profile;
 	const bottom = device.rows - 1;
 	const reserved = new Map<string, keyof typeof NAV>();
-	if (device.nav && index > 0) reserved.set(`0,${bottom}`, "previous");
-	if (device.nav && index < pages.length - 1) reserved.set(`${device.columns - 1},${bottom}`, "next");
+	if (at.folder) reserved.set("0,0", "back");
+	if (device.nav && !at.first) reserved.set(`0,${bottom}`, "previous");
+	if (device.nav && !at.last) reserved.set(`${device.columns - 1},${bottom}`, "next");
 	const actions: Record<string, unknown> = {};
 	const queue = [...page.keys];
 	for (let y = 0; y < device.rows; y++) {
@@ -294,7 +320,8 @@ function keypad(profile: Profile, index: number): Record<string, unknown> {
 			if (nav !== undefined) actions[at] = navEntry(`${seed}:${page.name}:${nav}`, nav);
 			else {
 				const placed = queue.shift();
-				if (placed !== undefined) actions[at] = entry(`${seed}:${page.name}:key:${at}`, placed);
+				const keySeed = `${seed}:${page.name}:key:${at}`;
+				if (placed !== undefined) actions[at] = placed.folder ? folderEntry(seed, keySeed, placed) : entry(keySeed, placed);
 			}
 		}
 	}
@@ -302,15 +329,17 @@ function keypad(profile: Profile, index: number): Record<string, unknown> {
 	return actions;
 }
 
-function pageManifest(profile: Profile, index: number | undefined) {
+function pageManifest(profile: Profile, page: Page | undefined, at = { first: true, last: true, folder: false }) {
 	const { device, seed } = profile;
-	const page = index === undefined ? undefined : profile.pages[index]!;
-	const controllers: { Actions: Record<string, unknown> | null; Type: string }[] = [{ Actions: index === undefined ? null : keypad(profile, index), Type: "Keypad" }];
+	const controllers: { Actions: Record<string, unknown> | null; Type: string }[] = [{ Actions: page === undefined ? null : keypad(profile, page, at), Type: "Keypad" }];
 	if (device.dials) {
 		const dials = Object.fromEntries((page?.dials ?? DIALS).map((placed, x) => [`${x},0`, entry(`${seed}:${page?.name}:dial:${x}`, placed)]));
 		controllers.push({ Actions: page ? dials : null, Type: "Encoder" });
 	}
-	if (device.infobar) controllers.push({ Actions: page?.infobar ? { "1,0": entry(`${seed}:${page.name}:infobar`, page.infobar) } : null, Type: "Neo" });
+	if (device.infobar) {
+		const infobar = page && (page.infobar ?? activity);
+		controllers.push({ Actions: infobar ? { "1,0": entry(`${seed}:${page.name}:infobar`, infobar) } : null, Type: "Neo" });
+	}
 	return { Controllers: controllers, Icon: "", Name: page?.name ?? "" };
 }
 
@@ -342,7 +371,18 @@ for (const profile of PROFILES) {
 			Version: "3.0",
 		});
 		writeJson(join(profileDir, "Profiles", defaultId.toUpperCase(), "manifest.json"), pageManifest(profile, undefined));
-		profile.pages.forEach((_page, index) => writeJson(join(profileDir, "Profiles", pageIds[index]!.toUpperCase(), "manifest.json"), pageManifest(profile, index)));
+		const last = profile.pages.length - 1;
+		profile.pages.forEach((page, index) => {
+			const pageDir = join(profileDir, "Profiles", pageIds[index]!.toUpperCase());
+			writeJson(join(pageDir, "manifest.json"), pageManifest(profile, page, { first: index === 0, last: index === last, folder: false }));
+			// Folder pages sit beside the pages but aren't listed in them: only their folder key opens them.
+			for (const placed of page.keys) {
+				if (!placed.folder) continue;
+				writeJson(join(profileDir, "Profiles", folderId(profile.seed, placed.folder).toUpperCase(), "manifest.json"), pageManifest(profile, placed.folder, { first: true, last: true, folder: true }));
+				mkdirSync(join(pageDir, "Images"), { recursive: true });
+				writeFileSync(join(pageDir, folderImage(profile.seed, placed.folder)), folderFace(placed));
+			}
+		});
 
 		const output = join(pluginDir, "profiles", `${profile.file}.streamDeckProfile`);
 		mkdirSync(join(output, ".."), { recursive: true });

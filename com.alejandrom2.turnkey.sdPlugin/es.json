@@ -815,6 +815,8 @@
 				"idlePet": "Mascota en reposo",
 				"previewPet": "Ver mascota",
 				"idlePetHint": "Tras dos minutos sin pulsar, girar ni tocar, un pequeño robot recorre tu fila más larga de franjas de diales vecinos, hasta tres veces, con cuatro minutos entre cada una. Cualquier pulsación, giro o toque en una acción de Turnkey lo ahuyenta. Sigue a Movimiento: Reducido camina con calma, Desactivado lo mantiene alejado.",
+				"autoSwitch": "Cambio automático",
+				"autoSwitchHint": "Pone cada Stream Deck en su perfil de Turnkey cuando se abre T3 Code y lo devuelve al perfil anterior cuando se cierra. Un deck que hayas cambiado a otro perfil mientras tanto se queda donde está.",
 				"confirm": "Confirmar antes de enviar",
 				"confirmHint": "Se aplica a Enviar prompt, Guiar, Ejecutar skill, el Dial de prompts y el Dial de skills; Modelo, Esfuerzo, Velocidad, Acceso y el Dial de potencia se aplican siempre al momento. Revisar muestra qué va adónde en la primera pulsación; pulsa otra vez en 10 segundos para enviar. Mantener envía con una pulsación mantenida, así que mantener no puede además reiniciar ni iniciar un hilo. Cada acción puede cambiarlo."
 			},

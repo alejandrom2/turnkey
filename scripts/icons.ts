@@ -94,4 +94,3 @@ const logo = (size: number, tile: boolean) => {
 	return svg(size, `<g transform="scale(${+scale.toFixed(5)})">${body}</g>`);
 };
 write("plugin/category-icon.svg", logo(56, false));
-write("plugin/marketplace.svg", logo(288, true));

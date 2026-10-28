@@ -15,10 +15,17 @@ Turnkey asks to read threads and act on them, for source control access (git and
 
 ## Profiles
 
-Turnkey comes with ready-made profiles. Stream Deck offers them when the plugin is installed, and they stay in its profile list; none switches your deck by itself.
+Turnkey comes with a ready-made **Turnkey** profile for each Stream Deck. Stream Deck offers it when the plugin is installed, and it stays in its profile list. While **Auto-switch** is on (Settings → Behavior, on by default), opening T3 Code puts each Stream Deck on its Turnkey profile, and quitting T3 Code puts it back on the profile before. A deck you moved to another profile in the meantime stays where it is.
 
-- **Turnkey** is one page of the everyday set. On Stream Deck +: Activity, Steer, Speed and Model over Send "Continue", New Thread, Stop and Effort, with the Threads, Usage, Power and Skills dials. On the 15-key Stream Deck: four thread keys, Activity, New Thread, Send "Continue", Steer, Stop, Approve, Deny, Model, Effort, Speed and Health. Stream Deck XL adds more threads and the git and usage keys; Stream Deck Mini keeps two threads, Activity, Send "Continue", Stop and Approve; Stream Deck Neo takes the Stream Deck + keys, with Activity on its info bar.
-- **Turnkey (All actions)** has every action, a page per area: threads, controls, prompts, skills, git, pull requests, devices, tasks, admin and usage on Stream Deck + and Neo, and fewer, fuller pages on the 15-key Stream Deck and XL. Stream Deck + turns pages with a swipe on the touch strip and Neo with its page buttons; on the 15-key Stream Deck and XL, Stream Deck's own **Previous Page** and **Next Page** keys sit in the bottom corners. Mini has no All actions profile.
+The first page holds the everyday set; the rest hold a page or folder per area, so every action is somewhere.
+
+- **Stream Deck +**: Activity, Steer, Speed and Model over Send "Continue", New Thread, Stop and Effort, with the Threads, Usage, Power and Skills dials. Swipe the touch strip to the second page, a menu of folders: Threads, Controls, Prompts, Skills, Git, Pull Requests, Usage and More (devices, tasks and admin). Each folder brings its own dials; its top-left key goes back.
+- **Stream Deck Neo**: the Stream Deck + pages, with Activity (or Usage) on the info bar. Its page buttons turn pages.
+- **15-key Stream Deck**: four thread keys, Activity, New Thread, Send "Continue", Steer, Stop, Approve, Deny, Model, Effort and Speed, then threads, controls, skills, git and usage pages.
+- **Stream Deck XL**: eight threads with the everyday, git and usage keys, then a second page with the rest.
+- **Stream Deck Mini**: two threads, Activity, Approve and Stop, then a page of controls and a page with New Thread, Steer, Git, Usage and Health.
+
+On the 15-key Stream Deck, XL and Mini, Stream Deck's own **Previous Page** and **Next Page** keys sit in the bottom corners.
 
 On Stream Deck Neo, drag **Activity** or **Usage** onto the info bar. Activity shows the most urgent thread matching its filter, with its state, and dots counting threads that need an approval (amber), have a question (indigo) or are working (blue). Usage shows its period's cost, with tokens under it. The info bar only shows; press a key to act.
 
