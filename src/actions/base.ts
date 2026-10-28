@@ -18,7 +18,7 @@ import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
 import { INFOBAR } from "../core/infobar.js";
 import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
-import { powerArt } from "../core/power.js";
+import { powerArt, type UltrathinkControl } from "../core/power.js";
 import {
 	COLORS,
 	type GlyphName,
@@ -610,6 +610,13 @@ export const ultrathinkPrompt = (thread: DeckThread, text: string): string =>
 /** Whether Ultrathink is armed for `thread` and its model still offers it. */
 export const ultrathinkArmed = (thread: DeckThread | undefined): boolean =>
 	thread !== undefined && deck.ultrathink.armed(thread.key, findModel(thread.machine.modelConfig, thread.model));
+
+/** The deck's Ultrathink for `thread`, as core's applyChoice takes it. */
+export const ultrathinkControl = (thread: DeckThread, armed: boolean): UltrathinkControl => ({
+	armed,
+	arm: () => deck.ultrathink.arm(thread.key),
+	disarm: () => deck.ultrathink.disarm(thread.key),
+});
 
 /** The thread's queue as last read, read again when it moved; only call it for a thread a visible face shows. */
 export const queueOf = (thread: DeckThread): ThreadQueue | undefined => deck.queues.of(thread, () => thread.machine.queue(thread));

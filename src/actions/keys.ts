@@ -24,7 +24,7 @@ import {
 	withOptionValue,
 } from "../core/models.js";
 import { activityBar, renderActivityBar, renderInfoBar, renderNoticeBar } from "../core/infobar.js";
-import { currentEffort, effortChange, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
+import { applyChoice, currentEffort, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
 import { threadMotion, twinkleStep } from "../core/motion.js";
 import { modeOf } from "../core/modes.js";
 import { migratePromptSettings, templatePrompt } from "../core/prompts.js";
@@ -72,6 +72,7 @@ import {
 	sendToThread,
 	speedPaint,
 	ultrathinkArmed,
+	ultrathinkControl,
 } from "./base.js";
 import { MachineWatch } from "./watch.js";
 
@@ -606,21 +607,11 @@ export class EffortKey extends SettingKey<EffortSettings> {
 			pinned,
 		});
 		const next = fixed ?? cycleValue(values, current);
-		const change = thread && next !== undefined ? effortChange(model, thread.model, next) : undefined;
+		const choice = choices.find((each) => each.value === next);
 		const moving = twinkle !== undefined;
-		if (thread === undefined || change === undefined) return { face, check, moving };
-		return { face, check, moving, apply: applyEffort(thread, change, armed) };
+		if (thread === undefined || choice === undefined) return { face, check, moving };
+		return { face, check, moving, apply: applyChoice(thread, choice, ultrathinkControl(thread, armed)) };
 	}
-}
-
-/** What an effort pick does to `thread`: arm Ultrathink, or disarm it and set the option; undefined when nothing changes. */
-export function applyEffort(thread: DeckThread, change: NonNullable<ReturnType<typeof effortChange>>, armed: boolean): (() => Promise<unknown>) | undefined {
-	if (change.kind === "arm") return armed ? undefined : async () => deck.ultrathink.arm(thread.key);
-	if (!change.send && !armed) return undefined;
-	return async () => {
-		if (change.send) await thread.machine.setModelSelection(thread, withOptionValue(thread.model, change.optionId, change.value));
-		deck.ultrathink.disarm(thread.key);
-	};
 }
 
 /** Toggles the selected thread's fast mode (Claude's Fast mode, Codex's Fast tier) where its model offers one. */

@@ -17,11 +17,3 @@ export function continueStep(thread: { deck: DeckState } | undefined): "open" | 
 			return "send";
 	}
 }
-
-/** Where a scroll of `ticks` lands among `values`, stopping at the ends; undefined when it wouldn't change anything. */
-export function stepWithin<V>(values: readonly V[], current: V | undefined, ticks: number): V | undefined {
-	if (values.length === 0) return undefined;
-	const from = Math.max(values.indexOf(current as V), 0);
-	const to = Math.min(Math.max(from + ticks, 0), values.length - 1);
-	return to === values.indexOf(current as V) ? undefined : values[to];
-}

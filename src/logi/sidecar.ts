@@ -5,12 +5,13 @@ import { ThreadBoard } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { threadCounts } from "../core/infobar.js";
 import { COLORS } from "../core/render.js";
-import { findModel, runtimeModes, withOptionValue } from "../core/models.js";
-import { currentEffort, effortChoices } from "../core/power.js";
+import { findModel } from "../core/models.js";
+import { applyChoice, type PowerChoice, type PowerState, powerState, stepChoice } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
 import { limitGauge, limitPools, tightestWindow } from "../core/usage/limitsView.js";
 import { LimitsRefresher } from "../core/usage/refresh.js";
 import { Machines } from "../core/t3/machines.js";
+import { UltrathinkArming } from "../core/ultrathink.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
@@ -18,7 +19,7 @@ import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { continueStep, stepWithin } from "./controls.js";
+import { continueStep } from "./controls.js";
 import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
@@ -50,24 +51,29 @@ const selected = () => {
 const open = (thread: Parameters<typeof threadDeepLink>[0]) => void openExternal(threadDeepLink(thread)).catch(failed("open the thread"));
 const isPrompt = (name: string): name is keyof typeof PROMPT_GLYPHS => Object.hasOwn(PROMPT_GLYPHS, name);
 
-/** The selected thread's effort levels in T3 Code's order (Ultrathink aside), and the current one's place. */
-function effortLevels(thread: NonNullable<ReturnType<typeof selected>>) {
-	const model = findModel(thread.machine.modelConfig, thread.model);
-	const levels = effortChoices(model).filter((choice) => !choice.ultrathink);
-	const current = String(currentEffort(model, thread.model, false));
-	return { levels, index: levels.findIndex((level) => level.key === current) };
+type Thread = NonNullable<ReturnType<typeof selected>>;
+
+// Ultrathink is armed here in memory, per thread, as the Stream Deck does; the prompt kinds prefix it.
+const arming = new UltrathinkArming(() => changed());
+const modelOf = (thread: Thread) => findModel(thread.machine.modelConfig, thread.model);
+const sendPrompt = (thread: Thread, text: string) => thread.machine.send(thread, arming.prompt(thread.key, modelOf(thread), text), "auto");
+
+/** The effort or access choices for `thread`, Ultrathink included. */
+const powerOf = (thread: Thread, control: "effort" | "permissions") => powerState(control, thread.machine.modelConfig, thread, arming.armed(thread.key, modelOf(thread)));
+
+/** Applies the choice `choose` picks from the thread's effort or access, unless it is the current one. */
+function pick(control: "effort" | "permissions", choose: (state: PowerState) => PowerChoice | undefined): void {
+	const thread = selected();
+	if (thread === undefined) return;
+	const state = powerOf(thread, control);
+	const choice = choose(state);
+	if (choice === undefined || choice.key === state.current?.key) return;
+	const ultrathink = { armed: arming.armed(thread.key, modelOf(thread)), arm: () => arming.arm(thread.key), disarm: () => arming.disarm(thread.key) };
+	void applyChoice(thread, choice, ultrathink)?.().catch(failed(choice.kind === "mode" ? "change the access mode" : "change the effort"));
 }
 
-function setEffort(thread: NonNullable<ReturnType<typeof selected>>, key: string | undefined): void {
-	const level = effortLevels(thread).levels.find((candidate) => candidate.key === key);
-	if (level) void thread.machine.setModelSelection(thread, withOptionValue(thread.model, level.optionId, level.value)).catch(failed("change the effort"));
-}
-
-function setMode(thread: NonNullable<ReturnType<typeof selected>>, ticks: number, wrap: boolean): void {
-	const modes = runtimeModes(thread.machine.modelConfig, thread.model.instanceId).map((mode) => mode.value);
-	const next = wrap ? modes[(modes.indexOf(thread.runtimeMode) + 1) % modes.length] : stepWithin(modes, thread.runtimeMode, ticks);
-	if (next && next !== thread.runtimeMode) void thread.machine.setRuntimeMode(thread, next).catch(failed("change the access mode"));
-}
+/** The choice after the current one, wrapping, as the Stream Deck's keys step. */
+const nextChoice = (state: PowerState) => state.choices[(state.choices.findIndex((choice) => choice.key === state.current?.key) + 1) % state.choices.length];
 
 /**
  * Limits keep each machine on T3 Code's config subscription once a Limits slot has shown, and refresh when the ring
@@ -111,7 +117,7 @@ const keys = new Keys(
 			face: (_index, name) => (isPrompt(name) ? promptFace(name, selected() !== undefined) : ringFace(COLORS.muted, "chat", { dim: true })),
 			press: (_index, name) => {
 				const thread = selected();
-				if (thread && isPrompt(name)) void thread.machine.send(thread, QUICK_PROMPTS[name].text, "auto").catch(failed("send the prompt"));
+				if (thread && isPrompt(name)) void sendPrompt(thread, QUICK_PROMPTS[name].text).catch(failed("send the prompt"));
 			},
 		},
 		// A prompt written in the action's editor travels as its parameter, so each placed copy is its own key.
@@ -119,7 +125,7 @@ const keys = new Keys(
 			face: (_index, text) => customPromptFace(selected() !== undefined && text.trim() !== ""),
 			press: (_index, text) => {
 				const thread = selected();
-				if (thread && text.trim()) void thread.machine.send(thread, text.trim(), "auto").catch(failed("send the prompt"));
+				if (thread && text.trim()) void sendPrompt(thread, text.trim()).catch(failed("send the prompt"));
 			},
 		},
 		continue: {
@@ -128,36 +134,23 @@ const keys = new Keys(
 				const thread = selected();
 				const step = continueStep(thread);
 				if (thread && step === "open") open(thread);
-				if (thread && step === "send") void thread.machine.send(thread, QUICK_PROMPTS.continue.text, "auto").catch(failed("continue the thread"));
+				if (thread && step === "send") void sendPrompt(thread, QUICK_PROMPTS.continue.text).catch(failed("continue the thread"));
 			},
 		},
 		access: {
 			face: () => modeFace(selected()?.runtimeMode),
-			press: () => {
-				const thread = selected();
-				if (thread) setMode(thread, 1, true);
-			},
-			turn: (ticks) => {
-				const thread = selected();
-				if (thread) setMode(thread, ticks, false);
-			},
+			press: () => pick("permissions", nextChoice),
+			turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)),
 		},
 		effort: {
 			face: () => {
 				const thread = selected();
-				const effort = thread && effortLevels(thread);
-				return effortFace(effort && effort.levels.length > 1 ? { index: Math.max(effort.index, 0), count: effort.levels.length } : undefined);
+				const state = thread && powerOf(thread, "effort");
+				const index = state ? state.choices.findIndex((choice) => choice.key === state.current?.key) : -1;
+				return effortFace(state && state.choices.length > 1 ? { index: Math.max(index, 0), count: state.choices.length } : undefined);
 			},
-			press: () => {
-				const thread = selected();
-				const effort = thread && effortLevels(thread);
-				if (thread && effort && effort.levels.length > 0) setEffort(thread, effort.levels[(effort.index + 1) % effort.levels.length]!.key);
-			},
-			turn: (ticks) => {
-				const thread = selected();
-				const effort = thread && effortLevels(thread);
-				if (thread && effort) setEffort(thread, stepWithin(effort.levels.map((level) => level.key), effort.levels[effort.index]?.key, ticks));
-			},
+			press: () => pick("effort", nextChoice),
+			turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)),
 		},
 		limits: {
 			face: () => {
