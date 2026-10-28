@@ -4,18 +4,16 @@
 
 <h1>Turnkey<br><sub>for T3 Code</sub></h1>
 
-**Control [T3 Code](https://github.com/pingdotgg/t3code) from your Stream Deck.**<br>
+**Control [T3 Code](https://github.com/pingdotgg/t3code) from your Stream Deck or your Logitech mouse.**<br>
 See every agent thread at a glance, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without leaving your flow.
 
-<a href="https://github.com/alejandrom2/turnkey/releases/latest"><img src="https://img.shields.io/badge/Download-for_Stream_Deck-4a68f0?style=for-the-badge" alt="Download for Stream Deck" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_an_energy_drink-%E2%9A%A1-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me an energy drink" height="36"></a>
+<a href="https://github.com/alejandrom2/turnkey/releases/latest"><img src="https://img.shields.io/badge/Download-for_Stream_Deck-4a68f0?style=for-the-badge" alt="Download for Stream Deck" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/alejandrom2/turnkey/releases/latest"><img src="https://img.shields.io/badge/Download-for_Logitech-4a68f0?style=for-the-badge" alt="Download for Logitech" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_an_energy_drink-%E2%9A%A1-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me an energy drink" height="36"></a>
 
 [![CI](https://github.com/alejandrom2/turnkey/actions/workflows/release.yml/badge.svg)](https://github.com/alejandrom2/turnkey/actions/workflows/release.yml)
 [![Release](https://img.shields.io/github/v/release/alejandrom2/turnkey?include_prereleases&label=release)](https://github.com/alejandrom2/turnkey/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 [Guide](docs/guide.md) · [Discussions](https://github.com/alejandrom2/turnkey/discussions) · [Contributing](CONTRIBUTING.md)
-
-<sub><b>Coming soon:</b> Logitech MX Creative Console, the Actions Ring and MX Master 4 haptics.</sub>
 
 <img src="docs/marketplace/gallery-1-threads.png" alt="Turnkey on a Stream Deck +, showing agent threads on its keys" width="800">
 
@@ -43,6 +41,13 @@ See every agent thread at a glance, approve and answer from a key, switch models
 </tr>
 </table>
 
+<table>
+<tr>
+<td width="50%"><img src="docs/readme/ring.png" alt="Turnkey on the Logitech Actions Ring: the most urgent thread waiting on approval with two waiting, thread status, Continue, a limit at 62%, Stop run, Effort, Fix tests and Turnkey Settings" width="320"></td>
+<td width="50%"><b>And on Logitech</b><br>Put Turnkey on the Actions Ring of an MX mouse or keyboard: the thread that needs you, thread status, Continue, quick prompts and your own, Stop, access and effort you scroll, and your tightest limit, each as a live face. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.</td>
+</tr>
+</table>
+
 Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, then a live WebSocket feed of your threads. It doesn't read app files or drive the UI, and it talks only to the T3 Code servers you pair it with.
 
 ## See it
@@ -58,6 +63,8 @@ https://github.com/user-attachments/assets/64852819-5e90-46e4-a6ac-824dbe0ff64f
 
 ## Get started
 
+### Stream Deck
+
 You need the Stream Deck app 7.6 or newer (macOS 12+ or Windows 10+), any Stream Deck (Stream Deck +, the 15-key Stream Deck, XL, Mini or Neo; dials need a Stream Deck +), and [T3 Code](https://github.com/pingdotgg/t3code) running on this computer or one you can reach.
 
 1. **Install.** Download `com.alejandrom2.turnkey.streamDeckPlugin` from the [latest release](https://github.com/alejandrom2/turnkey/releases/latest) and double-click it. Stream Deck offers Turnkey's ready-made profiles: pick one, or drag actions from the **Turnkey** category onto your deck.
@@ -65,6 +72,14 @@ You need the Stream Deck app 7.6 or newer (macOS 12+ or Windows 10+), any Stream
 3. **Connect.** In Stream Deck, open any Turnkey action's settings, paste the link under **Add a machine** and press **Connect**.
 
 Add each machine once; every action can follow one machine or all of them. Pairings last 30 days, and you can revoke Turnkey anytime from **Sharing & access** in T3 Code.
+
+### Logitech
+
+You need Logi Options+ with an MX mouse or keyboard for the Actions Ring (haptics need an MX Master 4), on macOS, and T3 Code as above. Windows isn't tested yet.
+
+1. **Install.** Download `Turnkey_<version>.lplug4` from the [latest release](https://github.com/alejandrom2/turnkey/releases/latest) and open it to install it in Logi Options+.
+2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. It opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
+3. **Place actions.** Drag Turnkey's actions onto the Actions Ring. **Turnkey Settings** brings the settings page back later, to add machines, re-pair or switch haptics off.
 
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
 
@@ -87,9 +102,9 @@ MIT © 2026 Alejandro Martinez. See [LICENSE](LICENSE). Bundled third-party code
 
 <br>
 
-Turnkey is an independent project. It is not affiliated with, endorsed by, or sponsored by T3 Code or its creators, or by any of the companies below.
+Turnkey is an independent project. It is not affiliated with, endorsed by, or sponsored by T3 Code or its creators, Elgato or Logitech, or by any of the companies below.
 
-T3 Code is a product of T3 Tools Inc. Claude and Claude Code are trademarks of Anthropic, PBC. OpenAI, ChatGPT and Codex are trademarks of OpenAI. Cursor is a trademark of Anysphere, Inc. Grok is a trademark of xAI. Antigravity and Gemini are trademarks of Google LLC. OpenCode, Pi, Muse and any other agent or provider names belong to their respective owners. GitHub is a trademark of GitHub, Inc. Stream Deck is a trademark of Corsair Memory, Inc. All other names, logos and brands are the property of their respective owners and are used only to identify the services Turnkey works with.
+T3 Code is a product of T3 Tools Inc. Claude and Claude Code are trademarks of Anthropic, PBC. OpenAI, ChatGPT and Codex are trademarks of OpenAI. Cursor is a trademark of Anysphere, Inc. Grok is a trademark of xAI. Antigravity and Gemini are trademarks of Google LLC. OpenCode, Pi, Muse and any other agent or provider names belong to their respective owners. GitHub is a trademark of GitHub, Inc. Stream Deck is a trademark of Corsair Memory, Inc. Logitech, Logi, Logi Options+, MX Master and Actions Ring are trademarks of Logitech. All other names, logos and brands are the property of their respective owners and are used only to identify the services Turnkey works with.
 
 Provider marks are shown as T3 Code shows them, to identify the agent a thread runs on. Portions of Turnkey (usage and limits math, prompt texts, provider marks) are adapted from T3 Code under the MIT license; see LICENSES/t3code.txt. Icons are from Lucide under the ISC license; see LICENSES/lucide.txt.
 
