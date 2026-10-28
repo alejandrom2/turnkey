@@ -9,3 +9,8 @@ logs/
 
 # macOS Finder metadata
 .DS_Store
+
+# Logitech plugin build output
+logi/bin/
+logi/**/bin/
+logi/**/obj/
