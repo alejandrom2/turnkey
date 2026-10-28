@@ -24,7 +24,7 @@ import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, PROMP
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
 import { keptMachines, machineRows } from "./rows.js";
-import { pluginStatus } from "./status.js";
+import { pluginStatus, waitsForSync } from "./status.js";
 import { FileCredentials } from "./store.js";
 
 // Run by the Logitech plugin as `sidecar.mjs <dataDir>`.
@@ -235,7 +235,9 @@ const page = await startPairingPage({
 	setHaptics: (on) => settings.setHaptics(on),
 });
 let lastStatus = "";
+let synced = false;
 function sendStatus(): void {
+	if (waitsForSync(store.urls().length, synced)) return;
 	const status = pluginStatus(machines.all.map((each) => each.state), page.url);
 	const line = JSON.stringify(status);
 	if (line === lastStatus) return;
@@ -244,7 +246,18 @@ function sendStatus(): void {
 }
 
 // At startup, then only when a key shows and no machine is ready: a lost T3 Code, or one that moved port, is found again without polling.
-const resync = throttled(() => void machines.sync(kept).then(() => machines.wake()).catch(failed("look for T3 Code")), 10_000);
+const resync = throttled(
+	() =>
+		void machines
+			.sync(kept)
+			.then(() => machines.wake())
+			.catch(failed("look for T3 Code"))
+			.finally(() => {
+				synced = true;
+				changed();
+			}),
+	10_000,
+);
 resync();
 // With no machine yet, nothing else would show the banner asking for a pair link.
 changed();

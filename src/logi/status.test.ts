@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { t } from "../core/i18n.js";
-import { pluginStatus } from "./status.js";
+import { pluginStatus, waitsForSync } from "./status.js";
 
 const PAGE = "http://127.0.0.1:5000/pair/abc";
 const pair = { url: PAGE, urlTitle: t("logi.status.pair") };
@@ -29,5 +29,16 @@ describe("pluginStatus", () => {
 
 	it("is fine while connecting", () => {
 		expect(pluginStatus([{ kind: "connecting" }], PAGE)).toEqual({ type: "status", level: "normal", message: t("health.connecting"), ...machines });
+	});
+});
+
+describe("waitsForSync", () => {
+	it("waits for the first sync when a machine is paired", () => {
+		expect(waitsForSync(1, false)).toBe(true);
+		expect(waitsForSync(1, true)).toBe(false);
+	});
+
+	it("asks to pair at once when nothing is", () => {
+		expect(waitsForSync(0, false)).toBe(false);
 	});
 });

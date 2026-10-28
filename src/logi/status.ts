@@ -15,3 +15,8 @@ export function pluginStatus(states: readonly MachineState[], pairingPage: strin
 	if (broken && "message" in broken && broken.message) return { type: "status", level: "error", message: broken.message, ...pair };
 	return { type: "status", level: "warning", message: t("logi.status.unpaired"), ...pair };
 }
+
+/** A paired user's machines appear once the first sync settles; until then "isn't paired" would flash on every launch. */
+export function waitsForSync(paired: number, synced: boolean): boolean {
+	return paired > 0 && !synced;
+}
