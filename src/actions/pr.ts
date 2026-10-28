@@ -505,13 +505,12 @@ export class PrDial extends StripDial<PrDialSettings> {
 	protected face(action: Action<PrDialSettings>): StripContent {
 		const header = this.heading();
 		const { entries, index, current, loading } = this.#list(action);
-		if (current === undefined) return { header, icon: glyphArt("pullRequest", COLORS.muted), accent: COLORS.muted, value: loading ? "" : t("pr.dial.none"), loading };
+		if (current === undefined) return { header, icon: glyphArt("pullRequest", COLORS.muted), value: loading ? "" : t("pr.dial.none"), loading };
 		const color = CHECK_COLOR[current.entry.checksState ?? ""] ?? COLORS.text;
 		const found = this.#findingsText(current.machine, current.entry);
 		return {
 			header: `${header} · ${index + 1}/${entries.length}`,
 			icon: glyphArt("pullRequest", current.entry.isDraft ? COLORS.muted : color),
-			accent: color,
 			value: current.entry.title,
 			detail: [`#${current.entry.number}`, current.entry.repository, found].filter(Boolean).join(" · "),
 			tone: current.entry.checksState === "failing" ? "failed" : "neutral",

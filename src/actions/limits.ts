@@ -312,7 +312,7 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 	protected face(action: Action<LimitsDialSettings>): StripContent {
 		const { tiles, index } = this.#tiles(action);
 		const tile = tiles[index];
-		if (tile === undefined) return { header: t("limits.title"), icon: glyphArt("gauge", COLORS.muted), accent: COLORS.muted, value: t("limits.none"), detail: t("limits.noneDetail") };
+		if (tile === undefined) return { header: t("limits.title"), icon: glyphArt("gauge", COLORS.muted), value: t("limits.none"), detail: t("limits.noneDetail") };
 		const now = Date.now();
 		const gauge = this.#gauge(action, tile, now);
 		const [when, credits] = gaugeLines(gauge, tile.pool, this.machineOf(action), this.settingsOf(action), now).map(lineText);
@@ -320,7 +320,6 @@ export class LimitsDial extends StripDial<LimitsDialSettings> {
 		return {
 			header: driverName(tile.pool.driver),
 			icon: driverMark(tile.pool.driver),
-			accent: COLORS.accent,
 			value: `${gauge.label} · ${gauge.percent}%`,
 			detail: [gauge.stale ? when : reset || when, credits, gauge.accounts > 1 ? t("limits.pooled", { count: gauge.accounts }) : ""].filter(Boolean).join(" · "),
 		};

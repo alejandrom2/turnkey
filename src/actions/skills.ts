@@ -148,13 +148,12 @@ export class SkillsDial extends StripDial<SkillsDialSettings> {
 		const header = this.heading();
 		const { thread, listed, skills, index, skill, check } = this.#state(action);
 		const tone = toneOf(thread?.deck, thread?.unseen);
-		const muted = { header, icon: glyphArt("skill", COLORS.muted), accent: COLORS.muted, tone };
+		const muted = { header, icon: glyphArt("skill", COLORS.muted), tone };
 		if (thread === undefined) return { ...muted, value: check.available ? t("strip.noThread") : check.reason };
 		if (skill === undefined) return { ...muted, value: listed?.loading ? thread.title : check.available ? t("skills.none") : check.reason, detail: listed?.loading ? undefined : thread.title, loading: listed?.loading };
 		return {
 			header: `${header} · ${index + 1}/${skills.length}`,
 			icon: glyphArt("skill", check.available ? COLORS.text : COLORS.muted),
-			accent: check.available ? COLORS.accent : COLORS.muted,
 			value: skillLabel(skill),
 			detail: check.available ? (skillDescription(skill) ?? `→ ${thread.title}`) : check.reason,
 			// A long touch reads the description first: that is what doesn't fit.

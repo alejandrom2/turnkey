@@ -761,11 +761,11 @@ export function renderInfoKey(input: InfoKeyInput): string {
 /** How a dial strip's background looks: T3 Code's card, Flow (one picture across adjacent dials), tinted by thread state, or one color. */
 type StripBackground = "t3" | "flow" | "state" | "custom";
 /** `run` places a dial in its run of adjacent dials, for Flow; `pet` is the idle pet's art while it crosses this strip. */
-export type StripAppearance = { background: StripBackground; color?: string; hairline: boolean; run?: Run; pet?: string };
+export type StripAppearance = { background: StripBackground; color?: string; run?: Run; pet?: string };
 /** What a strip is about, for the State background: done, failed, waiting on you, or nothing to report. */
 export type StripTone = "done" | "failed" | "attention" | "neutral";
 
-export const DEFAULT_APPEARANCE: StripAppearance = { background: "t3", hairline: true };
+export const DEFAULT_APPEARANCE: StripAppearance = { background: "t3" };
 
 /** A stored background; the retired Gradient reads as T3 Code's. */
 export const stripBackground = (value: unknown): StripBackground | undefined =>
@@ -775,15 +775,14 @@ export const isHexColor = (value: unknown): value is string => typeof value === 
 
 /** The dial's own background when it sets one, else the global one; a custom color must be `#rrggbb`. */
 export function resolveAppearance(
-	global: { stripBackground?: unknown; stripColor?: unknown; stripHairline?: unknown },
+	global: { stripBackground?: unknown; stripColor?: unknown },
 	dial: { background?: unknown; backgroundColor?: unknown } = {},
 ): StripAppearance {
 	const own = stripBackground(dial.background);
 	const background = own ?? stripBackground(global.stripBackground) ?? "t3";
 	const color = own === "custom" ? dial.backgroundColor : global.stripColor;
-	const hairline = global.stripHairline !== false && global.stripHairline !== "false";
-	if (background !== "custom") return { background, hairline };
-	return isHexColor(color) ? { background, color, hairline } : { background: "t3", hairline };
+	if (background !== "custom") return { background };
+	return isHexColor(color) ? { background, color } : { background: "t3" };
 }
 
 /** A state's strip tone, matching thread keys: a done thread stays green only while unseen (`unseen` false). */
@@ -850,10 +849,9 @@ function stripFill(appearance: StripAppearance, tone: StripTone): string {
 	return `<rect width="200" height="100" fill="${COLORS.card}"/>`;
 }
 
-/** Touch-strip background, with a hairline tinted by state unless turned off, and T3 Code's Ultrathink frame when armed. */
-export function stripCanvas(accent: string = COLORS.accent, appearance: StripAppearance = DEFAULT_APPEARANCE, tone: StripTone = "neutral", ultrathink = false): string {
-	const hairline = appearance.hairline ? `<rect y="95" width="200" height="5" fill="${accent}"/>` : "";
-	return svgImage(200, 100, `${stripFill(appearance, tone)}${appearance.pet ?? ""}${hairline}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}`);
+/** Touch-strip background, with T3 Code's Ultrathink frame when armed. */
+export function stripCanvas(appearance: StripAppearance = DEFAULT_APPEARANCE, tone: StripTone = "neutral", ultrathink = false): string {
+	return svgImage(200, 100, `${stripFill(appearance, tone)}${appearance.pet ?? ""}${ultrathink ? ultrathinkFrame(200, 100, 8, 2) : ""}`);
 }
 
 /** A glyph as a painter, so strips can draw it at any size or compose it into a larger picture. */
