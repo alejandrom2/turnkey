@@ -3,6 +3,7 @@ namespace Loupedeck.TurnkeyPlugin
     using System;
     using System.Diagnostics;
     using System.Text.Json;
+    using System.Threading;
     using System.Threading.Tasks;
 
     // Runs Turnkey's Node core and speaks its line protocol (src/logi/protocol.ts): JSON lines on stdin and stdout.
@@ -12,6 +13,9 @@ namespace Loupedeck.TurnkeyPlugin
         private const Int32 RestartDelayMs = 5000;
 
         private readonly Object _lock = new Object();
+
+        // Serializes stdin writes without holding _lock, so a slow pipe never stalls image reads.
+        private readonly Object _writeLock = new Object();
         private Process _process;
         private String _node;
         private String _script;
@@ -54,21 +58,31 @@ namespace Loupedeck.TurnkeyPlugin
 
         public void Send(Object message)
         {
+            Process process;
             lock (this._lock)
             {
-                if (this._process == null || this._process.HasExited)
-                {
-                    return;
-                }
+                process = this._process;
+            }
 
-                try
+            if (process == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var line = JsonSerializer.Serialize(message);
+                lock (this._writeLock)
                 {
-                    this._process.StandardInput.WriteLine(JsonSerializer.Serialize(message));
+                    if (!process.HasExited)
+                    {
+                        process.StandardInput.WriteLine(line);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    PluginLog.Warning(ex, "Couldn't write to the Turnkey sidecar");
-                }
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Warning(ex, "Couldn't write to the Turnkey sidecar");
             }
         }
 
@@ -90,7 +104,19 @@ namespace Loupedeck.TurnkeyPlugin
             try
             {
                 // Closing stdin is the sidecar's signal to stop its connections and exit.
-                process.StandardInput.Close();
+                // A write stuck on a full pipe must not hold up the kill.
+                if (Monitor.TryEnter(this._writeLock, 2000))
+                {
+                    try
+                    {
+                        process.StandardInput.Close();
+                    }
+                    finally
+                    {
+                        Monitor.Exit(this._writeLock);
+                    }
+                }
+
                 if (!process.WaitForExit(2000))
                 {
                     process.Kill();
@@ -116,7 +142,7 @@ namespace Loupedeck.TurnkeyPlugin
             info.ArgumentList.Add(this._dataDir);
 
             var process = new Process { StartInfo = info, EnableRaisingEvents = true };
-            process.OutputDataReceived += (_, e) => this.OnLine(e.Data);
+            process.OutputDataReceived += (_, e) => this.OnLine(process, e.Data);
             process.ErrorDataReceived += (_, e) =>
             {
                 if (!String.IsNullOrEmpty(e.Data))
@@ -173,8 +199,17 @@ namespace Loupedeck.TurnkeyPlugin
             }
         }
 
-        private void OnLine(String line)
+        private void OnLine(Process process, String line)
         {
+            // A sidecar being replaced or disposed can still flush lines; they must not reach the faces.
+            lock (this._lock)
+            {
+                if (this._process != process)
+                {
+                    return;
+                }
+            }
+
             if (String.IsNullOrEmpty(line))
             {
                 return;

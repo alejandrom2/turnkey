@@ -20,9 +20,6 @@ namespace Loupedeck.TurnkeyPlugin
         {
             // Initialize the plugin log.
             PluginLog.Init(this.Log);
-
-            // Initialize the plugin resources.
-            PluginResources.Init(this.Assembly);
         }
 
         // This method is called when the plugin is loaded.

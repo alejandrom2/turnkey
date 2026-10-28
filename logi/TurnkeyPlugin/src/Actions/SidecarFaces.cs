@@ -75,13 +75,15 @@ namespace Loupedeck.TurnkeyPlugin
             return builder.ToImage();
         }
 
-        // Drawn here because the sidecar that draws everything else is the thing that's down.
+        // Drawn here because the sidecar that draws everything else is the thing that's down; no text, as it can't be translated.
         private static BitmapImage StoppedImage(Int32 pixels)
         {
-            var builder = new BitmapBuilder(pixels, pixels);
-            builder.Clear(BitmapColor.FromRgb(0x111111));
-            builder.DrawText("Turnkey stopped", BitmapColor.FromRgb(0xFF6764), 14, 16, 4);
-            return builder.ToImage();
+            const String stroke = "stroke=\"#FF6764\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"";
+            return BitmapImage.FromSvg(
+                $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{pixels}\" height=\"{pixels}\" viewBox=\"0 0 24 24\">"
+                + $"<circle cx=\"12\" cy=\"12\" r=\"10\" {stroke}/>"
+                + $"<line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\" {stroke}/>"
+                + $"<line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\" {stroke}/></svg>");
         }
 
         private String ActionId(String actionParameter) => $"{this._kind}:{actionParameter ?? ""}";
