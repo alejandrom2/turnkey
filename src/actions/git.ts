@@ -26,6 +26,7 @@ import { SOURCE_CONTROL_SCOPE } from "../core/t3/pairing.js";
 import { deck } from "../deck.js";
 import { canOperate, DeckAction, held, pressWhileDisconnected, selectedThread } from "./base.js";
 import { threadNeeds } from "./needs.js";
+import { setCapped } from "../core/capped.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -52,7 +53,7 @@ class StatusCache {
 		const stamp = `${target.thread.deck}|${target.thread.active}`;
 		const entry = this.#entries.get(key);
 		if (entry === undefined || (entry.stamp !== stamp && !entry.loading)) {
-			this.#entries.set(key, { status: entry?.status, stamp, loading: true });
+			setCapped(this.#entries, key, { status: entry?.status, stamp, loading: true });
 			void this.refresh(target).catch(() => undefined);
 		}
 		return entry?.status;

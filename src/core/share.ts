@@ -6,6 +6,7 @@
 import { execFile } from "node:child_process";
 
 import { type MessageKey, t } from "./i18n.js";
+import { setCapped } from "./capped.js";
 
 /** `ThreadGuestShare`, the fields the deck reads. */
 export type GuestShare = { id: string; expiresAt: string; guestName: string | null; messages?: { status: string }[] };
@@ -61,7 +62,7 @@ export class ShareStore {
 	 */
 	of(thread: { key: string; stamp: string }, read: () => Promise<GuestShare | null>): GuestShare | null | undefined {
 		const entry = this.#entries.get(thread.key) ?? { wanted: thread.stamp, loading: false };
-		this.#entries.set(thread.key, entry);
+		setCapped(this.#entries, thread.key, entry);
 		entry.wanted = thread.stamp;
 		this.#load(thread.key, entry, read);
 		return entry.share;
@@ -75,9 +76,6 @@ export class ShareStore {
 		this.onChange();
 	}
 
-	forget(key: string): void {
-		this.#entries.delete(key);
-	}
 
 	#load(key: string, entry: Entry, read: () => Promise<GuestShare | null>): void {
 		if (entry.loading || entry.read === entry.wanted) return;

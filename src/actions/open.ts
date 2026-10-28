@@ -16,6 +16,7 @@ import { deck } from "../deck.js";
 import { canOperate, DeckAction, machineName, machinesOn, pressWhileDisconnected, selectedThread, sendChoices } from "./base.js";
 import { threadNeeds } from "./needs.js";
 import { MachineWatch } from "./watch.js";
+import { setCapped } from "../core/capped.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -64,7 +65,7 @@ class Previews {
 	/** The thread's preview as last known; starts the reads it is missing. Only call it for a thread a visible key shows. */
 	of(thread: DeckThread): { preview?: { url: string; title: string }; render?: HtmlRender; loading: boolean } {
 		const entry = this.#threads.get(thread.key) ?? { revision: 0, listing: false, rendering: false };
-		this.#threads.set(thread.key, entry);
+		setCapped(this.#threads, thread.key, entry);
 		if (entry.sessions === undefined) {
 			this.#list(thread, entry);
 			return { loading: true };

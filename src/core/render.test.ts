@@ -177,7 +177,7 @@ describe("renderControlKey", () => {
 	it("keeps the label to one line above a position cue", () => {
 		const out = svg(renderControlKey({ glyph: "effort", label: "High", cue: ladderCue(5, 2) }));
 		expect(out).toContain(`y="98"`);
-		expect(out).toContain(`<circle cx="72" cy="119" r="10" fill="#FFFFFF"/>`);
+		expect(out).toContain(`<circle cx="72" cy="119" r="11" fill="#FFFFFF"/>`);
 		expect(dotsCue(4, 1).match(/<rect/g)).toHaveLength(4);
 		expect(dotsCue(4, 1).match(/fill-opacity/g)).toHaveLength(3);
 	});
