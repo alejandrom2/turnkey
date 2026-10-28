@@ -28,7 +28,7 @@ Kept here so the listing, the README and the plugin say the same thing. The plug
 
 ## Media
 
-Upload in this order, from `docs/marketplace/` (rendered by the private turnkey-marketing repository):
+Upload in this order, from `listing/` in the private turnkey-marketing repository, which renders them. Only the threads, approve and dial images are also here, for the README.
 
 - **Icon** (288×288): `icon.png`, the logo's keys on black.
 - **Thumbnail** (1920×960): `thumbnail.png`.
