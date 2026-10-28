@@ -38,6 +38,7 @@ jobs:
 
   logi:
     runs-on: macos-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -49,4 +50,5 @@ jobs:
           dotnet-version: 10.0.x
       - run: npm ci
       - run: dotnet tool install --global LogiPluginTool
+      - run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
       - run: npm run logi:pack

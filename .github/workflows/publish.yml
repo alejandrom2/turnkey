@@ -62,6 +62,7 @@ jobs:
   logi:
     needs: publish
     runs-on: macos-latest
+    timeout-minutes: 20
     permissions:
       contents: write
     env:
@@ -79,6 +80,7 @@ jobs:
           dotnet-version: 10.0.x
       - run: npm ci
       - run: dotnet tool install --global LogiPluginTool
+      - run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
       - run: npm run logi:pack
       - run: gh release upload "$TAG" logi/dist/*.lplug4 --clobber
         env:
