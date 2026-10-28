@@ -19,6 +19,13 @@ describe("Keys", () => {
 		expect(sent).toEqual([{ type: "image", action: "counter:", svg: "a@0" }]);
 	});
 
+	it("paints a key again each time it appears", () => {
+		const { subject, sent } = keys();
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		expect(sent).toHaveLength(2);
+	});
+
 	it("moves a key to the place its kind's press returns", () => {
 		const { subject, sent } = keys();
 		subject.handle({ type: "appear", action: "counter:", size: 80 });
@@ -48,7 +55,6 @@ describe("Keys", () => {
 		subject.handle({ type: "disappear", action: "counter:" });
 		state.shown = "b";
 		subject.repaint();
-		subject.handle({ type: "press", action: "counter:" });
 		expect(sent).toHaveLength(1);
 	});
 
@@ -116,5 +122,26 @@ describe("Keys", () => {
 		time = STALE_MS + 1;
 		subject.repaint();
 		expect(sent).toEqual([{ type: "image", action: "counter:fresh", svg: "b" }]);
+	});
+
+	it("a press revives a key forgotten as stale", () => {
+		let time = 0;
+		const sent: SidecarMessage[] = [];
+		const pressed: number[] = [];
+		const kind: KeyKind = { face: (index) => `@${index}`, press: (index) => (pressed.push(index), index + 1) };
+		const subject = new Keys({ counter: kind }, (message) => sent.push(message), () => time);
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		time = STALE_MS + 1;
+		subject.repaint();
+		subject.handle({ type: "press", action: "counter:" });
+		expect(pressed).toEqual([0]);
+		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", svg: "@1" });
+		// A turn counts as seen too, so the key keeps its place past a day from its revival.
+		time = STALE_MS * 2;
+		subject.handle({ type: "turn", action: "counter:", ticks: 1 });
+		time = STALE_MS * 2.5;
+		subject.repaint();
+		subject.handle({ type: "press", action: "counter:" });
+		expect(pressed).toEqual([0, 1]);
 	});
 });
