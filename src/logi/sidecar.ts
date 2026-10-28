@@ -3,6 +3,13 @@ import { createInterface } from "node:readline";
 
 import { ThreadBoard } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
+import { threadCounts } from "../core/infobar.js";
+import { COLORS } from "../core/render.js";
+import { findModel, runtimeModes, withOptionValue } from "../core/models.js";
+import { currentEffort, effortChoices } from "../core/power.js";
+import { QUICK_PROMPTS } from "../core/prompts.js";
+import { limitGauge, limitPools, tightestWindow } from "../core/usage/limitsView.js";
+import { LimitsRefresher } from "../core/usage/refresh.js";
 import { t } from "../core/i18n.js";
 import { Machine } from "../core/t3/machine.js";
 import { findLocalEnvironment, isLoopbackUrl, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
@@ -13,7 +20,8 @@ import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
 import { type MachineRow, startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { settingsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueStep, stepWithin } from "./controls.js";
+import { continueFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
@@ -34,13 +42,141 @@ const log = (level: "info" | "warn", message: string) => send({ type: "log", lev
 const machines = new Map<string, Machine>();
 const board = new ThreadBoard(() => [...machines.values()]);
 const failed = (what: string) => (error: unknown) => log("warn", `Couldn't ${what}: ${error instanceof Error ? error.message : String(error)}`);
+
+/** The thread open in T3 Code, which the prompt, Continue, access and effort actions act on, when its machine lets them. */
+const selected = () => {
+	const thread = board.selectedOn();
+	return thread?.machine.canOperate ? thread : undefined;
+};
+const open = (thread: Parameters<typeof threadDeepLink>[0]) => void openExternal(threadDeepLink(thread)).catch(failed("open the thread"));
+const isPrompt = (name: string): name is keyof typeof PROMPT_GLYPHS => Object.hasOwn(PROMPT_GLYPHS, name);
+
+/** The selected thread's effort levels in T3 Code's order (Ultrathink aside), and the current one's place. */
+function effortLevels(thread: NonNullable<ReturnType<typeof selected>>) {
+	const model = findModel(thread.machine.modelConfig, thread.model);
+	const levels = effortChoices(model).filter((choice) => !choice.ultrathink);
+	const current = String(currentEffort(model, thread.model, false));
+	return { levels, index: levels.findIndex((level) => level.key === current) };
+}
+
+function setEffort(thread: NonNullable<ReturnType<typeof selected>>, key: string | undefined): void {
+	const level = effortLevels(thread).levels.find((candidate) => candidate.key === key);
+	if (level) void thread.machine.setModelSelection(thread, withOptionValue(thread.model, level.optionId, level.value)).catch(failed("change the effort"));
+}
+
+function setMode(thread: NonNullable<ReturnType<typeof selected>>, ticks: number, wrap: boolean): void {
+	const modes = runtimeModes(thread.machine.modelConfig, thread.model.instanceId).map((mode) => mode.value);
+	const next = wrap ? modes[(modes.indexOf(thread.runtimeMode) + 1) % modes.length] : stepWithin(modes, thread.runtimeMode, ticks);
+	if (next && next !== thread.runtimeMode) void thread.machine.setRuntimeMode(thread, next).catch(failed("change the access mode"));
+}
+
+/**
+ * Limits keep each machine on T3 Code's config subscription once a Limits slot has shown, and refresh when the ring
+ * shows them, through T3 Code's five-minute throttle; nothing polls while the ring is closed.
+ */
+const refresher = new LimitsRefresher();
+const watchingConfig = new Set<string>();
+const ready = () => [...machines.values()].filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
+function showLimits(): void {
+	for (const each of ready()) {
+		// shortcut: held until the sidecar exits, since Logi never says a slot is hidden; release it if Logi adds that.
+		if (!watchingConfig.has(each.url)) {
+			watchingConfig.add(each.url);
+			each.watchConfig();
+		}
+		void refresher.refresh(each.environmentId!, () => each.refreshProviders(), true).then(changed, failed("refresh limits"));
+	}
+}
+function tightestLimit(): { percent: number; stale: boolean } | undefined {
+	const now = Date.now();
+	const pools = limitPools(
+		ready().map((each) => ({
+			environmentId: each.environmentId!,
+			label: each.state.kind === "ready" ? each.state.label : each.url,
+			providers: each.modelConfig?.providers,
+			sources: each.limitSources,
+		})),
+		now,
+	);
+	const tightest = tightestWindow(pools);
+	if (tightest === undefined) return undefined;
+	const gauge = limitGauge(tightest.pool, tightest.window, now, "used");
+	return { percent: gauge.percent, stale: gauge.stale };
+}
+
+const operable = () => board.threads.filter((thread) => thread.deck === "running" && thread.machine.canOperate);
+
 const keys = new Keys(
 	{
+		prompt: {
+			face: (_index, name) => (isPrompt(name) ? promptFace(name, selected() !== undefined) : ringFace(COLORS.muted, "chat", { dim: true })),
+			press: (_index, name) => {
+				const thread = selected();
+				if (thread && isPrompt(name)) void thread.machine.send(thread, QUICK_PROMPTS[name].text, "auto").catch(failed("send the prompt"));
+			},
+		},
+		continue: {
+			face: () => continueFace(continueStep(selected())),
+			press: () => {
+				const thread = selected();
+				const step = continueStep(thread);
+				if (thread && step === "open") open(thread);
+				if (thread && step === "send") void thread.machine.send(thread, QUICK_PROMPTS.continue.text, "auto").catch(failed("continue the thread"));
+			},
+		},
+		access: {
+			face: () => modeFace(selected()?.runtimeMode),
+			press: () => {
+				const thread = selected();
+				if (thread) setMode(thread, 1, true);
+			},
+			turn: (ticks) => {
+				const thread = selected();
+				if (thread) setMode(thread, ticks, false);
+			},
+		},
+		effort: {
+			face: () => {
+				const thread = selected();
+				const effort = thread && effortLevels(thread);
+				return effortFace(effort && effort.levels.length > 1 ? { index: Math.max(effort.index, 0), count: effort.levels.length } : undefined);
+			},
+			press: () => {
+				const thread = selected();
+				const effort = thread && effortLevels(thread);
+				if (thread && effort && effort.levels.length > 0) setEffort(thread, effort.levels[(effort.index + 1) % effort.levels.length]!.key);
+			},
+			turn: (ticks) => {
+				const thread = selected();
+				const effort = thread && effortLevels(thread);
+				if (thread && effort) setEffort(thread, stepWithin(effort.levels.map((level) => level.key), effort.levels[effort.index]?.key, ticks));
+			},
+		},
+		limits: {
+			face: () => {
+				const limit = tightestLimit();
+				return limitsFace(limit?.percent, limit?.stale ?? false);
+			},
+			appear: showLimits,
+		},
+		status: {
+			face: () => statusFace(threadCounts(board.threads)),
+			press: () => {
+				const top = board.threads[0];
+				if (top) open(top);
+			},
+		},
+		stopAll: {
+			face: () => stopAllFace(operable().length),
+			press: () => {
+				for (const thread of operable()) void thread.machine.stopRun(thread).catch(failed("stop a run"));
+			},
+		},
 		urgent: {
 			face: () => urgentFace(board.threads),
 			press: () => {
 				const top = board.threads[0];
-				if (top) void openExternal(threadDeepLink(top)).catch(failed("open the thread"));
+				if (top) open(top);
 			},
 		},
 		// Logi shows the banner, and its button, only for a warning or an error: this is the way to the page once paired.

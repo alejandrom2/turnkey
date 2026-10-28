@@ -75,6 +75,24 @@ describe("Keys", () => {
 		expect(sent.at(-1)).toEqual({ type: "image", action: "effort:", svg: "level 2" });
 	});
 
+	it("hands a kind its action's parameter", () => {
+		const pressed: string[] = [];
+		const sent: SidecarMessage[] = [];
+		const subject = new Keys({ prompt: { face: (_index, parameter) => `face ${parameter}`, press: (_index, parameter) => void pressed.push(parameter) } }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "prompt:test", size: 80 });
+		subject.handle({ type: "press", action: "prompt:test" });
+		expect(sent).toEqual([{ type: "image", action: "prompt:test", svg: "face test" }]);
+		expect(pressed).toEqual(["test"]);
+	});
+
+	it("tells a kind each time its key shows, so it can refresh then instead of polling", () => {
+		let shown = 0;
+		const subject = new Keys({ limits: { face: () => "face", appear: () => void shown++ } }, () => undefined);
+		subject.handle({ type: "appear", action: "limits:", size: 80 });
+		subject.handle({ type: "appear", action: "limits:", size: 80 });
+		expect(shown).toBe(2);
+	});
+
 	it("ignores an action of a kind it doesn't know", () => {
 		const sent: SidecarMessage[] = [];
 		const subject = new Keys({}, (message) => sent.push(message));

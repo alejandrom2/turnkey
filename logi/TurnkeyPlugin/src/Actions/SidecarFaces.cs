@@ -37,15 +37,16 @@ namespace Loupedeck.TurnkeyPlugin
 
         public void Turn(String actionParameter, Int32 ticks) => this._sidecar().Send(new { type = "turn", action = this.ActionId(actionParameter), ticks });
 
-        // The SDK has no "now visible" event: the first image request is when a key appears.
+        // The SDK has no "now visible" event: an image request is when a key shows, as each time the Actions Ring opens.
         public BitmapImage Image(String actionParameter, PluginImageSize imageSize)
         {
             var action = this.ActionId(actionParameter);
             if (this._announced.TryAdd(action, true))
             {
                 PluginLog.Info($"{action} appeared at {imageSize}");
-                this._sidecar().Send(new { type = "appear", action, size = Pixels(imageSize) });
             }
+
+            this._sidecar().Send(new { type = "appear", action, size = Pixels(imageSize) });
 
             if (!this._sidecar().IsRunning)
             {

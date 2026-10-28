@@ -1,11 +1,17 @@
 import type { HostMessage, SidecarMessage } from "./protocol.js";
 
-/** One kind of action: its face for a key's place, what a press does (returning the key's next place, or nothing to keep it), and what a scroll does. */
+/**
+ * One kind of action: its face for a key's place and parameter (the action id after the kind), what a press does
+ * (returning the key's next place, or nothing to keep it), what a scroll does, and a hook for each time the key shows.
+ */
 export type KeyKind = {
-	face(index: number): string;
-	press?(index: number): number | void;
-	turn?(ticks: number): void;
+	face(index: number, parameter: string): string;
+	press?(index: number, parameter: string): number | void;
+	turn?(ticks: number, parameter: string): void;
+	appear?(): void;
 };
+
+const parameterOf = (action: string): string => action.slice(action.indexOf(":") + 1);
 
 /** `face` is the last SVG sent, so a repaint that changes nothing sends nothing. */
 type Key = { kind: KeyKind; index: number; face?: string };
@@ -25,6 +31,7 @@ export class Keys {
 				const kind = this.kinds[message.action.split(":")[0]!];
 				if (kind === undefined) return;
 				this.#keys.set(message.action, { kind, index: this.#keys.get(message.action)?.index ?? 0 });
+				kind.appear?.();
 				break;
 			}
 			case "disappear":
@@ -33,13 +40,13 @@ export class Keys {
 			case "press": {
 				const key = this.#keys.get(message.action);
 				if (key === undefined) return;
-				key.index = key.kind.press?.(key.index) ?? key.index;
+				key.index = key.kind.press?.(key.index, parameterOf(message.action)) ?? key.index;
 				break;
 			}
 			case "turn": {
 				const key = this.#keys.get(message.action);
 				if (key === undefined) return;
-				key.kind.turn?.(message.ticks);
+				key.kind.turn?.(message.ticks, parameterOf(message.action));
 				break;
 			}
 		}
@@ -53,7 +60,7 @@ export class Keys {
 	#paint(action: string): void {
 		const key = this.#keys.get(action);
 		if (key === undefined) return;
-		const face = key.kind.face(key.index);
+		const face = key.kind.face(key.index, parameterOf(action));
 		if (face === key.face) return;
 		key.face = face;
 		this.send({ type: "image", action, svg: face });
