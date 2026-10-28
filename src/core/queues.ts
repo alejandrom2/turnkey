@@ -36,6 +36,12 @@ export class QueueStore {
 		this.onChange();
 	}
 
+	/** Drops the threads not in `keys`, the board's threads, so threads that come and go don't pile up. */
+	retain(keys: Iterable<string>): void {
+		const kept = new Set(keys);
+		for (const key of this.#entries.keys()) if (!kept.has(key)) this.#entries.delete(key);
+	}
+
 	#load(key: string, entry: Entry, read: () => Promise<ThreadQueue>): void {
 		if (entry.loading || entry.read === entry.wanted) return;
 		const stamp = entry.wanted;
