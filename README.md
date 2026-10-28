@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/logo.png" alt="Turnkey logo: three Stream Deck keys" width="160" height="160">
+<img src="docs/logo.png" alt="Turnkey logo: three Stream Deck keys" width="240" height="240">
 
 # Turnkey for T3 Code
 
