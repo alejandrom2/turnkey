@@ -88,11 +88,11 @@
           <source>Stops the T3 Code run that started last.</source>
           <target>T3 Code에서 마지막으로 시작된 실행을 중지합니다.</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___SendPrompt" translate="yes">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand" translate="yes">
           <source>Send prompt</source>
           <target>프롬프트 보내기</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___SendPrompt###description" translate="yes">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand###description" translate="yes">
           <source>Sends the prompt you write here to the thread open in T3 Code.</source>
           <target>여기에 쓴 프롬프트를 T3 Code에서 열려 있는 스레드에 보냅니다.</target>
         </trans-unit>

@@ -96,11 +96,11 @@
           <source>Stops the T3 Code run that started last.</source>
           <target />
         </trans-unit>
-        <trans-unit id="$Turnkey___SendPrompt" translate="yes">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand" translate="yes">
           <source>Send prompt</source>
           <target />
         </trans-unit>
-        <trans-unit id="$Turnkey___SendPrompt###description" translate="yes">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand###description" translate="yes">
           <source>Sends the prompt you write here to the thread open in T3 Code.</source>
           <target />
         </trans-unit>

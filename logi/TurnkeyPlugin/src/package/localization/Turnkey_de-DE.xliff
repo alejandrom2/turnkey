@@ -88,11 +88,11 @@
           <source>Stops the T3 Code run that started last.</source>
           <target>Stoppt den zuletzt gestarteten Lauf in T3 Code.</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___SendPrompt" translate="yes">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand" translate="yes">
           <source>Send prompt</source>
           <target>Prompt senden</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___SendPrompt###description" translate="yes">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand###description" translate="yes">
           <source>Sends the prompt you write here to the thread open in T3 Code.</source>
           <target>Sendet den hier geschriebenen Prompt an den in T3 Code geöffneten Thread.</target>
         </trans-unit>

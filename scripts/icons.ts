@@ -112,6 +112,7 @@ const SYMBOLS: Record<string, GlyphName> = {
 	DiagnoseCommand: "hammer",
 	ExplainCommand: "book",
 	CommitCommand: "gitCommit",
+	SendPromptCommand: "send",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
 	LimitsCommand: "gauge",
