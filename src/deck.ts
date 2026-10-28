@@ -434,9 +434,6 @@ class Deck implements CredentialStore {
 	/** Takes in settings from Stream Deck; true when the plugin's own copy has to be written back. */
 	#take(incoming: GlobalSettings): boolean {
 		let settings = incoming;
-		// The Gradient option is gone; its users get T3 Code's background.
-		const migrated = settings.stripBackground === "gradient";
-		if (migrated) settings = { ...settings, stripBackground: "t3" };
 		// The inspector writes from its own copy of global settings; the plugin's machines and tokens stay authoritative.
 		if (this.#authLoaded) settings = { ...settings, environments: this.#settings.environments };
 		const restyled = JSON.stringify(appearanceOf(settings)) !== JSON.stringify(appearanceOf(this.#settings));
@@ -450,7 +447,7 @@ class Deck implements CredentialStore {
 			this.#verboseUntil = Number.isFinite(settings.verboseUntil) ? settings.verboseUntil : undefined;
 			this.#syncVerbose();
 		}
-		return migrated || this.#stale(incoming);
+		return this.#stale(incoming);
 	}
 
 	/** Starts and stops machines to match the current settings, after looking for T3 Code on this computer. */

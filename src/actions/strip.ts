@@ -142,10 +142,6 @@ export abstract class StripDial<T extends DialSettings & JsonObject> extends Dec
 		return appearance.background === "flow" ? { ...appearance, run: runs.get(action.id) } : appearance;
 	}
 
-	protected override migrateSettings(settings: T): T | undefined {
-		return settings.background === "gradient" ? { ...settings, background: "t3" } : undefined;
-	}
-
 	#style(action: Action<T>) {
 		return resolveStripStyle(deck.appearance, this.settingsOf(action), "classic");
 	}
