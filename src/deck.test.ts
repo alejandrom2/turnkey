@@ -5,7 +5,13 @@ import { environmentRoute, FakeSocket } from "./core/t3/testing.js";
 type Settings = Record<string, unknown>;
 
 const sd = vi.hoisted(() => {
-	const state = { stored: {} as Record<string, unknown>, onGlobal: undefined as ((ev: { settings: Record<string, unknown> }) => void) | undefined };
+	const state = {
+		stored: {} as Record<string, unknown>,
+		onGlobal: undefined as ((ev: { settings: Record<string, unknown> }) => void) | undefined,
+		onLaunch: undefined as (() => void) | undefined,
+		onTerminate: undefined as (() => void) | undefined,
+		switches: [] as [string, string | undefined][],
+	};
 	const noop = () => ({ dispose: () => undefined });
 	return {
 		state,
@@ -21,7 +27,17 @@ const sd = vi.hoisted(() => {
 				onDidReceiveSettings: noop,
 			},
 			ui: { action: undefined, onDidAppear: noop, sendToPropertyInspector: async () => undefined },
-			system: { onSystemDidWakeUp: noop, openUrl: async () => undefined },
+			system: {
+				onSystemDidWakeUp: noop,
+				onApplicationDidLaunch: (listener: () => void) => void (state.onLaunch = listener),
+				onApplicationDidTerminate: (listener: () => void) => void (state.onTerminate = listener),
+				openUrl: async () => undefined,
+			},
+			profiles: { switchToProfile: async (device: string, profile?: string) => void state.switches.push([device, profile]) },
+			devices: [
+				{ id: "plus", type: 7, isConnected: true },
+				{ id: "mobile", type: 3, isConnected: true },
+			],
 		},
 	};
 });
@@ -74,6 +90,7 @@ function network() {
 
 async function load(stored: Settings = {}) {
 	sd.state.stored = stored;
+	sd.state.switches = [];
 	vi.resetModules();
 	const { deck } = await import("./deck.js");
 	await deck.init();
@@ -130,5 +147,37 @@ describe("Deck settings", () => {
 		local.open();
 		await retrying;
 		expect(urls(deck)).toEqual([STUDIO]);
+	});
+});
+
+describe("Deck auto-switch", () => {
+	it("puts a deck on its Turnkey profile while T3 Code runs, and back when it quits", async () => {
+		network();
+		const deck = await load();
+		sd.state.onLaunch?.();
+		deck.setVisible("key", "plus");
+		sd.state.onTerminate?.();
+		expect(sd.state.switches).toEqual([
+			["plus", "profiles/turnkey-plus"],
+			["plus", undefined],
+		]);
+	});
+
+	it("leaves a deck the user moved to another profile", async () => {
+		network();
+		const deck = await load();
+		sd.state.onLaunch?.();
+		deck.setVisible("key", "plus");
+		deck.setVisible("key", undefined);
+		sd.state.onTerminate?.();
+		expect(sd.state.switches).toEqual([["plus", "profiles/turnkey-plus"]]);
+	});
+
+	it("doesn't switch when Auto-switch is off", async () => {
+		network();
+		await load({ autoSwitch: "off" });
+		sd.state.onLaunch?.();
+		sd.state.onTerminate?.();
+		expect(sd.state.switches).toEqual([]);
 	});
 });

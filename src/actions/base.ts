@@ -302,7 +302,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		this.#store(ev.action, ev.payload.settings);
 		this.#placed.set(ev.action.id, { device: ev.action.device.id, position: ev.action.isKey() ? ev.action.coordinates : undefined });
 		this.forgetSent(ev.action.id);
-		deck.setVisible(ev.action.id, true);
+		deck.setVisible(ev.action.id, ev.action.device.id);
 		this.repaintAll();
 		this.watcher?.show(ev.action.id, () => this.watched(ev.action));
 	}
@@ -320,7 +320,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		deck.animator.set(ev.action.id, undefined);
 		reviews.cancel(ev.action.id);
 		this.#endReview(ev.action.id);
-		deck.setVisible(ev.action.id, false);
+		deck.setVisible(ev.action.id, undefined);
 		this.repaintAll();
 	}
 

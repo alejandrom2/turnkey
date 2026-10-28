@@ -815,6 +815,8 @@
 				"idlePet": "Leerlauf-Haustier",
 				"previewPet": "Haustier zeigen",
 				"idlePetHint": "Nach zwei Minuten ohne Drücken, Drehen oder Berühren läuft ein kleiner Roboter über deine längste Reihe benachbarter Regler-Leisten, bis zu dreimal, im Abstand von vier Minuten. Jedes Drücken, Drehen oder Berühren einer Turnkey-Aktion schickt ihn weg. Er folgt Bewegung: Reduziert läuft gemächlich, Aus hält ihn fern.",
+				"autoSwitch": "Automatisch wechseln",
+				"autoSwitchHint": "Stellt jedes Stream Deck auf sein Turnkey-Profil, wenn T3 Code geöffnet wird, und zurück auf das vorherige Profil, wenn es beendet wird. Ein Deck, das du inzwischen auf ein anderes Profil gestellt hast, bleibt dort.",
 				"confirm": "Vor dem Senden bestätigen",
 				"confirmHint": "Gilt für Prompt senden, Lenken, Skill ausführen, den Prompt-Regler und den Skill-Regler; Modell, Aufwand, Tempo, Zugriff und der Power-Regler wirken immer sofort. Prüfen zeigt beim ersten Drücken, was wohin geht; drücke innerhalb von 10 Sekunden erneut, um zu senden. Halten sendet bei gehaltenem Druck, daher kann Halten nicht zugleich neu starten oder einen Thread starten. Jede Aktion kann das überschreiben."
 			},

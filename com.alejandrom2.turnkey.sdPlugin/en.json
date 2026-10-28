@@ -815,6 +815,8 @@
 				"idlePet": "Idle pet",
 				"previewPet": "Preview pet",
 				"idlePetHint": "After two minutes without a press, turn or touch, a small robot walks across your longest row of neighboring dial strips, up to three times, four minutes apart. Any press, turn or touch on a Turnkey action sends it away. It follows Motion: Reduced walks calmly, Off keeps it away.",
+				"autoSwitch": "Auto-switch",
+				"autoSwitchHint": "Puts each Stream Deck on its Turnkey profile when T3 Code opens, and back on the profile before when it quits. A deck you moved to another profile meanwhile stays where it is.",
 				"confirm": "Confirm before sending",
 				"confirmHint": "Applies to Send Prompt, Steer, Run Skill, the Prompts dial and the Skills dial; Model, Effort, Speed, Access and the Power dial always apply at once. Review shows what goes where on the first press; press again within 10 seconds to send. Hold sends on a held press, so holding can't also restart or start a thread. Each action can override this."
 			},

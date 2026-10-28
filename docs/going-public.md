@@ -10,7 +10,7 @@ Steps for the day the repository becomes public. Until then everything stays pri
 4. Allow auto-merge: `gh api -X PATCH repos/alejandrom2/turnkey -F allow_auto_merge=true`
 5. Security (Settings → Code security): turn on private vulnerability reporting, secret scanning with push protection, and Dependabot alerts.
 6. Discussions: make sure an **Ideas** category exists; the issue form links to it.
-7. Add `"URL": "https://github.com/alejandrom2/turnkey"` to the manifest (validation checks it answers) and set the repository's homepage.
+7. Set the repository's homepage. The manifest's `URL` already points at the repository; `streamdeck validate` stops warning that it returns 404 once it is public.
 8. Upload `docs/social-preview.png` (rendered by the private turnkey-marketing repository) as the social preview (Settings → General → Social preview; there's no API for it).
 9. Share the repository with the T3 Code team and wait for their reply before listing anything. Turnkey carries T3 Code's name and mark.
 10. Once they're fine with it, submit to the Marketplace from Maker Console, as a free product, with the latest release's `.streamDeckPlugin` and `docs/listing.md`. Leave the EULA empty. Keep any donation link to the GitHub README, never the listing or the plugin.

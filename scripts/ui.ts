@@ -504,6 +504,13 @@ const settingsPage = `<!doctype html>
 				</section>
 				<section id="section-behavior" hidden>
 					<h1${text("inspector.settings.behavior")}</h1>${field(
+						"inspector.advanced.autoSwitch",
+						select("autoSwitch", [
+							["on", "inspector.idlePet.on"],
+							["off", "inspector.idlePet.off"],
+						]),
+						"inspector.advanced.autoSwitchHint",
+					)}${field(
 						"inspector.advanced.confirm",
 						select("confirmSend", CHOICES.confirm),
 						"inspector.advanced.confirmHint",
@@ -625,7 +632,7 @@ const settingsPage = `<!doctype html>
 			}
 
 			/** What Stream Deck's own fields showed for a setting never saved. */
-			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "${COLORS.card}", stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
+			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "${COLORS.card}", stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient", autoSwitch: "on" };
 			const globals = {};
 			function renderGlobals(settings) {
 				Object.assign(globals, settings);
