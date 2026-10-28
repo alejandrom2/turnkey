@@ -11,9 +11,9 @@ Kept here so the listing, the README and the plugin say the same thing. The plug
 
 ## Product
 
-**Name:** Turnkey for T3 Code (final once submitted: Maker Console can't rename a product)
+**Name:** Turnkey (final once submitted: Maker Console can't rename a product). "for T3 Code" is never part of the name or on its line: where there is room, it sits under the name as subtext; elsewhere the description names T3 Code.
 
-**Category:** Turnkey for T3 Code (Maker Console asks for the plugin's own name)
+**Category:** Turnkey (Maker Console asks for the plugin's own name)
 
 **Price:** Free.
 

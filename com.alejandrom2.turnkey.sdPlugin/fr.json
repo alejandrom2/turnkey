@@ -1,7 +1,7 @@
 {
-	"Name": "Turnkey for T3 Code",
+	"Name": "Turnkey",
 	"Description": "Suivez et pilotez les fils T3 Code depuis Stream Deck : état des fils, arrêt, prompts, options de modèle et réponses, pour tous les fournisseurs.",
-	"Category": "Turnkey for T3 Code",
+	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Fil",
 		"Tooltip": "Un fil du tableau, attribué selon la position de la touche : état, titre et minuteur. Un appui l'ouvre dans T3 Code ; maintenir le sélectionne."
