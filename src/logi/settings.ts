@@ -9,7 +9,12 @@ export class FileSettings {
 	#saving: Promise<void> = Promise.resolve();
 
 	constructor(private readonly path: string) {
-		this.#saved = (readJson(path) as Saved | undefined) ?? {};
+		try {
+			this.#saved = (readJson(path) as Saved | undefined) ?? {};
+		} catch {
+			// Settings hold no secrets, so an unreadable file is the defaults; it stays as is until a setting changes.
+			this.#saved = {};
+		}
 	}
 
 	get haptics(): boolean {

@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -36,5 +36,17 @@ describe("FileSettings", () => {
 		const [aside] = readdirSync(join(path, "..")).filter((name) => name.startsWith("settings.json.corrupt-"));
 		expect(readFileSync(join(path, "..", aside), "utf8")).toBe("{nope");
 		expect(existsSync(path)).toBe(false);
+	});
+
+	it.skipIf(process.platform === "win32")("falls back to defaults when the file can't be read", async () => {
+		const path = file();
+		writeFileSync(path, '{"haptics":false}');
+		chmodSync(path, 0o000);
+		try {
+			expect(new FileSettings(path).haptics).toBe(true);
+		} finally {
+			chmodSync(path, 0o600);
+		}
+		expect(readFileSync(path, "utf8")).toBe('{"haptics":false}');
 	});
 });
