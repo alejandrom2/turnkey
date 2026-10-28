@@ -58,3 +58,28 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ github.token }}
+
+  logi:
+    needs: publish
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: npm ci
+      - run: dotnet tool install --global LogiPluginTool
+      - run: npm run logi:pack
+      - run: gh release upload "$TAG" logi/dist/*.lplug4 --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

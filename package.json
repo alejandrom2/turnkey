@@ -2,7 +2,7 @@
 	"name": "turnkey",
 	"version": "0.11.0",
 	"private": true,
-	"description": "Stream Deck plugin for T3 Code environments, over T3 Code's client API.",
+	"description": "Stream Deck and Logitech plugins for T3 Code environments, over T3 Code's client API.",
 	"scripts": {
 		"build": "rollup -c",
 		"watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.alejandrom2.turnkey\"",

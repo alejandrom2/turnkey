@@ -35,3 +35,18 @@ jobs:
         run: test -z "$(git status --porcelain)" || { git status; echo "::error::Run npm run assets and commit its changes."; exit 1; }
       - run: npm run build
       - run: npx streamdeck validate com.alejandrom2.turnkey.sdPlugin
+
+  logi:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: npm ci
+      - run: dotnet tool install --global LogiPluginTool
+      - run: npm run logi:pack

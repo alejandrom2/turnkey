@@ -19,6 +19,8 @@ npx streamdeck link com.alejandrom2.turnkey.sdPlugin
 npm run watch          # rebuilds and restarts the plugin as you edit
 ```
 
+For the Logitech plugin you also need the .NET 10 SDK and `dotnet tool install --global LogiPluginTool` (on macOS with Homebrew's .NET, set `DOTNET_ROOT` to its `libexec`). `npm run logi:pack` builds the sidecar and the C# plugin and packs `logi/dist/Turnkey_<version>.lplug4`. Logi Plugin Service ships Node 22, which runs the sidecar; a system Node is the fallback. After changing an action's English text in `logi/TurnkeyPlugin/`, regenerate the template with `logiplugintool xliff Turnkey <dir>` (Logi Plugin Service running), drop its `<header>`, and run `npm run assets` to regenerate the translations.
+
 Turn on Stream Deck's developer mode (`npx streamdeck dev`) if linking complains. Then open any Turnkey action's settings and pair with a link from T3 Code (Settings → Sharing & access → Create link).
 
 ## How the code is laid out
@@ -41,6 +43,7 @@ npx oxlint src
 npm run assets        # regenerates settings pages, icons, profiles and the manifest version: commit what it changes
 npm run build
 npx streamdeck validate com.alejandrom2.turnkey.sdPlugin
+npm run logi:pack     # needs .NET 10 and LogiPluginTool
 ```
 
 CI runs the same checks.
