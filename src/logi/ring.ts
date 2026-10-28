@@ -5,17 +5,16 @@ import { COLORS, glyph, type GlyphName, STATE_COLOR, svgImage } from "../core/re
 type RingThread = Pick<DeckThread, "deck" | "unseen">;
 
 /**
- * A ring slot is a thumbnail, so a face is one disc in the action's color and one big glyph, with no text but a count.
- * The corners stay transparent so it sits on the ring as a disc.
+ * The ring draws its own disc behind each slot, white and black on hover, so a face is just one glyph in the action's
+ * color, drawn heavy enough for both, plus a count when one matters.
  */
 export function ringFace(color: string, name: GlyphName, options: { badge?: number | string; dim?: boolean } = {}): string {
-	const disc = `<circle cx="72" cy="72" r="64" fill="${options.dim ? COLORS.muted : color}"${options.dim ? ` fill-opacity=".35"` : ""}/>`;
-	const mark = glyph(name, 36, 36, 72, COLORS.key, 2.6);
+	const mark = glyph(name, 42, 42, 60, options.dim ? COLORS.muted : color, 3);
 	const badge =
 		options.badge === undefined
 			? ""
-			: `<circle cx="116" cy="28" r="22" fill="${COLORS.key}"/><text x="116" y="37" font-size="26" font-weight="700" text-anchor="middle" fill="${COLORS.text}">${options.badge}</text>`;
-	return svgImage(144, 144, disc + (options.dim ? `<g opacity=".5">${mark}</g>` : mark) + badge);
+			: `<circle cx="108" cy="36" r="20" fill="${COLORS.key}"/><text x="108" y="44" font-size="24" font-weight="700" text-anchor="middle" fill="${COLORS.text}">${options.badge}</text>`;
+	return svgImage(144, 144, (options.dim ? `<g opacity=".6">${mark}</g>` : mark) + badge);
 }
 
 const waiting = (deck: DeckThread["deck"]) => deck === "approval" || deck === "question";
