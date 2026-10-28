@@ -13,6 +13,8 @@ jobs:
     uses: ./.github/workflows/ci.yml
 
   release-please:
+    # Merging a release PR races the tag job and publish; the next push opens the next release PR.
+    if: "!startsWith(github.event.head_commit.message, 'chore(main): release')"
     runs-on: ubuntu-latest
     permissions:
       contents: write
