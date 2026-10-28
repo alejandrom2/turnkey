@@ -1,6 +1,6 @@
 {
 	"name": "turnkey",
-	"version": "0.10.0",
+	"version": "0.11.0",
 	"private": true,
 	"description": "Stream Deck plugin for T3 Code environments, over T3 Code's client API.",
 	"scripts": {

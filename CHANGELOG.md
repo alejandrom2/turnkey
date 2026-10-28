@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.0](https://github.com/alejandrom2/turnkey/compare/v0.10.0...v0.11.0) (2026-10-28)
+
+
+### Features
+
+* one Turnkey profile per deck, with folders, that switches in when T3 Code opens ([#19](https://github.com/alejandrom2/turnkey/issues/19)) ([b813115](https://github.com/alejandrom2/turnkey/commit/b813115439fe2247dea1c780940cafc7600e2841))
+* the Neo info bar follows the page: model, queue, branch, pull request and limits ([#20](https://github.com/alejandrom2/turnkey/issues/20)) ([37734ad](https://github.com/alejandrom2/turnkey/commit/37734ad5205e889f223d9a2e5f53fa3ceb163a71))
+* the plugin is named Turnkey, with "for T3 Code" only as subtext under it ([6956d5b](https://github.com/alejandrom2/turnkey/commit/6956d5b8f87081b397f394bce493e04129ff40ac))
+
 ## [0.10.0](https://github.com/alejandrom2/turnkey/compare/v0.9.2...v0.10.0) (2026-10-28)
 
 
