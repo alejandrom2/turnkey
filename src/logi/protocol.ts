@@ -4,9 +4,9 @@ export type HostMessage = { type: "appear"; action: string; size: number } | { t
 /** A moment worth a buzz on an MX Master 4; the plugin raises it as a Logi event of the same name. */
 export type HapticEvent = "approvalNeeded" | "questionAsked" | "runFinished" | "runFailed";
 
-/** Lines sent back: `png` is base64. Log lines are the only way to log, since stdout is the channel. */
+/** Lines sent back: `svg` is the face's markup, which the plugin draws. Log lines are the only way to log, since stdout is the channel. */
 export type SidecarMessage =
-	| { type: "image"; action: string; png: string }
+	| { type: "image"; action: string; svg: string }
 	| { type: "haptic"; event: HapticEvent }
 	| { type: "log"; level: "info" | "warn"; message: string };
 

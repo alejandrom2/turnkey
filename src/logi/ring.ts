@@ -1,5 +1,5 @@
 import type { DeckThread } from "../core/board.js";
-import { COLORS, glyph, type GlyphName, STATE_COLOR, svgImage } from "../core/render.js";
+import { COLORS, glyph, type GlyphName, STATE_COLOR, svgMarkup } from "../core/render.js";
 
 /** What the Actions Ring reads from a thread. */
 type RingThread = Pick<DeckThread, "deck" | "unseen">;
@@ -14,7 +14,7 @@ export function ringFace(color: string, name: GlyphName, options: { badge?: numb
 		options.badge === undefined
 			? ""
 			: `<circle cx="108" cy="36" r="20" fill="${COLORS.key}"/><text x="108" y="44" font-size="24" font-weight="700" text-anchor="middle" fill="${COLORS.text}">${options.badge}</text>`;
-	return svgImage(144, 144, (options.dim ? `<g opacity=".6">${mark}</g>` : mark) + badge);
+	return svgMarkup(144, 144, (options.dim ? `<g opacity=".6">${mark}</g>` : mark) + badge);
 }
 
 const waiting = (deck: DeckThread["deck"]) => deck === "approval" || deck === "question";

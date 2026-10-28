@@ -48,15 +48,13 @@ const config = {
 };
 
 /**
- * The Logitech plugin's sidecar: Turnkey's core over stdin and stdout. resvg stays external because its
- * renderer is a native binary per platform.
+ * The Logitech plugin's sidecar: Turnkey's core over stdin and stdout, in one file with no native parts.
  * @type {import('rollup').RollupOptions}
  */
 const sidecar = {
 	...config,
 	input: "src/logi/sidecar.ts",
 	output: { ...config.output, file: "logi/bin/sidecar.js" },
-	external: ["@resvg/resvg-js"],
 	plugins: config.plugins.filter((plugin) => plugin && plugin.name !== "watch-externals"),
 };
 

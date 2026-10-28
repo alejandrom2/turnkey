@@ -6,8 +6,8 @@ export type KeyKind = {
 	press?(index: number): number | void;
 };
 
-/** `face` is the last SVG sent: comparing it skips resvg, the expensive part, when nothing shown changed. */
-type Key = { kind: KeyKind; size: number; index: number; face?: string };
+/** `face` is the last SVG sent, so a repaint that changes nothing sends nothing. */
+type Key = { kind: KeyKind; index: number; face?: string };
 
 /** The plugin's keys and ring slots by action id, `<kind>:<parameter>`, each painted by its kind. */
 export class Keys {
@@ -16,7 +16,6 @@ export class Keys {
 	constructor(
 		private readonly kinds: Readonly<Record<string, KeyKind>>,
 		private readonly send: (message: SidecarMessage) => void,
-		private readonly raster: (dataUrl: string, size: number) => string,
 	) {}
 
 	handle(message: HostMessage): void {
@@ -24,7 +23,7 @@ export class Keys {
 			case "appear": {
 				const kind = this.kinds[message.action.split(":")[0]!];
 				if (kind === undefined) return;
-				this.#keys.set(message.action, { kind, size: message.size, index: this.#keys.get(message.action)?.index ?? 0 });
+				this.#keys.set(message.action, { kind, index: this.#keys.get(message.action)?.index ?? 0 });
 				break;
 			}
 			case "disappear":
@@ -50,6 +49,6 @@ export class Keys {
 		const face = key.kind.face(key.index);
 		if (face === key.face) return;
 		key.face = face;
-		this.send({ type: "image", action, png: this.raster(face, key.size) });
+		this.send({ type: "image", action, svg: face });
 	}
 }

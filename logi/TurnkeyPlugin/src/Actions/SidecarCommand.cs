@@ -52,7 +52,7 @@ namespace Loupedeck.TurnkeyPlugin
                 return Stopped(imageSize);
             }
 
-            return this._images.TryGetValue(action, out var png) ? BitmapImage.FromBase64String(png) : Blank(imageSize);
+            return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(imageSize);
         }
 
         private String ActionId(String actionParameter) => $"{this._kind}:{actionParameter ?? ""}";
@@ -81,14 +81,14 @@ namespace Loupedeck.TurnkeyPlugin
             return builder.ToImage();
         }
 
-        private void OnImage(String action, String png)
+        private void OnImage(String action, String svg)
         {
             if (!action.StartsWith($"{this._kind}:"))
             {
                 return;
             }
 
-            this._images[action] = png;
+            this._images[action] = svg;
             this.ActionImageChanged();
         }
 

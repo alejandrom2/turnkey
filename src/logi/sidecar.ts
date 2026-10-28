@@ -10,7 +10,6 @@ import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
 import { Keys } from "./keys.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { keyPng } from "./raster.js";
 import { stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileCredentials } from "./store.js";
 
@@ -47,7 +46,6 @@ const keys = new Keys(
 		},
 	},
 	send,
-	keyPng,
 );
 const haptics = new HapticCues(send);
 const changed = batched(

@@ -19,7 +19,7 @@ namespace Loupedeck.TurnkeyPlugin
         private Int32 _restarts;
         private Boolean _disposed;
 
-        // An action's new face: its id and base64 PNG.
+        // An action's new face: its id and SVG markup.
         public event Action<String, String> Image;
 
         // A fresh sidecar knows no keys, so actions announce themselves again.
@@ -186,7 +186,7 @@ namespace Loupedeck.TurnkeyPlugin
                     case "image":
                         // A sidecar that draws is healthy: crashes days apart shouldn't use up the restarts.
                         this._restarts = 0;
-                        this.Image?.Invoke(root.GetProperty("action").GetString(), root.GetProperty("png").GetString());
+                        this.Image?.Invoke(root.GetProperty("action").GetString(), root.GetProperty("svg").GetString());
                         break;
                     case "haptic":
                         this.Haptic?.Invoke(root.GetProperty("event").GetString());
