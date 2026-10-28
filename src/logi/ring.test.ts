@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { COLORS, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
-import { continueFace, effortFace, limitsFace, modeFace, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 
 const thread = (deck: DeckState, unseen = false) => ({ deck, unseen });
 
@@ -55,6 +55,11 @@ describe("the controls' faces", () => {
 		expect(promptFace("test", true)).toBe(ringFace(COLORS.accent, "scriptTest"));
 		expect(promptFace("commit", false)).toBe(ringFace(COLORS.accent, "gitCommit", { dim: true }));
 		expect(new Set((["test", "fix", "explain", "commit"] as const).map((name) => promptFace(name, true))).size).toBe(4);
+	});
+
+	it("draws a custom prompt as Send's arrow, dimmed without a thread or a prompt", () => {
+		expect(customPromptFace(true)).toBe(ringFace(COLORS.accent, "send"));
+		expect(customPromptFace(false)).toBe(ringFace(COLORS.accent, "send", { dim: true }));
 	});
 
 	it("shows what Continue will do", () => {

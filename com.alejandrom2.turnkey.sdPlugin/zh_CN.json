@@ -1289,6 +1289,10 @@
 				"effort": {
 					"description": "滚动以更改 T3 Code 中打开的对话的推理强度；按下切换到下一级。"
 				},
+				"send": {
+					"name": "发送提示词",
+					"description": "把你在这里写的提示词发送到 T3 Code 中打开的对话。"
+				},
 				"group": {
 					"threads": "对话",
 					"settings": "设置"

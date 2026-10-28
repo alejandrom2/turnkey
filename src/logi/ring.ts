@@ -95,3 +95,6 @@ export function effortFace(level: { index: number; count: number } | undefined):
 	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="104" r="6" fill="${COLORS.accent}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
 	return svgMarkup(144, 144, mark + dots);
 }
+
+/** A prompt the user wrote in the action's editor, drawn as Stream Deck's Send arrow. */
+export const customPromptFace = (available: boolean): string => ringFace(COLORS.accent, "send", { dim: !available });

@@ -1289,6 +1289,10 @@
 				"effort": {
 					"description": "スクロールで T3 Code で開いているスレッドのエフォートを変更します。押すと次のレベルへ。"
 				},
+				"send": {
+					"name": "プロンプトを送信",
+					"description": "ここに書いたプロンプトを T3 Code で開いているスレッドに送ります。"
+				},
 				"group": {
 					"threads": "スレッド",
 					"settings": "設定"

@@ -37,23 +37,27 @@ namespace Loupedeck.TurnkeyPlugin
 
         public void Turn(String actionParameter, Int32 ticks) => this._sidecar().Send(new { type = "turn", action = this.ActionId(actionParameter), ticks });
 
+        public BitmapImage Image(String actionParameter, PluginImageSize imageSize) => this.Image(actionParameter, Pixels(imageSize));
+
         // The SDK has no "now visible" event: an image request is when a key shows, as each time the Actions Ring opens.
-        public BitmapImage Image(String actionParameter, PluginImageSize imageSize)
+        public BitmapImage Image(String actionParameter, Int32 pixels)
         {
             var action = this.ActionId(actionParameter);
+
+            // The kind only: a parameter can be a prompt the user wrote.
             if (this._announced.TryAdd(action, true))
             {
-                PluginLog.Info($"{action} appeared at {imageSize}");
+                PluginLog.Info($"A {this._kind} action appeared at {pixels} px");
             }
 
-            this._sidecar().Send(new { type = "appear", action, size = Pixels(imageSize) });
+            this._sidecar().Send(new { type = "appear", action, size = pixels });
 
             if (!this._sidecar().IsRunning)
             {
-                return StoppedImage(imageSize);
+                return StoppedImage(pixels);
             }
 
-            return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(imageSize);
+            return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
         }
 
         // Logitech's samples draw 80 px faces on the 90 sizes.
@@ -64,17 +68,17 @@ namespace Loupedeck.TurnkeyPlugin
             _ => 80,
         };
 
-        private static BitmapImage Blank(PluginImageSize imageSize)
+        private static BitmapImage Blank(Int32 pixels)
         {
-            var builder = new BitmapBuilder(imageSize);
+            var builder = new BitmapBuilder(pixels, pixels);
             builder.Clear(BitmapColor.FromRgb(0x111111));
             return builder.ToImage();
         }
 
         // Drawn here because the sidecar that draws everything else is the thing that's down.
-        private static BitmapImage StoppedImage(PluginImageSize imageSize)
+        private static BitmapImage StoppedImage(Int32 pixels)
         {
-            var builder = new BitmapBuilder(imageSize);
+            var builder = new BitmapBuilder(pixels, pixels);
             builder.Clear(BitmapColor.FromRgb(0x111111));
             builder.DrawText("Turnkey stopped", BitmapColor.FromRgb(0xFF6764), 14, 16, 4);
             return builder.ToImage();

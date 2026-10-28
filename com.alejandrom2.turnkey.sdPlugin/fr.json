@@ -1289,6 +1289,10 @@
 				"effort": {
 					"description": "Faites défiler pour changer l'effort du fil ouvert dans T3 Code ; appuyez pour le niveau suivant."
 				},
+				"send": {
+					"name": "Envoyer un prompt",
+					"description": "Envoie le prompt écrit ici au fil ouvert dans T3 Code."
+				},
 				"group": {
 					"threads": "Fils",
 					"settings": "Réglages"

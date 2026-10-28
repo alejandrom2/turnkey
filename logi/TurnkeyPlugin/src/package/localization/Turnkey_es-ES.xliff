@@ -76,6 +76,14 @@
           <source>Stops the T3 Code run that started last.</source>
           <target>Detiene la última ejecución que empezó en T3 Code.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___SendPrompt" translate="yes">
+          <source>Send prompt</source>
+          <target>Enviar prompt</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___SendPrompt###description" translate="yes">
+          <source>Sends the prompt you write here to the thread open in T3 Code.</source>
+          <target>Envía el prompt que escribas aquí al hilo abierto en T3 Code.</target>
+        </trans-unit>
       </group>
       <group id="@adjustments">
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessAdjustment" translate="yes">

@@ -84,6 +84,14 @@
           <source>Stops the T3 Code run that started last.</source>
           <target />
         </trans-unit>
+        <trans-unit id="$Turnkey___SendPrompt" translate="yes">
+          <source>Send prompt</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___SendPrompt###description" translate="yes">
+          <source>Sends the prompt you write here to the thread open in T3 Code.</source>
+          <target />
+        </trans-unit>
         <trans-unit id="$Turnkey___#DynamicFolder" translate="yes">
           <source>Dynamic Folder</source>
           <target />

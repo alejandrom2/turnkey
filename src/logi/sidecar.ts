@@ -21,7 +21,7 @@ import { useLanguage } from "./language.js";
 import { type MachineRow, startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { continueStep, stepWithin } from "./controls.js";
-import { continueFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
@@ -113,6 +113,14 @@ const keys = new Keys(
 			press: (_index, name) => {
 				const thread = selected();
 				if (thread && isPrompt(name)) void thread.machine.send(thread, QUICK_PROMPTS[name].text, "auto").catch(failed("send the prompt"));
+			},
+		},
+		// A prompt written in the action's editor travels as its parameter, so each placed copy is its own key.
+		send: {
+			face: (_index, text) => customPromptFace(selected() !== undefined && text.trim() !== ""),
+			press: (_index, text) => {
+				const thread = selected();
+				if (thread && text.trim()) void thread.machine.send(thread, text.trim(), "auto").catch(failed("send the prompt"));
 			},
 		},
 		continue: {

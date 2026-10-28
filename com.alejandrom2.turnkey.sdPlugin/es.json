@@ -1289,6 +1289,10 @@
 				"effort": {
 					"description": "Desplaza para cambiar el esfuerzo del hilo abierto en T3 Code; pulsa para el siguiente nivel."
 				},
+				"send": {
+					"name": "Enviar prompt",
+					"description": "Envía el prompt que escribas aquí al hilo abierto en T3 Code."
+				},
 				"group": {
 					"threads": "Hilos",
 					"settings": "Ajustes"

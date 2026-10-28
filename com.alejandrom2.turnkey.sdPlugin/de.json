@@ -1289,6 +1289,10 @@
 				"effort": {
 					"description": "Scrolle, um den Aufwand des in T3 Code geöffneten Threads zu ändern; drücke für die nächste Stufe."
 				},
+				"send": {
+					"name": "Prompt senden",
+					"description": "Sendet den hier geschriebenen Prompt an den in T3 Code geöffneten Thread."
+				},
 				"group": {
 					"threads": "Threads",
 					"settings": "Einstellungen"

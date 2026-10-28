@@ -1289,6 +1289,10 @@
 				"effort": {
 					"description": "捲動以變更 T3 Code 中開啟的對話的強度；按下切換到下一級。"
 				},
+				"send": {
+					"name": "傳送提示詞",
+					"description": "把你在這裡寫的提示詞傳送到 T3 Code 中開啟的對話。"
+				},
 				"group": {
 					"threads": "對話",
 					"settings": "設定"
