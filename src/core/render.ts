@@ -767,9 +767,9 @@ export type StripTone = "done" | "failed" | "attention" | "neutral";
 
 export const DEFAULT_APPEARANCE: StripAppearance = { background: "t3" };
 
-/** A stored background; the retired Gradient reads as T3 Code's. */
+/** A stored background, or undefined for one this version doesn't know. */
 export const stripBackground = (value: unknown): StripBackground | undefined =>
-	value === "gradient" ? "t3" : value === "t3" || value === "flow" || value === "state" || value === "custom" ? value : undefined;
+	value === "t3" || value === "flow" || value === "state" || value === "custom" ? value : undefined;
 
 export const isHexColor = (value: unknown): value is string => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
 
