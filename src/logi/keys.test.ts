@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { type KeyKind, Keys } from "./keys.js";
+import { type KeyKind, Keys, STALE_MS } from "./keys.js";
 import type { SidecarMessage } from "./protocol.js";
 
 /** A kind whose face is `<shown>@<place>` and whose press steps to the next place. */
@@ -100,5 +100,21 @@ describe("Keys", () => {
 		subject.handle({ type: "press", action: "nope:" });
 		subject.repaint();
 		expect(sent).toEqual([]);
+	});
+
+	it("forgets a key that hasn't shown in a day", () => {
+		let time = 0;
+		const sent: SidecarMessage[] = [];
+		const state = { shown: "a" };
+		const kind: KeyKind = { face: () => state.shown };
+		const subject = new Keys({ counter: kind }, (message) => sent.push(message), () => time);
+		subject.handle({ type: "appear", action: "counter:old", size: 80 });
+		time = STALE_MS;
+		subject.handle({ type: "appear", action: "counter:fresh", size: 80 });
+		sent.length = 0;
+		state.shown = "b";
+		time = STALE_MS + 1;
+		subject.repaint();
+		expect(sent).toEqual([{ type: "image", action: "counter:fresh", svg: "b" }]);
 	});
 });

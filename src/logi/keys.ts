@@ -13,8 +13,11 @@ export type KeyKind = {
 
 const parameterOf = (action: string): string => action.slice(action.indexOf(":") + 1);
 
-/** `face` is the last SVG sent, so a repaint that changes nothing sends nothing. */
-type Key = { kind: KeyKind; index: number; face?: string };
+/** Logi never says a key was hidden, but asks for its image on every show, so a key unseen this long is gone. */
+export const STALE_MS = 86_400_000;
+
+/** `face` is the last SVG sent, so a repaint that changes nothing sends nothing. `seen` is the last `appear`. */
+type Key = { kind: KeyKind; index: number; seen: number; face?: string };
 
 /** The plugin's keys and ring slots by action id, `<kind>:<parameter>`, each painted by its kind. */
 export class Keys {
@@ -23,6 +26,7 @@ export class Keys {
 	constructor(
 		private readonly kinds: Readonly<Record<string, KeyKind>>,
 		private readonly send: (message: SidecarMessage) => void,
+		private readonly now: () => number = Date.now,
 	) {}
 
 	handle(message: Exclude<HostMessage, { type: "language" }>): void {
@@ -30,7 +34,11 @@ export class Keys {
 			case "appear": {
 				const kind = this.kinds[message.action.split(":")[0]!];
 				if (kind === undefined) return;
-				this.#keys.set(message.action, { kind, index: this.#keys.get(message.action)?.index ?? 0 });
+				this.#keys.set(message.action, {
+					kind,
+					index: this.#keys.get(message.action)?.index ?? 0,
+					seen: this.now(),
+				});
 				kind.appear?.();
 				break;
 			}
@@ -54,7 +62,11 @@ export class Keys {
 	}
 
 	repaint(): void {
-		for (const action of this.#keys.keys()) this.#paint(action);
+		const cutoff = this.now() - STALE_MS;
+		for (const [action, key] of this.#keys) {
+			if (key.seen < cutoff) this.#keys.delete(action);
+			else this.#paint(action);
+		}
 	}
 
 	#paint(action: string): void {
