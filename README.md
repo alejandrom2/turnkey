@@ -15,6 +15,8 @@ See every agent thread at a glance, approve and answer from a key, switch models
 
 <img src="docs/marketplace/gallery-1-threads.png" alt="Turnkey on a Stream Deck +, showing agent threads on its keys" width="800">
 
+[▶ Watch the 40-second tour](docs/marketplace/video.mp4)
+
 </div>
 
 ## What it does

@@ -26,6 +26,22 @@ Kept here so the listing, the README and the plugin say the same thing. The plug
 **Short description:**
 > Control T3 Code from your Stream Deck: see every agent thread, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without leaving your flow.
 
+## Media
+
+Upload in this order, from `docs/marketplace/` (rendered by the private turnkey-marketing repository):
+
+- **Icon** (288×288): `icon.png`, the logo's keys on black.
+- **Thumbnail** (1920×960): `thumbnail.png`.
+- **Gallery** (1920×960):
+  1. `gallery-1-threads.png`: every agent's thread on the keys.
+  2. `gallery-2-approve.png`: Allow once and Deny for a command approval.
+  3. `gallery-3-brain.png`: model and effort keys, up to Max.
+  4. `gallery-4-dial.png`: the Power dial's strip.
+  5. `gallery-5-steer.png`: Steer, Continue and Stop.
+  6. `gallery-6-ship.png`: branch, commit, pull request and Fix findings.
+  7. `gallery-7-usage.png`: usage and limits on keys and dials.
+- **Video** (1920×1080, 39 s, with music): `video.mp4`. The soundtrack is from Suno: commercial use needs it made on a paid plan.
+
 ## Permissions
 
 > Turnkey connects only to the T3 Code servers you pair it with, on your network, over Tailscale or through T3 Connect. Pairing grants it a session on that server:
