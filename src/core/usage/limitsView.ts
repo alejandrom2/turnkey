@@ -57,6 +57,13 @@ export function findWindow(pool: LimitPool, setting: string | undefined): LimitP
 	return windows.find((window) => window.id === setting) ?? windows.find((window) => window.kind === setting);
 }
 
+/** The window nearest its limit across every pool: what a Limits info bar with no provider or window set shows. */
+export function tightestWindow(pools: readonly LimitPool[]): { pool: LimitPool; window: LimitPoolWindow } | undefined {
+	let tightest: { pool: LimitPool; window: LimitPoolWindow } | undefined;
+	for (const pool of pools) for (const window of displayLimitWindows(pool)) if (tightest === undefined || window.usedPercent > tightest.window.usedPercent) tightest = { pool, window };
+	return tightest;
+}
+
 /** The window setting's choices: each window by its kind when it is the first of it, else by its id. */
 export function windowChoices(pool: LimitPool): { value: string; label: string }[] {
 	const seen = new Set<string>();

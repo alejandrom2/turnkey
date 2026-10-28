@@ -104,22 +104,25 @@ const folder = (name: string, glyph: GlyphName, keys: Placed[], dials: Placed[],
 	folder: { name: name.toUpperCase(), keys, dials, infobar },
 });
 
+/** What the Neo's info bar shows inside a folder: its subject, from a bare instance of the action that has it. */
+const bars = { model, queue: key("send", "Send Prompt"), git: git(), pr: key("pr", "Pull Request"), limits: key("limits", "Limits") };
+
 /** Stream Deck + and Neo: the second page is a menu of folders, so any job is two presses from home. */
 const MENU_8: Page = {
 	name: "MENU",
 	keys: [
 		folder("Threads", "chat", [slot(1), slot(2), slot(3), slot(4), slot(5), slot(6), slot(7)], [threadsDial("all"), threadsDial("active"), threadsDial("unread"), DIALS[3]!]),
-		folder("Controls", "sliders", [model, effort, speed, key("permissions", "Permissions"), key("plan", "Plan"), approve, deny], [power("model"), power("effort"), power("permissions"), DIALS[3]!]),
-		folder("Prompts", "spark", [quick("test"), quick("fix"), quick("explain"), quick("commit"), organize("settle"), organize("pin"), organize("snooze")], [DIALS[0]!, DIALS[2]!, queueDial, DIALS[3]!]),
-		folder("Skills", "skill", [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("fork", "Fork", { mode: "merge" }), stopWorkflow], [skillsDial, DIALS[0]!, queueDial, DIALS[3]!]),
-		folder("Git", "branch", [git(), git("push"), createPr, git("pull"), branch, editor, organize("archive")], [DIALS[0]!, prDial, power("model"), DIALS[3]!]),
-		folder("Pull Requests", "pullRequest", [key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), createPr, editor], [prDial, DIALS[0]!, DIALS[2]!, DIALS[3]!]),
+		folder("Controls", "sliders", [model, effort, speed, key("permissions", "Permissions"), key("plan", "Plan"), approve, deny], [power("model"), power("effort"), power("permissions"), DIALS[3]!], bars.model),
+		folder("Prompts", "spark", [quick("test"), quick("fix"), quick("explain"), quick("commit"), organize("settle"), organize("pin"), organize("snooze")], [DIALS[0]!, DIALS[2]!, queueDial, DIALS[3]!], bars.queue),
+		folder("Skills", "skill", [skill(), skill(), skill(), skill(), key("fork", "Fork"), key("fork", "Fork", { mode: "merge" }), stopWorkflow], [skillsDial, DIALS[0]!, queueDial, DIALS[3]!], bars.queue),
+		folder("Git", "branch", [git(), git("push"), createPr, git("pull"), branch, editor, organize("archive")], [DIALS[0]!, prDial, power("model"), DIALS[3]!], bars.git),
+		folder("Pull Requests", "pullRequest", [key("pr", "Pull Request"), prKey("fix"), prKey("explain"), prKey("ask"), prKey("guide"), createPr, editor], [prDial, DIALS[0]!, DIALS[2]!, DIALS[3]!], bars.pr),
 		folder(
 			"Usage",
 			"usage",
 			[limits("codex", "session"), limits("codex", "weekly"), limits("claudeAgent", "session"), limits("claudeAgent", "weekly"), usage("1"), usage("7"), usage("30")],
 			[{ action: "dial.limits", name: "Limits Dial" }, usageDial, DIALS[0]!, DIALS[3]!],
-			key("usage", "Usage", { period: "7" }),
+			bars.limits,
 		),
 		folder("More", "device", [preview, task(), script(), key("update", "Update T3"), key("share", "Share Thread"), organize("wake"), health], [
 			{ action: "dial.devices", name: "Devices Dial" },

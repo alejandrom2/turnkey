@@ -377,6 +377,10 @@
 			"active": "Actifs",
 			"unread": "Non lus"
 		},
+		"infobar": {
+			"queued": "{count} en attente",
+			"held": "Retenue"
+		},
 		"strip": {
 			"done": "Terminé",
 			"notNow": "Pas maintenant",

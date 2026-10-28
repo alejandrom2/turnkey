@@ -1,4 +1,4 @@
-import { type Action, action, type KeyUpEvent, type WillAppearEvent, type WillDisappearEvent } from "@elgato/streamdeck";
+import { type Action, action, type KeyUpEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confirmed } from "../core/approvals.js";
@@ -23,7 +23,7 @@ import {
 	switchSelection,
 	withOptionValue,
 } from "../core/models.js";
-import { activityBar, renderActivityBar, renderNoticeBar } from "../core/infobar.js";
+import { activityBar, renderActivityBar, renderInfoBar, renderNoticeBar } from "../core/infobar.js";
 import { currentEffort, effortChange, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
 import { threadMotion, twinkleStep } from "../core/motion.js";
 import { modeOf } from "../core/modes.js";
@@ -53,7 +53,7 @@ import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
 import { latestSnoozed, type RuntimeMode } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
 import { gitTarget, statuses } from "./git.js";
-import { connectionNotice, InfobarWriter } from "./infobar.js";
+import { connectionNotice } from "./infobar.js";
 import { connectionOf, threadNeeds } from "./needs.js";
 import {
 	canOperate,
@@ -65,6 +65,7 @@ import {
 	openThread,
 	pressWhileDisconnected,
 	queuedCount,
+	queueOf,
 	selectedThread,
 	selectNew,
 	selectThread,
@@ -76,7 +77,6 @@ import { MachineWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 
-const infobar = new InfobarWriter();
 
 /** A thread's key face, moving as the Motion setting allows; `moving` asks for animation frames. */
 function threadFace(thread: DeckThread | undefined, emptyLabel: string, selected: DeckThread | undefined): { face: string; moving: boolean } {
@@ -163,17 +163,7 @@ export class Activity extends DeckAction<ActivitySettings> {
 		const notice = connectionNotice(machine);
 		const all = deck.board.threadsOn(machine);
 		const matching = all.filter((thread) => matchesFilter(thread, threadFilter(filter), project || undefined));
-		await infobar.paint(action, notice ? renderNoticeBar(notice) : renderActivityBar(activityBar(matching, all, t("face.allQuiet"), Date.now())));
-	}
-
-	override onWillAppear(ev: WillAppearEvent<ActivitySettings>): void {
-		infobar.forget(ev.action.id);
-		super.onWillAppear(ev);
-	}
-
-	override onWillDisappear(ev: WillDisappearEvent<ActivitySettings>): void {
-		infobar.forget(ev.action.id);
-		super.onWillDisappear(ev);
+		await this.setBar(action, notice ? renderNoticeBar(notice) : renderActivityBar(activityBar(matching, all, t("face.allQuiet"), Date.now())));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<ActivitySettings>): Promise<void> {
@@ -219,10 +209,30 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 	}
 
 	protected override async draw(action: Action<T>): Promise<void> {
+		if (action.isNeoInfobar()) return this.#paintBar(action);
 		if (!action.isKey()) return;
 		const { label, check, thread, pinned } = this.#check(action);
 		const glyph = this.glyphName(this.settingsOf(action));
 		await this.setImage(action, renderControlKey({ glyph, primary: !this.steers, label, available: check.available, ultrathink: ultrathinkArmed(thread), pinned }));
+	}
+
+	/** On the Neo info bar: what waits in the target thread's queue, and whether a stop holds it. */
+	async #paintBar(action: Action<T>): Promise<void> {
+		const notice = connectionNotice(this.machineOf(action));
+		if (notice) return this.setBar(action, renderNoticeBar(notice));
+		const { thread } = this.target(action);
+		if (thread === undefined) return this.setBar(action, renderInfoBar({ icon: { glyph: "queued", color: COLORS.muted }, title: t("strip.queue"), detail: t("reason.noThread"), available: false }));
+		const queue = queueOf(thread);
+		const count = queue?.items.length ?? 0;
+		await this.setBar(
+			action,
+			renderInfoBar({
+				icon: { glyph: "queued", color: count > 0 ? COLORS.text : COLORS.muted },
+				title: count > 0 ? t("infobar.queued", { count }) : t("strip.nothingQueued"),
+				detail: thread.title,
+				...(count > 0 && queue?.held ? { right: { text: t("infobar.held"), color: COLORS.attention } } : {}),
+			}),
+		);
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
@@ -507,6 +517,32 @@ type ModelSettings = { model?: string; machine?: string; nameColor?: string };
  */
 @action({ UUID: `${ID}.model` })
 export class ModelKey extends SettingKey<ModelSettings> {
+	protected override async draw(action: Action<ModelSettings>): Promise<void> {
+		if (action.isNeoInfobar()) return this.#paintBar(action);
+		return super.draw(action);
+	}
+
+	/** On the Neo info bar: the selected thread's model with its mark, its effort and, when on, Fast with a bolt. */
+	async #paintBar(action: Action<ModelSettings>): Promise<void> {
+		const notice = connectionNotice(this.machineOf(action));
+		if (notice) return this.setBar(action, renderNoticeBar(notice));
+		const { thread, config } = this.selection(action);
+		if (thread === undefined) return this.setBar(action, renderInfoBar({ icon: { glyph: "model", color: COLORS.muted }, title: t("face.model"), detail: t("reason.noThread"), available: false }));
+		const model = findModel(config, thread.model);
+		const effort = effortChoices(model).find((choice) => choice.value === currentEffort(model, thread.model, ultrathinkArmed(thread)))?.label;
+		const speed = speedToggle(model, thread.model);
+		const fast = speed?.fast === true;
+		await this.setBar(
+			action,
+			renderInfoBar({
+				icon: model ? markArt(model) : { glyph: "model", color: COLORS.text },
+				title: model?.name ?? thread.model.model,
+				detail: [effort, fast ? speed.label : undefined].filter(Boolean).join(" · ") || thread.title,
+				...(fast ? { right: { glyph: "bolt" as const, color: (model && modelColor(model)) ?? COLORS.accent } } : {}),
+			}),
+		);
+	}
+
 	protected state(action: Action<ModelSettings>) {
 		const { thread, config, gone, pinned } = this.selection(action);
 		const fixed = parseModelKey(this.settingsOf(action).model);

@@ -3,6 +3,7 @@ import streamDeck, { type Action, action, type DialAction, type KeyUpEvent } fro
 import type { DeckThread } from "../core/board.js";
 import { availability } from "../core/availability.js";
 import { type MessageKey, t } from "../core/i18n.js";
+import { renderInfoBar, renderNoticeBar } from "../core/infobar.js";
 import { modeOf } from "../core/modes.js";
 import {
 	buildExplainPullRequestHandoff,
@@ -34,6 +35,7 @@ import { RpcError } from "../core/t3/rpc.js";
 import type { ThreadPullRequest } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
 import { canOperate, DeckAction, errorMessage, held, openThread, pressWhileDisconnected, readyMachines, selectedThread, selectNew, ultrathinkPrompt } from "./base.js";
+import { connectionNotice } from "./infobar.js";
 import { connectionOf, threadNeeds } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
 import { setCapped } from "../core/capped.js";
@@ -133,21 +135,31 @@ function prStatusLine(info: PrInfo | undefined): { text?: string; tint?: string 
 	return {};
 }
 
-/** The Pull Request key: number and state, with its checks, review and findings once read. */
-export function pullRequestKeyFace(thread: DeckThread, pr: ThreadPullRequest): string {
+/** How a pull request looks on the deck: its state's word and color (draft included), and its status line once read. */
+export function prLook(thread: DeckThread, pr: ThreadPullRequest): { label: string | undefined; color: string; line: { text?: string; tint?: string } } {
 	const ref = threadPullRequestRef(thread.projectId, pr);
 	const info = ref && pr.state !== "merged" && pr.state !== "closed" ? store.get(thread.machine, ref) : undefined;
 	const state = info?.summary?.state ?? pr.state;
 	const draft = (info?.summary?.isDraft ?? pr.isDraft) === true && state === "open";
 	const face = STATE_FACE[state ?? ""];
-	const label = draft ? t("pr.draft") : face && t(face.label);
-	const line = prStatusLine(info);
-	return renderInfoKey({
-		glyph: "pullRequest",
-		color: draft ? COLORS.muted : (face?.color ?? COLORS.text),
-		tint: line.tint,
-		title: `#${pr.number}${label ? ` · ${label}` : ""}`,
-		detail: line.text ?? pr.title,
+	return { label: draft ? t("pr.draft") : face && t(face.label), color: draft ? COLORS.muted : (face?.color ?? COLORS.text), line: prStatusLine(info) };
+}
+
+/** The Pull Request key: number and state, with its checks, review and findings once read. */
+export function pullRequestKeyFace(thread: DeckThread, pr: ThreadPullRequest): string {
+	const { label, color, line } = prLook(thread, pr);
+	return renderInfoKey({ glyph: "pullRequest", color, tint: line.tint, title: `#${pr.number}${label ? ` · ${label}` : ""}`, detail: line.text ?? pr.title });
+}
+
+/** The Pull Request info bar: number and title, then state and status line in the state's color. */
+function pullRequestBar(thread: DeckThread, pr: ThreadPullRequest): string {
+	const { label, color, line } = prLook(thread, pr);
+	return renderInfoBar({
+		icon: { glyph: "pullRequest", color },
+		wash: color,
+		title: `#${pr.number} ${pr.title}`,
+		detail: [label, line.text].filter(Boolean).join(" · "),
+		detailColor: line.tint ?? color,
 	});
 }
 
@@ -367,6 +379,7 @@ abstract class PullRequestAction extends DeckAction<PrKeySettings> {
 	}
 
 	protected override async draw(action: Action<PrKeySettings>): Promise<void> {
+		if (action.isNeoInfobar()) return this.#paintBar(action);
 		if (!action.isKey()) return;
 		const machine = this.machineOf(action);
 		const mode = this.#mode(action);
@@ -380,6 +393,16 @@ abstract class PullRequestAction extends DeckAction<PrKeySettings> {
 		if (!check.ok) return void (await this.setImage(action, renderInfoKey({ glyph: handoff.glyph, title: handoff.label(""), detail: check.reason, available: false })));
 		const detail = handoff.detail?.(check.thread, check.pr, check.ref) ?? defaultDetail(check.pr);
 		await this.setImage(action, renderInfoKey({ glyph: handoff.glyph, title: handoff.label(check.pr.url), detail: detail.text, available: detail.available, tint: detail.tint }));
+	}
+
+	/** On the Neo info bar, whatever the Does setting: the selected thread's pull request. */
+	async #paintBar(action: Action<PrKeySettings>): Promise<void> {
+		const notice = connectionNotice(this.machineOf(action));
+		if (notice) return this.setBar(action, renderNoticeBar(notice));
+		const { thread, pr, check } = this.#shown(action);
+		if (pr === undefined)
+			return this.setBar(action, renderInfoBar({ icon: { glyph: "pullRequest", color: COLORS.muted }, title: t("face.pullRequest"), detail: check.available ? t("reason.noPr") : check.reason, available: false }));
+		await this.setBar(action, pullRequestBar(thread!, pr));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<PrKeySettings>): Promise<void> {
