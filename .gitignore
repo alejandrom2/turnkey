@@ -15,3 +15,6 @@ logi/bin/
 logi/**/bin/
 logi/**/obj/
 logi/dist/
+
+# Working plans and specs stay local
+docs/superpowers/
