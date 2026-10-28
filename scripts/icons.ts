@@ -2,6 +2,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { Resvg } from "@resvg/resvg-js";
+
 import { glyph, type GlyphName, renderControlKey, svgMarkup } from "../src/core/render.ts";
 
 const root = join(import.meta.dirname, "..", "com.alejandrom2.turnkey.sdPlugin", "imgs");
@@ -76,8 +78,8 @@ for (const [name, mark] of Object.entries(ACTIONS)) {
 
 /**
  * Turnkey's mark: three keys stacked like a deck of threads, the front one turning, with a prompt on it whose cursor is
- * an agent's spark. On the marketplace tile the spark wears T3 Code's accent blue; the category icon keeps to white and gray,
- * with the prompt and spark drawn dark on the front key.
+ * an agent's spark. On the marketplace tile the spark wears T3 Code's accent blue; the category icon and Logi's plugin
+ * icon keep to white and gray, with the prompt and spark drawn dark on the front key, since both sit on dark cards.
  */
 const T3_BLUE = "#4a68f0";
 // Flat SVG only: Stream Deck's renderer draws a nested <svg> or a mask as nothing.
@@ -94,3 +96,8 @@ const logo = (size: number, tile: boolean) => {
 	return svg(size, `<g transform="scale(${+scale.toFixed(5)})">${body}</g>`);
 };
 write("plugin/category-icon.svg", logo(56, false));
+
+// Logi's plugin icon: a 256 px PNG of the category icon's white keys, which Options+ shows on a black card.
+const logiIcon = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "metadata", "Icon256x256.png");
+writeFileSync(logiIcon, new Resvg(logo(256, false)).render().asPng());
+console.log("wrote", logiIcon);

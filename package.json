@@ -17,6 +17,7 @@
 	"type": "module",
 	"devDependencies": {
 		"@elgato/cli": "1.10.3",
+		"@resvg/resvg-js": "2.6.2",
 		"@rollup/plugin-commonjs": "29.0.3",
 		"@rollup/plugin-json": "6.1.0",
 		"@rollup/plugin-node-resolve": "16.0.3",
