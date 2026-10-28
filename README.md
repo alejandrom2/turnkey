@@ -17,11 +17,6 @@ See every agent thread at a glance, approve and answer from a key, switch models
 
 </div>
 
-
-https://github.com/user-attachments/assets/64852819-5e90-46e4-a6ac-824dbe0ff64f
-
-
-
 ## What it does
 
 - **Threads on keys and dials.** Status, title and run time for every thread, tinted when one waits for an approval or has a question. Tap to open it in T3 Code.
@@ -32,6 +27,10 @@ https://github.com/user-attachments/assets/64852819-5e90-46e4-a6ac-824dbe0ff64f
 - **Every provider, every machine.** Codex, Claude, Cursor, OpenCode and the rest, on local and remote T3 Code environments.
 
 Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, then a live WebSocket feed of your threads. It doesn't read app files or drive the UI, and it talks only to the T3 Code servers you pair it with.
+
+## See it
+
+https://github.com/user-attachments/assets/64852819-5e90-46e4-a6ac-824dbe0ff64f
 
 <table>
 <tr>
