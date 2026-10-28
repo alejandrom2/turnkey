@@ -30,12 +30,16 @@ Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, t
 
 <table>
 <tr>
-<td><img src="docs/marketplace/gallery-2-answer.png" alt="Answering an agent's question from the dial"></td>
-<td><img src="docs/marketplace/gallery-3-model.png" alt="Switching model and effort on the Power dial"></td>
+<td><img src="docs/marketplace/gallery-2-approve.png" alt="Allow once and Deny keys for an agent's command approval"></td>
+<td><img src="docs/marketplace/gallery-3-brain.png" alt="Model and effort keys, from a model to Max effort"></td>
 </tr>
 <tr>
-<td><img src="docs/marketplace/gallery-5-git.png" alt="Git and pull request keys"></td>
-<td><img src="docs/marketplace/gallery-6-usage.png" alt="Usage and limits"></td>
+<td><img src="docs/marketplace/gallery-4-dial.png" alt="The Power dial's strip: model, effort, speed and access mode"></td>
+<td><img src="docs/marketplace/gallery-5-steer.png" alt="Steer, Continue and Stop keys on a Stream Deck +"></td>
+</tr>
+<tr>
+<td><img src="docs/marketplace/gallery-6-ship.png" alt="Branch, Commit, pull request and Fix findings keys"></td>
+<td><img src="docs/marketplace/gallery-7-usage.png" alt="Usage and limit keys and dials on a Stream Deck +"></td>
 </tr>
 </table>
 
