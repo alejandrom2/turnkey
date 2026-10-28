@@ -1,4 +1,4 @@
-// Writes package.json's version into the manifest as Stream Deck's four-part version: `node scripts/version.ts`.
+// Writes package.json's version into the Stream Deck manifest (four parts) and the Logitech package: `node scripts/version.ts`.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -11,3 +11,11 @@ if (!pattern.test(manifest)) throw new Error(`No top-level "Version" in ${path}`
 const next = manifest.replace(pattern, `$1"${version}.0"`);
 if (next !== manifest) writeFileSync(path, next);
 console.log(`manifest version ${version}.0`);
+
+const logi = join(root, "logi", "TurnkeyPlugin", "src", "package", "metadata", "LoupedeckPackage.yaml");
+const yaml = readFileSync(logi, "utf8");
+const line = /^version: .*$/m;
+if (!line.test(yaml)) throw new Error(`No "version:" in ${logi}`);
+const nextYaml = yaml.replace(line, `version: ${version}`);
+if (nextYaml !== yaml) writeFileSync(logi, nextYaml);
+console.log(`Logitech package version ${version}`);

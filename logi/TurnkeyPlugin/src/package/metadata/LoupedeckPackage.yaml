@@ -12,19 +12,19 @@ name: Turnkey
 displayName: Turnkey
 
 # Short description of the plugin.
-description: Add a short description of the plugin here.
+description: Watch and steer T3 Code from your Logitech devices. The Actions Ring shows the thread that needs you and stops a run, and an MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
 
 # Name of the plugin library file.
 pluginFileName: TurnkeyPlugin.dll
 
 # Plugin version.
-version: 1.0
+version: 0.11.0
 
 # Author of the plugin. The author can be a company or an individual developer.
-author: alejandro
+author: Alejandro Martinez
 
 # Copyright information.
-copyright: Copyright © 2026 alejandro. All rights reserved.
+copyright: Copyright © 2026 Alejandro Martinez. MIT License.
 
 
 # ==================================================================================================
@@ -76,7 +76,7 @@ licenseUrl: https://opensource.org/licenses/MIT
 # URL of the support page where the users can send improvement suggestions and report bugs.
 # The URL is shown in Loupedeck Marketplace. The page can be for example a GitHub issues page.
 # NOTE: This setting is recommended when publishing the plugin in Loupedeck Marketplace.
-#supportPageUrl: https://github.com/myusername/myplugin/issues
+supportPageUrl: https://github.com/alejandrom2/turnkey/issues
 
 # URL of the plugin homepage. The URL is shown in Loupedeck Marketplace.
-#homePageUrl: https://github.com/myusername/myplugin
+homePageUrl: https://github.com/alejandrom2/turnkey
