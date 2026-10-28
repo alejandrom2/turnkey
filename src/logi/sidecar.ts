@@ -10,19 +10,19 @@ import { currentEffort, effortChoices } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
 import { limitGauge, limitPools, tightestWindow } from "../core/usage/limitsView.js";
 import { LimitsRefresher } from "../core/usage/refresh.js";
-import { t } from "../core/i18n.js";
-import { Machine } from "../core/t3/machine.js";
-import { findLocalEnvironment, isLoopbackUrl, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
+import { Machines } from "../core/t3/machines.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
 import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
-import { type MachineRow, startPairingPage } from "./page.js";
+import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { continueStep, stepWithin } from "./controls.js";
 import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
+import { throttled } from "./resync.js";
+import { machineRows } from "./rows.js";
 import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
 
@@ -39,8 +39,7 @@ const settings = new FileSettings(join(dataDir, "settings.json"));
 const send = (message: SidecarMessage) => process.stdout.write(encodeMessage(message));
 const log = (level: "info" | "warn", message: string) => send({ type: "log", level, message });
 
-const machines = new Map<string, Machine>();
-const board = new ThreadBoard(() => [...machines.values()]);
+const board = new ThreadBoard(() => machines.all);
 const failed = (what: string) => (error: unknown) => log("warn", `Couldn't ${what}: ${error instanceof Error ? error.message : String(error)}`);
 
 /** The thread open in T3 Code, which the prompt, Continue, access and effort actions act on, when its machine lets them. */
@@ -76,7 +75,7 @@ function setMode(thread: NonNullable<ReturnType<typeof selected>>, ticks: number
  */
 const refresher = new LimitsRefresher();
 const watchingConfig = new Set<string>();
-const ready = () => [...machines.values()].filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
+const ready = () => machines.all.filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
 function showLimits(): void {
 	for (const each of ready()) {
 		// shortcut: held until the sidecar exits, since Logi never says a slot is hidden; release it if Logi adds that.
@@ -214,86 +213,57 @@ const changed = batched(
 	(error) => log("warn", `Couldn't update the keys: ${error instanceof Error ? error.message : String(error)}`),
 );
 
-function machine(url: string): Machine {
-	const existing = machines.get(url);
-	if (existing) return existing;
-	// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
-	const socket = (socketUrl: string) => new WebSocket(socketUrl) as unknown as SocketLike;
-	const created = new Machine(url, store, { fetch, socket, clientLabel: "Turnkey (Logitech)", warn: (message) => log("warn", `${new URL(url).host}: ${message}`) }, changed);
-	machines.set(url, created);
-	return created;
-}
+// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
+const machines = new Machines(
+	store,
+	{
+		fetch,
+		socket: (url) => new WebSocket(url) as unknown as SocketLike,
+		clientLabel: "Turnkey (Logitech)",
+		warn: (url, message) => log("warn", `${new URL(url).host}: ${message}`),
+	},
+	changed,
+);
 
-/** Spends a pair link from the pairing page; a machine it added is dropped again if that fails. */
-async function pairLink(link: string): Promise<string> {
-	const parsed = parsePairingLink(link);
-	if (parsed === undefined) throw new Error(t("pairing.notALink"));
-	const url = preferLoopback(parsed.url);
-	const added = !machines.has(url);
-	try {
-		return (await machine(url).pair(parsed.code)).label;
-	} catch (error) {
-		if (added) {
-			machines.get(url)?.stop();
-			machines.delete(url);
-			changed();
-		}
-		throw error;
-	}
-}
-
-/** The machines page's rows, named as their pairing knew them, this computer's as "This machine" until it pairs. */
-function machineRows(): MachineRow[] {
-	return [...machines.values()].map((each) => {
-		const label = each.state.kind === "ready" ? each.state.label : (store.load(each.url)?.label ?? (isLoopbackUrl(each.url) ? t("machine.thisMachine") : new URL(each.url).host));
-		const row = { url: each.url, label };
-		switch (each.state.kind) {
-			case "ready":
-				return { ...row, state: "connected" };
-			case "connecting":
-				return { ...row, state: "connecting" };
-			case "signed-out":
-				return each.state.message ? { ...row, state: "problem", detail: each.state.message } : { ...row, state: "needsPairing" };
-			case "error":
-				return { ...row, state: "problem", detail: each.state.message };
-		}
-	});
-}
+/** Spends a pair link from the pairing page and returns the label T3 Code gave the pairing. */
+const pairLink = async (link: string): Promise<string> => (await machines.pair(link)).credential.label;
 
 /** Forgets a machine here; T3 Code keeps the pairing listed under Sharing & access until it's revoked there. */
 async function removeMachine(url: string): Promise<void> {
-	machines.get(url)?.stop();
-	machines.delete(url);
-	await store.save(url, undefined);
-	changed();
+	await machines.get(url)?.signOut();
+	await machines.sync(() => store.urls());
 }
 
 const page = await startPairingPage({
 	pair: pairLink,
-	machines: machineRows,
+	machines: () => machineRows(machines.all, (url) => store.load(url)?.label),
 	remove: removeMachine,
 	haptics: () => settings.haptics,
 	setHaptics: (on) => settings.setHaptics(on),
 });
 let lastStatus = "";
 function sendStatus(): void {
-	const status = pluginStatus([...machines.values()].map((each) => each.state), page.url);
+	const status = pluginStatus(machines.all.map((each) => each.state), page.url);
 	const line = JSON.stringify(status);
 	if (line === lastStatus) return;
 	lastStatus = line;
 	send(status);
 }
 
-const local = await findLocalEnvironment(fetch);
-for (const url of new Set([...store.urls(), ...(local ? [local.url] : [])])) machine(url).start();
+await machines.sync(() => store.urls());
 // With no machine yet, nothing else would show the banner asking for a pair link.
 changed();
+// Only when a key shows and no machine is ready: a lost T3 Code, or one that moved port, is found again without polling.
+const resync = throttled(() => void machines.sync(() => store.urls()).then(() => machines.wake()).catch(failed("look for T3 Code")), 10_000);
 
 const input = createInterface({ input: process.stdin });
 input.on("line", (line) => {
 	const message = parseHostMessage(line);
 	if (message === undefined) return log("warn", "Dropped a line that isn't a host message.");
-	if (message.type !== "language") return keys.handle(message);
+	if (message.type !== "language") {
+		if (message.type === "appear" && ready().length === 0) resync();
+		return keys.handle(message);
+	}
 	useLanguage(message.language);
 	// The banner is worded in the old language; the pairing page reads the new one on its next load.
 	lastStatus = "";
@@ -302,6 +272,6 @@ input.on("line", (line) => {
 // The plugin closing stdin is the signal to quit.
 input.on("close", () => {
 	page.close();
-	for (const each of machines.values()) each.stop();
+	for (const each of machines.all) each.stop();
 	process.exit(0);
 });
