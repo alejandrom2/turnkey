@@ -1,7 +1,7 @@
 {
-	"Name": "Turnkey for T3 Code",
+	"Name": "Turnkey",
 	"Description": "Stream Deck から T3 Code のスレッドを確認・操作。スレッドの状態、停止、プロンプト、モデルオプション、回答を、すべてのプロバイダーで。",
-	"Category": "Turnkey for T3 Code",
+	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "スレッド",
 		"Tooltip": "キーの位置に応じたボードのスレッド 1 件：状態、タイトル、タイマー。タップで T3 Code で開き、長押しで選択します。"

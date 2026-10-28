@@ -1,7 +1,7 @@
 {
-	"Name": "Turnkey for T3 Code",
+	"Name": "Turnkey",
 	"Description": "T3 Code-Threads vom Stream Deck aus beobachten und steuern: Thread-Status, Stopp, Prompts, Modelloptionen und Antworten, über alle Anbieter hinweg.",
-	"Category": "Turnkey for T3 Code",
+	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Thread",
 		"Tooltip": "Ein Thread vom Board, nach Tastenposition belegt: Status, Titel und Timer. Tippen öffnet ihn in T3 Code; Halten wählt ihn aus."

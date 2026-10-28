@@ -2,7 +2,7 @@
 
 <img src="docs/logo.png" alt="Turnkey logo: three Stream Deck keys" width="240" height="240">
 
-# Turnkey for T3 Code
+<h1>Turnkey<br><sub>for T3 Code</sub></h1>
 
 **Control [T3 Code](https://github.com/pingdotgg/t3code) from your Stream Deck.**<br>
 See every agent thread at a glance, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without leaving your flow.
@@ -48,7 +48,7 @@ Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, t
 ## Install
 
 1. Download `com.alejandrom2.turnkey.streamDeckPlugin` from the [latest release](https://github.com/alejandrom2/turnkey/releases) and double-click it.
-2. Stream Deck offers Turnkey's ready-made profiles. Pick one, or drag actions from the **Turnkey for T3 Code** category onto your deck.
+2. Stream Deck offers Turnkey's ready-made profiles. Pick one, or drag actions from the **Turnkey** category onto your deck.
 
 ## Pair with T3 Code
 
