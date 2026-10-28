@@ -13,7 +13,7 @@ export const PET = {
 	/** Step length: multiples of the Animator's frame (100 ms Full, 250 ms Reduced), so steps land evenly: 5 fps and 2 fps. */
 	stepMs: { full: 200, reduced: 500 },
 	stepPx: { full: 8, reduced: 12 },
-	/** A dial's strip width, and where the robot's feet stand, just above the state line. */
+	/** A dial's strip width, and where the robot's feet stand. */
 	slice: 200,
 	feet: 94,
 	bounce: 2,

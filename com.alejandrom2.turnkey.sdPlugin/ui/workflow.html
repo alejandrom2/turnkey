@@ -114,7 +114,7 @@ function needsFirstPairing(environments ) {
 	return environments.every((env) => env.state === "signed-out");
 }
 function mergeGlobalSettings(current , patch ) {
-	const editable = ["scheme", "stripBackground", "stripColor", "stripHairline", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
+	const editable = ["scheme", "stripBackground", "stripColor", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
 	const next = { ...current };
 	for (const key of editable) if (key in patch) next[key] = patch[key];
 	return next;

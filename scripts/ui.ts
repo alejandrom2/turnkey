@@ -464,11 +464,8 @@ const settingsPage = `<!doctype html>
 					<h1${text("inspector.settings.appearance")}</h1>${field(
 						"inspector.advanced.dialStrips",
 						select("stripBackground", CHOICES.background),
-					)}${field("inspector.field.stripColor", `<input type="color" data-setting="stripColor" />`, "", "strip-color")}${field(
-						"inspector.advanced.stateLine",
-						`<label class="check"><input type="checkbox" data-setting="stripHairline" /><span${text("inspector.advanced.stateLineLabel")}</span></label>`,
 						"inspector.advanced.stateHint",
-					)}${field(
+					)}${field("inspector.field.stripColor", `<input type="color" data-setting="stripColor" />`, "", "strip-color")}${field(
 						"inspector.advanced.stripStyle",
 						select("stripStyle", [["", "inspector.style.perDial"], ...CHOICES.style]),
 					)}${field(
@@ -628,7 +625,7 @@ const settingsPage = `<!doctype html>
 			}
 
 			/** What Stream Deck's own fields showed for a setting never saved. */
-			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "${COLORS.card}", stripHairline: true, stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
+			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "${COLORS.card}", stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
 			const globals = {};
 			function renderGlobals(settings) {
 				Object.assign(globals, settings);
