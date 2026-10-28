@@ -1,7 +1,7 @@
 {
 	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
 	"Name": "Turnkey",
-	"Version": "0.10.0.0",
+	"Version": "0.11.0.0",
 	"Author": "Alejandro Martinez",
 	"Description": "Watch and steer T3 Code threads from Stream Deck: thread status, stop, prompts, model options and answers, across every provider.",
 	"Category": "Turnkey",
