@@ -5,20 +5,20 @@
 
 ### Features
 
-* a 3D keycap logo and app icon ([f4938a0](https://github.com/alejandrom2/turnkey/commit/f4938a033ebc362f2384515a7929e37c856b4ff8))
-* strips drop the colored state line and its setting ([#13](https://github.com/alejandrom2/turnkey/issues/13)) ([2ac35a3](https://github.com/alejandrom2/turnkey/commit/2ac35a3fb3f1e568ab28047e1957ac78dfbab85f))
+* a 3D keycap logo and app icon ([054c592](https://github.com/alejandrom2/turnkey/commit/054c5924fdb2b8c93a478b43d03ec23e4368fe69))
+* strips drop the colored state line and its setting ([#13](https://github.com/alejandrom2/turnkey/issues/13)) ([6d8a29e](https://github.com/alejandrom2/turnkey/commit/6d8a29e146e035834e0c1d30bc1e278437af97fa))
 
 
 ### Fixes
 
-* bound caches that grew for days, and finish the audit leftovers ([#11](https://github.com/alejandrom2/turnkey/issues/11)) ([0c0d231](https://github.com/alejandrom2/turnkey/commit/0c0d231c8fbf507fcbac4777847f443b5a47a41b))
+* bound caches that grew for days, and finish the audit leftovers ([#11](https://github.com/alejandrom2/turnkey/issues/11)) ([d1f7180](https://github.com/alejandrom2/turnkey/commit/d1f71805c79bba3c4ce187531dac7e45b8b9be0f))
 
 ## [0.9.2](https://github.com/alejandrom2/turnkey/compare/v0.9.1...v0.9.2) (2026-10-27)
 
 
 ### Fixes
 
-* audit cleanup — crash and pairing fixes, shared drawing and action code ([#7](https://github.com/alejandrom2/turnkey/issues/7)) ([8b4cbe0](https://github.com/alejandrom2/turnkey/commit/8b4cbe0ce1ae9f4b1f8686353f2405d42334c02c))
+* audit cleanup — crash and pairing fixes, shared drawing and action code ([#7](https://github.com/alejandrom2/turnkey/issues/7)) ([3d09115](https://github.com/alejandrom2/turnkey/commit/3d09115ebf51cec2d03103f61b297fa67a6a95d3))
 
 ## [0.9.1](https://github.com/alejandrom2/turnkey/compare/v0.9.0...v0.9.1) (2026-10-27)
 
