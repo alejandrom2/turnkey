@@ -46,6 +46,8 @@ namespace Loupedeck.TurnkeyPlugin
         // The SDK has no "now visible" event: an image request is when a key shows, as each time the Actions Ring opens.
         public BitmapImage Image(String actionParameter, Int32 pixels)
         {
+            // An action editor's image request can come without a usable width; the sidecar refuses one under 16.
+            pixels = pixels >= 16 ? pixels : 80;
             var action = this.ActionId(actionParameter);
 
             // The kind only: a parameter can be a prompt the user wrote.
