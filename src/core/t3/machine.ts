@@ -61,6 +61,8 @@ export interface CredentialStore {
 type MachineDeps = {
 	fetch: typeof fetch;
 	socket: SocketFactory;
+	/** Which Turnkey this is, as T3 Code lists its pairings: "Turnkey (Stream Deck)", "Turnkey (Logitech)". */
+	clientLabel: string;
 	/** Where the connection reports frames it couldn't handle. */
 	warn?: (message: string) => void;
 	now?: () => number;
@@ -318,7 +320,7 @@ export class Machine {
 
 	/** Spends a pair link's one-time code. The current connection keeps running if it fails. */
 	async pair(code: string, extraScopes: readonly string[] = []): Promise<Credential> {
-		const credential = await redeemPairingCode(this.url, code, this.deps.fetch, this.#now(), extraScopes);
+		const credential = await redeemPairingCode(this.url, code, this.deps.fetch, this.#now(), extraScopes, this.deps.clientLabel);
 		this.stop();
 		await this.store.save(this.url, credential);
 		this.#reset();

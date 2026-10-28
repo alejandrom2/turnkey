@@ -39,7 +39,7 @@ function machine(url: string): Machine {
 	if (existing) return existing;
 	// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
 	const socket = (socketUrl: string) => new WebSocket(socketUrl) as unknown as SocketLike;
-	const created = new Machine(url, store, { fetch, socket, warn: (message) => log("warn", `${new URL(url).host}: ${message}`) }, changed);
+	const created = new Machine(url, store, { fetch, socket, clientLabel: "Turnkey (Logitech)", warn: (message) => log("warn", `${new URL(url).host}: ${message}`) }, changed);
 	machines.set(url, created);
 	return created;
 }

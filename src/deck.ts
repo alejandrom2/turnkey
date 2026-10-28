@@ -446,7 +446,7 @@ class Deck implements CredentialStore {
 	#create(url: string): Machine {
 		// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
 		const socket = (socketUrl: string) => new WebSocket(socketUrl) as unknown as SocketLike;
-		const machine = new Machine(url, this, { fetch, socket, warn: (message) => logger.warn(`${new URL(url).host}: ${message}`) }, () => this.#changed());
+		const machine = new Machine(url, this, { fetch, socket, clientLabel: "Turnkey (Stream Deck)", warn: (message) => logger.warn(`${new URL(url).host}: ${message}`) }, () => this.#changed());
 		this.#machines.set(url, machine);
 		return machine;
 	}

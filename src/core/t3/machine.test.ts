@@ -114,7 +114,7 @@ function setup(options: { credential?: Credential; ticket?: () => Response; conf
 	const sockets = fakeSockets();
 	let ids = 0;
 	const onChange = vi.fn();
-	const machine = new Machine(URL_, store, { fetch, socket: sockets.factory, random: () => 0, uuid: () => `uuid-${++ids}` }, onChange);
+	const machine = new Machine(URL_, store, { fetch, socket: sockets.factory, clientLabel: "Turnkey (Test)", random: () => 0, uuid: () => `uuid-${++ids}` }, onChange);
 	return { machine, sockets, calls, saved, onChange, config: options.config ?? CONFIG };
 }
 
