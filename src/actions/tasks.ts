@@ -157,15 +157,14 @@ export class TasksDial extends StripDial<TasksDialSettings> {
 		const header = this.heading();
 		const { tasks, loading, error, index, entry, many } = this.#state(action);
 		if (entry === undefined) {
-			if (loading) return { header, icon: glyphArt("task", COLORS.muted), accent: COLORS.muted, value: t("tasks.loading"), loading: true };
-			return { header, icon: glyphArt("task", COLORS.muted), accent: COLORS.muted, value: error !== undefined ? t("tasks.updateT3") : t("tasks.noTasks"), detail: error === undefined ? t("tasks.addInT3") : undefined };
+			if (loading) return { header, icon: glyphArt("task", COLORS.muted), value: t("tasks.loading"), loading: true };
+			return { header, icon: glyphArt("task", COLORS.muted), value: error !== undefined ? t("tasks.updateT3") : t("tasks.noTasks"), detail: error === undefined ? t("tasks.addInT3") : undefined };
 		}
 		const view = taskView(entry.task, Date.now());
 		const color = STATE_COLOR[view.state];
 		return {
 			header: `${header} · ${index + 1}/${tasks.length}`,
 			icon: glyphArt("task", color),
-			accent: view.state === "off" ? COLORS.muted : view.state === "failed" ? COLORS.error : COLORS.accent,
 			value: nameOf(entry, many),
 			detail: entry.machine.canOperate ? view.when : `${view.when} · ${t("reason.readOnly")}`,
 			detailColor: view.state === "failed" ? COLORS.error : undefined,

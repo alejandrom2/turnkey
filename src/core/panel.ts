@@ -29,7 +29,7 @@ export function needsFirstPairing(environments: readonly MachineState[]): boolea
  * global settings whole, and `environments`, `auth`, `scopeRequests` and `verboseUntil` belong to the plugin.
  */
 export function mergeGlobalSettings(current: Record<string, unknown> | null | undefined, patch: Record<string, unknown>): Record<string, unknown> {
-	const editable = ["scheme", "stripBackground", "stripColor", "stripHairline", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
+	const editable = ["scheme", "stripBackground", "stripColor", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
 	const next: Record<string, unknown> = { ...current };
 	for (const key of editable) if (key in patch) next[key] = patch[key];
 	return next;

@@ -142,7 +142,7 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 	protected face(action: Action<DevicesDialSettings>): StripContent {
 		const header = this.heading();
 		const { thread, gone, machine, hub, problem, rows, index, row } = this.#state(action);
-		const muted = (value: string, detail?: string, color: string = COLORS.muted): StripContent => ({ header, icon: glyphArt("device", color), accent: color, value, detail });
+		const muted = (value: string, detail?: string, color: string = COLORS.muted): StripContent => ({ header, icon: glyphArt("device", color), value, detail });
 		if (hub === undefined && machine !== undefined && hubs.failed(machine)) return muted(t("devices.unreadable"), t("devices.touchToCheck"));
 		if (hub === undefined) return { ...muted(t("devices.loading")), loading: true };
 		if (problem?.kind === "off") return muted(t("devices.off"), t("devices.turnOn"));
@@ -154,7 +154,6 @@ export class DevicesDial extends StripDial<DevicesDialSettings> {
 		return {
 			header: `${header} · ${index + 1}/${rows.length}`,
 			icon: glyphArt("device", status.color),
-			accent: status.color,
 			value: row.device.name,
 			detail: [platformName(row), row.device.version, t(status.key), row.cloud ? row.host : undefined, where].filter(Boolean).join(" · "),
 			loading: row.status === "starting",
