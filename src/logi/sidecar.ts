@@ -5,13 +5,13 @@ import { ThreadBoard } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
 import { t } from "../core/i18n.js";
 import { Machine } from "../core/t3/machine.js";
-import { findLocalEnvironment, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
+import { findLocalEnvironment, isLoopbackUrl, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
 import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
-import { startPairingPage } from "./page.js";
+import { type MachineRow, startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { hapticsFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
@@ -97,7 +97,33 @@ async function pairLink(link: string): Promise<string> {
 	}
 }
 
-const page = await startPairingPage(pairLink);
+/** The machines page's rows, named as their pairing knew them, this computer's as "This machine" until it pairs. */
+function machineRows(): MachineRow[] {
+	return [...machines.values()].map((each) => {
+		const label = each.state.kind === "ready" ? each.state.label : (store.load(each.url)?.label ?? (isLoopbackUrl(each.url) ? t("machine.thisMachine") : new URL(each.url).host));
+		const row = { url: each.url, label };
+		switch (each.state.kind) {
+			case "ready":
+				return { ...row, state: "connected" };
+			case "connecting":
+				return { ...row, state: "connecting" };
+			case "signed-out":
+				return each.state.message ? { ...row, state: "problem", detail: each.state.message } : { ...row, state: "needsPairing" };
+			case "error":
+				return { ...row, state: "problem", detail: each.state.message };
+		}
+	});
+}
+
+/** Forgets a machine here; T3 Code keeps the pairing listed under Sharing & access until it's revoked there. */
+async function removeMachine(url: string): Promise<void> {
+	machines.get(url)?.stop();
+	machines.delete(url);
+	await store.save(url, undefined);
+	changed();
+}
+
+const page = await startPairingPage({ pair: pairLink, machines: machineRows, remove: removeMachine });
 let lastStatus = "";
 function sendStatus(): void {
 	const status = pluginStatus([...machines.values()].map((each) => each.state), page.url);

@@ -5,6 +5,7 @@ import { pluginStatus } from "./status.js";
 
 const PAGE = "http://127.0.0.1:5000/pair/abc";
 const pair = { url: PAGE, urlTitle: t("logi.status.pair") };
+const machines = { url: PAGE, urlTitle: t("inspector.card.machines") };
 
 describe("pluginStatus", () => {
 	it("asks for a pair link while nothing is paired", () => {
@@ -17,15 +18,16 @@ describe("pluginStatus", () => {
 		expect(pluginStatus([{ kind: "error", message: "boom" }], PAGE)).toEqual({ type: "status", level: "error", message: "boom", ...pair });
 	});
 
-	it("is fine once one machine is ready, whatever the others do", () => {
+	it("is fine once one machine is ready, whatever the others do, and still opens the machines page", () => {
 		expect(pluginStatus([{ kind: "error", message: "boom" }, { kind: "ready", environmentId: "e", label: "Studio", canOperate: true }], PAGE)).toEqual({
 			type: "status",
 			level: "normal",
 			message: t("logi.status.connected", { name: "Studio" }),
+			...machines,
 		});
 	});
 
 	it("is fine while connecting", () => {
-		expect(pluginStatus([{ kind: "connecting" }], PAGE)).toEqual({ type: "status", level: "normal", message: t("health.connecting") });
+		expect(pluginStatus([{ kind: "connecting" }], PAGE)).toEqual({ type: "status", level: "normal", message: t("health.connecting"), ...machines });
 	});
 });

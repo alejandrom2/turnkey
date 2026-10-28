@@ -7,6 +7,16 @@ import { escapeXml } from "../core/render.js";
 
 export type PairingPage = { url: string; close(): void };
 
+/** A machine as the page lists it; `detail` says what's wrong when it has a problem. */
+export type MachineRow = { url: string; label: string; state: "connected" | "connecting" | "needsPairing" | "problem"; detail?: string };
+
+/** What the page does: spend a pair link (adding a machine or re-pairing one), list the machines, forget one. */
+export type PageActions = {
+	pair(link: string): Promise<string>;
+	machines(): readonly MachineRow[];
+	remove(url: string): Promise<void>;
+};
+
 /** A pair link is a URL; anything much longer isn't one. */
 const MAX_BODY = 8_192;
 
@@ -27,13 +37,30 @@ h1{margin:0 0 6px;font-size:22px}p{margin:0 0 18px;color:var(--muted)}
 input{box-sizing:border-box;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:transparent;color:inherit;font:inherit}
 button{margin-top:12px;width:100%;padding:11px;border:0;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
 .ok{color:var(--ok)}.bad{color:var(--bad)}
+h2{margin:22px 0 8px;font-size:15px}ul{list-style:none;margin:0 0 6px;padding:0}
+li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}li:first-child{border-top:0}
+li div{flex:1;min-width:0}li strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}li span{font-size:14px;color:var(--muted)}
+li form button{margin:0;width:auto;padding:6px 12px;background:transparent;color:var(--bad);border:1px solid var(--line)}
 </style></head><body><main>${body}</main></body></html>`;
 }
 
-function form(problem?: string): string {
+const STATE_TEXT = { connected: "inspector.card.connected", connecting: "health.connecting", needsPairing: "inspector.card.needsPairing", problem: "health.offline" } as const;
+
+function list(machines: readonly MachineRow[]): string {
+	if (machines.length === 0) return `<p>${escapeXml(t("inspector.card.noMachines"))}</p>`;
+	const row = (machine: MachineRow) => {
+		const state = machine.detail ?? t(STATE_TEXT[machine.state]);
+		const tone = machine.state === "connected" ? "ok" : machine.state === "problem" ? "bad" : "";
+		return `<li><div><strong>${escapeXml(machine.label)}</strong><span class="${tone}">${escapeXml(state)}</span></div><form method="post"><input type="hidden" name="remove" value="${escapeXml(machine.url)}"><button>${escapeXml(t("inspector.card.remove"))}</button></form></li>`;
+	};
+	return `<ul>${machines.map(row).join("")}</ul>`;
+}
+
+function page(machines: readonly MachineRow[], notice?: { ok: boolean; text: string }): string {
 	return html(
-		`<h1>${escapeXml(t("notice.pairDeck"))}</h1><p>${escapeXml(t("needs.fix.newPairLink"))}</p>` +
-			(problem ? `<p class="bad">${escapeXml(problem)}</p>` : "") +
+		`<h1>${escapeXml(t("inspector.card.machines"))}</h1>${list(machines)}` +
+			`<h2>${escapeXml(t("inspector.card.addMachine"))}</h2><p>${escapeXml(t("needs.fix.newPairLink"))}</p>` +
+			(notice ? `<p class="${notice.ok ? "ok" : "bad"}">${escapeXml(notice.text)}</p>` : "") +
 			`<form method="post"><input name="link" type="url" required autofocus autocomplete="off" placeholder="${escapeXml(t("inspector.card.linkPlaceholder"))}"><button>${escapeXml(t("inspector.card.connect"))}</button></form>`,
 	);
 }
@@ -54,10 +81,10 @@ function readBody(request: IncomingMessage): Promise<string | undefined> {
 }
 
 /**
- * Serves the form for a T3 Code pair link on this computer only, at a random address the plugin's banner opens.
- * The Host and Origin checks keep other sites, and DNS rebinding, from reaching it.
+ * Serves Turnkey's machines on this computer only, at a random address the plugin's banner opens: the list, Remove, and a
+ * pair link field that adds a machine or re-pairs one. The Host and Origin checks keep other sites, and DNS rebinding, out.
  */
-export async function startPairingPage(pair: (link: string) => Promise<string>): Promise<PairingPage> {
+export async function startPairingPage(actions: PageActions): Promise<PairingPage> {
 	const path = `/pair/${randomBytes(16).toString("hex")}`;
 	let origin = "";
 
@@ -67,17 +94,24 @@ export async function startPairingPage(pair: (link: string) => Promise<string>):
 		};
 		if (request.url !== path) return void response.writeHead(404).end();
 		if (`http://${request.headers.host}` !== origin) return void response.writeHead(403).end();
-		if (request.method === "GET") return reply(200, form());
+		if (request.method === "GET") return reply(200, page(actions.machines()));
 		if (request.method !== "POST") return void response.writeHead(405).end();
 		if (request.headers.origin !== undefined && request.headers.origin !== origin) return void response.writeHead(403).end();
 		const body = await readBody(request);
 		if (body === undefined) return void response.writeHead(413).end();
-		const link = new URLSearchParams(body).get("link")?.trim() ?? "";
+		const fields = new URLSearchParams(body);
+		const removing = fields.get("remove");
 		try {
-			const name = await pair(link);
-			reply(200, html(`<h1>${escapeXml(t("needs.paired"))}</h1><p class="ok">${escapeXml(t("logi.page.paired", { name }))}</p>`));
+			if (removing !== null) {
+				// Only a machine the page lists can be removed, whatever the form says.
+				if (!actions.machines().some((machine) => machine.url === removing)) return void response.writeHead(400).end();
+				await actions.remove(removing);
+				return reply(200, page(actions.machines()));
+			}
+			const name = await actions.pair(fields.get("link")?.trim() ?? "");
+			reply(200, page(actions.machines(), { ok: true, text: t("logi.page.paired", { name }) }));
 		} catch (error) {
-			reply(400, form(error instanceof Error ? error.message : String(error)));
+			reply(400, page(actions.machines(), { ok: false, text: error instanceof Error ? error.message : String(error) }));
 		}
 	}
 
