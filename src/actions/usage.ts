@@ -241,11 +241,11 @@ export class UsageDial extends StripDial<UsageDialSettings> {
 	protected face(action: Action<UsageDialSettings>): StripContent {
 		const header = this.heading();
 		const { url, period, item, loading, error, mismatch } = this.#state(action);
-		const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("usage", COLORS.muted), accent: COLORS.muted, value, detail });
+		const muted = (value: string, detail: string): StripContent => ({ header, icon: glyphArt("usage", COLORS.muted), value, detail });
 		if (!usageAccess(url)) return muted(periodLabel(period), needsAccessLabel(DIAGNOSTICS_SCOPE));
 		if (mismatch !== undefined) return muted(periodLabel(period), t(MISMATCH[mismatch]));
 		if (item === undefined) return { ...muted(periodLabel(period), error === undefined || loading ? "" : failureLabel(error)), loading: loading || error === undefined };
-		return { header: `${header} · ${periodLabel(period)}`, icon: itemMark(item), accent: COLORS.accent, value: `${item.label} · ${item.cost}`, detail: [item.tokens, item.detail].filter(Boolean).join(" · ") };
+		return { header: `${header} · ${periodLabel(period)}`, icon: itemMark(item), value: `${item.label} · ${item.cost}`, detail: [item.tokens, item.detail].filter(Boolean).join(" · ") };
 	}
 
 	protected override picture(action: Action<UsageDialSettings>): string | undefined {

@@ -88,15 +88,11 @@
 						<label data-i18n="inspector.advanced.dialStrips">Dial strips</label>
 						<div class="control"><select class="native" data-setting="stripBackground"><option value="t3" data-i18n="inspector.background.t3">Dark</option><option value="flow" data-i18n="inspector.background.flow">Flow</option><option value="state" data-i18n="inspector.background.state">Thread state</option><option value="custom" data-i18n="inspector.background.custom">Custom color</option></select></div>
 					</div>
+					<p class="hint" data-i18n="inspector.advanced.stateHint">Dark is a plain near-black, like Stream Deck's own strips. Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
 					<div class="field" id="strip-color">
 						<label data-i18n="inspector.field.stripColor">Strip color</label>
 						<div class="control"><input type="color" data-setting="stripColor" /></div>
 					</div>
-					<div class="field">
-						<label data-i18n="inspector.advanced.stateLine">State line</label>
-						<div class="control"><label class="check"><input type="checkbox" data-setting="stripHairline" /><span data-i18n="inspector.advanced.stateLineLabel">Show the colored line under each strip</span></label></div>
-					</div>
-					<p class="hint" data-i18n="inspector.advanced.stateHint">Dark is a plain near-black, like Stream Deck's own strips. Flow draws one picture across neighboring dials. Thread state tints a strip green when an unseen turn is done, red when failed and amber when it needs you. Each dial can override this in its own settings.</p>
 					<div class="field">
 						<label data-i18n="inspector.advanced.stripStyle">Strip style</label>
 						<div class="control"><select class="native" data-setting="stripStyle"><option value="" data-i18n="inspector.style.perDial">Per dial default</option><option value="classic" data-i18n="inspector.style.classic">Classic</option><option value="list" data-i18n="inspector.style.list">List</option><option value="carousel" data-i18n="inspector.style.carousel">Carousel</option></select></div>
@@ -190,7 +186,7 @@ function needsFirstPairing(environments ) {
 	return environments.every((env) => env.state === "signed-out");
 }
 function mergeGlobalSettings(current , patch ) {
-	const editable = ["scheme", "stripBackground", "stripColor", "stripHairline", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
+	const editable = ["scheme", "stripBackground", "stripColor", "stripStyle", "textScroll", "motion", "idlePet", "confirmSend", "maxEffort"];
 	const next = { ...current };
 	for (const key of editable) if (key in patch) next[key] = patch[key];
 	return next;
@@ -341,7 +337,7 @@ function mergeGlobalSettings(current , patch ) {
 			}
 
 			/** What Stream Deck's own fields showed for a setting never saved. */
-			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "#121212", stripHairline: true, stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
+			const DEFAULTS = { scheme: "", stripBackground: "t3", stripColor: "#121212", stripStyle: "", textScroll: "horizontal", motion: "full", idlePet: "off", confirmSend: "review", maxEffort: "gradient" };
 			const globals = {};
 			function renderGlobals(settings) {
 				Object.assign(globals, settings);

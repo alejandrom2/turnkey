@@ -108,7 +108,7 @@ type StyleOptions = {
 type Feedback = Record<string, string | { value: string; color: string }>;
 
 const canvasOf = (content: StripContent, appearance: StripAppearance) =>
-	stripCanvas(content.accent, appearance, content.tone ?? "neutral", content.ultrathink === true);
+	stripCanvas(appearance, content.tone ?? "neutral", content.ultrathink === true);
 
 const svg = (body: string) => svgImage(200, 100, body);
 
@@ -237,7 +237,7 @@ export function carouselFeedback(content: StripContent, list: StripList, options
 /** A press result in a browse style: a check or a mark with what happened, wrapped when it is long. */
 export function styleFlash(style: Exclude<StripStyle, "classic">, ok: boolean, label: string, appearance: StripAppearance): Feedback {
 	const color = ok ? COLORS.done : COLORS.error;
-	const content: StripContent = { header: ok ? t("strip.done") : t("strip.notNow"), icon: glyphArt(ok ? "check" : "error", color), accent: color, value: label, tone: ok ? "done" : "failed" };
+	const content: StripContent = { header: ok ? t("strip.done") : t("strip.notNow"), icon: glyphArt(ok ? "check" : "error", color), value: label, tone: ok ? "done" : "failed" };
 	if (style === "list") {
 		const [first = "", second = "", third = ""] = wrapText(label, LIST_SELECTED.width, LIST_SELECTED.size, 3).lines;
 		return {

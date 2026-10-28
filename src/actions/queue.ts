@@ -47,15 +47,14 @@ export class QueueDial extends StripDial<DialSettings> {
 	protected face(action: Action<DialSettings>): StripContent {
 		const header = this.heading();
 		const { thread, queue, items, index, item } = this.#state(action);
-		if (thread === undefined) return { header, icon: glyphArt("queued", COLORS.muted), accent: COLORS.muted, value: t("strip.noThread") };
+		if (thread === undefined) return { header, icon: glyphArt("queued", COLORS.muted), value: t("strip.noThread") };
 		const tone = toneOf(thread.deck, thread.unseen);
-		if (queue === undefined) return { header, icon: glyphArt("queued", COLORS.muted), accent: COLORS.muted, value: thread.title, tone, loading: true };
-		if (item === undefined) return { header, icon: glyphArt("queued", COLORS.muted), accent: COLORS.muted, value: t("strip.nothingQueued"), detail: thread.title, tone };
+		if (queue === undefined) return { header, icon: glyphArt("queued", COLORS.muted), value: thread.title, tone, loading: true };
+		if (item === undefined) return { header, icon: glyphArt("queued", COLORS.muted), value: t("strip.nothingQueued"), detail: thread.title, tone };
 		const check = this.#check(thread);
 		return {
 			header: `${header} · ${index + 1}/${items.length}`,
 			icon: glyphArt("queued", check.available ? COLORS.text : COLORS.muted),
-			accent: check.available ? COLORS.accent : COLORS.muted,
 			value: item.text || t("strip.queuedMessage"),
 			detail: check.available ? this.#hint(queue) : check.reason,
 			tone,

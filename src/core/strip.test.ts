@@ -6,7 +6,7 @@ import { overflowOf, readingLength, scrollingLine, STRIP_LINES, type StripConten
 const svg = (dataUrl: unknown) => Buffer.from(String(dataUrl).replace(/^data:image\/svg\+xml;base64,/, ""), "base64").toString("utf8");
 
 const LONG = "Refactor the websocket reconnect logic so tunnels survive sleep";
-const content = (patch: Partial<StripContent> = {}): StripContent => ({ header: "Threads", icon: () => "", accent: "#5B8CFF", value: "Short", detail: "Done", ...patch });
+const content = (patch: Partial<StripContent> = {}): StripContent => ({ header: "Threads", icon: () => "", value: "Short", detail: "Done", ...patch });
 
 describe("strip lines", () => {
 	it("measures overflow only for text wider than its slot", () => {
@@ -57,9 +57,9 @@ describe("strip lines", () => {
 });
 
 describe("strip appearance", () => {
-	it("defaults to T3 Code's card with the hairline on, and lets a dial override the global setting", () => {
-		expect(resolveAppearance({})).toEqual({ background: "t3", hairline: true });
-		expect(resolveAppearance({ stripBackground: "flow", stripHairline: false })).toEqual({ background: "flow", hairline: false });
+	it("defaults to T3 Code's card, and lets a dial override the global setting", () => {
+		expect(resolveAppearance({})).toEqual({ background: "t3" });
+		expect(resolveAppearance({ stripBackground: "flow" })).toEqual({ background: "flow" });
 		expect(resolveAppearance({ stripBackground: "flow" }, { background: "state" }).background).toBe("state");
 		expect(resolveAppearance({ stripBackground: "flow" }, { background: "" }).background).toBe("flow");
 	});
@@ -70,14 +70,14 @@ describe("strip appearance", () => {
 		expect(resolveAppearance({ stripColor: "#336699" }, { background: "custom", backgroundColor: "#112233" }).color).toBe("#112233");
 	});
 
-	it("draws each background, tints by thread state, and can drop the hairline", () => {
-		expect(svg(stripCanvas("#5B8CFF"))).toContain(`fill="#121212"`);
-		expect(svg(stripCanvas("#5B8CFF", { background: "flow", hairline: true, run: { length: 2, position: 1 } }))).toContain(`translate(-200 0)`);
-		expect(svg(stripCanvas("#5B8CFF", { background: "custom", color: "#336699", hairline: true }))).toContain(`fill="#336699"`);
-		expect(svg(stripCanvas("#5B8CFF", { background: "state", hairline: true }, toneOf("failed")))).toContain("#FF6764");
-		expect(svg(stripCanvas("#5B8CFF", { background: "state", hairline: true }, toneOf("running")))).not.toContain("stop-opacity");
-		expect(svg(stripCanvas("#5B8CFF", { background: "t3", hairline: false }))).not.toContain("#5B8CFF");
-		expect(svg(stripCanvas("#5B8CFF", DEFAULT_APPEARANCE, "neutral", true))).toContain(`stroke="url(#ultrathink)"`);
+	it("draws each background, tints by thread state, and draws no state line", () => {
+		expect(svg(stripCanvas())).toContain(`fill="#121212"`);
+		expect(svg(stripCanvas({ background: "flow", run: { length: 2, position: 1 } }))).toContain(`translate(-200 0)`);
+		expect(svg(stripCanvas({ background: "custom", color: "#336699" }))).toContain(`fill="#336699"`);
+		expect(svg(stripCanvas({ background: "state" }, toneOf("failed")))).toContain("#FF6764");
+		expect(svg(stripCanvas({ background: "state" }, toneOf("running")))).not.toContain("stop-opacity");
+		expect(svg(stripCanvas())).not.toContain(`y="95"`);
+		expect(svg(stripCanvas(DEFAULT_APPEARANCE, "neutral", true))).toContain(`stroke="url(#ultrathink)"`);
 	});
 
 	it("maps thread states to tones, a seen done one neutral like its key", () => {
