@@ -6,7 +6,8 @@ import type { HostMessage, SidecarMessage } from "./protocol.js";
 /** What a thread key reads from a thread. */
 export type KeyThread = Pick<DeckThread, "deck" | "title" | "unseen">;
 
-type Key = { size: number; index: number; png?: string };
+/** `face` is the last SVG sent: comparing it skips resvg, the expensive part, when nothing shown changed. */
+type Key = { size: number; index: number; face?: string };
 
 /** The spike's one action: a key showing a thread, and a press stepping to the next. */
 export class ThreadKeys {
@@ -46,9 +47,8 @@ export class ThreadKeys {
 		const threads = this.threads();
 		const thread = threads[key.index % Math.max(threads.length, 1)];
 		const face = thread ? renderThreadKey({ state: thread.deck, title: thread.title, unseen: thread.unseen }) : renderThreadKey({ state: "idle", title: t("strip.noThreads") });
-		const png = this.raster(face, key.size);
-		if (png === key.png) return;
-		key.png = png;
-		this.send({ type: "image", action, png });
+		if (face === key.face) return;
+		key.face = face;
+		this.send({ type: "image", action, png: this.raster(face, key.size) });
 	}
 }

@@ -46,6 +46,15 @@ describe("ThreadKeys", () => {
 		expect(sent).toHaveLength(1);
 	});
 
+	it("skips the rasterizer when the face is unchanged", () => {
+		let rasterized = 0;
+		const subject = new ThreadKeys(() => [thread("a")], () => undefined, (dataUrl, size) => `${++rasterized}:${size}:${dataUrl}`);
+		subject.handle({ type: "appear", action: "k", size: 80 });
+		subject.repaint();
+		subject.repaint();
+		expect(rasterized).toBe(1);
+	});
+
 	it("repaints when the thread changes", () => {
 		const { subject, sent, list } = keys([thread("a", "running")]);
 		subject.handle({ type: "appear", action: "k", size: 80 });

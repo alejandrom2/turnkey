@@ -5,6 +5,7 @@ import { ThreadBoard } from "../core/board.js";
 import { Machine } from "../core/t3/machine.js";
 import { findLocalEnvironment, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
 import type { SocketLike } from "../core/t3/rpc.js";
+import { batched } from "./batch.js";
 import { ThreadKeys } from "./keys.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { keyPng } from "./raster.js";
@@ -25,16 +26,20 @@ const log = (level: "info" | "warn", message: string) => send({ type: "log", lev
 const machines = new Map<string, Machine>();
 const board = new ThreadBoard(() => [...machines.values()]);
 const keys = new ThreadKeys(() => board.threads, send, keyPng);
+const changed = batched(
+	() => {
+		board.update();
+		keys.repaint();
+	},
+	(error) => log("warn", `Couldn't update the keys: ${error instanceof Error ? error.message : String(error)}`),
+);
 
 function machine(url: string): Machine {
 	const existing = machines.get(url);
 	if (existing) return existing;
 	// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
 	const socket = (socketUrl: string) => new WebSocket(socketUrl) as unknown as SocketLike;
-	const created = new Machine(url, store, { fetch, socket, warn: (message) => log("warn", `${new URL(url).host}: ${message}`) }, () => {
-		board.update();
-		keys.repaint();
-	});
+	const created = new Machine(url, store, { fetch, socket, warn: (message) => log("warn", `${new URL(url).host}: ${message}`) }, changed);
 	machines.set(url, created);
 	return created;
 }

@@ -181,6 +181,8 @@ namespace Loupedeck.TurnkeyPlugin
                 switch (root.GetProperty("type").GetString())
                 {
                     case "image":
+                        // A sidecar that draws is healthy: crashes days apart shouldn't use up the restarts.
+                        this._restarts = 0;
                         this.Image?.Invoke(root.GetProperty("action").GetString(), root.GetProperty("png").GetString());
                         break;
                     case "log":
