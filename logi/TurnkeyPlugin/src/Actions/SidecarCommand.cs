@@ -1,107 +1,32 @@
 namespace Loupedeck.TurnkeyPlugin
 {
     using System;
-    using System.Collections.Concurrent;
 
-    // An action the sidecar draws and runs; `kind` names it there (src/logi/sidecar.ts).
+    // A pressable action the sidecar draws and runs.
     public abstract class SidecarCommand : PluginDynamicCommand
     {
-        private readonly String _kind;
-        private readonly ConcurrentDictionary<String, String> _images = new ConcurrentDictionary<String, String>();
-        private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
+        private readonly SidecarFaces _faces;
 
         protected SidecarCommand(String kind, String displayName, String description, String groupName)
             : base(displayName: displayName, description: description, groupName: groupName)
         {
-            this._kind = kind;
+            this._faces = new SidecarFaces(kind, () => ((TurnkeyPlugin)this.Plugin).Sidecar, () => this.ActionImageChanged());
         }
-
-        private Sidecar Sidecar => ((TurnkeyPlugin)this.Plugin).Sidecar;
 
         protected override Boolean OnLoad()
         {
-            this.Sidecar.Image += this.OnImage;
-            this.Sidecar.Started += this.OnStarted;
-            this.Sidecar.Stopped += this.OnStopped;
+            this._faces.Attach();
             return true;
         }
 
         protected override Boolean OnUnload()
         {
-            this.Sidecar.Image -= this.OnImage;
-            this.Sidecar.Started -= this.OnStarted;
-            this.Sidecar.Stopped -= this.OnStopped;
+            this._faces.Detach();
             return true;
         }
 
-        protected override void RunCommand(String actionParameter) =>
-            this.Sidecar.Send(new { type = "press", action = this.ActionId(actionParameter) });
+        protected override void RunCommand(String actionParameter) => this._faces.Press(actionParameter);
 
-        // The SDK has no "now visible" event: the first image request is when a key appears.
-        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
-        {
-            var action = this.ActionId(actionParameter);
-            if (this._announced.TryAdd(action, true))
-            {
-                PluginLog.Info($"{action} appeared at {imageSize}");
-                this.Sidecar.Send(new { type = "appear", action, size = Pixels(imageSize) });
-            }
-
-            if (!this.Sidecar.IsRunning)
-            {
-                return Stopped(imageSize);
-            }
-
-            return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(imageSize);
-        }
-
-        private String ActionId(String actionParameter) => $"{this._kind}:{actionParameter ?? ""}";
-
-        // Logitech's samples draw 80 px faces on the 90 sizes.
-        private static Int32 Pixels(PluginImageSize imageSize) => imageSize switch
-        {
-            PluginImageSize.Width60 or PluginImageSize.Width60Pixels => 60,
-            PluginImageSize.Width116 or PluginImageSize.Width116Pixels => 116,
-            _ => 80,
-        };
-
-        private static BitmapImage Blank(PluginImageSize imageSize)
-        {
-            var builder = new BitmapBuilder(imageSize);
-            builder.Clear(BitmapColor.FromRgb(0x111111));
-            return builder.ToImage();
-        }
-
-        // Drawn here because the sidecar that draws everything else is the thing that's down.
-        private static BitmapImage Stopped(PluginImageSize imageSize)
-        {
-            var builder = new BitmapBuilder(imageSize);
-            builder.Clear(BitmapColor.FromRgb(0x111111));
-            builder.DrawText("Turnkey stopped", BitmapColor.FromRgb(0xFF6764), 14, 16, 4);
-            return builder.ToImage();
-        }
-
-        private void OnImage(String action, String svg)
-        {
-            if (!action.StartsWith($"{this._kind}:"))
-            {
-                return;
-            }
-
-            this._images[action] = svg;
-            this.ActionImageChanged();
-        }
-
-        private void OnStarted()
-        {
-            this._announced.Clear();
-            this.ActionImageChanged();
-        }
-
-        private void OnStopped()
-        {
-            this._images.Clear();
-            this.ActionImageChanged();
-        }
+        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize) => this._faces.Image(actionParameter, imageSize);
     }
 }
