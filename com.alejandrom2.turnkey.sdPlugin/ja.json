@@ -1292,6 +1292,10 @@
 					"name": "プロンプトを送信",
 					"description": "ここに書いたプロンプトを T3 Code で開いているスレッドに送ります。"
 				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "T3 Code 用の Turnkey のアクションを開きます。"
+				},
 				"group": {
 					"threads": "スレッド",
 					"settings": "設定"

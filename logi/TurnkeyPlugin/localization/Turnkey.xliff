@@ -127,6 +127,14 @@
           <target />
         </trans-unit>
       </group>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder" translate="yes">
+        <source>Turnkey</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder###description" translate="yes">
+        <source>Opens Turnkey's actions for T3 Code.</source>
+        <target />
+      </trans-unit>
       <group id="@groups">
         <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
           <source>Prompts</source>
@@ -142,6 +150,10 @@
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
           <source>Settings</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___B222E03C377E4B05000F" translate="yes">
+          <source>Dynamic Folders</source>
           <target />
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">

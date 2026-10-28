@@ -1292,6 +1292,10 @@
 					"name": "傳送提示詞",
 					"description": "把你在這裡寫的提示詞傳送到 T3 Code 中開啟的對話。"
 				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "開啟 Turnkey 的 T3 Code 操作。"
+				},
 				"group": {
 					"threads": "對話",
 					"settings": "設定"

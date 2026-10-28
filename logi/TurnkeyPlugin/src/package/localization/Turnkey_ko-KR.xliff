@@ -115,6 +115,14 @@
           <target>스크롤해 T3 Code에서 열려 있는 스레드의 강도를 바꿉니다. 누르면 다음 단계로.</target>
         </trans-unit>
       </group>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder" translate="yes">
+        <source>Turnkey</source>
+        <target>Turnkey</target>
+      </trans-unit>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder###description" translate="yes">
+        <source>Opens Turnkey's actions for T3 Code.</source>
+        <target>T3 Code용 Turnkey 동작을 엽니다.</target>
+      </trans-unit>
       <group id="@groups">
         <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
           <source>Prompts</source>

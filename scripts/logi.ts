@@ -38,6 +38,8 @@ const KEYS = [
 	"usage.title",
 	"strip.prompts",
 	"face.model",
+	"logi.actions.folder.name",
+	"logi.actions.folder.description",
 	"logi.actions.group.threads",
 	"logi.actions.group.settings",
 ] as const;
@@ -61,9 +63,10 @@ const english = read("en");
 const keyOf = new Map(KEYS.map((key) => [lookup(english, key), key]));
 const unit = /(\s*)<trans-unit id="([^"]+)" translate="yes">\s*<source>([\s\S]*?)<\/source>\s*<target \/>\s*<\/trans-unit>/g;
 
-/** Logi's own units (Reset %, Main, Dynamic Folder): left out, so it keeps its own words for them. */
-const logis = (id: string) => /___(General___|ModeName___|#DynamicFolder)/.test(id);
-const ours = [...template.matchAll(unit)].filter(([, , id]) => !logis(id!));
+/** Logi's own units (Reset %, Main, Dynamic Folder, its Dynamic Folders group): left out, so it keeps its own words for them. */
+const LOGI_SOURCES = new Set(["Dynamic Folders"]);
+const logis = (id: string, source = "") => /___(General___|ModeName___)|___#DynamicFolder"?$/.test(id) || LOGI_SOURCES.has(unescape(source));
+const ours = [...template.matchAll(unit)].filter(([, , id, source]) => !logis(id!, source));
 const sources = new Set(ours.map(([, , , source]) => unescape(source!)));
 for (const source of sources) if (!keyOf.has(source)) throw new Error(`"${source}" is in the template but in no logi.actions key of en.json`);
 for (const [text, key] of keyOf) if (!sources.has(text)) throw new Error(`${key} ("${text}") isn't in the template: regenerate it`);
@@ -74,7 +77,7 @@ for (const [language, file] of Object.entries(LANGUAGES)) {
 	const table = read(file);
 	const xliff = template.replace(/target-language=""/g, `target-language="${language}"`).replace(unit, (match, indent: string, id: string, source: string) => {
 		const key = keyOf.get(unescape(source));
-		if (key === undefined || logis(id)) return "";
+		if (key === undefined || logis(id, source)) return "";
 		return `${indent}<trans-unit id="${id}" translate="yes">${indent}  <source>${source}</source>${indent}  <target>${escape(lookup(table, key))}</target>${indent}</trans-unit>`;
 	});
 	writeFileSync(join(out, `Turnkey_${language}.xliff`), xliff);

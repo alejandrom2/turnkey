@@ -1292,6 +1292,10 @@
 					"name": "Enviar prompt",
 					"description": "Envía el prompt que escribas aquí al hilo abierto en T3 Code."
 				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "Abre las acciones de Turnkey para T3 Code."
+				},
 				"group": {
 					"threads": "Hilos",
 					"settings": "Ajustes"

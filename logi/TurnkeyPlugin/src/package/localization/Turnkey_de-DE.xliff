@@ -115,6 +115,14 @@
           <target>Scrolle, um den Aufwand des in T3 Code geöffneten Threads zu ändern; drücke für die nächste Stufe.</target>
         </trans-unit>
       </group>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder" translate="yes">
+        <source>Turnkey</source>
+        <target>Turnkey</target>
+      </trans-unit>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder###description" translate="yes">
+        <source>Opens Turnkey's actions for T3 Code.</source>
+        <target>Öffnet Turnkeys Aktionen für T3 Code.</target>
+      </trans-unit>
       <group id="@groups">
         <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
           <source>Prompts</source>

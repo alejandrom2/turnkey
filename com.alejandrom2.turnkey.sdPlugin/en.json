@@ -1292,6 +1292,10 @@
 					"name": "Send prompt",
 					"description": "Sends the prompt you write here to the thread open in T3 Code."
 				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "Opens Turnkey's actions for T3 Code."
+				},
 				"group": {
 					"threads": "Threads",
 					"settings": "Settings"

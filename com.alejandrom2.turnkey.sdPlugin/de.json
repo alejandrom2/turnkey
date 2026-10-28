@@ -1292,6 +1292,10 @@
 					"name": "Prompt senden",
 					"description": "Sendet den hier geschriebenen Prompt an den in T3 Code geöffneten Thread."
 				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "Öffnet Turnkeys Aktionen für T3 Code."
+				},
 				"group": {
 					"threads": "Threads",
 					"settings": "Einstellungen"

@@ -115,6 +115,14 @@
           <target>スクロールで T3 Code で開いているスレッドのエフォートを変更します。押すと次のレベルへ。</target>
         </trans-unit>
       </group>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder" translate="yes">
+        <source>Turnkey</source>
+        <target>Turnkey</target>
+      </trans-unit>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder###description" translate="yes">
+        <source>Opens Turnkey's actions for T3 Code.</source>
+        <target>T3 Code 用の Turnkey のアクションを開きます。</target>
+      </trans-unit>
       <group id="@groups">
         <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
           <source>Prompts</source>

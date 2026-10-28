@@ -1292,6 +1292,10 @@
 					"name": "프롬프트 보내기",
 					"description": "여기에 쓴 프롬프트를 T3 Code에서 열려 있는 스레드에 보냅니다."
 				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "T3 Code용 Turnkey 동작을 엽니다."
+				},
 				"group": {
 					"threads": "스레드",
 					"settings": "설정"
