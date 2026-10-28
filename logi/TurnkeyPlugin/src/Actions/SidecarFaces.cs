@@ -2,6 +2,7 @@ namespace Loupedeck.TurnkeyPlugin
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Threading;
 
     // The faces of one kind of action, which the sidecar draws (src/logi/sidecar.ts names the kinds), and its presses and scrolls.
     public sealed class SidecarFaces
@@ -11,6 +12,9 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly Action _changed;
         private readonly ConcurrentDictionary<String, String> _images = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
+        private readonly ConcurrentDictionary<String, ManualResetEventSlim> _waiting = new ConcurrentDictionary<String, ManualResetEventSlim>();
+
+        private const Int32 FirstFaceWaitMs = 250;
 
         public SidecarFaces(String kind, Func<Sidecar> sidecar, Action changed)
         {
@@ -50,12 +54,16 @@ namespace Loupedeck.TurnkeyPlugin
                 PluginLog.Info($"A {this._kind} action appeared at {pixels} px");
             }
 
-            this._sidecar().Send(new { type = "appear", action, size = pixels });
-
             if (!this._sidecar().IsRunning)
             {
                 return StoppedImage(pixels);
             }
+
+            // A face the sidecar hasn't drawn yet is waited for briefly: an action editor's preview asks once and keeps what it gets.
+            var known = this._images.ContainsKey(action);
+            var drawn = known ? null : this._waiting.GetOrAdd(action, _ => new ManualResetEventSlim(false));
+            this._sidecar().Send(new { type = "appear", action, size = pixels });
+            drawn?.Wait(FirstFaceWaitMs);
 
             return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
         }
@@ -96,6 +104,11 @@ namespace Loupedeck.TurnkeyPlugin
             }
 
             this._images[action] = svg;
+            if (this._waiting.TryRemove(action, out var drawn))
+            {
+                drawn.Set();
+            }
+
             this._changed();
         }
 
