@@ -15,7 +15,18 @@ namespace Loupedeck.TurnkeyPlugin
             this.GroupName = "Prompts";
             this.Description = "Sends the prompt you write here to the thread open in T3 Code.";
             this.ActionEditor.AddControlEx(new ActionEditorTextbox(PromptControl, "Prompt to send:", "Sent as a message to the thread open in T3 Code.").SetRequired().SetMaxLength(2000));
+            this.ActionEditor.ControlValueChanged += this.OnControlValueChanged;
             this._faces = new SidecarFaces("send", () => ((TurnkeyPlugin)this.Plugin).Sidecar, () => this.ActionImageChanged());
+        }
+
+        // Options+ never asks an editor action for an image and shows its name instead, so a placed copy is named with
+        // Send's arrow alone; a symbol, so it needs no translation.
+        private void OnControlValueChanged(Object sender, ActionEditorControlValueChangedEventArgs e)
+        {
+            if (e.ControlName.EqualsNoCase(PromptControl))
+            {
+                e.ActionEditorState.SetDisplayName("↑");
+            }
         }
 
         protected override Boolean OnLoad()
