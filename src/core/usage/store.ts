@@ -20,7 +20,6 @@ export const periodInput = (period: UsagePeriod, now: Date): UsageSummaryInput =
 export interface UsageReader {
 	readonly url: string;
 	readonly environmentId: string;
-	readonly label: string;
 	/** Changes when settings the scan depends on change (price overrides, model aliases, Cursor's keychain). */
 	readonly usageSettingsStamp: string;
 	usageSummary(input: UsageSummaryInput): Promise<UsageSummary>;
@@ -130,7 +129,7 @@ export class UsageStore {
 	view(readers: readonly UsageReader[], period: UsagePeriod): { merged?: MergedUsage; loading: boolean; error?: unknown; mismatch?: "serverBehind" | "clientBehind" } {
 		const entries = readers.map((reader) => ({ reader, entry: this.entry(reader, period) }));
 		const answered: EnvironmentUsage[] = entries.flatMap(({ reader, entry }) =>
-			entry?.summary === undefined ? [] : [{ environmentId: reader.environmentId, label: reader.label, summary: entry.summary }],
+			entry?.summary === undefined ? [] : [{ environmentId: reader.environmentId, summary: entry.summary }],
 		);
 		const loading = entries.some(({ entry }) => entry === undefined || entry.loading || entry.refreshing);
 		if (answered.length === 0) return { loading, error: entries.find(({ entry }) => entry?.error !== undefined)?.entry?.error };

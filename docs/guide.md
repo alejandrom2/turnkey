@@ -154,5 +154,5 @@ The translations are machine-translated. Corrections are welcome: open an issue 
 
 Every string lives in `com.alejandrom2.turnkey.sdPlugin/en.json`, with one file per language beside it (`de.json`, `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh_CN.json`, `zh_TW.json`). The top-level `Name`, `Description`, `Category` and per-action entries translate the manifest for the Stream Deck app, and `Localization` holds everything drawn on keys, strips and settings pages. Keep keys and `{placeholders}` as they are.
 
-`npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and every language file has exactly English's keys, the same placeholders per key and no empty strings. After changing settings-page copy, run `node scripts/ui.ts`.
+`npm run i18n:check` makes sure every key the code uses exists in `en.json`, none is left unused, the manifest overrides match `manifest.json`, and every language file has exactly English's keys, the same placeholders per key and no empty strings. After changing settings-page copy, run `npm run assets`.
 

@@ -25,7 +25,6 @@ describe("usage items", () => {
 			[
 				{
 					environmentId: "env",
-					label: "Studio",
 					summary: {
 						contractVersion: 6,
 						readAt: "2026-10-27T10:00:00.000Z",
@@ -58,7 +57,6 @@ describe("usage items", () => {
 			[
 				{
 					environmentId: "env",
-					label: "Studio",
 					summary: {
 						contractVersion: 6,
 						readAt: "2026-10-27T10:00:00.000Z",

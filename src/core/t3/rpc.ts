@@ -365,7 +365,8 @@ export class RpcSocket {
 			pending.reject(new RpcError("Disconnected", error.message));
 		}
 		this.#pending.clear();
-		for (const subscription of [...this.#subscriptions]) {
+		// A copy: onEnd may subscribe again, and the live Set would visit that too.
+		for (const subscription of Array.from(this.#subscriptions)) {
 			subscription.id = undefined;
 			if (subscription.persistent) continue;
 			this.#subscriptions.delete(subscription);

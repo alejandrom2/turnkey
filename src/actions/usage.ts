@@ -29,7 +29,6 @@ const logger = streamDeck.logger.createScope("usage");
 const reader = (machine: Machine): UsageReader => ({
 	url: machine.url,
 	environmentId: machine.environmentId!,
-	label: machine.state.kind === "ready" ? machine.state.label : machine.url,
 	usageSettingsStamp: machine.usageSettingsStamp,
 	usageSummary: (input) => machine.usageSummary(input),
 });
