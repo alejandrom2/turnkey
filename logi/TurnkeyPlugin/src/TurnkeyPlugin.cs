@@ -59,8 +59,8 @@ namespace Loupedeck.TurnkeyPlugin
                 return configured;
             }
 
-            // The assembly sits in logi/TurnkeyPlugin/bin/<Configuration>/bin/.
-            var directory = Path.GetDirectoryName(this.Assembly.Location) ?? ".";
+            // The assembly sits in logi/TurnkeyPlugin/bin/<Configuration>/bin/. The service loads it from memory, so Assembly.Location is empty.
+            var directory = Path.GetDirectoryName(this.AssemblyFilePath) ?? ".";
             return Path.GetFullPath(Path.Combine(directory, "..", "..", "..", "..", "bin", "sidecar.js"));
         }
     }
