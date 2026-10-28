@@ -17,7 +17,10 @@ See every agent thread at a glance, approve and answer from a key, switch models
 
 </div>
 
-<!-- The video tour: drag video.mp4 (turnkey-marketing's listing/) into GitHub's editor here, so it plays inline. -->
+
+https://github.com/user-attachments/assets/64852819-5e90-46e4-a6ac-824dbe0ff64f
+
+
 
 ## What it does
 
