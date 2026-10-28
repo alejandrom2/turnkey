@@ -49,6 +49,13 @@ describe("FileCredentials", () => {
 		expect(readFileSync(path + ".corrupt", "utf8")).toBe("{nope");
 	});
 
+	it("saves that overlap all land, and the file holds the last", async () => {
+		const path = file();
+		const store = new FileCredentials(path);
+		await Promise.all([store.save("http://a", credential), store.save("http://b", credential), store.save("http://c", credential), store.save("http://a", undefined)]);
+		expect(new FileCredentials(path).urls()).toEqual(["http://b", "http://c"]);
+	});
+
 	it("ignores a temp file left by a crash", async () => {
 		const path = file();
 		await new FileCredentials(path).save("http://a", credential);

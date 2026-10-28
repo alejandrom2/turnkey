@@ -16,6 +16,13 @@ describe("FileSettings", () => {
 		expect(new FileSettings(path).haptics).toBe(false);
 	});
 
+	it("saves that overlap all land, and the file holds the last", async () => {
+		const path = file();
+		const settings = new FileSettings(path);
+		await Promise.all([settings.setHaptics(false), settings.setHaptics(true), settings.setHaptics(false)]);
+		expect(new FileSettings(path).haptics).toBe(false);
+	});
+
 	it("treats a corrupt file as the defaults", () => {
 		const path = file();
 		writeFileSync(path, "{nope");
