@@ -377,6 +377,10 @@
 			"active": "Working",
 			"unread": "Unread"
 		},
+		"infobar": {
+			"queued": "{count} queued",
+			"held": "Held"
+		},
 		"strip": {
 			"done": "Done",
 			"notNow": "Not now",

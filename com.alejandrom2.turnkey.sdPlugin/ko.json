@@ -377,6 +377,10 @@
 			"active": "작업 중",
 			"unread": "읽지 않음"
 		},
+		"infobar": {
+			"queued": "{count}개 대기 중",
+			"held": "보류됨"
+		},
 		"strip": {
 			"done": "완료",
 			"notNow": "나중에",

@@ -377,6 +377,10 @@
 			"active": "Trabajando",
 			"unread": "No leídos"
 		},
+		"infobar": {
+			"queued": "{count} en cola",
+			"held": "Retenida"
+		},
 		"strip": {
 			"done": "Listo",
 			"notNow": "Ahora no",

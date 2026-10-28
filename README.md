@@ -34,6 +34,13 @@ See every agent thread at a glance, approve and answer from a key, switch models
 </tr>
 </table>
 
+<table>
+<tr>
+<td width="50%"><img src="docs/readme/neo.png" alt="Three Stream Deck Neo info bars: a thread that needs approval, the selected thread's model with Fast on, and Codex's weekly limit at 62%" width="320"></td>
+<td width="50%"><b>On Stream Deck Neo too</b><br>The info bar follows the page you're on: the most urgent thread on home, the model in Controls, the branch in Git, the pull request in Pull Requests, the queue in Prompts and the tightest limit in Usage.</td>
+</tr>
+</table>
+
 Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, then a live WebSocket feed of your threads. It doesn't read app files or drive the UI, and it talks only to the T3 Code servers you pair it with.
 
 ## See it

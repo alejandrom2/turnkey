@@ -377,6 +377,10 @@
 			"active": "工作中",
 			"unread": "未读"
 		},
+		"infobar": {
+			"queued": "{count} 条排队中",
+			"held": "已暂停"
+		},
 		"strip": {
 			"done": "完成",
 			"notNow": "稍后",

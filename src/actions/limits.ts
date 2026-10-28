@@ -5,6 +5,7 @@ import { openExternal } from "../core/commands.js";
 import { failureLabel } from "../core/feedback.js";
 import { gaugeStripArt, renderGaugeKey } from "../core/gauge.js";
 import { htmlLang, t } from "../core/i18n.js";
+import { renderInfoBar, renderLimitBar, renderNoticeBar } from "../core/infobar.js";
 import { COLORS, glyphArt, renderInfoKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { grants, needsAccessLabel } from "../core/scopes.js";
@@ -27,11 +28,13 @@ import {
 	resetAction,
 	resetTarget,
 	resetText,
+	tightestWindow,
 	windowChoices,
 } from "../core/usage/limitsView.js";
 import { LimitsRefresher } from "../core/usage/refresh.js";
 import { deck } from "../deck.js";
 import { DeckAction, driverMark, driverName, errorMessage, held, pressWhileDisconnected, readyMachines, sendChoices } from "./base.js";
+import { connectionNotice } from "./infobar.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
 import { MachineWatch } from "./watch.js";
@@ -193,6 +196,7 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 	}
 
 	protected override async draw(action: Action<LimitsSettings>): Promise<void> {
+		if (action.isNeoInfobar()) return this.#paintBar(action);
 		if (!action.isKey()) return;
 		const { url, settings, all, pool, window } = this.#state(action);
 		if (all.length === 0) return void (await this.setImage(action, renderInfoKey({ glyph: "gauge", title: t("limits.title"), detail: t("limits.none"), available: false })));
@@ -212,6 +216,31 @@ export class LimitsKey extends DeckAction<LimitsSettings> {
 				lines: gaugeLines(gauge, pool, url, settings, now),
 				fill: gauge.percent / 100,
 				...(gauge.pace === undefined ? {} : { marker: gauge.pace / 100 }),
+				dim: gauge.stale,
+			}),
+		);
+	}
+
+	/** On the Neo info bar: the set window, or with none set the one nearest its limit, with its reset. */
+	async #paintBar(action: Action<LimitsSettings>): Promise<void> {
+		const notice = connectionNotice(this.machineOf(action));
+		if (notice) return this.setBar(action, renderNoticeBar(notice));
+		const { url, settings, all, pool, window } = this.#state(action);
+		const shown = settings.provider || settings.window ? pool && window && { pool, window } : tightestWindow(all);
+		if (shown === undefined)
+			return this.setBar(action, renderInfoBar({ icon: { glyph: "gauge", color: COLORS.muted }, title: t("limits.title"), detail: t(all.length === 0 ? "limits.none" : "reason.unavailable"), available: false }));
+		const now = Date.now();
+		const gauge = limitGauge(shown.pool, shown.window, now, limitsShow(settings.show));
+		const [first] = gaugeLines(gauge, shown.pool, url, settings, now);
+		await this.setBar(
+			action,
+			renderLimitBar({
+				mark: driverMark(shown.pool.driver),
+				label: `${driverName(shown.pool.driver)} · ${gauge.label}`,
+				percent: gauge.percent,
+				used: shown.window.usedPercent / 100,
+				...(gauge.pace === undefined ? {} : { pace: gauge.pace / 100 }),
+				detail: first,
 				dim: gauge.stale,
 			}),
 		);

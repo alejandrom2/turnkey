@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { renderGaugeKey } from "../gauge.js";
-import { accountName, creditsText, findWindow, limitGauge, limitPools, limitTiles, outcomeText, resetTarget, resetText, windowChoices, windowLabel } from "./limitsView.js";
+import { accountName, creditsText, findWindow, limitGauge, limitPools, limitTiles, outcomeText, resetTarget, resetText, tightestWindow, windowChoices, windowLabel } from "./limitsView.js";
 import type { ServerProviderUsageLimits } from "./types.js";
 
 const now = Date.parse("2026-10-27T10:42:00.000Z");
@@ -55,6 +55,13 @@ describe("limits on the deck", () => {
 		expect(limitGauge(pool, session, now, "used").percent).toBe(69);
 		// The hub account first: its session resets sooner; it holds the redeemable credit too.
 		expect(accountName(resetTarget(pool)!)).toBe("second@example.com");
+	});
+
+	it("picks the window nearest its limit across providers", () => {
+		const claude = { ...codex("dev@example.com", codexLimits(10)), instanceId: "claude", driver: "claudeAgent" };
+		const pools = limitPools([machine("env-1", [codex("dev@example.com", codexLimits(37)), { ...claude, usageLimits: codexLimits(91) }])], now);
+		expect(tightestWindow(pools)).toMatchObject({ pool: { driver: "claudeAgent" }, window: { kind: "session", usedPercent: 91 } });
+		expect(tightestWindow([])).toBeUndefined();
 	});
 
 	it("labels plain windows by length and keeps T3 Code's own labels otherwise", () => {
