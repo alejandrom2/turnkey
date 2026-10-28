@@ -32,14 +32,17 @@ export class Machines {
 		return this.#machines.get(url);
 	}
 
-	/** Finds T3 Code on this computer (unless a loopback machine is ready), follows it to a new port, then keeps exactly: `kept` ∪ stored loopback URLs ∪ a ready loopback machine ∪ the one found ∪ any being paired. Stops the rest, starts the missing. */
-	async sync(kept: readonly string[]): Promise<void> {
+	/**
+	 * Finds T3 Code on this computer (unless a loopback machine is ready), follows it to a new port, then keeps exactly: `kept()` ∪ stored loopback URLs ∪ a ready loopback machine ∪ the one found ∪ any being paired. Stops the rest, starts the missing.
+	 * `kept` is read after the search, so a machine paired and listed meanwhile survives.
+	 */
+	async sync(kept: () => readonly string[]): Promise<void> {
 		// This machine joins the list whenever T3 Code runs here, and stays once paired; a retry or a wake looks again.
 		const localReady = this.all.some((machine) => isLoopbackUrl(machine.url) && machine.state.kind === "ready");
 		const local = localReady ? undefined : await findLocalEnvironment(this.deps.fetch);
 		if (local !== undefined) await this.#followLocal(local.url, local.environmentId);
 		const wanted = new Set([
-			...kept,
+			...kept(),
 			...this.store.urls().filter(isLoopbackUrl),
 			...this.all.filter((machine) => localReady && isLoopbackUrl(machine.url)).map((machine) => machine.url),
 			...(local === undefined ? [] : [local.url]),
