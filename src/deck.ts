@@ -10,8 +10,9 @@ import { t } from "./core/i18n.js";
 import { AcpIcons } from "./core/models.js";
 import { Animator, motionMode, nextMinute, Transitions } from "./core/motion.js";
 import { UltrathinkArming } from "./core/ultrathink.js";
-import { type CredentialStore, Machine } from "./core/t3/machine.js";
-import { type Credential, findLocalEnvironment, isLoopbackUrl, normalizeEnvironmentUrl, type OptInScope, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
+import type { CredentialStore, Machine } from "./core/t3/machine.js";
+import { Machines } from "./core/t3/machines.js";
+import { type Credential, isLoopbackUrl, normalizeEnvironmentUrl, type OptInScope, PairingError, parsePairingLink, preferLoopback } from "./core/t3/pairing.js";
 import type { SocketLike } from "./core/t3/rpc.js";
 
 /**
@@ -133,7 +134,17 @@ class Deck implements CredentialStore {
 	readonly transitions = new Transitions();
 	/** Queues of the threads visible faces show, read only when one changes. */
 	readonly queues = new QueueStore(() => this.repaint());
-	readonly #machines = new Map<string, Machine>();
+	readonly #machines = new Machines(
+		this,
+		{
+			fetch,
+			// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
+			socket: (socketUrl) => new WebSocket(socketUrl) as unknown as SocketLike,
+			clientLabel: "Turnkey (Stream Deck)",
+			warn: (url, message) => logger.warn(`${new URL(url).host}: ${message}`),
+		},
+		() => this.#changed(),
+	);
 	/** Visible actions by id, with the device each is on. */
 	readonly #visible = new Map<string, string>();
 	/** Devices put on their Turnkey profile when T3 Code opened, to put back when it quits. */
@@ -151,8 +162,6 @@ class Deck implements CredentialStore {
 	#statusSent: string | undefined;
 	#machineStates = "";
 	#pairing: PairingStatus = { state: "idle" };
-	/** Machines whose pair link is being redeemed: they count as wanted until it settles, though not saved yet. */
-	readonly #pairingUrls = new Set<string>();
 	/** Applies run one at a time, so a slow one can't finish last on settings that changed meanwhile. */
 	#applying: Promise<void> = Promise.resolve();
 	#changeQueued = false;
@@ -219,7 +228,7 @@ class Deck implements CredentialStore {
 	}
 
 	get machines(): Machine[] {
-		return [...this.#machines.values()];
+		return [...this.#machines.all];
 	}
 
 	/** The global strip appearance settings, resolved per dial with its own override. */
@@ -286,11 +295,8 @@ class Deck implements CredentialStore {
 		if (parsed === undefined) return this.#setPairing({ state: "error", message: t("pairing.notALink") });
 		const url = preferLoopback(parsed.url);
 		this.#setPairing({ state: "working" });
-		const existing = this.#machines.get(url);
-		const machine = existing ?? this.#create(url);
-		this.#pairingUrls.add(url);
 		try {
-			const credential = await machine.pair(parsed.code, this.#scopeRequests[url] ?? []);
+			const { credential } = await this.#machines.pair(link, this.#scopeRequests[url] ?? []);
 			this.#scopeRequests = settleScopeRequests(this.#scopeRequests, url, credential.scopes);
 			if (!isLoopbackUrl(url) && !parseList(this.#settings.environments).includes(url)) {
 				this.#settings = { ...this.#settings, environments: [...parseList(this.#settings.environments), url].join("\n") };
@@ -298,19 +304,9 @@ class Deck implements CredentialStore {
 			}
 			this.#setPairing({ state: "idle" });
 		} catch (error) {
-			if (existing === undefined) {
-				machine.stop();
-				if (this.#machines.get(url) === machine) {
-					this.#machines.delete(url);
-					this.#loggedStates.delete(url);
-				}
-			}
 			if (!(error instanceof PairingError)) logger.warn(`Pairing with ${new URL(url).host} failed`, error instanceof Error ? error.message : error);
 			this.#setPairing({ state: "error", message: error instanceof Error ? error.message : String(error) });
-		} finally {
-			this.#pairingUrls.delete(url);
 		}
-		this.#changed();
 	}
 
 	/** Forgets a machine added from a pair link, and its token. */
@@ -351,7 +347,7 @@ class Deck implements CredentialStore {
 	/** Looks for this machine again and reconnects now: after a wake, a retry press or a key press while offline. */
 	async retry(url?: string): Promise<void> {
 		await this.#apply();
-		for (const machine of this.machines) if (url === undefined || machine.url === url) machine.wake();
+		this.#machines.wake(url);
 	}
 
 	/** Re-reads favorites and providers from every ready machine (or one), as an opening inspector needs them current. */
@@ -436,6 +432,8 @@ class Deck implements CredentialStore {
 
 	#update(): void {
 		this.board.update();
+		const urls = new Set(this.machines.map((machine) => machine.url));
+		for (const url of this.#loggedStates.keys()) if (!urls.has(url)) this.#loggedStates.delete(url);
 		const states = JSON.stringify(this.machines.map((machine) => [machine.url, machine.state, machine.configVersion, machine.tasksVersion, machine.terminalsVersion]));
 		if (states === this.#machineStates) return;
 		for (const machine of this.machines) {
@@ -445,14 +443,6 @@ class Deck implements CredentialStore {
 		}
 		this.#machineStates = states;
 		this.repaint();
-	}
-
-	#create(url: string): Machine {
-		// Node's WebSocket types its handlers with DOM events; the client only reads `data` from them.
-		const socket = (socketUrl: string) => new WebSocket(socketUrl) as unknown as SocketLike;
-		const machine = new Machine(url, this, { fetch, socket, clientLabel: "Turnkey (Stream Deck)", warn: (message) => logger.warn(`${new URL(url).host}: ${message}`) }, () => this.#changed());
-		this.#machines.set(url, machine);
-		return machine;
 	}
 
 	/** Applies global settings from Stream Deck, or re-applies the current ones without `incoming`. */
@@ -486,39 +476,8 @@ class Deck implements CredentialStore {
 	}
 
 	/** Starts and stops machines to match the current settings, after looking for T3 Code on this computer. */
-	async #sync(): Promise<void> {
-		// This machine joins the list whenever T3 Code runs here, and stays once paired; a retry or a wake looks again.
-		const localReady = this.machines.some((machine) => isLoopbackUrl(machine.url) && machine.state.kind === "ready");
-		const local = localReady ? undefined : await findLocalEnvironment(fetch);
-		if (local !== undefined) await this.#followLocal(local.url, local.environmentId);
-		const wanted = new Set([
-			...parseList(this.#settings.environments),
-			...Object.keys(this.#auth).filter(isLoopbackUrl),
-			...this.machines.filter((machine) => localReady && isLoopbackUrl(machine.url)).map((machine) => machine.url),
-			...(local === undefined ? [] : [local.url]),
-			...this.#pairingUrls,
-		]);
-		for (const [url, machine] of this.#machines) {
-			if (wanted.has(url)) continue;
-			this.#machines.delete(url);
-			this.#loggedStates.delete(url);
-			machine.stop();
-		}
-		for (const url of wanted) if (!this.#machines.has(url)) this.#create(url).start();
-		this.#changed();
-	}
-
-	/** T3 Code moves to the next free port when 3773 is taken; keep its pairing when it does. */
-	async #followLocal(url: string, environmentId: string): Promise<void> {
-		if (this.#auth[url] !== undefined) return;
-		const moved = Object.entries(this.#auth).find(([other, credential]) => other !== url && isLoopbackUrl(other) && credential.environmentId === environmentId);
-		if (moved === undefined) return;
-		const [from, credential] = moved;
-		this.#machines.get(from)?.stop();
-		this.#machines.delete(from);
-		this.#loggedStates.delete(from);
-		await this.save(from, undefined);
-		await this.save(url, credential);
+	#sync(): Promise<void> {
+		return this.#machines.sync(() => parseList(this.#settings.environments));
 	}
 
 	/** The inspector's copy of global settings lags behind the plugin's machines, tokens and scope requests. */
