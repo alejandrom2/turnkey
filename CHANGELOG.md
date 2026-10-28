@@ -5,7 +5,7 @@
 
 ### Fixes
 
-* audit cleanup — crash and pairing fixes, shared drawing and action code ([#7](https://github.com/alejandrom2/turnkey/issues/7)) ([ae4596b](https://github.com/alejandrom2/turnkey/commit/ae4596b508fafdf1b64e55ea02ee5aef1795c682))
+* audit cleanup — crash and pairing fixes, shared drawing and action code ([#7](https://github.com/alejandrom2/turnkey/issues/7)) ([8b4cbe0](https://github.com/alejandrom2/turnkey/commit/8b4cbe0ce1ae9f4b1f8686353f2405d42334c02c))
 
 ## [0.9.1](https://github.com/alejandrom2/turnkey/compare/v0.9.0...v0.9.1) (2026-10-27)
 
