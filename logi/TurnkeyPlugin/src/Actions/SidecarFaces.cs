@@ -80,7 +80,7 @@ namespace Loupedeck.TurnkeyPlugin
         {
             const String stroke = "stroke=\"#FF6764\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"";
             return BitmapImage.FromSvg(
-                $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{pixels}\" height=\"{pixels}\" viewBox=\"0 0 24 24\">"
+                $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{pixels}\" height=\"{pixels}\" viewBox=\"-4 -4 32 32\">"
                 + $"<circle cx=\"12\" cy=\"12\" r=\"10\" {stroke}/>"
                 + $"<line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\" {stroke}/>"
                 + $"<line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\" {stroke}/></svg>");
