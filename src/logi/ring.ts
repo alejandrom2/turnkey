@@ -1,5 +1,6 @@
 import type { DeckThread } from "../core/board.js";
-import { COLORS, glyph, type GlyphName, STATE_COLOR, svgMarkup } from "../core/render.js";
+import { COLORS, glyph, type GlyphName, MODE_GLYPH, STATE_COLOR, svgMarkup } from "../core/render.js";
+import type { RuntimeMode } from "../core/t3/shell.js";
 
 /** What the Actions Ring reads from a thread. */
 type RingThread = Pick<DeckThread, "deck" | "unseen">;
@@ -45,3 +46,52 @@ export const stopFace = (available: boolean): string => ringFace(COLORS.accent, 
 
 
 export const settingsFace = (): string => ringFace(COLORS.accent, "sliders");
+
+/** The prompts a ring slot can send, each as its own glyph; Continue is its own action. */
+export const PROMPT_GLYPHS = { test: "scriptTest", fix: "hammer", explain: "book", commit: "gitCommit" } as const satisfies Record<string, GlyphName>;
+
+export const promptFace = (name: keyof typeof PROMPT_GLYPHS, available: boolean): string => ringFace(COLORS.accent, PROMPT_GLYPHS[name], { dim: !available });
+
+/** Continue opens a thread that waits on you, so it wears that thread's approval look then. */
+export const continueFace = (step: "open" | "send" | undefined): string =>
+	step === "open" ? ringFace(STATE_COLOR.approval, "shield") : ringFace(COLORS.accent, "play", { dim: step === undefined });
+
+export const stopAllFace = (running: number): string => ringFace(COLORS.error, "stop", running > 0 ? { badge: running } : { dim: true });
+
+/** The tightest limit as a ring filling clockwise, in green, amber past 70% and red past 90%, around its percentage. */
+export function limitsFace(percent: number | undefined, stale: boolean): string {
+	if (percent === undefined) return ringFace(COLORS.muted, "gauge", { dim: true });
+	const color = percent >= 90 ? COLORS.error : percent >= 70 ? STATE_COLOR.approval : COLORS.done;
+	const radius = 52;
+	const length = 2 * Math.PI * radius;
+	const used = Math.min(Math.max(percent, 0), 100) / 100;
+	const ring =
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="12"/>` +
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
+		`<text x="72" y="88" font-size="44" font-weight="700" text-anchor="middle" fill="${color}">${Math.round(percent)}</text>`;
+	return svgMarkup(144, 144, stale ? `<g opacity=".5">${ring}</g>` : ring);
+}
+
+/** What waits on you, in amber, over what runs, in blue. */
+export function statusFace(counts: { approval: number; question: number; running: number }): string {
+	const figure = (value: number, y: number, color: string) => `<text x="72" y="${y}" font-size="50" font-weight="700" text-anchor="middle" fill="${color}">${value}</text>`;
+	return svgMarkup(
+		144,
+		144,
+		figure(counts.approval + counts.question, 66, STATE_COLOR.approval) + `<rect x="40" y="76" width="64" height="4" rx="2" fill="${COLORS.muted}" fill-opacity=".5"/>` + figure(counts.running, 128, STATE_COLOR.running),
+	);
+}
+
+/** The selected thread's access mode; Full access in amber, as T3 Code warns about it. */
+export const modeFace = (mode: RuntimeMode | undefined): string =>
+	mode === undefined ? ringFace(COLORS.muted, "modeSupervised", { dim: true }) : ringFace(mode === "full-access" ? STATE_COLOR.approval : COLORS.accent, MODE_GLYPH[mode]);
+
+/** The selected thread's effort: its glyph over one dot per level, filled up to the current one. */
+export function effortFace(level: { index: number; count: number } | undefined): string {
+	if (level === undefined) return ringFace(COLORS.muted, "effort", { dim: true });
+	const mark = glyph("effort", 46, 22, 52, COLORS.accent, 3);
+	const gap = 18;
+	const left = 72 - ((level.count - 1) * gap) / 2;
+	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="104" r="6" fill="${COLORS.accent}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
+	return svgMarkup(144, 144, mark + dots);
+}
