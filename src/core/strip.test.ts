@@ -85,9 +85,9 @@ describe("strip appearance", () => {
 		expect([toneOf("done", true), toneOf("done", false)]).toEqual(["done", "neutral"]);
 	});
 
-	it("reads the retired Gradient as T3 Code's background", () => {
-		expect(resolveAppearance({ stripBackground: "gradient" }).background).toBe("t3");
-		expect(resolveAppearance({}, { background: "gradient" }).background).toBe("t3");
+	it("reads an unknown background as the global one, then T3 Code's", () => {
+		expect(resolveAppearance({ stripBackground: "nonsense" }).background).toBe("t3");
+		expect(resolveAppearance({}, { background: "nonsense" }).background).toBe("t3");
 		expect(resolveAppearance({ stripBackground: "flow" }).background).toBe("flow");
 	});
 });
