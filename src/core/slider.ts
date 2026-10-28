@@ -3,7 +3,7 @@
  * a stepped track with the current value filled and a previewed one as a hollow thumb, and what the ends mean (or
  * what pressing does) along the bottom.
  */
-import { COLORS, fadeMask, fit, type MarkPainter, type Paint, paintFill, pills, sparkles, svgImage, svgText, textWidth } from "./render.js";
+import { COLORS, fadeMask, fit, type MarkPainter, type Paint, paintFill, pills, steppedTrack, svgImage, svgText, textWidth, trackStopX } from "./render.js";
 
 /** A mark and a word on the bottom row; the word dims unless painted. */
 type FooterItem = { mark: MarkPainter; text: string; paint?: Paint };
@@ -43,11 +43,10 @@ export type SliderInput = {
 	labelOffset?: number;
 };
 
-const SLIDER = { x: 12, width: 176, y: 41, height: 18, inset: 12 } as const;
+const SLIDER = { x: 12, width: 176, y: 41, height: 18 } as const;
 
 /** The center of stop `index` of `stops` along the track. */
-export const stopX = (index: number, stops: number): number =>
-	+(SLIDER.x + SLIDER.inset + (index * (SLIDER.width - 2 * SLIDER.inset)) / Math.max(1, stops - 1)).toFixed(2);
+export const stopX = (index: number, stops: number): number => trackStopX(SLIDER.x, SLIDER.width, index, stops);
 
 const BADGE = 20;
 
@@ -66,7 +65,6 @@ export const sliderLabelSlot = (input: Pick<SliderInput, "badges" | "lead">) => 
 });
 
 export function sliderArt(input: SliderInput): string {
-	const cy = SLIDER.y + SLIDER.height / 2;
 	const badges = (input.badges ?? []).slice(0, 2);
 	const parts: string[] = [];
 	badges.forEach((badge, index) => parts.push(badge(SLIDER.x + SLIDER.width - BADGE - index * (BADGE + 6), 9, BADGE)));
@@ -98,20 +96,8 @@ export function sliderArt(input: SliderInput): string {
 	}
 	const stops = Math.max(2, input.stops);
 	const current = input.current >= 0 && input.current < stops ? input.current : undefined;
-	const track: string[] = [`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${SLIDER.width}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="#FFFFFF" fill-opacity=".1"/>`];
-	if (current !== undefined) {
-		const fill = paintFill(input.fill ?? COLORS.accent, "slider-fill", SLIDER.x, SLIDER.x + SLIDER.width, track);
-		const filled = +(stopX(current, stops) - SLIDER.x + SLIDER.height / 2).toFixed(2);
-		track.push(`<rect x="${SLIDER.x}" y="${SLIDER.y}" width="${filled}" height="${SLIDER.height}" rx="${SLIDER.height / 2}" fill="${fill}"/>`);
-		if (input.sparkle !== undefined) track.push(sparkles(input.sparkle, SLIDER.x + 2, SLIDER.y, filled - 24, SLIDER.height, input.twinkle));
-	}
-	for (let index = 0; index < stops; index++) track.push(`<circle cx="${stopX(index, stops)}" cy="${cy}" r="2" fill="#FFFFFF" fill-opacity="${current !== undefined && index <= current ? ".5" : ".28"}"/>`);
-	if (current !== undefined) track.push(`<circle cx="${stopX(current, stops)}" cy="${cy}" r="11" fill="#FFFFFF"/>`);
-	const preview = input.preview;
-	if (preview !== undefined && preview >= 0 && preview < stops && preview !== current) {
-		track.push(`<circle cx="${stopX(preview, stops)}" cy="${cy}" r="9.5" fill="${COLORS.key}" fill-opacity=".55" stroke="#FFFFFF" stroke-width="2.5"/>`);
-	}
-	parts.push(input.dim ? `<g opacity=".45">${track.join("")}</g>` : track.join(""));
+	const track = steppedTrack({ ...SLIDER, stops, current, preview: input.preview, paint: input.fill ?? COLORS.accent, id: "slider-fill", sparkle: input.sparkle, twinkle: input.twinkle });
+	parts.push(input.dim ? `<g opacity=".45">${track}</g>` : track);
 	return finish(parts, input);
 }
 

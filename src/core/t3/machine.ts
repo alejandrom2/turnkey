@@ -1,4 +1,4 @@
-import { type MessageKey, t } from "../i18n.js";
+import { t } from "../i18n.js";
 import type { ConfigProvider, ModelConfig, ModelPreferences } from "../models.js";
 import { readUsageSummary, type ResetCreditInput, type ResetCreditOutcome, type UsageLimitSourceSnapshot, type UsageSummary, type UsageSummaryInput } from "../usage/types.js";
 import { type GuestShare, readGuestShare } from "../share.js";
@@ -20,11 +20,13 @@ import {
 } from "./pairing.js";
 import { type VcsRef, worktreeBase } from "../git.js";
 import { forkSourceRun, forkTitle, latestMergeBackRun, type ProjectedRun, type ProjectedTurnItem } from "../lineage.js";
-import { type ProviderSkill, threadSkills, WORKSPACE_SNAPSHOT_TTL_MS, type WorkspaceSnapshot } from "../skills.js";
+import { type ProviderSkill, threadSkills } from "../skills.js";
 import { type HtmlRender, latestHtmlRender, type RenderItem } from "../preview.js";
 import { readTasks, type ScheduledTask } from "../tasks.js";
 import { type ProjectedSubagent, type RunningWorkflow, runningWorkflows, stopWorkflowFailure } from "../workflows.js";
+import { LiveWatches } from "./live.js";
 import { type QueueProjection, type ThreadQueue, threadQueue } from "./queue.js";
+import { type Decision, isAnswerable, type PendingRequest, readPendingRequest, requestInSnapshot, type TurnItem } from "./requests.js";
 import { RpcError, RpcSocket, type RpcState, type SocketFactory } from "./rpc.js";
 import {
 	applyShellItem,
@@ -39,6 +41,10 @@ import {
 	type ShellState,
 	type ThreadCapabilities,
 } from "./shell.js";
+import { threadSnapshot } from "./snapshot.js";
+import { PROVIDERS_TIMEOUT_MS, WorkspaceReads } from "./workspaces.js";
+
+export type { Decision, PendingRequest, Question } from "./requests.js";
 
 export type MachineState =
 	| { kind: "signed-out"; message?: string }
@@ -105,20 +111,6 @@ type WorkspaceStrategy =
 	| { type: "existing_worktree"; worktreePath: string; branch?: string }
 	| { type: "worktree"; baseRef: string; branch?: string; startFromOrigin?: boolean };
 
-export type Decision = "accept" | "acceptForSession" | "acceptAlways" | "decline" | "cancel";
-export type Question = {
-	id: string;
-	header: string;
-	question: string;
-	options: { label: string; description?: string; value?: string }[];
-	multiSelect?: boolean;
-	required?: boolean;
-};
-export type PendingRequest =
-	| { type: "approval"; threadId: string; requestId: string; heading: string; summary: string; decisions: Decision[] }
-	| { type: "question"; threadId: string; requestId: string; questions: Question[]; messageMode: boolean }
-	| { type: "unsupported"; threadId: string; requestId: string; heading: string };
-
 export type SendMode = "auto" | "queue" | "steer" | "restart";
 
 /** A `subscribeServerConfig` event, the parts the deck reads (packages/contracts/src/server.ts). */
@@ -128,61 +120,9 @@ type ConfigEvent = {
 	payload?: { providers?: ConfigProvider[]; settings?: ServerConfig["settings"]; sources?: UsageLimitSourceSnapshot[] };
 };
 
-/** T3 Code's composer retries a checkout's skills read this long after a failure, at most three times in a row. */
-const WORKSPACE_RETRY_MS = 10_000;
-const WORKSPACE_MAX_FAILURES = 3;
-
-/** One checkout's skills read: the snapshot T3 Code sent, when it was asked for, and its failures in a row. */
-type WorkspaceRead = { snapshot?: WorkspaceSnapshot; requestedAt?: number; retryAt?: number; failures: number; pending?: Promise<void> };
-
-/** How long a shared subscription (config, tasks, terminals) outlives its last watcher, so flipping pages doesn't resubscribe. */
-const WATCH_LINGER_MS = 60_000;
 /** A connection whose server never answers its first config read is dropped and retried. */
 const CONFIG_TIMEOUT_MS = 15_000;
-/** Provider refreshes may probe CLIs, so they get longer before they count as failed. */
-const PROVIDERS_TIMEOUT_MS = 60_000;
-/** Skills reads kept per provider and checkout; the oldest go first. */
-const MAX_WORKSPACES = 50;
 type ThreadRef = Pick<ShellRow, "threadId">;
-
-/**
- * A stream something on the deck holds open; `rpc` is the connection it runs on, `ended` one that ended it.
- * `scope` keeps it closed on a pairing without that scope.
- */
-type LiveWatch = {
-	tag: string;
-	payload: unknown;
-	onValue: (value: unknown) => void;
-	onOpen?: () => void;
-	onEnd?: (error?: Error) => void;
-	scope?: string;
-	rpc?: RpcSocket;
-	ended?: RpcSocket;
-	stop?: () => void;
-};
-
-const APPROVAL_HEADING: Record<string, MessageKey> = {
-	command: "approval.command",
-	"file-read": "approval.fileRead",
-	"file-change": "approval.fileChange",
-	permission: "approval.permission",
-	"mcp-elicitation": "approval.mcpElicitation",
-};
-/** Approvals the deck answers; others (tool calls, app access, auth) open in T3 Code. */
-const ANSWERABLE = new Set(["command", "file-read", "file-change", "permission", "user_input"]);
-const DECK_DECISIONS: Decision[] = ["accept", "acceptForSession", "acceptAlways", "decline"];
-/** Assumed when a request lists no options; "always" is offered only when the adapter lists it. */
-const DEFAULT_DECISIONS: Decision[] = ["accept", "acceptForSession", "decline"];
-
-type TurnItem = {
-	type: string;
-	requestId?: string;
-	prompt?: string;
-	reason?: string;
-	options?: { decision: Decision }[];
-	questions?: Question[];
-	responseMode?: "message";
-};
 
 /** T3 Code has no accessory source yet; an "accessory" literal will be proposed upstream before this ships. */
 const DECK_CREATION_SOURCE = "mobile";
@@ -217,13 +157,13 @@ export class Machine {
 	#tasksError: string | undefined;
 	/** Bumped when the task list changes, so the deck repaints faces drawn from it. */
 	tasksVersion = 0;
-	readonly #live = new Set<LiveWatch>();
+	/** Streams the deck holds open, on the ready connection when the pairing has their scope. */
+	readonly #live = new LiveWatches((scope) => (scope === undefined || this.scopes.includes(scope) ? this.#readyRpc : undefined));
 	/** This machine's terminals while something watches them; undefined until the first snapshot. */
 	#terminals: ReadonlyMap<string, TerminalSummary> | undefined;
 	/** Bumped when a terminal changes, so the deck repaints faces drawn from them. */
 	terminalsVersion = 0;
-	/** Per provider instance and checkout, its skills snapshot: config replies leave these out, so they are read on demand. */
-	readonly #workspaces = new Map<string, WorkspaceRead>();
+	readonly #workspaces: WorkspaceReads;
 	readonly #now: () => number;
 	readonly #uuid: () => string;
 
@@ -235,6 +175,7 @@ export class Machine {
 	) {
 		this.#now = deps.now ?? Date.now;
 		this.#uuid = deps.uuid ?? (() => crypto.randomUUID());
+		this.#workspaces = new WorkspaceReads(this.#now, () => this.onChange());
 	}
 
 	get credential(): Credential | undefined {
@@ -366,7 +307,7 @@ export class Machine {
 		this.#subscribed = false;
 		clearTimeout(this.#snoozeTimer);
 		rpc?.stop();
-		this.#syncLive();
+		this.#live.sync();
 	}
 
 	/** Reconnects now instead of waiting out the backoff, or after a fatal stop. */
@@ -504,36 +445,11 @@ export class Machine {
 	 * Keeps the server config live while something shows limits or usage: providers (and their limits), settings and
 	 * hub accounts arrive as they change. Returns the release; the subscription lingers a minute after the last one.
 	 */
-	readonly watchConfig = this.#shared({
+	readonly watchConfig = this.#live.shared({
 		tag: "subscribeServerConfig",
 		payload: { workspaceSnapshotsOnDemand: true, usageLimitSources: true },
 		onValue: (event) => this.#onConfigEvent(event as ConfigEvent),
 	});
-
-	/**
-	 * One subscription however many hold it, kept by `live()` (so an ended one waits for the next connection), and
-	 * closed a minute after the last release.
-	 */
-	#shared(watch: Pick<LiveWatch, "tag" | "payload" | "onValue" | "onEnd" | "scope">): () => () => void {
-		let holders = 0;
-		let close: (() => void) | undefined;
-		let linger: ReturnType<typeof setTimeout> | undefined;
-		return () => {
-			holders++;
-			clearTimeout(linger);
-			close ??= this.#hold({ ...watch });
-			let released = false;
-			return () => {
-				if (released) return;
-				released = true;
-				if (--holders > 0) return;
-				linger = setTimeout(() => {
-					close?.();
-					close = undefined;
-				}, WATCH_LINGER_MS);
-			};
-		};
-	}
 
 	#onConfigEvent(event: ConfigEvent): void {
 		const { config, payload } = event;
@@ -584,7 +500,7 @@ export class Machine {
 	}
 
 	/** Keeps the task list live (T3 Code resends it whole on every change) while something shows it; returns the release. */
-	readonly watchTasks = this.#shared({
+	readonly watchTasks = this.#live.shared({
 		tag: "scheduledTasks.subscribe",
 		payload: {},
 		onValue: (value) => this.#setTasks(readTasks(value), undefined),
@@ -622,7 +538,7 @@ export class Machine {
 	}
 
 	/** Keeps terminal states live while something shows a script; returns the release. Needs `terminal:read`. */
-	readonly watchTerminals = this.#shared({
+	readonly watchTerminals = this.#live.shared({
 		tag: "subscribeTerminalMetadata",
 		payload: {},
 		scope: TERMINAL_READ_SCOPE,
@@ -721,48 +637,15 @@ export class Machine {
 	skills(instanceId: string, cwd: string | undefined): { skills: ProviderSkill[]; loading: boolean } {
 		const provider = this.#config?.providers?.find((candidate) => candidate.instanceId === instanceId);
 		if (provider === undefined || cwd === undefined) return { skills: threadSkills(provider, undefined), loading: false };
-		const read = this.#workspaceRead(instanceId, cwd);
+		const read = this.#workspaces.read(instanceId, cwd, this.#readyRpc);
 		const snapshot = read.snapshot ?? provider.workspaceSnapshots?.find((candidate) => candidate.cwd === cwd);
 		return { skills: threadSkills(provider, snapshot), loading: snapshot === undefined && read.pending !== undefined };
 	}
 
 	/** The same list once its checkout's read has landed, for an inspector's choices. */
 	async readSkills(instanceId: string, cwd: string | undefined): Promise<ProviderSkill[]> {
-		if (cwd !== undefined) await this.#workspaceRead(instanceId, cwd).pending;
+		if (cwd !== undefined) await this.#workspaces.read(instanceId, cwd, this.#readyRpc).pending;
 		return this.skills(instanceId, cwd).skills;
-	}
-
-	/** Starts a checkout's read when it has none, or a stale one, unless failures hold it back (`planProviderWorkspaceSnapshotRefresh`). */
-	#workspaceRead(instanceId: string, cwd: string): WorkspaceRead {
-		const key = `${instanceId}\n${cwd}`;
-		const read = this.#workspaces.get(key) ?? { failures: 0 };
-		// Re-inserted so the map stays oldest-used first, and the least recently shown checkout is the one dropped.
-		this.#workspaces.delete(key);
-		this.#workspaces.set(key, read);
-		if (this.#workspaces.size > MAX_WORKSPACES) this.#workspaces.delete(this.#workspaces.keys().next().value!);
-		const now = this.#now();
-		const due = read.requestedAt === undefined || now - read.requestedAt >= WORKSPACE_SNAPSHOT_TTL_MS;
-		const rpc = this.state.kind === "ready" ? this.#rpc : undefined;
-		if (read.pending !== undefined || !due || (read.retryAt ?? 0) > now || read.failures >= WORKSPACE_MAX_FAILURES || rpc === undefined) return read;
-		read.requestedAt = now;
-		read.pending = rpc
-			.request<{ providers?: ConfigProvider[] }>("server.refreshProviders", { instanceId, cwd, workspaceSnapshotsOnDemand: true }, PROVIDERS_TIMEOUT_MS)
-			.then(({ providers }) => providers?.find((provider) => provider.instanceId === instanceId)?.workspaceSnapshots?.find((snapshot) => snapshot.cwd === cwd))
-			.catch(() => undefined)
-			.then((snapshot) => {
-				read.pending = undefined;
-				if (this.#workspaces.get(key) !== read) return;
-				if (snapshot === undefined || snapshot.slashCommandsPending === true) {
-					read.failures++;
-					read.requestedAt = undefined;
-					read.retryAt = this.#now() + WORKSPACE_RETRY_MS;
-				} else {
-					read.snapshot = snapshot;
-					read.failures = 0;
-				}
-				this.onChange();
-			});
-		return read;
 	}
 
 	/** Spends one banked reset credit on a provider account or hub account. */
@@ -825,7 +708,7 @@ export class Machine {
 	#set(state: MachineState): void {
 		this.state = state;
 		if (state.kind !== "connecting") this.settled = true;
-		this.#syncLive();
+		this.#live.sync();
 		this.onChange();
 	}
 
@@ -834,41 +717,11 @@ export class Machine {
 	 * holder can drop what it cached), never while offline. A stream T3 Code ends waits for the next connection.
 	 */
 	live(tag: string, payload: unknown, onValue: (value: unknown) => void, onOpen?: () => void): () => void {
-		return this.#hold({ tag, payload, onValue, onOpen });
+		return this.#live.hold({ tag, payload, onValue, onOpen });
 	}
 
-	#hold(watch: LiveWatch): () => void {
-		this.#live.add(watch);
-		this.#syncLive();
-		return () => {
-			this.#live.delete(watch);
-			watch.stop?.();
-		};
-	}
-
-	#syncLive(): void {
-		const ready = this.state.kind === "ready" ? this.#rpc : undefined;
-		for (const watch of this.#live) {
-			const rpc = watch.scope === undefined || this.scopes.includes(watch.scope) ? ready : undefined;
-			if (watch.rpc === rpc && (watch.stop !== undefined || watch.ended === rpc)) continue;
-			watch.stop?.();
-			watch.stop = undefined;
-			watch.rpc = rpc;
-			// The socket object outlives a reconnect, so an ended stream is retried once the connection drops.
-			if (rpc === undefined) watch.ended = undefined;
-			if (rpc === undefined || watch.ended === rpc) continue;
-			watch.onOpen?.();
-			watch.stop = rpc.subscribe(watch.tag, () => watch.payload, watch.onValue, {
-				persistent: true,
-				onEnd: (error) => {
-					if (watch.rpc !== rpc) return;
-					watch.stop?.();
-					watch.stop = undefined;
-					watch.ended = rpc;
-					watch.onEnd?.(error);
-				},
-			});
-		}
+	get #readyRpc(): RpcSocket | undefined {
+		return this.state.kind === "ready" ? this.#rpc : undefined;
 	}
 
 	get #capabilities(): Capabilities {
@@ -1052,67 +905,19 @@ export class Machine {
 	async pendingRequest(thread: Pick<ShellRow, "pendingRequest">): Promise<PendingRequest | undefined> {
 		const pending = thread.pendingRequest;
 		if (pending === undefined) return undefined;
-		const base = { threadId: pending.threadId, requestId: pending.id };
-		const heading = t(APPROVAL_HEADING[pending.kind] ?? "approval.needsYou");
-		if (!ANSWERABLE.has(pending.kind)) return { type: "unsupported", ...base, heading };
+		if (!isAnswerable(pending.kind)) return readPendingRequest(pending, undefined);
 		const rpc = this.#rpcFor(false);
 		const { item } = await rpc.request<{ item: TurnItem | null }>("orchestration.getTurnItem", {
 			threadId: pending.threadId,
 			itemId: `turn-item:runtime-request:${encodeURIComponent(pending.id)}`,
 		});
-		const found = item?.requestId === pending.id ? { item, live: true } : await this.#fromThreadSnapshot(rpc, pending.threadId, pending.id);
-		if (found?.item == null || !found.live) return { type: "unsupported", ...base, heading };
-		if (found.item.type === "user_input_request") {
-			return { type: "question", ...base, questions: found.item.questions ?? [], messageMode: found.item.responseMode === "message" };
-		}
-		if (found.item.type !== "approval_request") return { type: "unsupported", ...base, heading };
-		const offered = found.item.options?.map((option) => option.decision);
-		const decisions = offered === undefined ? DEFAULT_DECISIONS : DECK_DECISIONS.filter((decision) => offered.includes(decision));
-		return {
-			type: "approval",
-			...base,
-			heading,
-			summary: found.item.prompt?.trim() || found.item.reason?.trim() || heading,
-			decisions: decisions.length > 0 ? decisions : DEFAULT_DECISIONS,
-		};
-	}
-
-	/** Takes the first bounded snapshot of a thread and unsubscribes. `live` is false when the provider can't take an answer. */
-	async #fromThreadSnapshot(rpc: RpcSocket, threadId: string, requestId: string): Promise<{ item: TurnItem | undefined; live: boolean } | undefined> {
-		const projection = (await this.#threadSnapshot(rpc, threadId)) as { turnItems?: TurnItem[]; runtimeRequests?: { id: string; responseCapability?: { type?: string } }[] } | undefined;
-		if (projection === undefined) return undefined;
-		const item = projection.turnItems?.findLast((candidate) => candidate.requestId === requestId);
-		const capability = projection.runtimeRequests?.find((request) => request.id === requestId)?.responseCapability?.type;
-		return { item, live: capability !== "not_resumable" };
-	}
-
-	/** One bounded thread snapshot: the latest window plus every queued run and its message (threadHistoryPaging.ts). */
-	#threadSnapshot(rpc: RpcSocket, threadId: string): Promise<unknown> {
-		return new Promise((resolve) => {
-			let settled = false;
-			const finish = (result: unknown) => {
-				if (settled) return;
-				settled = true;
-				clearTimeout(timer);
-				unsubscribe();
-				resolve(result);
-			};
-			const timer = setTimeout(() => finish(undefined), 10_000);
-			const unsubscribe = rpc.subscribe(
-				"orchestration.subscribeThread",
-				() => ({ threadId, acceptBoundedSnapshot: true }),
-				(value) => {
-					const snapshot = value as { kind?: string; projection?: unknown };
-					if (snapshot.kind === "snapshot") finish(snapshot.projection);
-				},
-				{ onEnd: () => finish(undefined) },
-			);
-		});
+		const found = item?.requestId === pending.id ? { item, live: true } : requestInSnapshot(await threadSnapshot(rpc, pending.threadId), pending.id);
+		return readPendingRequest(pending, found);
 	}
 
 	/** The thread's queue, read from one bounded snapshot; T3 Code's shell carries no queue, so callers read it on change. */
 	async queue(thread: ThreadRef): Promise<ThreadQueue> {
-		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		const projection = await threadSnapshot(this.#rpcFor(false), thread.threadId);
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		return threadQueue(projection as QueueProjection);
 	}
@@ -1122,7 +927,7 @@ export class Machine {
 	 * does; the fork's id is chosen here so the caller can open it.
 	 */
 	async fork(thread: ThreadRef & { title: string }): Promise<{ threadId: string }> {
-		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[]; turnItems?: ProjectedTurnItem[] } | undefined;
+		const projection = (await threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[]; turnItems?: ProjectedTurnItem[] } | undefined;
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		const run = forkSourceRun(projection.runs ?? [], projection.turnItems ?? []);
 		if (run === undefined) throw new RpcError("NothingToFork", "No finished run to fork from.", t("lineage.nothingToFork"));
@@ -1141,7 +946,7 @@ export class Machine {
 
 	/** Merges a fork back into the thread it came from, from its latest finished run, as T3 Code's Merge does. */
 	async mergeBack(thread: ThreadRef, into: string): Promise<void> {
-		const projection = (await this.#threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[] } | undefined;
+		const projection = (await threadSnapshot(this.#rpcFor(true), thread.threadId)) as { runs?: ProjectedRun[] } | undefined;
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		const run = latestMergeBackRun(projection.runs ?? []);
 		if (run === undefined) throw new RpcError("NothingToMerge", "No finished run to merge back.", t("lineage.finishRunFirst"));
@@ -1158,7 +963,7 @@ export class Machine {
 	/** The thread's newest HTML render, from one bounded snapshot, reading its tool output by id when the snapshot left it out. */
 	async htmlRender(thread: ThreadRef): Promise<HtmlRender | undefined> {
 		const rpc = this.#rpcFor(false);
-		const projection = (await this.#threadSnapshot(rpc, thread.threadId)) as { turnItems?: RenderItem[] } | undefined;
+		const projection = (await threadSnapshot(rpc, thread.threadId)) as { turnItems?: RenderItem[] } | undefined;
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		const found = latestHtmlRender(projection.turnItems ?? []);
 		if (found === undefined || !("omitted" in found)) return found;
@@ -1178,7 +983,7 @@ export class Machine {
 
 	/** The thread's running workflows, from one bounded snapshot: the shell doesn't carry them. */
 	async workflows(thread: ThreadRef): Promise<RunningWorkflow[]> {
-		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		const projection = await threadSnapshot(this.#rpcFor(false), thread.threadId);
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		return runningWorkflows(projection as { subagents?: ProjectedSubagent[] });
 	}
@@ -1196,7 +1001,7 @@ export class Machine {
 
 	/** The thread's guest share, from one bounded snapshot: the shell doesn't carry it. */
 	async guestShare(thread: ThreadRef): Promise<GuestShare | null> {
-		const projection = await this.#threadSnapshot(this.#rpcFor(false), thread.threadId);
+		const projection = await threadSnapshot(this.#rpcFor(false), thread.threadId);
 		if (projection === undefined) throw new Error("T3 Code didn't send the thread.");
 		return readGuestShare(projection);
 	}
@@ -1235,7 +1040,6 @@ export class Machine {
 		await this.#dispatch({ type: "runtime-request.respond", threadId, requestId, answers });
 	}
 
-	/** Providers and their models' options from the cached server config, without prompt-injected values. */
 	/** Cheapest diff there is: the open pull request's totals from the shell row. */
 	turnDiff(thread: Pick<ShellRow, "pullRequests">): { additions: number; deletions: number } | undefined {
 		const open = thread.pullRequests.find((link) => link.state === "open" && (link.additions ?? 0) + (link.deletions ?? 0) > 0);
