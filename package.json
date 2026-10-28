@@ -11,7 +11,8 @@
 		"test": "vitest run",
 		"i18n:check": "vitest run src/core/i18n.test.ts",
 		"assets": "node scripts/version.ts && node --import ./scripts/resolve-ts.mjs scripts/icons.ts && node --import ./scripts/resolve-ts.mjs scripts/ui.ts && node --import ./scripts/resolve-ts.mjs scripts/profiles.ts && node scripts/logi.ts",
-		"version:sync": "node scripts/version.ts"
+		"version:sync": "node scripts/version.ts",
+		"logi:pack": "node scripts/logi-pack.ts"
 	},
 	"type": "module",
 	"devDependencies": {
