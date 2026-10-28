@@ -13,12 +13,31 @@ Kept here so the listing, the README and the plugin say the same thing. The plug
 
 **Name:** Turnkey for T3 Code (final once submitted: Maker Console can't rename a product)
 
-**Category:** Turnkey for T3 Code (the Marketplace asks for the plugin's own name)
+**Category:** Turnkey for T3 Code (Maker Console asks for the plugin's own name)
+
+**Price:** Free.
+
+**License:** no custom EULA, so the Marketplace's standard end-user license applies to the listed plugin. The source on GitHub stays MIT.
+
+**Support:** GitHub issues at https://github.com/alejandrom2/turnkey/issues.
 
 **URL:** add https://github.com/alejandrom2/turnkey to the manifest once the repo is public (validate checks it answers).
 
 **Short description:**
 > Control T3 Code from your Stream Deck: see every agent thread, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without leaving your flow.
+
+## Permissions
+
+> Turnkey connects only to the T3 Code servers you pair it with, on your network, over Tailscale or through T3 Connect. Pairing grants it a session on that server:
+>
+> - **Always:** read and operate threads (`orchestration:read`, `orchestration:operate`), read usage (`diagnostics:read`), and commit, push, pull and open pull requests (`source-control:write`).
+> - **Only when you turn them on for a server:** spend a banked usage reset (`providers:manage`), update T3 Code (`environment:maintain`), run your project's saved scripts (`terminal:operate`, which runs commands on that server), and create share links (`access:write`). Each one asks you to pair that server again.
+>
+> Opening a thread, preview or editor starts the T3 Code app, your browser or your editor: on this computer, or on the server for an editor on a remote machine.
+
+## Privacy
+
+> Turnkey collects no analytics and sends nothing to its maker. It stores each server's address and its pairing session in Stream Deck's settings on this computer, and nothing else about you. Removing a server deletes its session. Its logs record server hostnames, connection states and errors, never sessions, pair links, thread titles or prompts. The diagnostics export is a file you save and share yourself.
 
 ## Disclaimer
 
