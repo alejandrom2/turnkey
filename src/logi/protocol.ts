@@ -8,6 +8,8 @@ export type HapticEvent = "approvalNeeded" | "questionAsked" | "runFinished" | "
 export type SidecarMessage =
 	| { type: "image"; action: string; svg: string }
 	| { type: "haptic"; event: HapticEvent }
+	/** Logi's banner for the plugin; `url` is a button's target, such as the pairing page. */
+	| { type: "status"; level: "normal" | "warning" | "error"; message: string; url?: string; urlTitle?: string }
 	| { type: "log"; level: "info" | "warn"; message: string };
 
 const isSize = (size: unknown): size is number => Number.isInteger(size) && (size as number) >= 16 && (size as number) <= 512;

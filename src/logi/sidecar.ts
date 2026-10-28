@@ -3,20 +3,23 @@ import { createInterface } from "node:readline";
 
 import { ThreadBoard } from "../core/board.js";
 import { openExternal, threadDeepLink } from "../core/commands.js";
+import { t } from "../core/i18n.js";
 import { Machine } from "../core/t3/machine.js";
 import { findLocalEnvironment, parsePairingLink, preferLoopback } from "../core/t3/pairing.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
 import { Keys } from "./keys.js";
+import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { stopFace, stopTarget, urgentFace } from "./ring.js";
+import { pluginStatus } from "./status.js";
 import { FileCredentials } from "./store.js";
 
-// Run by the Logitech plugin as `sidecar.js <dataDir>`, or once by hand as `sidecar.js <dataDir> pair <link>`.
-const [dataDir, command, link] = process.argv.slice(2);
+// Run by the Logitech plugin as `sidecar.mjs <dataDir>`.
+const [dataDir] = process.argv.slice(2);
 if (dataDir === undefined) {
-	process.stderr.write("usage: sidecar.js <dataDir> [pair <link>]\n");
+	process.stderr.write("usage: sidecar.mjs <dataDir>\n");
 	process.exit(2);
 }
 
@@ -53,6 +56,7 @@ const changed = batched(
 		board.update();
 		haptics.update(board.threads);
 		keys.repaint();
+		sendStatus();
 	},
 	(error) => log("warn", `Couldn't update the keys: ${error instanceof Error ? error.message : String(error)}`),
 );
@@ -67,24 +71,38 @@ function machine(url: string): Machine {
 	return created;
 }
 
-if (command === "pair") {
-	const parsed = link === undefined ? undefined : parsePairingLink(link);
-	if (parsed === undefined) {
-		process.stderr.write("That isn't a T3 Code pair link.\n");
-		process.exit(1);
-	}
+/** Spends a pair link from the pairing page; a machine it added is dropped again if that fails. */
+async function pairLink(link: string): Promise<string> {
+	const parsed = parsePairingLink(link);
+	if (parsed === undefined) throw new Error(t("pairing.notALink"));
+	const url = preferLoopback(parsed.url);
+	const added = !machines.has(url);
 	try {
-		const credential = await machine(preferLoopback(parsed.url)).pair(parsed.code);
-		process.stderr.write(`Paired with ${credential.label}.\n`);
-		process.exit(0);
+		return (await machine(url).pair(parsed.code)).label;
 	} catch (error) {
-		process.stderr.write(`Couldn't pair: ${error instanceof Error ? error.message : String(error)}\n`);
-		process.exit(1);
+		if (added) {
+			machines.get(url)?.stop();
+			machines.delete(url);
+			changed();
+		}
+		throw error;
 	}
+}
+
+const page = await startPairingPage(pairLink);
+let lastStatus = "";
+function sendStatus(): void {
+	const status = pluginStatus([...machines.values()].map((each) => each.state), page.url);
+	const line = JSON.stringify(status);
+	if (line === lastStatus) return;
+	lastStatus = line;
+	send(status);
 }
 
 const local = await findLocalEnvironment(fetch);
 for (const url of new Set([...store.urls(), ...(local ? [local.url] : [])])) machine(url).start();
+// With no machine yet, nothing else would show the banner asking for a pair link.
+changed();
 
 const input = createInterface({ input: process.stdin });
 input.on("line", (line) => {
@@ -94,6 +112,7 @@ input.on("line", (line) => {
 });
 // The plugin closing stdin is the signal to quit.
 input.on("close", () => {
+	page.close();
 	for (const each of machines.values()) each.stop();
 	process.exit(0);
 });

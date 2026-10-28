@@ -1246,6 +1246,16 @@
 			"unavailable": "이 스레드는 공유 불가",
 			"copyFailed": "복사 실패",
 			"needsAccess": "공유 권한 필요"
+		},
+		"logi": {
+			"status": {
+				"unpaired": "Turnkey가 아직 T3 Code와 페어링되지 않았습니다.",
+				"pair": "T3 Code와 페어링",
+				"connected": "{name}에 연결됨."
+			},
+			"page": {
+				"paired": "{name}와 페어링했습니다. 이 페이지를 닫아도 됩니다."
+			}
 		}
 	}
 }

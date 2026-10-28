@@ -1246,6 +1246,16 @@
 			"unavailable": "Partage impossible",
 			"copyFailed": "Copie impossible",
 			"needsAccess": "Accès partage requis"
+		},
+		"logi": {
+			"status": {
+				"unpaired": "Turnkey n'est pas encore associé à T3 Code.",
+				"pair": "Associer à T3 Code",
+				"connected": "Connecté à {name}."
+			},
+			"page": {
+				"paired": "Associé à {name}. Vous pouvez fermer cette page."
+			}
 		}
 	}
 }

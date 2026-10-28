@@ -29,7 +29,26 @@ namespace Loupedeck.TurnkeyPlugin
         public override void Load()
         {
             this.Sidecar.Haptic += this.PluginEvents.RaiseEvent;
+            this.Sidecar.Status += this.OnStatus;
             this.Sidecar.Start(FindNode(), this.FindScript(), this.GetPluginDataDirectory());
+        }
+
+        private void OnStatus(String level, String message, String url, String urlTitle)
+        {
+            var status = level switch
+            {
+                "error" => Loupedeck.PluginStatus.Error,
+                "warning" => Loupedeck.PluginStatus.Warning,
+                _ => Loupedeck.PluginStatus.Normal,
+            };
+            if (url == null)
+            {
+                this.OnPluginStatusChanged(status, message);
+            }
+            else
+            {
+                this.OnPluginStatusChanged(status, message, url, urlTitle);
+            }
         }
 
         // This method is called when the plugin is unloaded.

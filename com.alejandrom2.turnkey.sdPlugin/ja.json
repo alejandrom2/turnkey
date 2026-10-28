@@ -1246,6 +1246,16 @@
 			"unavailable": "このスレッドは共有不可",
 			"copyFailed": "コピーできません",
 			"needsAccess": "共有アクセスが必要"
+		},
+		"logi": {
+			"status": {
+				"unpaired": "Turnkey はまだ T3 Code とペアリングされていません。",
+				"pair": "T3 Code とペアリング",
+				"connected": "{name} に接続しました。"
+			},
+			"page": {
+				"paired": "{name} とペアリングしました。このページは閉じてかまいません。"
+			}
 		}
 	}
 }

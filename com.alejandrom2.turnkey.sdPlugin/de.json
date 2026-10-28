@@ -1246,6 +1246,16 @@
 			"unavailable": "Thread nicht teilbar",
 			"copyFailed": "Kopierfehler",
 			"needsAccess": "Braucht Zugriff zum Teilen"
+		},
+		"logi": {
+			"status": {
+				"unpaired": "Turnkey ist noch nicht mit T3 Code gekoppelt.",
+				"pair": "Mit T3 Code koppeln",
+				"connected": "Verbunden mit {name}."
+			},
+			"page": {
+				"paired": "Mit {name} gekoppelt. Du kannst diese Seite schließen."
+			}
 		}
 	}
 }

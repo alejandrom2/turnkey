@@ -1246,6 +1246,16 @@
 			"unavailable": "無法分享此對話",
 			"copyFailed": "無法複製",
 			"needsAccess": "需要分享權限"
+		},
+		"logi": {
+			"status": {
+				"unpaired": "Turnkey 尚未與 T3 Code 配對。",
+				"pair": "與 T3 Code 配對",
+				"connected": "已連線到 {name}。"
+			},
+			"page": {
+				"paired": "已與 {name} 配對。可以關閉此頁面。"
+			}
 		}
 	}
 }

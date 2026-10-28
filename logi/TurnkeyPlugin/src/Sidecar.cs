@@ -30,6 +30,9 @@ namespace Loupedeck.TurnkeyPlugin
         // A haptic event's name, as declared in events/DefaultEventSource.yaml.
         public event Action<String> Haptic;
 
+        // Logi's banner for the plugin: level, message, and an optional button's URL and title.
+        public event Action<String, String, String, String> Status;
+
         public Boolean IsRunning
         {
             get
@@ -190,6 +193,13 @@ namespace Loupedeck.TurnkeyPlugin
                         break;
                     case "haptic":
                         this.Haptic?.Invoke(root.GetProperty("event").GetString());
+                        break;
+                    case "status":
+                        this.Status?.Invoke(
+                            root.GetProperty("level").GetString(),
+                            root.GetProperty("message").GetString(),
+                            root.TryGetProperty("url", out var url) ? url.GetString() : null,
+                            root.TryGetProperty("urlTitle", out var urlTitle) ? urlTitle.GetString() : null);
                         break;
                     case "log":
                         var message = $"Turnkey sidecar: {root.GetProperty("message").GetString()}";

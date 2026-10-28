@@ -1246,6 +1246,16 @@
 			"unavailable": "No se puede compartir este hilo",
 			"copyFailed": "No se pudo copiar",
 			"needsAccess": "Requiere acceso para compartir"
+		},
+		"logi": {
+			"status": {
+				"unpaired": "Turnkey aún no está vinculado con T3 Code.",
+				"pair": "Vincular con T3 Code",
+				"connected": "Conectado a {name}."
+			},
+			"page": {
+				"paired": "Vinculado con {name}. Ya puedes cerrar esta página."
+			}
 		}
 	}
 }
