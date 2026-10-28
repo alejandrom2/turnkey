@@ -31,7 +31,8 @@
 	},
 	"dependencies": {
 		"@elgato/streamdeck": "3.0.3",
-		"@elgato/utils": "0.6.1"
+		"@elgato/utils": "0.6.1",
+		"@resvg/resvg-js": "2.6.2"
 	},
 	"license": "MIT",
 	"author": "Alejandro Martinez"
