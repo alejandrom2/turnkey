@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -33,7 +33,8 @@ describe("FileSettings", () => {
 		const path = file();
 		writeFileSync(path, "{nope");
 		new FileSettings(path);
-		expect(readFileSync(path + ".corrupt", "utf8")).toBe("{nope");
+		const [aside] = readdirSync(join(path, "..")).filter((name) => name.startsWith("settings.json.corrupt-"));
+		expect(readFileSync(join(path, "..", aside), "utf8")).toBe("{nope");
 		expect(existsSync(path)).toBe(false);
 	});
 });

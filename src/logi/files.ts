@@ -1,12 +1,20 @@
 import { readFileSync, renameSync } from "node:fs";
-import { mkdir, rename, writeFile } from "node:fs/promises";
+import { mkdir, open, rename, rm } from "node:fs/promises";
 import { dirname } from "node:path";
 
-/** The temp file is renamed over the target, so a crash mid-write can't leave a half-written file. */
+/** The temp file is synced, then renamed over the target, so a crash mid-write can't leave a half-written file. */
 export async function writeAtomic(path: string, text: string, mode = 0o666): Promise<void> {
 	await mkdir(dirname(path), { recursive: true });
 	const temp = `${path}.tmp`;
-	await writeFile(temp, text, { mode });
+	// A leftover temp would keep its old mode, so the temp is always created fresh.
+	await rm(temp, { force: true });
+	const handle = await open(temp, "w", mode);
+	try {
+		await handle.writeFile(text);
+		await handle.sync();
+	} finally {
+		await handle.close();
+	}
 	await rename(temp, path);
 }
 
@@ -15,8 +23,10 @@ export function readJson(path: string): Record<string, unknown> | undefined {
 	let text: string;
 	try {
 		text = readFileSync(path, "utf8");
-	} catch {
-		return undefined;
+	} catch (error) {
+		// Only a missing file is empty; reading any other failure as empty would let the next save overwrite it.
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+		throw error;
 	}
 	try {
 		const parsed: unknown = JSON.parse(text);
@@ -25,7 +35,7 @@ export function readJson(path: string): Record<string, unknown> | undefined {
 		// Falls through to keep the file.
 	}
 	try {
-		renameSync(path, `${path}.corrupt`);
+		renameSync(path, `${path}.corrupt-${Date.now()}`);
 	} catch {
 		// Nothing more to do; the caller starts empty.
 	}

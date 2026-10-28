@@ -1,4 +1,4 @@
-import { chmodSync, existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -45,8 +45,8 @@ describe("FileCredentials", () => {
 		const path = file();
 		writeFileSync(path, "{nope");
 		expect(new FileCredentials(path).load("x")).toBeUndefined();
-		expect(existsSync(path + ".corrupt")).toBe(true);
-		expect(readFileSync(path + ".corrupt", "utf8")).toBe("{nope");
+		const [aside] = readdirSync(join(path, "..")).filter((name) => name.startsWith("credentials.json.corrupt-"));
+		expect(readFileSync(join(path, "..", aside), "utf8")).toBe("{nope");
 	});
 
 	it("saves that overlap all land, and the file holds the last", async () => {
