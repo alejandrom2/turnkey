@@ -1274,7 +1274,6 @@
 					"description": "Stoppt jeden laufenden T3-Code-Thread."
 				},
 				"prompt": {
-					"name": "Schnell-Prompt",
 					"description": "Sendet einen Prompt an den in T3 Code geöffneten Thread."
 				},
 				"continue": {

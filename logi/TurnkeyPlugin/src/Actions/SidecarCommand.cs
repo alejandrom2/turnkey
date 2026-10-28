@@ -7,9 +7,13 @@ namespace Loupedeck.TurnkeyPlugin
     {
         private readonly SidecarFaces _faces;
 
-        protected SidecarCommand(String kind, String displayName, String description, String groupName)
+        // A parameter fixed by the subclass, as each quick prompt is its own action: Options+ offers no choice of parameters.
+        private readonly String _parameter;
+
+        protected SidecarCommand(String kind, String displayName, String description, String groupName, String parameter = null)
             : base(displayName: displayName, description: description, groupName: groupName)
         {
+            this._parameter = parameter;
             this._faces = new SidecarFaces(kind, () => ((TurnkeyPlugin)this.Plugin).Sidecar, () => this.ActionImageChanged());
         }
 
@@ -25,8 +29,8 @@ namespace Loupedeck.TurnkeyPlugin
             return true;
         }
 
-        protected override void RunCommand(String actionParameter) => this._faces.Press(actionParameter);
+        protected override void RunCommand(String actionParameter) => this._faces.Press(actionParameter ?? this._parameter);
 
-        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize) => this._faces.Image(actionParameter, imageSize);
+        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize) => this._faces.Image(actionParameter ?? this._parameter, imageSize);
     }
 }

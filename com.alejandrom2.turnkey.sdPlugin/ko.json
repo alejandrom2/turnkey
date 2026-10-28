@@ -1274,7 +1274,6 @@
 					"description": "실행 중인 모든 T3 Code 스레드를 중지합니다."
 				},
 				"prompt": {
-					"name": "빠른 프롬프트",
 					"description": "T3 Code에서 열려 있는 스레드에 프롬프트를 보냅니다."
 				},
 				"continue": {

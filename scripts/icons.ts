@@ -108,6 +108,10 @@ const SYMBOLS: Record<string, GlyphName> = {
 	ContinueCommand: "play",
 	StopRunCommand: "stop",
 	StopAllCommand: "stop",
+	FixTestsCommand: "scriptTest",
+	DiagnoseCommand: "hammer",
+	ExplainCommand: "book",
+	CommitCommand: "gitCommit",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
 	LimitsCommand: "gauge",
@@ -135,9 +139,6 @@ function symbol(mark: GlyphName): string {
 	return svg(32, `<g transform="scale(${32 / TRACE_SIZE})">${paths.join("")}</g>`);
 }
 for (const [name, mark] of Object.entries(SYMBOLS)) writeFileSync(join(symbols, `Loupedeck.TurnkeyPlugin.${name}.svg`), symbol(mark));
-// Action editor actions go by their Name alone, as Logi's translation template lists them.
-const EDITOR_SYMBOLS: Record<string, GlyphName> = { QuickPrompt: "chat", SendPrompt: "send" };
-for (const [name, mark] of Object.entries(EDITOR_SYMBOLS)) writeFileSync(join(symbols, `${name}.svg`), symbol(mark));
 console.log(`wrote ${Object.keys(SYMBOLS).length} Logi action symbols`);
 
 // Logi's plugin icon: a 256 px PNG of the category icon's white keys, which Options+ shows on a black card.

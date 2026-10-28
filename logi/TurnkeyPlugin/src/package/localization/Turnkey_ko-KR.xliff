@@ -12,6 +12,14 @@
   <file original="$Turnkey___main" source-language="en-US" target-language="ko-KR" datatype="plaintext">
     <body>
       <group id="@commands">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
+          <source>Commit</source>
+          <target>커밋</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand###description" translate="yes">
+          <source>Sends a prompt to the thread open in T3 Code.</source>
+          <target>T3 Code에서 열려 있는 스레드에 프롬프트를 보냅니다.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand" translate="yes">
           <source>Continue</source>
           <target>계속</target>
@@ -19,6 +27,18 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand###description" translate="yes">
           <source>Nudges the thread open in T3 Code to continue; opens it when it waits on you.</source>
           <target>T3 Code에서 열려 있는 스레드에 계속하라고 보냅니다. 확인이 필요하면 스레드를 엽니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
+          <source>Diagnose</source>
+          <target>진단</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ExplainCommand" translate="yes">
+          <source>Explain</source>
+          <target>설명</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.FixTestsCommand" translate="yes">
+          <source>Fix tests</source>
+          <target>테스트 수정</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand" translate="yes">
           <source>Limits</source>
@@ -68,14 +88,6 @@
           <source>Stops the T3 Code run that started last.</source>
           <target>T3 Code에서 마지막으로 시작된 실행을 중지합니다.</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___QuickPrompt" translate="yes">
-          <source>Quick prompt</source>
-          <target>빠른 프롬프트</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___QuickPrompt###description" translate="yes">
-          <source>Sends a prompt to the thread open in T3 Code.</source>
-          <target>T3 Code에서 열려 있는 스레드에 프롬프트를 보냅니다.</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___SendPrompt" translate="yes">
           <source>Send prompt</source>
           <target>프롬프트 보내기</target>
@@ -104,6 +116,10 @@
         </trans-unit>
       </group>
       <group id="@groups">
+        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
+          <source>Prompts</source>
+          <target>프롬프트</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___AED0D0FDAA3E69A00007" translate="yes">
           <source>Threads</source>
           <target>스레드</target>
@@ -115,10 +131,6 @@
         <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
           <source>Settings</source>
           <target>설정</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
-          <source>Prompts</source>
-          <target>프롬프트</target>
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
           <source>Model</source>

@@ -1274,7 +1274,6 @@
 					"description": "Detiene todos los hilos de T3 Code en ejecución."
 				},
 				"prompt": {
-					"name": "Prompt rápido",
 					"description": "Envía un prompt al hilo abierto en T3 Code."
 				},
 				"continue": {

@@ -1274,7 +1274,6 @@
 					"description": "実行中のすべての T3 Code スレッドを停止します。"
 				},
 				"prompt": {
-					"name": "クイックプロンプト",
 					"description": "T3 Code で開いているスレッドにプロンプトを送ります。"
 				},
 				"continue": {

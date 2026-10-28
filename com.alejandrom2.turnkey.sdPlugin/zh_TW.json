@@ -1274,7 +1274,6 @@
 					"description": "停止所有正在執行的 T3 Code 對話。"
 				},
 				"prompt": {
-					"name": "快捷提示詞",
 					"description": "向 T3 Code 中開啟的對話傳送提示詞。"
 				},
 				"continue": {

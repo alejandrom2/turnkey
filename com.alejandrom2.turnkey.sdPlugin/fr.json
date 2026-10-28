@@ -1274,7 +1274,6 @@
 					"description": "Arrête chaque fil T3 Code en cours d'exécution."
 				},
 				"prompt": {
-					"name": "Prompt rapide",
 					"description": "Envoie un prompt au fil ouvert dans T3 Code."
 				},
 				"continue": {

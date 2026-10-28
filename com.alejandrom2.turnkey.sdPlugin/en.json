@@ -1274,7 +1274,6 @@
 					"description": "Stops every running T3 Code thread."
 				},
 				"prompt": {
-					"name": "Quick prompt",
 					"description": "Sends a prompt to the thread open in T3 Code."
 				},
 				"continue": {
