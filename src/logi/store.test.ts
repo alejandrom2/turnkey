@@ -1,4 +1,4 @@
-import { mkdtempSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -36,6 +36,24 @@ describe("FileCredentials", () => {
 		const path = file();
 		await new FileCredentials(path).save("http://a", credential);
 		expect(statSync(path).mode & 0o777).toBe(0o600);
+		chmodSync(path, 0o644);
+		await new FileCredentials(path).save("http://b", credential);
+		expect(statSync(path).mode & 0o777).toBe(0o600);
+	});
+
+	it("keeps a corrupt file aside instead of overwriting it", () => {
+		const path = file();
+		writeFileSync(path, "{nope");
+		expect(new FileCredentials(path).load("x")).toBeUndefined();
+		expect(existsSync(path + ".corrupt")).toBe(true);
+		expect(readFileSync(path + ".corrupt", "utf8")).toBe("{nope");
+	});
+
+	it("ignores a temp file left by a crash", async () => {
+		const path = file();
+		await new FileCredentials(path).save("http://a", credential);
+		writeFileSync(path + ".tmp", '{"half');
+		expect(new FileCredentials(path).load("http://a")).toEqual(credential);
 	});
 
 	it("treats a missing or corrupt file as empty", () => {

@@ -1,6 +1,4 @@
-import { readFileSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { readJson, writeAtomic } from "./files.js";
 
 type Saved = { haptics?: boolean };
 
@@ -9,12 +7,7 @@ export class FileSettings {
 	#saved: Saved;
 
 	constructor(private readonly path: string) {
-		try {
-			const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
-			this.#saved = typeof parsed === "object" && parsed !== null ? (parsed as Saved) : {};
-		} catch {
-			this.#saved = {};
-		}
+		this.#saved = (readJson(path) as Saved | undefined) ?? {};
 	}
 
 	get haptics(): boolean {
@@ -23,7 +16,6 @@ export class FileSettings {
 
 	async setHaptics(on: boolean): Promise<void> {
 		this.#saved = { ...this.#saved, haptics: on };
-		await mkdir(dirname(this.path), { recursive: true });
-		await writeFile(this.path, JSON.stringify(this.#saved));
+		await writeAtomic(this.path, JSON.stringify(this.#saved), 0o600);
 	}
 }

@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -20,5 +20,13 @@ describe("FileSettings", () => {
 		const path = file();
 		writeFileSync(path, "{nope");
 		expect(new FileSettings(path).haptics).toBe(true);
+	});
+
+	it("keeps a corrupt file aside", () => {
+		const path = file();
+		writeFileSync(path, "{nope");
+		new FileSettings(path);
+		expect(readFileSync(path + ".corrupt", "utf8")).toBe("{nope");
+		expect(existsSync(path)).toBe(false);
 	});
 });
