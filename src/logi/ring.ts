@@ -40,7 +40,8 @@ export function urgentFace(threads: readonly RingThread[]): string {
 }
 
 /** The board lists running threads newest first, so this is the run that started last. */
-export const stopTarget = <T extends Pick<DeckThread, "deck">>(threads: readonly T[]): T | undefined => threads.find((thread) => thread.deck === "running");
+export const stopTarget = <T extends Pick<DeckThread, "deck" | "key">>(threads: readonly T[], selected: T | undefined): T | undefined =>
+	(selected?.deck === "running" ? threads.find((thread) => thread.key === selected.key) : undefined) ?? threads.find((thread) => thread.deck === "running");
 
 export const stopFace = (available: boolean): string => ringFace(COLORS.accent, "stop", { dim: !available });
 

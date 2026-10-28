@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { createInterface } from "node:readline";
 
 import { ThreadBoard } from "../core/board.js";
-import { openExternal, threadDeepLink } from "../core/commands.js";
+import { openExternal, openThread } from "../core/commands.js";
 import { threadCounts } from "../core/infobar.js";
 import { COLORS } from "../core/render.js";
 import { findModel } from "../core/models.js";
@@ -48,7 +48,7 @@ const selected = () => {
 	const thread = board.selectedOn();
 	return thread?.machine.canOperate ? thread : undefined;
 };
-const open = (thread: Parameters<typeof threadDeepLink>[0]) => void openExternal(threadDeepLink(thread)).catch(failed("open the thread"));
+const open = (thread: Parameters<typeof openThread>[0]) => void openThread(thread, board.select.bind(board)).catch(failed("open the thread"));
 const isPrompt = (name: string): name is keyof typeof PROMPT_GLYPHS => Object.hasOwn(PROMPT_GLYPHS, name);
 
 type Thread = NonNullable<ReturnType<typeof selected>>;
@@ -177,9 +177,9 @@ const keys = new Keys(
 			press: () => void openExternal(page.url).catch(failed("open Turnkey Settings")),
 		},
 		stop: {
-			face: () => stopFace(stopTarget(board.threads)?.machine.canOperate === true),
+			face: () => stopFace(stopTarget(board.threads, board.selectedOn())?.machine.canOperate === true),
 			press: () => {
-				const target = stopTarget(board.threads);
+				const target = stopTarget(board.threads, board.selectedOn());
 				if (target?.machine.canOperate) void target.machine.stopRun(target).catch(failed("stop the run"));
 			},
 		},

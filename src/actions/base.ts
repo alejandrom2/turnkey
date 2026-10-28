@@ -13,7 +13,7 @@ import type { JsonObject, JsonValue } from "@elgato/utils";
 import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
-import { openExternal, threadDeepLink } from "../core/commands.js";
+import { openThread as coreOpenThread } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
 import { INFOBAR } from "../core/infobar.js";
@@ -625,10 +625,8 @@ export const queueOf = (thread: DeckThread): ThreadQueue | undefined => deck.que
 export const queuedCount = (thread: DeckThread): number => queueOf(thread)?.items.length ?? 0;
 
 /** Selects the thread the way T3 Code's own open does, and opens it in the desktop app. */
-export async function openThread(thread: DeckThread): Promise<void> {
-	selectThread(thread);
-	await openExternal(threadDeepLink(thread, deck.scheme));
-}
+export const openThread = (thread: DeckThread): Promise<void> =>
+	coreOpenThread(thread, (key, url) => deck.board.select(key, url).catch(logSelectFailure), deck.scheme);
 
 /** Selects a thread `machine` just made, before its shell lists it. */
 export function selectNew(machine: Machine, threadId: string): void {
@@ -637,8 +635,10 @@ export function selectNew(machine: Machine, threadId: string): void {
 
 /** Selects the thread without opening the app; a failed visit only leaves T3 Code's stamp behind. */
 export function selectThread(thread: Pick<DeckThread, "key" | "machine">): void {
-	void deck.board.select(thread.key, thread.machine.url).catch((error: unknown) => logger.warn(`Selecting a thread failed: ${errorMessage(error)}`));
+	void deck.board.select(thread.key, thread.machine.url).catch(logSelectFailure);
 }
+
+const logSelectFailure = (error: unknown): void => void logger.warn(`Selecting a thread failed: ${errorMessage(error)}`);
 
 export type ConnectionProblem = "loading" | "none" | "missing" | "pair" | "offline";
 

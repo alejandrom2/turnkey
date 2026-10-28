@@ -31,9 +31,19 @@ describe("urgentFace", () => {
 
 describe("stop", () => {
 	it("targets the running thread that started last, which the board lists first", () => {
-		const newer = { deck: "running" as const, id: "newer" };
-		expect(stopTarget([{ deck: "approval", id: "a" }, newer, { deck: "running", id: "older" }])).toBe(newer);
-		expect(stopTarget([{ deck: "done", id: "a" }])).toBeUndefined();
+		const newer = { deck: "running" as const, key: "newer" };
+		expect(stopTarget([{ deck: "approval", key: "a" }, newer, { deck: "running", key: "older" }], undefined)).toBe(newer);
+		expect(stopTarget([{ deck: "done", key: "a" }], undefined)).toBeUndefined();
+	});
+
+	it("stops the selected thread while it runs", () => {
+		const older = { deck: "running" as const, key: "older" };
+		expect(stopTarget([{ deck: "running", key: "newer" }, older], older)).toBe(older);
+	});
+
+	it("else the newest running", () => {
+		const newer: { deck: DeckState; key: string } = { deck: "running", key: "newer" };
+		expect(stopTarget([newer], { deck: "done", key: "idle" })).toBe(newer);
 	});
 
 	it("dims when there's nothing to stop", () => {
