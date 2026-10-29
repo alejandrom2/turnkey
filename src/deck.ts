@@ -57,6 +57,9 @@ const appearanceOf = ({ stripBackground, stripColor, stripStyle, textScroll, mot
 
 const logger = streamDeck.logger.createScope("deck");
 
+/** OpenDeck registers every plugin with this font, which Stream Deck never sends. */
+export const onOpenDeck = (): boolean => streamDeck.info.application.font === "ui-sans-serif";
+
 /** Each device type's bundled profile, named as in the manifest; other types have none. */
 const PROFILES: Partial<Record<number, string>> = { 0: "profiles/turnkey-15", 1: "profiles/turnkey-mini", 2: "profiles/turnkey-xl", 7: "profiles/turnkey-plus", 9: "profiles/turnkey-neo" };
 
@@ -198,7 +201,8 @@ class Deck implements CredentialStore {
 	 * only decks it switched that still show a Turnkey action, so a deck the user moved elsewhere stays put.
 	 */
 	#switchProfiles(open: boolean): void {
-		if (this.#settings.autoSwitch === "off") return;
+		// OpenDeck has no bundled profiles: asking for one makes it select a new, empty one.
+		if (onOpenDeck() || this.#settings.autoSwitch === "off") return;
 		const showing = new Set(this.#visible.values());
 		for (const device of streamDeck.devices) {
 			const profile = PROFILES[device.type];

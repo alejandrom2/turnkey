@@ -1,12 +1,12 @@
 import streamDeck from "@elgato/streamdeck";
 import { execFile } from "node:child_process";
 import { mkdir, open, stat, writeFile } from "node:fs/promises";
-import { arch } from "node:os";
+import { arch, release } from "node:os";
 import { join } from "node:path";
 
 import { revealCommand } from "./core/commands.js";
 import { diagnosticsReport } from "./core/diagnostics.js";
-import { deck } from "./deck.js";
+import { deck, onOpenDeck } from "./deck.js";
 
 /** Where the SDK writes the plugin's logs: `logs/<plugin UUID>.<n>.log` beside the plugin, `.0` the current one. */
 const logsDir = (): string => join(process.cwd(), "logs");
@@ -47,11 +47,13 @@ export const openLogsFolder = (): Promise<void> => reveal(logsDir(), false);
 export async function exportDiagnostics(actions: Record<string, number>): Promise<void> {
 	const now = Date.now();
 	const { application, plugin } = streamDeck.info;
+	const openDeck = onOpenDeck();
 	const report = diagnosticsReport({
 		now,
 		plugin: plugin.version,
-		streamDeck: application.version,
-		os: { platform: application.platform, version: application.platformVersion, arch: arch() },
+		// OpenDeck tells Node plugins they run on Windows 10, so ask Node instead.
+		streamDeck: openDeck ? "OpenDeck" : application.version,
+		os: { platform: openDeck ? process.platform : application.platform, version: openDeck ? release() : application.platformVersion, arch: arch() },
 		node: process.version,
 		verboseUntil: deck.verboseUntil,
 		settings: deck.globalSettings,

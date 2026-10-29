@@ -33,6 +33,7 @@ const sd = vi.hoisted(() => {
 				onApplicationDidTerminate: (listener: () => void) => void (state.onTerminate = listener),
 				openUrl: async () => undefined,
 			},
+			info: { application: { font: ".AppleSystemUIFont" } },
 			profiles: { switchToProfile: async (device: string, profile?: string) => void state.switches.push([device, profile]) },
 			devices: [
 				{ id: "plus", type: 7, isConnected: true },
@@ -91,6 +92,7 @@ function network() {
 async function load(stored: Settings = {}) {
 	sd.state.stored = stored;
 	sd.state.switches = [];
+	sd.streamDeck.info.application.font = ".AppleSystemUIFont";
 	vi.resetModules();
 	const { deck } = await import("./deck.js");
 	await deck.init();
@@ -171,6 +173,16 @@ describe("Deck auto-switch", () => {
 		deck.setVisible("key", undefined);
 		sd.state.onTerminate?.();
 		expect(sd.state.switches).toEqual([["plus", "profiles/turnkey-plus"]]);
+	});
+
+	it("never switches under OpenDeck, which has none of Turnkey's profiles", async () => {
+		network();
+		const deck = await load();
+		sd.streamDeck.info.application.font = "ui-sans-serif";
+		sd.state.onLaunch?.();
+		deck.setVisible("key", "plus");
+		sd.state.onTerminate?.();
+		expect(sd.state.switches).toEqual([]);
 	});
 
 	it("doesn't switch when Auto-switch is off", async () => {
