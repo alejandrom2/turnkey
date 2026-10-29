@@ -100,9 +100,9 @@ What OpenDeck can't do yet: the ready-made profiles and switching to them when T
 
 ## Support Turnkey
 
-Turnkey is free. If it saves you some clicks, a coffee keeps it going. ☕
+Turnkey is free. If it saves you some clicks, a star helps others find it, and a coffee keeps it going. ☕
 
-<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_a_coffee-%E2%98%95-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me a coffee" height="36"></a>
+<a href="https://github.com/alejandrom2/turnkey"><img src="https://img.shields.io/github/stars/alejandrom2/turnkey?style=for-the-badge&logo=github&label=Star&color=4a68f0" alt="Star Turnkey on GitHub" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_a_coffee-%E2%98%95-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me a coffee" height="36"></a>
 
 ## Contributing
 
