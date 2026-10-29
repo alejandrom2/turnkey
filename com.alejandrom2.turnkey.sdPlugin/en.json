@@ -1248,7 +1248,7 @@
 			"needsAccess": "Needs sharing access"
 		},
 		"logi": {
-			"labels": { "limits": "{provider} · {window}: {percent}% used", "status": "{waiting} wait on you · {running} running" },
+			"labels": { "limits": "{provider} · {window}: {percent}% used", "status": "{waiting} waiting on you · {running} running" },
 			"status": {
 				"unpaired": "Turnkey isn't paired with T3 Code yet.",
 				"pair": "Pair with T3 Code",

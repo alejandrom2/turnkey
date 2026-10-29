@@ -108,7 +108,7 @@ describe("the controls' faces", () => {
 		expect(statusFace({ approval: 1, question: 1, running: 3 })).toBe(ringFace(STATE_COLOR.approval, "queued", { badge: 2 }));
 		expect(statusFace({ approval: 0, question: 0, running: 3 })).toBe(ringFace(STATE_COLOR.running, "queued", { badge: 3 }));
 		expect(statusFace({ approval: 0, question: 0, running: 0 })).toBe(ringFace(COLORS.muted, "queued", { dim: true }));
-		expect(statusLabel({ approval: 1, question: 1, running: 3 })).toBe("2 wait on you · 3 running");
+		expect(statusLabel({ approval: 1, question: 1, running: 3 })).toBe("2 waiting on you · 3 running");
 	});
 
 	it("shows the selected thread's access mode and effort, dimmed without one", () => {
