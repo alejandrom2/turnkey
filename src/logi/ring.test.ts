@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CatalogModel } from "../core/models.js";
-import { COLORS, sampleStops, SPECTRUM, STATE_COLOR } from "../core/render.js";
+import { COLORS, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
 import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
 
@@ -116,15 +116,11 @@ describe("the controls' faces", () => {
 		expect(modeFace("full-access")).toBe(ringFace(STATE_COLOR.approval, "modeFullAccess"));
 		expect(modeFace(undefined)).toBe(ringFace(COLORS.muted, "modeSupervised", { dim: true }));
 		expect(effortFace(undefined)).toBe(ringFace(COLORS.muted, "effort", { dim: true }));
-		expect(effortFace({ index: 1, count: 3, color: "#648FFD", ultrathink: false })).not.toBe(effortFace({ index: 2, count: 3, color: "#648FFD", ultrathink: false }));
+		expect(effortFace({ index: 1, count: 3, color: "#648FFD" })).not.toBe(effortFace({ index: 2, count: 3, color: "#648FFD" }));
 	});
 
-	it("colors effort by its level, and Ultrathink across the whole spectrum", () => {
-		expect(effortFace({ index: 1, count: 4, color: "#AD7BF9", ultrathink: false })).toContain('stroke="#AD7BF9"');
-		const ultrathink = effortFace({ index: 3, count: 4, color: "#AD7BF9", ultrathink: true });
-		expect(ultrathink).toContain(`fill="${sampleStops(SPECTRUM, 0)}"`);
-		expect(ultrathink).toContain(`fill="${sampleStops(SPECTRUM, 0.9)}"`);
-		expect(ultrathink).not.toContain("#AD7BF9");
+	it("colors effort by its level", () => {
+		expect(effortFace({ index: 1, count: 4, color: "#AD7BF9" })).toContain('stroke="#AD7BF9"');
 	});
 
 	it("shows a picker model by its provider's mark alone, sets the thread's own apart, and dims an empty slot", () => {
@@ -152,7 +148,7 @@ describe("the controls' faces", () => {
 
 describe("ring art", () => {
 	it("paints every shape itself, since Options+ doesn't pass a group's stroke down to its shapes", () => {
-		for (const face of [ringFace(COLORS.accent, "spark"), ringFace(COLORS.accent, "sliders"), promptFace("test"), limitsFace(40, false), effortFace({ index: 1, count: 3, color: "#AD7BF9", ultrathink: false })]) {
+		for (const face of [ringFace(COLORS.accent, "spark"), ringFace(COLORS.accent, "sliders"), promptFace("test"), limitsFace(40, false), effortFace({ index: 1, count: 3, color: "#AD7BF9" })]) {
 			const shapes = face.match(/<(path|circle|line|rect|polyline|polygon|ellipse)\b[^>]*>/g) ?? [];
 			expect(shapes.length).toBeGreaterThan(0);
 			for (const shape of shapes) expect(shape).toMatch(/\b(stroke|fill)="#/);

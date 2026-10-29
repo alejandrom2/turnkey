@@ -174,11 +174,11 @@ The default ring, clockwise from the top:
 | Continue | Sends "Continue" to the thread open in T3 Code, or opens it when it waits on you. Hover names it. |
 | Prompts ▸ | Fix tests, Diagnose, Explain and Commit, sent to the thread open in T3 Code. |
 | Stop run | Stops the open thread's run, else the one that started last. Hover names it. |
-| Models ▸ | The first five models of T3 Code's picker (favorites first), each by its provider's mark, named on hover; a check marks the open thread's. Then **Next effort** and **Next access**, which step through the thread's effort and access mode, named on hover; Ultrathink lights up the effort dots across T3 Code's spectrum. |
+| Models ▸ | The first five models of T3 Code's picker (favorites first), each by its provider's mark, named on hover; a check marks the open thread's. Then **Next effort** and **Next access**, which step through the thread's effort and access mode, named on hover. |
 | Limits ▸ | Up to five providers in T3 Code's Limits order, each a ring filling with its tightest limit (green, amber past 70%, red past 90%), its figure on hover. Choose one to refresh. |
 | Turnkey Settings | Opens the settings page: machines, pairing and haptics. |
 
-Ring faces are drawn small, so names and figures go in the hover label rather than on the face. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails; Turnkey Settings switches that off. Effort and Access also come as adjustments to scroll, for devices with a dial.
+Ring faces are drawn small, so names and figures go in the hover label rather than on the face. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails; Turnkey Settings switches that off. Effort and Access also come as adjustments to scroll, for devices with a dial. Ultrathink isn't offered: it prefixes prompts Turnkey sends, and on Logitech you type yours in T3 Code.
 
 ## Languages
 

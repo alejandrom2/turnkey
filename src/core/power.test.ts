@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ModelConfig } from "./models.js";
+import { findModel, type ModelConfig } from "./models.js";
 import { effortGradient, sampleStops } from "./render.js";
 import type { DeckThread } from "./board.js";
-import { applyChoice, dialControl, effortToneOf, isTopEffort, powerArt, powerState, stepChoice } from "./power.js";
+import { applyChoice, dialControl, effortChoices, effortToneOf, isTopEffort, powerArt, powerState, stepChoice } from "./power.js";
 
 
 const effort = { id: "effort", label: "Effort", type: "select" as const, options: [{ id: "low", label: "Low" }, { id: "high", label: "High", isDefault: true }, { id: "ultrathink", label: "Ultrathink" }], promptInjectedValues: ["ultrathink"] };
@@ -57,6 +57,13 @@ describe("Power dial", () => {
 		expect(state.current?.label).toBe("High");
 		expect(powerState("effort", CONFIG, thread, true).current?.label).toBe("Ultrathink");
 		expect(powerState("effort", CONFIG, { ...thread, model: { instanceId: "codex", model: "gpt-5.5" } }).missing).toBe("No effort");
+	});
+
+	it("leaves out levels that only prefix a prompt, for a host that sends none of yours", () => {
+		const state = powerState("effort", CONFIG, thread, false, { promptInjected: false });
+		expect(state.choices.map((choice) => choice.label)).toEqual(["Low", "High"]);
+		expect(state.current?.label).toBe("High");
+		expect(effortChoices(findModel(CONFIG, thread.model), { promptInjected: false }).map((choice) => choice.label)).toEqual(["Low", "High"]);
 	});
 });
 

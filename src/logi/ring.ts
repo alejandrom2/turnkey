@@ -1,7 +1,7 @@
 import type { DeckThread } from "../core/board.js";
 import { t } from "../core/i18n.js";
 import { type CatalogModel, modelColor, providerDisplayName, providerMark } from "../core/models.js";
-import { COLORS, glyph, type GlyphName, MODE_GLYPH, sampleStops, SPECTRUM, STATE_COLOR, svgMarkup } from "../core/render.js";
+import { COLORS, glyph, type GlyphName, MODE_GLYPH, STATE_COLOR, svgMarkup } from "../core/render.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 
 /** What the Actions Ring reads from a thread. */
@@ -118,17 +118,13 @@ export const statusLabel = (counts: { approval: number; question: number; runnin
 export const modeFace = (mode: RuntimeMode | undefined): string =>
 	mode === undefined ? ringFace(COLORS.muted, "modeSupervised", { dim: true }) : ringFace(mode === "full-access" ? STATE_COLOR.approval : COLORS.accent, MODE_GLYPH[mode]);
 
-/**
- * The selected thread's effort: its glyph over one dot per level, filled up to the current one, in the level's color.
- * Ultrathink paints every dot along T3 Code's spectrum; solid colors, as Options+ may not draw gradients.
- */
-export function effortFace(level: { index: number; count: number; color: string; ultrathink: boolean } | undefined): string {
+/** The selected thread's effort: its glyph over one dot per level, filled up to the current one, in the level's color. */
+export function effortFace(level: { index: number; count: number; color: string } | undefined): string {
 	if (level === undefined) return ringFace(COLORS.muted, "effort", { dim: true });
-	const tint = (index: number) => (level.ultrathink ? sampleStops(SPECTRUM, level.count > 1 ? (0.9 * index) / (level.count - 1) : 0.9) : level.color);
-	const mark = glyph("effort", 34, 8, 76, level.ultrathink ? sampleStops(SPECTRUM, 0.72) : level.color, 3.2, 0, true);
+	const mark = glyph("effort", 34, 8, 76, level.color, 3.2, 0, true);
 	const gap = 24;
 	const left = 72 - ((level.count - 1) * gap) / 2;
-	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="114" r="8.5" fill="${tint(index)}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
+	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="114" r="8.5" fill="${level.color}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
 	return svgMarkup(144, 144, mark + dots);
 }
 

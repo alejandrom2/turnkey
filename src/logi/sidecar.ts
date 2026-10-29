@@ -6,13 +6,12 @@ import { openExternal, openThread } from "../core/commands.js";
 import { threadCounts } from "../core/infobar.js";
 import { COLORS } from "../core/render.js";
 import { findModel, modelColor } from "../core/models.js";
-import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice } from "../core/power.js";
+import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
 import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
 import type { LimitPool, LimitPoolWindow } from "../core/usage/limits.js";
 import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
 import { Machines } from "../core/t3/machines.js";
-import { UltrathinkArming, ultrathinkControl } from "../core/ultrathink.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
 import { HapticCues } from "./haptics.js";
@@ -69,13 +68,13 @@ const isPrompt = (name: string): name is keyof typeof PROMPT_GLYPHS => Object.ha
 
 type Thread = NonNullable<ReturnType<typeof selected>>;
 
-// Ultrathink is armed here in memory, per thread, as the Stream Deck does; the prompt kinds prefix it.
-const arming = new UltrathinkArming(() => changed());
+// Ultrathink only prefixes prompts Turnkey sends, and on Logitech you type yours in T3 Code, so it is never offered.
+const NO_ULTRATHINK: UltrathinkControl = { armed: false, arm: () => undefined, disarm: () => undefined };
 const modelOf = (thread: Thread) => findModel(thread.machine.modelConfig, thread.model);
-const sendPrompt = (thread: Thread, text: string) => thread.machine.send(thread, arming.prompt(thread.key, modelOf(thread), text), "auto");
+const sendPrompt = (thread: Thread, text: string) => thread.machine.send(thread, text, "auto");
 
-/** The model, effort or access choices for `thread`, Ultrathink included. */
-const powerOf = (thread: Thread, control: DialControl) => powerState(control, thread.machine.modelConfig, thread, arming.armed(thread.key, modelOf(thread)));
+/** The model, effort or access choices for `thread`, without prompt-only efforts. */
+const powerOf = (thread: Thread, control: DialControl) => powerState(control, thread.machine.modelConfig, thread, false, { promptInjected: false });
 
 /** The model at `place`, from 1, in the open thread's picker, and the thread's own model's key. */
 function modelAt(place: string): { choice?: Extract<PowerChoice, { kind: "model" }>; current?: string } {
@@ -100,7 +99,7 @@ function pick(control: DialControl, choose: (state: PowerState) => PowerChoice |
 	const state = powerOf(thread, control);
 	const choice = choose(state);
 	if (choice === undefined || choice.key === state.current?.key) return;
-	void applyChoice(thread, choice, ultrathinkControl(arming, thread.key, arming.armed(thread.key, modelOf(thread))))?.().catch(failed(CHANGE[control]));
+	void applyChoice(thread, choice, NO_ULTRATHINK)?.().catch(failed(CHANGE[control]));
 }
 
 /**
@@ -187,9 +186,8 @@ const keys = new Keys(
 				const index = Math.max(state.choices.findIndex((choice) => choice.key === state.current?.key), 0);
 				const model = modelOf(thread);
 				// Stream Deck's default effort colors, as Logi has no Colors setting.
-				const tone = effortToneOf(effortChoices(model), state.current?.key, "gradient", model && modelColor(model));
-				const current = state.current;
-				return effortFace({ index, count: state.choices.length, color: tone?.text ?? COLORS.accent, ultrathink: current?.kind === "effort" && current.ultrathink });
+				const tone = effortToneOf(effortChoices(model, { promptInjected: false }), state.current?.key, "gradient", model && modelColor(model));
+				return effortFace({ index, count: state.choices.length, color: tone?.text ?? COLORS.accent });
 			},
 			label: () => currentLabel("effort"),
 			press: () => pick("effort", nextChoice),

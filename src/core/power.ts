@@ -32,12 +32,16 @@ type Thread = { model: ModelSelection; runtimeMode: RuntimeMode };
 
 const EFFORT_ICON: PowerIcon = { kind: "glyph", name: "effort" };
 
-/** The thread model's efforts in T3 Code's order, then its prompt-injected ones (Ultrathink). */
-export function effortChoices(model: Pick<CatalogModel, "options"> | undefined): Extract<PowerChoice, { kind: "effort" }>[] {
+/** Whether a host offers prompt-injected efforts (Ultrathink): only one that sends prompts itself can prefix them. */
+type EffortOffer = { promptInjected?: boolean };
+
+/** The thread model's efforts in T3 Code's order, then its prompt-injected ones (Ultrathink) unless left out. */
+export function effortChoices(model: Pick<CatalogModel, "options"> | undefined, { promptInjected = true }: EffortOffer = {}): Extract<PowerChoice, { kind: "effort" }>[] {
 	const option = effortOption(model);
 	if (option === undefined) return [];
 	const choice = (value: OptionValue, label: string, ultrathink: boolean) => ({ kind: "effort" as const, key: String(value), label, icon: EFFORT_ICON, optionId: option.id, value, ultrathink });
-	return [...option.values.map((value) => choice(value.value, value.label, false)), ...(option.injected ?? []).map((value) => choice(value.value, value.label, value.value === ULTRATHINK))];
+	const injected = promptInjected ? (option.injected ?? []) : [];
+	return [...option.values.map((value) => choice(value.value, value.label, false)), ...injected.map((value) => choice(value.value, value.label, value.value === ULTRATHINK))];
 }
 
 /** Whether `key` is the model's top effort level (Ultrathink aside), when it has more than one. */
@@ -107,7 +111,7 @@ export function applyChoice(thread: Pick<DeckThread, "model" | "threadId" | "mac
 
 const modelChoice = (model: CatalogModel): PowerChoice => ({ kind: "model", key: model.key, label: model.label, icon: { kind: "mark", model }, model });
 
-export function powerState(control: DialControl, config: ModelConfig | undefined, thread: Thread, ultrathinkArmed = false): PowerState {
+export function powerState(control: DialControl, config: ModelConfig | undefined, thread: Thread, ultrathinkArmed = false, offer: EffortOffer = {}): PowerState {
 	const model = findModel(config, thread.model);
 	switch (control) {
 		case "model": {
@@ -117,7 +121,7 @@ export function powerState(control: DialControl, config: ModelConfig | undefined
 			return { choices, current, missing: choices.length === 0 ? t("reason.noModels") : undefined };
 		}
 		case "effort": {
-			const choices = effortChoices(model);
+			const choices = effortChoices(model, offer);
 			const value = currentEffort(model, thread.model, ultrathinkArmed);
 			return { choices, current: choices.find((choice) => choice.key === String(value)), missing: choices.length === 0 ? t("reason.noEffort") : undefined };
 		}
