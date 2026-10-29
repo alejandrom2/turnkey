@@ -404,13 +404,13 @@
           <source>Model</source>
           <target>Modelo</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
-          <source>Prompts</source>
-          <target>Prompts</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___AED0D0FDAA3E69A00007" translate="yes">
           <source>Threads</source>
           <target>Hilos</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
+          <source>Prompts</source>
+          <target>Prompts</target>
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___33CC4FB3447813B80005" translate="yes">
           <source>Usage</source>
