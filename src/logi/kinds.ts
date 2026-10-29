@@ -191,12 +191,12 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		// In the Turnkey folder only, as their reads are heavier. Every git action needs a keypad hold; T3 Code writes the commit message.
 		git: {
 			...sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), deps.runtime, deps.warn),
-			name: (parameter) => `${actionName("git")} · ${t(GIT_NAMES[parameter]!)}`,
+			name: (parameter) => GIT_NAMES[parameter] && `${actionName("git")} · ${t(GIT_NAMES[parameter])}`,
 		},
 		// Show is `pr`; of the handoffs only Fix findings needs a keypad hold, as Stream Deck holds it by default.
 		pr: {
 			...sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime, deps.warn),
-			name: (parameter) => (parameter === "pr" ? actionName("pr") : `${actionName("pr")} · ${t(PR_NAMES[parameter]!)}`),
+			name: (parameter) => (parameter === "pr" ? actionName("pr") : PR_NAMES[parameter] && `${actionName("pr")} · ${t(PR_NAMES[parameter])}`),
 		},
 		// The machines' configs (editors, providers, versions, Labs flags) stay live once these show. Preview and Health are in the folder only.
 		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime, deps.warn), ...watching, name: (parameter) => (parameter === "preview" ? t("openPreview.title") : undefined) },

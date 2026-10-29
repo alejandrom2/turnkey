@@ -60,7 +60,7 @@ const open = (thread: Parameters<typeof openThread>[0]) => void openThread(threa
  */
 const refresher = new LimitsRefresher();
 const ready = () => machines.all.filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
-// shortcut: top-level keys never report hiding, so one that showed holds the config until the sidecar exits; the Turnkey folder's keys do report it.
+// shortcut: Limits and the top-level config keys never report hiding, so one that showed holds the config until the sidecar exits; the Turnkey folder's own keys (git, pr, health, open preview) release theirs.
 const { watch: watchConfigs, unwatch: unwatchConfigs } = configWatch(ready);
 /** Refreshes the limits for the Limits slot `action`, which keeps the config live while it shows; a press (no action) only refreshes. */
 function showLimits(action?: string): void {
