@@ -373,17 +373,8 @@ export function sanitizeIconSvg(text: string): MarkArt | undefined {
 	const height = Number.parseFloat(attribute("height") ?? "");
 	const viewBox = attribute("viewBox") ?? (width > 0 && height > 0 ? `0 0 ${width} ${height}` : "0 0 24 24");
 	if (!/^[-\d.\s,eE]+$/.test(viewBox)) return undefined;
-	let body = inner;
-	let previous: string;
-	do {
-		previous = body;
-		body = body
-			.replace(/<(script|style|foreignObject|image)\b[\s\S]*?<\/\1\s*>/gi, "")
-			.replace(/<(script|style|foreignObject|image)\b[^>]*\/>/gi, "");
-	} while (body !== previous);
-	if (/<(script|style|foreignObject|image)\b/i.test(body)) return undefined;
-	body = body
-		.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, "")
+	if (/<(script|style|foreignObject|image)\b/i.test(inner) || /\son[a-z]+\s*=/i.test(inner)) return undefined;
+	const body = inner
 		.replace(/\s(?:xlink:)?href\s*=\s*("(?!#)[^"]*"|'(?!#)[^']*')/gi, "")
 		.replace(/\s(fill|stroke|stop-color|color)\s*=\s*("(?!\s*(?:none|transparent)\s*")[^"]*"|'(?!\s*(?:none|transparent)\s*')[^']*')/gi, ` $1="currentColor"`)
 		.replace(/(fill|stroke|stop-color|color)\s*:\s*(?!(?:none|transparent)\b)[^;"'\s][^;"']*/gi, "$1:currentColor");

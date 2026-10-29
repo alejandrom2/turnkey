@@ -240,11 +240,11 @@ describe("ACP registry icons", () => {
 		}
 	});
 
-	it("strips scripts, handlers, styles and outside references, and paints everything one color", () => {
+	it("strips outside references and paints safe content one color", () => {
 		const art = sanitizeIconSvg(
-			`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" onload="x()"><script>alert(1)</script><style>.a{fill:red}</style>` +
-				`<path d="M1 1" fill="#ff0000" onclick="y()"/><circle style="stroke: blue; opacity: .5" fill="none"/><rect style="fill: none; stroke: #000" fill="transparent"/>` +
-				`<use href="https://evil.example/x.svg#a"/><use href="#local"/><image href="https://x/y.png"/></svg>`,
+			`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">` +
+				`<path d="M1 1" fill="#ff0000"/><circle style="stroke: blue; opacity: .5" fill="none"/><rect style="fill: none; stroke: #000" fill="transparent"/>` +
+				`<use href="https://evil.example/x.svg#a"/><use href="#local"/></svg>`,
 		)!;
 		expect(art.viewBox).toBe("0 0 24 24");
 		expect(art.body).not.toMatch(/script|onclick|onload|style>|evil|image|#ff0000|blue/);
@@ -257,8 +257,17 @@ describe("ACP registry icons", () => {
 		expect(sanitizeIconSvg("<html>not an svg</html>")).toBeUndefined();
 	});
 
-	it("rejects dangerous tags exposed by sanitization", () => {
-		expect(sanitizeIconSvg("<svg><scr<script>alert(1)</script>ipt></svg>")).toBeUndefined();
+	it("rejects dangerous elements, event handlers, and tags hidden by overlapping markup", () => {
+		for (const svg of [
+			"<svg><script>alert(1)</script></svg>",
+			"<svg><style>.a{fill:red}</style></svg>",
+			'<svg onload="x()"></svg>',
+			'<svg><path onclick="x()"/></svg>',
+			"<svg><scr<script>alert(1)</script>ipt></svg>",
+			'<svg><image href="https://example.com/image.png"/></svg>',
+		]) {
+			expect(sanitizeIconSvg(svg)).toBeUndefined();
+		}
 	});
 
 	it("loads each icon once, remembers failures, and repaints when one arrives", async () => {
