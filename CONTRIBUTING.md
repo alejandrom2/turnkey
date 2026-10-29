@@ -19,7 +19,7 @@ npx streamdeck link com.alejandrom2.turnkey.sdPlugin
 npm run watch          # rebuilds and restarts the plugin as you edit
 ```
 
-For the Logitech plugin you also need the .NET 10 SDK and `dotnet tool install --global LogiPluginTool` (on macOS with Homebrew's .NET, set `DOTNET_ROOT` to its `libexec`). `npm run logi:pack` builds the sidecar and the C# plugin and packs `logi/dist/Turnkey_<version>.lplug4`. Logi Plugin Service ships Node 22, which runs the sidecar; a system Node is the fallback. After changing an action's English text in `logi/TurnkeyPlugin/`, regenerate the template with `logiplugintool xliff Turnkey <dir>` (Logi Plugin Service running), drop its `<header>`, and run `npm run assets` to regenerate the translations.
+For the Logitech plugin you also need the .NET 10 SDK and `dotnet tool install --global LogiPluginTool` (on macOS with Homebrew's .NET, set `DOTNET_ROOT` to its `libexec`). `npm run logi:pack` builds the sidecar and the C# plugin and packs `logi/dist/Turnkey.lplug4`. Logi Plugin Service ships Node 22, which runs the sidecar; a system Node is the fallback. After changing an action's English text in `logi/TurnkeyPlugin/`, regenerate the template with `logiplugintool xliff Turnkey <dir>` (Logi Plugin Service running), drop its `<header>`, and run `npm run assets` to regenerate the translations.
 
 Turn on Stream Deck's developer mode (`npx streamdeck dev`) if linking complains. Then open any Turnkey action's settings and pair with a link from T3 Code (Settings → Sharing & access → Create link).
 
@@ -65,7 +65,7 @@ Keep a pull request to one change. For anything you can see on a key or strip, a
 
 ## Releases
 
-`feat:` adds a minor version, `fix:` a patch, and `!` or `BREAKING CHANGE:` a major once past 1.0. On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it lets the release workflow tag that version (`vX.Y.Z`); every `v*` tag, from the workflow or pushed by hand, runs the publish workflow, which checks the tag matches `package.json`, packs `com.alejandrom2.turnkey.streamDeckPlugin` with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`) and creates the GitHub Release with that version's changelog section. `npm run assets` keeps the manifest's version in step with `package.json`.
+`feat:` adds a minor version, `fix:` a patch, and `!` or `BREAKING CHANGE:` a major once past 1.0. On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it lets the release workflow tag that version (`vX.Y.Z`); every `v*` tag, from the workflow or pushed by hand, runs the publish workflow, which checks the tag matches `package.json`, packs `Turnkey.streamDeckPlugin` with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`) and creates the GitHub Release with that version's changelog section. `npm run assets` keeps the manifest's version in step with `package.json`.
 
 ## Using a coding agent
 

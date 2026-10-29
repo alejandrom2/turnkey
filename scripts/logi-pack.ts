@@ -1,14 +1,14 @@
-// Builds the Logitech plugin and packs it: `npm run logi:pack` writes logi/dist/Turnkey_<version>.lplug4.
+// Builds the Logitech plugin and packs it: `npm run logi:pack` writes logi/dist/Turnkey.lplug4.
 // Needs the .NET SDK and LogiPluginTool (`dotnet tool install --global LogiPluginTool`); on macOS with Homebrew's .NET, set DOTNET_ROOT.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 const root = join(import.meta.dirname, "..");
-const { version } = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { version: string };
 const project = join(root, "logi", "TurnkeyPlugin");
 const release = join(project, "bin", "Release");
-const output = join(root, "logi", "dist", `Turnkey_${version.replaceAll(".", "_")}.lplug4`);
+// A fixed name, so the README can link releases/latest/download/Turnkey.lplug4.
+const output = join(root, "logi", "dist", "Turnkey.lplug4");
 const run = (command: string, args: string[], cwd = root) => execFileSync(command, args, { cwd, stdio: "inherit" });
 
 run("npm", ["run", "build"]);

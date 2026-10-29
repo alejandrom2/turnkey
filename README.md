@@ -7,7 +7,7 @@
 **Control [T3 Code](https://github.com/pingdotgg/t3code) from your Stream Deck or your Logitech mouse.**<br>
 See every agent thread, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without switching to T3 Code.
 
-<a href="https://github.com/alejandrom2/turnkey/releases/latest"><img src="https://img.shields.io/badge/Download-for_Stream_Deck-4a68f0?style=for-the-badge" alt="Download for Stream Deck" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/alejandrom2/turnkey/releases/latest"><img src="https://img.shields.io/badge/Download-for_Logitech-4a68f0?style=for-the-badge" alt="Download for Logitech" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_an_energy_drink-%E2%9A%A1-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me an energy drink" height="36"></a>
+<a href="https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.streamDeckPlugin"><img src="https://img.shields.io/badge/Download-for_Stream_Deck-4a68f0?style=for-the-badge" alt="Download for Stream Deck" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.lplug4"><img src="https://img.shields.io/badge/Download-for_Logitech-4a68f0?style=for-the-badge" alt="Download for Logitech" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_a_coffee-%E2%98%95-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me a coffee" height="36"></a>
 
 [![CI](https://github.com/alejandrom2/turnkey/actions/workflows/release.yml/badge.svg)](https://github.com/alejandrom2/turnkey/actions/workflows/release.yml)
 [![Release](https://img.shields.io/github/v/release/alejandrom2/turnkey?include_prereleases&label=release)](https://github.com/alejandrom2/turnkey/releases)
@@ -71,7 +71,7 @@ Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, t
 
 You need the Stream Deck app 7.6 or newer on macOS 12+ or Windows 10+, and [T3 Code](https://github.com/pingdotgg/t3code) running on this computer or one you can reach. Turnkey works on the Stream Deck +, the 15-key Stream Deck, XL, Mini and Neo; dials need a Stream Deck +.
 
-1. **Install.** Download `com.alejandrom2.turnkey.streamDeckPlugin` from the [latest release](https://github.com/alejandrom2/turnkey/releases/latest) and double-click it. Stream Deck offers Turnkey's ready-made profiles: pick one, or drag actions from the **Turnkey** category onto your deck.
+1. **Install.** Download [`Turnkey.streamDeckPlugin`](https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.streamDeckPlugin) and double-click it. Stream Deck offers Turnkey's ready-made profiles: pick one, or drag actions from the **Turnkey** category onto your deck.
 2. **Create a pair link.** In T3 Code, open **Settings → Sharing & access** and create one.
 3. **Connect.** In Stream Deck, open any Turnkey action's settings, paste the link under **Add a machine** and press **Connect**.
 
@@ -81,7 +81,7 @@ Add each machine once; every action can follow one machine or all of them. Pairi
 
 You need Logi Options+ on macOS, an MX mouse or keyboard with the Actions Ring, and T3 Code as above. Haptics need an MX Master 4. Windows isn't tested yet.
 
-1. **Install.** Download `Turnkey_<version>.lplug4` from the [latest release](https://github.com/alejandrom2/turnkey/releases/latest) and open it to install it in Logi Options+.
+1. **Install.** Download [`Turnkey.lplug4`](https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.lplug4) and open it to install it in Logi Options+.
 2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. Its button opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
 3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
 
@@ -89,9 +89,9 @@ The [guide](docs/guide.md) covers every action, the settings window, profiles, e
 
 ## Support Turnkey
 
-Turnkey is free. If it saves you some clicks, an energy drink keeps it going. ⚡
+Turnkey is free. If it saves you some clicks, a coffee keeps it going. ☕
 
-<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_an_energy_drink-%E2%9A%A1-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me an energy drink" height="36"></a>
+<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_a_coffee-%E2%98%95-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me a coffee" height="36"></a>
 
 ## Contributing
 
