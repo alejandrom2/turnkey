@@ -41,12 +41,9 @@ See every agent thread at a glance, approve and answer from a key, switch models
 </tr>
 </table>
 
-<table>
-<tr>
-<td width="50%"><img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code as it opens on screen: the most urgent thread waiting on approval with two waiting, the Threads folder, Continue, the Prompts folder, Stop run, the Models folder, the Limits folder and Turnkey Settings" width="320"></td>
-<td width="50%"><b>And on Logitech</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, with folders for what waits and what runs, quick prompts, your favorite models with effort and access, and each provider's limits, every one a live face that names its thread or model on hover. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.</td>
-</tr>
-</table>
+<b>And on Logitech</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Every slot is a live face, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
+
+<img src="docs/readme/ring.gif" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="100%">
 
 Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, then a live WebSocket feed of your threads. It doesn't read app files or drive the UI, and it talks only to the T3 Code servers you pair it with.
 
@@ -79,9 +76,7 @@ You need Logi Options+ with an MX mouse or keyboard for the Actions Ring (haptic
 
 1. **Install.** Download `Turnkey_<version>.lplug4` from the [latest release](https://github.com/alejandrom2/turnkey/releases/latest) and open it to install it in Logi Options+.
 2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. It opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
-3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose the **Default** profile: Turnkey's ring, folders and all. Rearrange it, or drag Turnkey's actions onto any other profile. **Turnkey Settings** brings the settings page back later, to add machines, re-pair or switch haptics off.
-
-<img src="docs/readme/ring-folders.png" alt="Turnkey's Actions Ring for T3 Code with each folder open: Threads (waiting on you, running, stop all, hovered: 2 waiting on you · 3 running), Prompts (Fix tests, Diagnose, Explain, Commit), Models (five picker models with the current one checked, then effort and access, hovered: Claude · Opus 5.5) and Limits (each provider's tightest limit, hovered: Claude · 5-hour: 47% used)" width="100%">
+3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
 
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
 
