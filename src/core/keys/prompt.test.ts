@@ -95,13 +95,14 @@ describe("Send Prompt", () => {
 	});
 
 	it("prefixes Ultrathink where the host armed it", async () => {
-		const world = scene({ model: { instanceId: "claudeAgent", model: "opus" } });
+		// A model the config doesn't list keeps Ultrathink armed, as before the config loads.
+		const world = scene({ model: { instanceId: "unlisted", model: "unlisted" } });
 		const arming = new UltrathinkArming();
 		arming.arm(world.selected!.key);
 		const result = plan(context(world, prompt, { ultrathink: arming }));
 		if (result.kind !== "guard") throw new Error(`expected a guard, got ${result.kind}`);
 		await result.work("auto");
-		expect(world.selected!.machine.send).toHaveBeenCalledExactlyOnceWith(world.selected, arming.prompt(world.selected!.key, undefined, "Ship it"), "auto");
+		expect(world.selected!.machine.send).toHaveBeenCalledExactlyOnceWith(world.selected, "Ultrathink:\nShip it", "auto");
 	});
 
 	it("fails with why it can't send", () => {
