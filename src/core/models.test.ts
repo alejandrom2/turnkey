@@ -242,7 +242,7 @@ describe("ACP registry icons", () => {
 
 	it("strips scripts, handlers, styles and outside references, and paints everything one color", () => {
 		const art = sanitizeIconSvg(
-			`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" onload="x()"><script>alert(1)</script><scrip<script></script>t>alert(2)</script><style>.a{fill:red}</style>` +
+			`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" onload="x()"><script>alert(1)</script><style>.a{fill:red}</style>` +
 				`<path d="M1 1" fill="#ff0000" onclick="y()"/><circle style="stroke: blue; opacity: .5" fill="none"/><rect style="fill: none; stroke: #000" fill="transparent"/>` +
 				`<use href="https://evil.example/x.svg#a"/><use href="#local"/><image href="https://x/y.png"/></svg>`,
 		)!;
@@ -255,6 +255,12 @@ describe("ACP registry icons", () => {
 		expect(art.body).toContain(`fill="transparent"`);
 		expect(art.body).toContain(`href="#local"`);
 		expect(sanitizeIconSvg("<html>not an svg</html>")).toBeUndefined();
+	});
+
+	it("does not recreate unsafe tags when removing overlapping markup", () => {
+		const art = sanitizeIconSvg("<svg><scrip<script></script>t>alert(2)</script><path d=\"M0 0\"/></svg>")!;
+		expect(art.body).not.toMatch(/<script\b/i);
+		expect(art.body).toContain(`<path d="M0 0"/>`);
 	});
 
 	it("loads each icon once, remembers failures, and repaints when one arrives", async () => {

@@ -378,12 +378,12 @@ export function sanitizeIconSvg(text: string): MarkArt | undefined {
 	do {
 		previous = body;
 		body = body
-			.replace(/<(script|style|foreignObject|image)\b[\s\S]*?<\/\1\s*>/gi, "")
-			.replace(/<(script|style|foreignObject|image)\b[^>]*\/>/gi, "");
+			.replace(/<(script|style|foreignObject|image)\b[\s\S]*?<\/\1\s*>/gi, " ")
+			.replace(/<(script|style|foreignObject|image)\b[^>]*\/>/gi, " ");
 	} while (body !== previous);
 	body = body
-		.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, "")
-		.replace(/\s(?:xlink:)?href\s*=\s*("(?!#)[^"]*"|'(?!#)[^']*')/gi, "")
+		.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, " ")
+		.replace(/\s(?:xlink:)?href\s*=\s*("(?!#)[^"]*"|'(?!#)[^']*')/gi, " ")
 		.replace(/\s(fill|stroke|stop-color|color)\s*=\s*("(?!\s*(?:none|transparent)\s*")[^"]*"|'(?!\s*(?:none|transparent)\s*')[^']*')/gi, ` $1="currentColor"`)
 		.replace(/(fill|stroke|stop-color|color)\s*:\s*(?!(?:none|transparent)\b)[^;"'\s][^;"']*/gi, "$1:currentColor");
 	return body.trim() ? { viewBox, body } : undefined;
