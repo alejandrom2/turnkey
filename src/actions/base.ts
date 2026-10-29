@@ -129,6 +129,10 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	readonly #reviewing = new Set<string>();
 	/** Subscriptions kept open while an instance shows, on the machines `watched` names. */
 	protected readonly watcher: MachineWatch | undefined = undefined;
+	/** The watch to keep open for this instance; shared keys build theirs from their definition. */
+	protected watching(): MachineWatch | undefined {
+		return this.watcher;
+	}
 	/** Whether a key shows its machine's connection problem in place of its own face. */
 	protected readonly showsConnection: boolean = true;
 
@@ -315,11 +319,11 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		this.forgetSent(ev.action.id);
 		deck.setVisible(ev.action.id, ev.action.device.id);
 		this.repaintAll();
-		this.watcher?.show(ev.action.id, () => this.watched(ev.action));
+		this.watching()?.show(ev.action.id, () => this.watched(ev.action));
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<T>): void {
-		this.watcher?.hide(ev.action.id);
+		this.watching()?.hide(ev.action.id);
 		this.#pressedAt.delete(ev.action.id);
 		this.#settings.delete(ev.action.id);
 		deck.board.pin(ev.action.id, undefined);
@@ -338,7 +342,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<T>): void {
 		this.#store(ev.action, ev.payload.settings);
 		this.repaintAll();
-		this.watcher?.sync();
+		this.watching()?.sync();
 	}
 
 	override onKeyDown(ev: KeyDownEvent<T>): void {

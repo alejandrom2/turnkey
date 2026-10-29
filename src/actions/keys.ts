@@ -1,7 +1,7 @@
 import { type Action, action, type KeyUpEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
-import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confirmed } from "../core/approvals.js";
+import { approveKey, type ApproveSettings, type ApproveState, denyKey, type DenyState } from "../core/keys/decision.js";
 import { requestFor as coreRequestFor } from "../core/keys/requests.js";
 import { type Availability, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
@@ -41,10 +41,8 @@ import {
 	MODE_GLYPH,
 	paintedGlyphArt,
 	renderControlKey,
-	renderDecisionKey,
 	renderInfoKey,
 	renderNoticeKey,
-	renderSkeletonKey,
 	renderThreadKey,
 } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
@@ -75,6 +73,7 @@ import {
 	ultrathinkArmed,
 	ultrathinkControl,
 } from "./base.js";
+import { SharedKey } from "./shared.js";
 import { DeckWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
@@ -687,74 +686,19 @@ export class PlanKey extends SettingKey<JsonObject> {
 
 export const requestFor = (thread: DeckThread): PendingRequest | undefined => coreRequestFor(deck, thread);
 
-/** What a request is about, in a line: the approval's summary, or the heading of one the deck can't answer. */
-const requestSummary = (request: PendingRequest): string =>
-	request.type === "approval" ? request.summary : request.type === "unsupported" ? request.heading : t("face.needsYou");
-
-type ApproveSettings = { approvalAuthority?: string; approvalConfirm?: string; machine?: string };
-
 /**
  * Answers the selected thread's approval as far as the key's authority allows: open it in T3 Code, or allow
  * once, for the session or always, with a hold unless set to tap. A request the deck can't answer opens.
  */
 @action({ UUID: `${ID}.approve` })
-export class Approve extends DeckAction<ApproveSettings> {
-	#state(action: Action<ApproveSettings>) {
-		const settings = this.settingsOf(action);
-		const authority = approvalAuthority(settings.approvalAuthority);
-		const { thread, gone, pinned } = this.target(action);
-		const check = availability("approve", { thread, gone, canOperate: authority === "open" || canOperate(thread) });
-		const request = check.available && thread !== undefined ? requestFor(thread) : undefined;
-		const press = request?.type === "approval" ? approvePress(authority, request.decisions) : undefined;
-		return { thread, pinned, check, request, press, confirm: approvalConfirm(settings.approvalConfirm), authority };
-	}
-
-	protected override async draw(action: Action<ApproveSettings>): Promise<void> {
-		if (!action.isKey()) return;
-		const { check, request, press, authority, confirm, pinned } = this.#state(action);
-		if (!check.available) return void (await this.setImage(action, renderDecisionKey({ kind: "approve", armed: false, caption: authorityLabel(authority), detail: check.reason, pinned })));
-		if (request === undefined) return void (await this.setImage(action, renderSkeletonKey()));
-		const label = press?.label ?? authorityLabel("open");
-		const caption = press?.kind === "respond" && confirm === "hold" ? t("strip.withHold", { label }) : label;
-		await this.setImage(action, renderDecisionKey({ kind: "approve", armed: true, caption, detail: requestSummary(request), pinned }));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<ApproveSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { thread, check, request, press, confirm } = this.#state(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		if (request === undefined) return void (await this.flash(ev.action, false, t("result.loading")));
-		if (press === undefined || press.kind === "open" || request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!)));
-		if (!confirmed(press, confirm, held)) return void (await this.flash(ev.action, false, t("result.holdToAllow")));
-		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, press.decision));
-	}
+export class Approve extends SharedKey<ApproveSettings & JsonObject, ApproveState> {
+	protected readonly definition = approveKey;
 }
 
 /** Declines the selected thread's approval; a request the deck can't answer opens in T3 Code instead. */
 @action({ UUID: `${ID}.deny` })
-export class Deny extends DeckAction {
-	#state(action: Action<JsonObject>) {
-		const { thread, gone, pinned } = this.target(action);
-		const check = availability("deny", { thread, gone, canOperate: canOperate(thread) });
-		return { thread, pinned, check, request: check.available && thread !== undefined ? requestFor(thread) : undefined };
-	}
-
-	protected override async draw(action: Action<JsonObject>): Promise<void> {
-		if (!action.isKey()) return;
-		const { check, request, pinned } = this.#state(action);
-		if (check.available && request === undefined) return void (await this.setImage(action, renderSkeletonKey()));
-		await this.setImage(action, renderDecisionKey({ kind: "deny", armed: check.available, caption: t("face.deny"), detail: request ? requestSummary(request) : check.available ? undefined : check.reason, pinned }));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { thread, check, request } = this.#state(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		if (request === undefined) return void (await this.flash(ev.action, false, t("result.loading")));
-		if (request.type !== "approval") return void (await this.run(ev.action, () => openThread(thread!)));
-		await this.run(ev.action, () => thread!.machine.respond(request.threadId, request.requestId, "decline"));
-	}
+export class Deny extends SharedKey<JsonObject, DenyState> {
+	protected readonly definition = denyKey;
 }
 
 /** A machine as Health weighs it: its connection, and its providers once connected. */
