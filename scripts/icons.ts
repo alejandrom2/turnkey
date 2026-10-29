@@ -128,6 +128,8 @@ const SYMBOLS: Record<string, GlyphName> = {
 	ModelsFolder: "model",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
+	EffortCommand: "effort",
+	AccessCommand: "permissions",
 	LimitsCommand: "gauge",
 	Limit1Command: "gauge",
 	Limit2Command: "gauge",

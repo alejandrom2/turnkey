@@ -85,6 +85,12 @@ function modelAt(place: string): { choice?: Extract<PowerChoice, { kind: "model"
 	return { choice: choice?.kind === "model" ? choice : undefined, current: state?.current?.key };
 }
 
+/** The open thread's current effort or access, as T3 Code names it, for a slot's label. */
+function currentLabel(control: "effort" | "permissions"): string | undefined {
+	const thread = selected();
+	return thread && powerOf(thread, control).current?.label;
+}
+
 const CHANGE: Record<DialControl, string> = { model: "change the model", effort: "change the effort", permissions: "change the access mode" };
 
 /** Applies the choice `choose` picks from the thread's model, effort or access, unless it is the current one. */
@@ -159,6 +165,7 @@ const keys = new Keys(
 		},
 		continue: {
 			face: () => continueFace(continueStep(selected())),
+			label: () => selected()?.title,
 			press: () => {
 				const thread = selected();
 				const step = continueStep(thread);
@@ -168,6 +175,7 @@ const keys = new Keys(
 		},
 		access: {
 			face: () => modeFace(selected()?.runtimeMode),
+			label: () => currentLabel("permissions"),
 			press: () => pick("permissions", nextChoice),
 			turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)),
 		},
@@ -183,6 +191,7 @@ const keys = new Keys(
 				const current = state.current;
 				return effortFace({ index, count: state.choices.length, color: tone?.text ?? COLORS.accent, ultrathink: current?.kind === "effort" && current.ultrathink });
 			},
+			label: () => currentLabel("effort"),
 			press: () => pick("effort", nextChoice),
 			turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)),
 		},
@@ -252,6 +261,7 @@ const keys = new Keys(
 		},
 		urgent: {
 			face: () => urgentFace(board.threads),
+			label: () => board.threads[0]?.title,
 			press: () => {
 				const top = board.threads[0];
 				if (top) open(top);
@@ -264,6 +274,7 @@ const keys = new Keys(
 		},
 		stop: {
 			face: () => stopFace(stopTarget(board.threads, board.selectedOn())?.machine.canOperate === true),
+			label: () => stopTarget(board.threads, board.selectedOn())?.title,
 			press: () => {
 				const target = stopTarget(board.threads, board.selectedOn());
 				if (target?.machine.canOperate) void target.machine.stopRun(target).catch(failed("stop the run"));

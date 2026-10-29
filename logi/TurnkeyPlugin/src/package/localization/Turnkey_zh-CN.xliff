@@ -12,6 +12,14 @@
   <file original="$Turnkey___main" source-language="en-US" target-language="zh-CN" datatype="plaintext">
     <body>
       <group id="@commands">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand" translate="yes">
+          <source>Next access</source>
+          <target>下一权限</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its next access mode.</source>
+          <target>将 T3 Code 中打开的对话切换到下一个权限模式。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>提交</target>
@@ -31,6 +39,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
           <source>Diagnose</source>
           <target>诊断</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand" translate="yes">
+          <source>Next effort</source>
+          <target>下一推理强度</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its model's next effort level.</source>
+          <target>将 T3 Code 中打开的对话切换到其模型的下一推理强度。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ExplainCommand" translate="yes">
           <source>Explain</source>
@@ -188,6 +204,10 @@
         <target>打开 Turnkey 的 T3 Code 操作。</target>
       </trans-unit>
       <group id="@groups">
+        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
+          <source>Model</source>
+          <target>模型</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
           <source>Prompts</source>
           <target>提示词</target>
@@ -199,10 +219,6 @@
         <trans-unit id="$Turnkey___GroupName___33CC4FB3447813B80005" translate="yes">
           <source>Usage</source>
           <target>用量</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
-          <source>Model</source>
-          <target>模型</target>
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
           <source>Settings</source>

@@ -20,6 +20,14 @@
   <file original="$Turnkey___main" source-language="en-US" target-language="" datatype="plaintext">
     <body>
       <group id="@commands">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand" translate="yes">
+          <source>Next access</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its next access mode.</source>
+          <target />
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target />
@@ -38,6 +46,14 @@
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
           <source>Diagnose</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand" translate="yes">
+          <source>Next effort</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its model's next effort level.</source>
           <target />
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ExplainCommand" translate="yes">
@@ -200,6 +216,10 @@
         <target />
       </trans-unit>
       <group id="@groups">
+        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
+          <source>Model</source>
+          <target />
+        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
           <source>Prompts</source>
           <target />
@@ -210,10 +230,6 @@
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___33CC4FB3447813B80005" translate="yes">
           <source>Usage</source>
-          <target />
-        </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
-          <source>Model</source>
           <target />
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">

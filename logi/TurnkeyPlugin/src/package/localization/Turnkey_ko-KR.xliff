@@ -12,6 +12,14 @@
   <file original="$Turnkey___main" source-language="en-US" target-language="ko-KR" datatype="plaintext">
     <body>
       <group id="@commands">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand" translate="yes">
+          <source>Next access</source>
+          <target>다음 권한</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its next access mode.</source>
+          <target>T3 Code에서 열려 있는 스레드를 다음 권한 모드로 바꿉니다.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>커밋</target>
@@ -31,6 +39,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
           <source>Diagnose</source>
           <target>진단</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand" translate="yes">
+          <source>Next effort</source>
+          <target>다음 강도</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its model's next effort level.</source>
+          <target>T3 Code에서 열려 있는 스레드를 모델의 다음 강도로 바꿉니다.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ExplainCommand" translate="yes">
           <source>Explain</source>
@@ -188,6 +204,10 @@
         <target>T3 Code용 Turnkey 동작을 엽니다.</target>
       </trans-unit>
       <group id="@groups">
+        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
+          <source>Model</source>
+          <target>모델</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
           <source>Prompts</source>
           <target>프롬프트</target>
@@ -199,10 +219,6 @@
         <trans-unit id="$Turnkey___GroupName___33CC4FB3447813B80005" translate="yes">
           <source>Usage</source>
           <target>사용량</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
-          <source>Model</source>
-          <target>모델</target>
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
           <source>Settings</source>

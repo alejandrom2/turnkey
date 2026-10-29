@@ -24,12 +24,12 @@ const MODIFIED = "2026-10-28T00:00:00Z";
 
 /** Native ring folders, as `[id, English name, symbol, actions]`: the ring's center button comes back out. */
 const FOLDERS = [
-	[THREADS_FOLDER, "Threads", "ThreadsFolder", ["WaitingCommand", "RunningCommand"]],
+	[THREADS_FOLDER, "Threads", "ThreadsFolder", ["WaitingCommand", "RunningCommand", "StopAllCommand"]],
 	[PROMPTS_FOLDER, "Prompts", "PromptsFolder", ["FixTestsCommand", "DiagnoseCommand", "ExplainCommand", "CommitCommand"]],
 	// Each slot is a provider, in the order T3 Code's Limits lists them.
 	[LIMITS_FOLDER, "Limits", "LimitsFolder", Array.from({ length: 5 }, (_, index) => `Limit${index + 1}Command`)],
-	// Each slot is a place in T3 Code's model picker, so the folder follows the user's favorites.
-	[MODELS_FOLDER, "Models", "ModelsFolder", Array.from({ length: 5 }, (_, index) => `Model${index + 1}Command`)],
+	// Each model slot is a place in T3 Code's model picker, so the folder follows the user's favorites.
+	[MODELS_FOLDER, "Models", "ModelsFolder", [...Array.from({ length: 5 }, (_, index) => `Model${index + 1}Command`), "EffortCommand", "AccessCommand"]],
 ] as const;
 const folderAction = (id: string) => `$@Generic___@ProfileAction___${id}`;
 

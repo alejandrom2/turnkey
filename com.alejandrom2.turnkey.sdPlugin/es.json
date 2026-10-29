@@ -1255,6 +1255,8 @@
 				"connected": "Conectado a {name}."
 			},
 			"actions": {
+				"nextEffort": { "name": "Siguiente esfuerzo", "description": "Pasa el hilo abierto en T3 Code al siguiente nivel de esfuerzo de su modelo." },
+				"nextAccess": { "name": "Siguiente acceso", "description": "Pasa el hilo abierto en T3 Code al siguiente modo de acceso." },
 				"limit": { "slot1": "Límite 1", "slot2": "Límite 2", "slot3": "Límite 3", "slot4": "Límite 4", "slot5": "Límite 5", "description": "Muestra cuánto se ha usado del límite más ajustado de un proveedor, en el orden de Límites de T3 Code. Elígelo para actualizar." },
 				"waiting": { "name": "Te esperan", "description": "Cuenta los hilos de T3 Code que te esperan. Elígelo para abrir el más urgente." },
 				"running": { "name": "Hilos en curso", "description": "Cuenta los hilos de T3 Code en curso. Elígelo para abrir el último que empezó." },

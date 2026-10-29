@@ -1255,6 +1255,8 @@
 				"connected": "{name}에 연결됨."
 			},
 			"actions": {
+				"nextEffort": { "name": "다음 강도", "description": "T3 Code에서 열려 있는 스레드를 모델의 다음 강도로 바꿉니다." },
+				"nextAccess": { "name": "다음 권한", "description": "T3 Code에서 열려 있는 스레드를 다음 권한 모드로 바꿉니다." },
 				"limit": { "slot1": "한도 1", "slot2": "한도 2", "slot3": "한도 3", "slot4": "한도 4", "slot5": "한도 5", "description": "공급자의 가장 빠듯한 한도를 얼마나 썼는지 T3 Code 한도 순서대로 보여줍니다. 선택하면 새로 고칩니다." },
 				"waiting": { "name": "응답 대기", "description": "응답을 기다리는 T3 Code 스레드 수를 보여줍니다. 선택하면 가장 급한 스레드를 엽니다." },
 				"running": { "name": "실행 중인 스레드", "description": "실행 중인 T3 Code 스레드 수를 보여줍니다. 선택하면 가장 최근에 시작된 스레드를 엽니다." },
