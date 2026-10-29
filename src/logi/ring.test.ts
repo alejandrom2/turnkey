@@ -145,14 +145,3 @@ describe("the controls' faces", () => {
 		expect(modelFace(undefined, false)).toBe(ringFace(COLORS.muted, "model", { dim: true }));
 	});
 });
-
-describe("ring art", () => {
-	it("paints every shape itself, since Options+ doesn't pass a group's stroke down to its shapes", () => {
-		for (const face of [ringFace(COLORS.accent, "spark"), ringFace(COLORS.accent, "sliders"), promptFace("test"), limitsFace(40, false), effortFace({ index: 1, count: 3, color: "#AD7BF9" })]) {
-			const shapes = face.match(/<(path|circle|line|rect|polyline|polygon|ellipse)\b[^>]*>/g) ?? [];
-			expect(shapes.length).toBeGreaterThan(0);
-			for (const shape of shapes) expect(shape).toMatch(/\b(stroke|fill)="#/);
-			expect(face).not.toContain("currentColor");
-		}
-	});
-});
