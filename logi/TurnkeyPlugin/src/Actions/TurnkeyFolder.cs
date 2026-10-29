@@ -4,6 +4,7 @@ namespace Loupedeck.TurnkeyPlugin
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
 
     // One Turnkey slot that opens Turnkey's actions, each with the live face its own action shows.
     public class TurnkeyFolder : PluginDynamicFolder
@@ -25,7 +26,8 @@ namespace Loupedeck.TurnkeyPlugin
 
         private readonly Dictionary<String, SidecarFaces> _faces = new Dictionary<String, SidecarFaces>();
 
-        private Boolean _active;
+        // Open on how many devices (the service pairs each Activate with a Deactivate): the last to close ends the keys' watches.
+        private Int32 _opens;
 
         // Every size the folder has drawn at, as the Ring and a keypad can both show it; its keys appear at each.
         private readonly ConcurrentDictionary<Int32, Boolean> _sizes = new ConcurrentDictionary<Int32, Boolean>();
@@ -55,7 +57,7 @@ namespace Loupedeck.TurnkeyPlugin
         // Folder keys exist for the sidecar only while the folder is open, so their watches stop when it closes.
         public override Boolean Activate()
         {
-            this._active = true;
+            Interlocked.Increment(ref this._opens);
             var sizes = this._sizes.IsEmpty ? new[] { 80 } : this._sizes.Keys.ToArray();
             foreach (var action in Actions.Where(IsFolderOnly))
             {
@@ -70,7 +72,17 @@ namespace Loupedeck.TurnkeyPlugin
 
         public override Boolean Deactivate()
         {
-            this._active = false;
+            var opens = Interlocked.Decrement(ref this._opens);
+            if (opens < 0)
+            {
+                Interlocked.CompareExchange(ref this._opens, 0, opens);
+            }
+
+            if (opens > 0)
+            {
+                return true;
+            }
+
             foreach (var action in Actions.Where(IsFolderOnly))
             {
                 this.Faces(action)?.Disappear(ParameterOf(action));
@@ -90,8 +102,12 @@ namespace Loupedeck.TurnkeyPlugin
             return true;
         }
 
+        // The Actions Ring never opens a folder as such (no Activate), so keys that only live while it's open stay off it.
         public override IEnumerable<String> GetButtonPressActionNames(DeviceType deviceType) =>
-            Actions.Select(this.CreateCommandName).Prepend(PluginDynamicFolder.NavigateUpActionName);
+            Actions.Where(action => !IsRingOnly(deviceType) || !IsFolderOnly(action)).Select(this.CreateCommandName).Prepend(PluginDynamicFolder.NavigateUpActionName);
+
+        // A mask that also covers the keypad keeps every key.
+        private static Boolean IsRingOnly(DeviceType deviceType) => deviceType.HasFlag(DeviceType.Loupedeck72) && !deviceType.HasFlag(DeviceType.Loupedeck70);
 
         public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
         {
@@ -104,7 +120,7 @@ namespace Loupedeck.TurnkeyPlugin
             // A closed folder asks for images too (Options+ lists it); those must not start its own keys' reads.
             var pixels = SidecarFaces.Pixels(imageSize);
             this._sizes.TryAdd(pixels, true);
-            return faces.Image(ParameterOf(actionParameter), pixels, this._active || !IsFolderOnly(actionParameter));
+            return faces.Image(ParameterOf(actionParameter), pixels, Volatile.Read(ref this._opens) > 0 || !IsFolderOnly(actionParameter));
         }
 
         public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) =>
@@ -119,7 +135,7 @@ namespace Loupedeck.TurnkeyPlugin
         }
 
         public override Boolean ProcessButtonEvent2(String actionParameter, DeviceButtonEvent2 buttonEvent) =>
-            this.Faces(actionParameter)?.Button(ParameterOf(actionParameter), buttonEvent) ?? true;
+            this.Faces(actionParameter)?.Button(ParameterOf(actionParameter), buttonEvent) ?? false;
 
         private SidecarFaces Faces(String action) => this._faces.TryGetValue(KindOf(action ?? ""), out var faces) ? faces : null;
 
