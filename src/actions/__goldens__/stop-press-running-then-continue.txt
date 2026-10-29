@@ -1,0 +1,6 @@
+send("thread Thread", "Continue.", "auto")
+stopRun("thread Thread")
+-- press 1 --
+setImage <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144"><rect width="144" height="144" fill="#111111"/><circle cx="72" cy="72" r="47.5" fill="#FFFFFF"/><g transform="translate(50 50) scale(1.8333333333333333)" fill="none" stroke="#111111" color="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor" stroke="none"/></g></svg>
+-- press 2 --
+setImage <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144"><rect width="144" height="144" fill="#111111"/><g opacity=".5"><circle cx="72" cy="72" r="47.5" fill="#FFFFFF"/><g transform="translate(50 50) scale(1.8333333333333333)" fill="none" stroke="#111111" color="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor" stroke="none"/></g></g></svg>

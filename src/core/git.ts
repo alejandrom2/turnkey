@@ -2,7 +2,10 @@
  * Git keys over T3 Code's source control RPCs: `git.runStackedAction` (commit, push, create a PR and their combos)
  * and `vcs.pull`, gated the way T3 Code's git menu gates them (packages/client-runtime/src/state/gitActions.ts).
  */
+import type { DeckThread } from "./board.js";
+import { setCapped } from "./capped.js";
 import { type MessageKey, type MessageParams, t } from "./i18n.js";
+import type { Machine } from "./t3/machine.js";
 import { READ_SCOPE, SOURCE_CONTROL_SCOPE } from "./t3/pairing.js";
 import { RpcError } from "./t3/rpc.js";
 
@@ -190,3 +193,55 @@ export type VcsRef = { name: string; current: boolean; isDefault: boolean };
  * the one checked out (BranchToolbarBranchSelector.tsx `worktreeBaseBranchCandidate`).
  */
 export const worktreeBase = (refs: readonly VcsRef[]): string | undefined => refs.find((ref) => ref.isDefault)?.name ?? refs.find((ref) => ref.current)?.name;
+
+/** The checkout a git key acts on: the selected thread's worktree, else its project's root. */
+export type GitTarget = { thread: DeckThread; machine: Machine; cwd: string | undefined };
+
+export const checkoutOf = (thread: DeckThread): GitTarget => ({ thread, machine: thread.machine, cwd: gitCwd(thread, thread.machine.project(thread.projectId)?.workspaceRoot) });
+
+/**
+ * Each checkout's last `vcs.refreshStatus`, shared by every git key: read when a key first shows a checkout, again
+ * when its thread's turn starts or ends, and on every press. No polling. Always with the remote part: a local-only
+ * read zero-fills upstream, ahead and behind until something fetched them, which would dim Push and Pull wrongly.
+ */
+export class GitStatuses {
+	readonly #entries = new Map<string, { status?: VcsStatus; stamp: string; loading: boolean }>();
+	readonly #repaint: () => void;
+
+	constructor(repaint: () => void) {
+		this.#repaint = repaint;
+	}
+
+	get(target: GitTarget): VcsStatus | undefined {
+		if (target.cwd === undefined) return undefined;
+		const key = `${target.machine.url}|${target.cwd}`;
+		const stamp = `${target.thread.deck}|${target.thread.active}`;
+		const entry = this.#entries.get(key);
+		if (entry === undefined || (entry.stamp !== stamp && !entry.loading)) {
+			setCapped(this.#entries, key, { status: entry?.status, stamp, loading: true });
+			void this.refresh(target).catch(() => undefined);
+		}
+		return entry?.status;
+	}
+
+	/** The thread's checkout status as the git keys last read it, read again when its turn moved. */
+	of(thread: DeckThread): VcsStatus | undefined {
+		return this.get(checkoutOf(thread));
+	}
+
+	async refresh(target: GitTarget): Promise<VcsStatus> {
+		const key = `${target.machine.url}|${target.cwd}`;
+		const stamp = `${target.thread.deck}|${target.thread.active}`;
+		try {
+			const status = await readStatus(target.machine, target.cwd!, true);
+			this.#entries.set(key, { status, stamp, loading: false });
+			return status;
+		} catch (error) {
+			const previous = this.#entries.get(key);
+			this.#entries.set(key, { status: previous?.status, stamp, loading: false });
+			throw error;
+		} finally {
+			this.#repaint();
+		}
+	}
+}

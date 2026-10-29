@@ -136,6 +136,10 @@ export function titleSeed(text: string): string {
 	return line.length > 80 ? `${line.slice(0, 79).trimEnd()}…` : line || "New thread";
 }
 
+/** A machine's name: its label once connected, else the pairing's, else its host. */
+export const machineName = (machine: Machine): string =>
+	machine.state.kind === "ready" ? machine.state.label : machine.credential?.label || new URL(machine.url).host;
+
 /** One T3 Code environment, reached through its client API: one socket, one shell subscription. */
 export class Machine {
 	state: MachineState = { kind: "signed-out" };

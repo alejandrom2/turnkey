@@ -1,0 +1,3 @@
+mergeBack("thread Thread", "parent")
+spawn open t3://threads/env/parent
+select ["env/parent"]

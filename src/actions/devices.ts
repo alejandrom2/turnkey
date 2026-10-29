@@ -14,7 +14,7 @@ import { deck } from "../deck.js";
 import { held, pressWhileDisconnected, readyMachines } from "./base.js";
 import { threadNeeds } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
-import { MachineWatch } from "./watch.js";
+import { DeckWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -44,7 +44,7 @@ class DeviceHubs {
 	/** Machines whose devices couldn't be read (an older T3 Code, a hub error) since their last state. */
 	readonly #failed = new Set<string>();
 	/** Only the hubs of the machines visible dials show are watched (and listing may start one). */
-	readonly watch = new MachineWatch({
+	readonly watch = new DeckWatch({
 		// A new connection may be a restarted T3 Code, whose revisions start over: drop the old state first.
 		open: (machine) =>
 			machine.live(

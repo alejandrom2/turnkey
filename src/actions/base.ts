@@ -11,23 +11,24 @@ import streamDeck, {
 import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { HOLD_CONFIRM_MS } from "../core/approvals.js";
+import { LONG_PRESS_MS } from "../core/keys/key.js";
+import { speedPaint as coreSpeedPaint } from "../core/keys/power.js";
 import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openThread as coreOpenThread } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
 import { INFOBAR } from "../core/infobar.js";
-import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
+import { type CatalogModel, driverMark, driverName, effortValues, favoriteModels, findModel, pickableModels } from "../core/models.js";
 import { powerArt, type UltrathinkControl } from "../core/power.js";
 import {
 	COLORS,
-	type GlyphName,
 	type MarkPainter,
 	maxEffortStyle,
 	type Paint,
-	providerGradient,
 	renderNoticeKey,
 	renderResultKey,
+	type ReviewCard,
 	renderReviewKey,
 	renderSkeletonKey,
 	stripCanvas,
@@ -37,15 +38,15 @@ import type { Need } from "../core/requirements.js";
 import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
 import { pinnedKey, pinnedName, resolveTarget, type Target, type TargetSettings } from "../core/target.js";
-import type { Machine, SendMode } from "../core/t3/machine.js";
+import { type Machine, machineName, type SendMode } from "../core/t3/machine.js";
 import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { ultrathinkControl as coreUltrathinkControl } from "../core/ultrathink.js";
 import { deck } from "../deck.js";
 import { exportDiagnostics, openLogsFolder } from "../diagnostics.js";
-import type { MachineWatch } from "./watch.js";
+import type { MachineWatch } from "../core/watch.js";
 
-export const LONG_PRESS_MS = 500;
+export { LONG_PRESS_MS };
 /** At most one animation write per instance in this long. */
 export const FRAME_GAP_MS = 100;
 const logger = streamDeck.logger.createScope("actions");
@@ -62,21 +63,12 @@ export const machinesOn = (url: string | undefined): Machine[] => deck.machines.
 export const readyMachines = (url: string | undefined): Machine[] =>
 	machinesOn(url).filter((machine) => machine.state.kind === "ready" && machine.environmentId !== undefined);
 
-/** A machine's name: its label once connected, else the pairing's, else its host. */
-export const machineName = (machine: Machine): string =>
-	machine.state.kind === "ready" ? machine.state.label : machine.credential?.label || new URL(machine.url).host;
+export { machineName };
 
 /** A model's provider mark, as the Model key draws it. */
 export const markArt = (model: CatalogModel): MarkPainter => powerArt({ kind: "mark", model }, { acpIcons: deck.acpIcons });
 
-/** A provider's name from its driver alone (`codex`, `claudeAgent`, …). */
-export const driverName = (driver: string): string => providerDisplayName({ instanceId: driver, driver });
-
-/** A provider's mark from its driver alone. */
-export const driverMark =
-	(driver: string): MarkPainter =>
-	(x, y, size) =>
-		providerMark({ driver, providerName: driverName(driver), accentColor: undefined, iconUrl: undefined, badge: false }, x, y, size);
+export { driverMark, driverName };
 
 type Choice = { label: string; value: string };
 
@@ -95,8 +87,7 @@ type Placement = { device: string; position?: { row: number; column: number } };
 const reviewEnded = new Map<string, () => void>();
 const reviews = new Reviews((owner) => reviewEnded.get(owner)?.());
 
-/** What a review card shows: what would happen, to which thread, with what, and how to go ahead. */
-export type ReviewCard = { glyph: GlyphName; verb: string; target: string; body?: string; footer: string };
+export type { ReviewCard };
 
 /**
  * A press that sends or changes something, for the Confirm setting: `scope` names the target and content (any
@@ -129,6 +120,10 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	readonly #reviewing = new Set<string>();
 	/** Subscriptions kept open while an instance shows, on the machines `watched` names. */
 	protected readonly watcher: MachineWatch | undefined = undefined;
+	/** The watch to keep open for this instance; shared keys build theirs from their definition. */
+	protected watching(): MachineWatch | undefined {
+		return this.watcher;
+	}
 	/** Whether a key shows its machine's connection problem in place of its own face. */
 	protected readonly showsConnection: boolean = true;
 
@@ -315,11 +310,11 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 		this.forgetSent(ev.action.id);
 		deck.setVisible(ev.action.id, ev.action.device.id);
 		this.repaintAll();
-		this.watcher?.show(ev.action.id, () => this.watched(ev.action));
+		this.watching()?.show(ev.action.id, () => this.watched(ev.action));
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<T>): void {
-		this.watcher?.hide(ev.action.id);
+		this.watching()?.hide(ev.action.id);
 		this.#pressedAt.delete(ev.action.id);
 		this.#settings.delete(ev.action.id);
 		deck.board.pin(ev.action.id, undefined);
@@ -338,7 +333,7 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<T>): void {
 		this.#store(ev.action, ev.payload.settings);
 		this.repaintAll();
-		this.watcher?.sync();
+		this.watching()?.sync();
 	}
 
 	override onKeyDown(ev: KeyDownEvent<T>): void {
@@ -599,11 +594,8 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 
 export const colorStyle = () => maxEffortStyle(deck.appearance.maxEffort);
 
-/** Fast's paint: the model's gradient (or its color), the accent for white marks unless gradients are on. */
-export const speedPaint = (model: CatalogModel | undefined): Paint => {
-	const color = model && modelColor(model);
-	return colorStyle() === "gradient" ? { gradient: providerGradient(color ?? COLORS.accent) } : (color ?? COLORS.accent);
-};
+/** Fast's paint, as the Speed key draws it. */
+export const speedPaint = (model: CatalogModel | undefined): Paint => coreSpeedPaint(model, colorStyle());
 
 /** Sends `text` to an existing thread, with T3 Code's Ultrathink prefix while the deck has it armed there. */
 export function sendToThread(thread: DeckThread, text: string, mode: SendMode): Promise<void> {

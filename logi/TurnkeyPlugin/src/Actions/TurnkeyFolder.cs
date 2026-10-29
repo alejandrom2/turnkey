@@ -1,6 +1,7 @@
 namespace Loupedeck.TurnkeyPlugin
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -12,10 +13,23 @@ namespace Loupedeck.TurnkeyPlugin
         {
             "urgent:", "status:", "continue:", "stop:", "stopAll:",
             "prompt:test", "prompt:fix", "prompt:explain", "prompt:commit",
-            "limits:", "settings:",
+            "limits:", "settings:", "activity:",
+            "git:commit", "git:push", "git:create_pr", "git:pull",
+            "pr:pr", "pr:fix", "pr:explain", "pr:ask", "pr:guide",
+            "health:", "open:preview",
         };
 
+        // Only these keys live in this folder alone, so only they follow it open and closed: the rest share their id with a
+        // top-level key, whose own visibility must not be cut short.
+        private static Boolean IsFolderOnly(String action) => action.StartsWith("git:") || action.StartsWith("pr:") || action == "health:" || action == "open:preview";
+
         private readonly Dictionary<String, SidecarFaces> _faces = new Dictionary<String, SidecarFaces>();
+
+        // Last Activate or Deactivate wins: the service can drop an open folder without a Deactivate (an application change), so a count would drift.
+        private volatile Boolean _open;
+
+        // Every size the folder has drawn at, as the Ring and a keypad can both show it; its keys appear at each.
+        private readonly ConcurrentDictionary<Int32, Boolean> _sizes = new ConcurrentDictionary<Int32, Boolean>();
 
         public TurnkeyFolder()
         {
@@ -39,6 +53,33 @@ namespace Loupedeck.TurnkeyPlugin
             return true;
         }
 
+        // Folder keys exist for the sidecar only while the folder is open, so their watches stop when it closes.
+        public override Boolean Activate()
+        {
+            this._open = true;
+            var sizes = this._sizes.IsEmpty ? new[] { 80 } : this._sizes.Keys.ToArray();
+            foreach (var action in Actions.Where(IsFolderOnly))
+            {
+                foreach (var size in sizes)
+                {
+                    this.Faces(action)?.Appear(ParameterOf(action), size);
+                }
+            }
+
+            return true;
+        }
+
+        public override Boolean Deactivate()
+        {
+            this._open = false;
+            foreach (var action in Actions.Where(IsFolderOnly))
+            {
+                this.Faces(action)?.Disappear(ParameterOf(action));
+            }
+
+            return true;
+        }
+
         public override Boolean Unload()
         {
             foreach (var faces in this._faces.Values)
@@ -50,19 +91,51 @@ namespace Loupedeck.TurnkeyPlugin
             return true;
         }
 
+        // The Actions Ring never opens a folder as such (no Activate), so keys that only live while it's open stay off it.
         public override IEnumerable<String> GetButtonPressActionNames(DeviceType deviceType) =>
-            Actions.Select(this.CreateCommandName).Prepend(PluginDynamicFolder.NavigateUpActionName);
+            Actions.Where(action => !IsRingOnly(deviceType) || !IsFolderOnly(action)).Select(this.CreateCommandName).Prepend(PluginDynamicFolder.NavigateUpActionName);
 
-        public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize) =>
-            this._faces.TryGetValue(KindOf(actionParameter), out var faces) ? faces.Image(ParameterOf(actionParameter), imageSize) : null;
+        // A mask that also covers the keypad keeps every key.
+        private static Boolean IsRingOnly(DeviceType deviceType) => deviceType.HasFlag(DeviceType.Loupedeck72) && !deviceType.HasFlag(DeviceType.Loupedeck70);
+
+        public override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
+        {
+            var faces = this.Faces(actionParameter);
+            if (faces == null)
+            {
+                return null;
+            }
+
+            // A closed folder asks for images too (Options+ lists it); those must not start its own keys' reads.
+            var pixels = SidecarFaces.Pixels(imageSize);
+            this._sizes.TryAdd(pixels, true);
+            return faces.Image(ParameterOf(actionParameter), pixels, this._open || !IsFolderOnly(actionParameter));
+        }
+
+        public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) =>
+            this.Faces(actionParameter)?.Name(ParameterOf(actionParameter)) ?? base.GetCommandDisplayName(actionParameter, imageSize);
 
         public override void RunCommand(String actionParameter)
         {
+            if (this.IsClosedFolderOnly(actionParameter))
+            {
+                return;
+            }
+
             if (this._faces.TryGetValue(KindOf(actionParameter), out var faces))
             {
-                faces.Press(ParameterOf(actionParameter));
+                faces.Run(ParameterOf(actionParameter));
             }
         }
+
+        // Swallowed, so the SDK doesn't run it either.
+        public override Boolean ProcessButtonEvent2(String actionParameter, DeviceButtonEvent2 buttonEvent) =>
+            this.IsClosedFolderOnly(actionParameter) || (this.Faces(actionParameter)?.Button(ParameterOf(actionParameter), buttonEvent) ?? false);
+
+        // A folder-only key pressed with the folder closed (the Ring never opens it) has never appeared, so its face was blank: it mustn't act blind.
+        private Boolean IsClosedFolderOnly(String action) => action != null && IsFolderOnly(action) && !this._open;
+
+        private SidecarFaces Faces(String action) => this._faces.TryGetValue(KindOf(action ?? ""), out var faces) ? faces : null;
 
         private static String KindOf(String action) => action.Split(':')[0];
 

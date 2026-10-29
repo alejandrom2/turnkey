@@ -1,0 +1,4 @@
+call("pullRequests.summary", {"projectId":"project","repository":"acme/app","number":7})
+call("pullRequests.checks", {"projectId":"project","repository":"acme/app","number":7})
+call("pullRequests.activity", {"projectId":"project","repository":"acme/app","number":7})
+openUrl https://github.com/acme/app/pull/7

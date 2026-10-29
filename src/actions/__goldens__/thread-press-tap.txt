@@ -1,0 +1,2 @@
+spawn open t3://threads/env/open-me
+select ["env/open-me"]

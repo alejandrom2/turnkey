@@ -27,7 +27,7 @@ namespace Loupedeck.TurnkeyPlugin
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff) => this._faces.Turn(actionParameter, diff);
 
-        protected override void RunCommand(String actionParameter) => this._faces.Press(actionParameter);
+        protected override void RunCommand(String actionParameter) => this._faces.Run(actionParameter);
 
         protected override BitmapImage GetAdjustmentImage(String actionParameter, PluginImageSize imageSize) => this._faces.Image(actionParameter, imageSize);
 

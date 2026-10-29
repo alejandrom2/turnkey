@@ -16,7 +16,7 @@ describe("Keys", () => {
 	it("paints a key when it appears", () => {
 		const { subject, sent } = keys();
 		subject.handle({ type: "appear", action: "counter:", size: 80 });
-		expect(sent).toEqual([{ type: "image", action: "counter:", svg: "a@0" }]);
+		expect(sent).toEqual([{ type: "image", action: "counter:", size: 80, svg: "a@0" }]);
 	});
 
 	it("doesn't resend an unchanged face when the key appears again, so Logi's redraw can't loop", () => {
@@ -30,7 +30,7 @@ describe("Keys", () => {
 		const { subject, sent } = keys();
 		subject.handle({ type: "appear", action: "counter:", size: 80 });
 		subject.handle({ type: "press", action: "counter:" });
-		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", svg: "a@1" });
+		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", size: 80, svg: "a@1" });
 	});
 
 	it("sends nothing when the face didn't change", () => {
@@ -46,7 +46,7 @@ describe("Keys", () => {
 		subject.handle({ type: "appear", action: "counter:", size: 80 });
 		state.shown = "b";
 		subject.repaint();
-		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", svg: "b@0" });
+		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", size: 80, svg: "b@0" });
 	});
 
 	it("forgets a key that disappeared", () => {
@@ -66,7 +66,7 @@ describe("Keys", () => {
 		subject.handle({ type: "press", action: "urgent:" });
 		subject.handle({ type: "press", action: "urgent:" });
 		expect(pressed).toEqual([0, 0]);
-		expect(sent).toEqual([{ type: "image", action: "urgent:", svg: "face" }]);
+		expect(sent).toEqual([{ type: "image", action: "urgent:", size: 80, svg: "face" }]);
 	});
 
 	it("routes a scroll to its kind and repaints", () => {
@@ -78,7 +78,7 @@ describe("Keys", () => {
 		subject.handle({ type: "turn", action: "effort:", ticks: 2 });
 		subject.handle({ type: "turn", action: "nope:", ticks: 1 });
 		expect(turned).toEqual([2]);
-		expect(sent.at(-1)).toEqual({ type: "image", action: "effort:", svg: "level 2" });
+		expect(sent.at(-1)).toEqual({ type: "image", action: "effort:", size: 80, svg: "level 2" });
 	});
 
 	it("hands a kind its action's parameter", () => {
@@ -87,7 +87,7 @@ describe("Keys", () => {
 		const subject = new Keys({ prompt: { face: (_index, parameter) => `face ${parameter}`, press: (_index, parameter) => void pressed.push(parameter) } }, (message) => sent.push(message));
 		subject.handle({ type: "appear", action: "prompt:test", size: 80 });
 		subject.handle({ type: "press", action: "prompt:test" });
-		expect(sent).toEqual([{ type: "image", action: "prompt:test", svg: "face test" }]);
+		expect(sent).toEqual([{ type: "image", action: "prompt:test", size: 80, svg: "face test" }]);
 		expect(pressed).toEqual(["test"]);
 	});
 
@@ -99,8 +99,8 @@ describe("Keys", () => {
 		model = "Sonnet 4.5";
 		subject.repaint();
 		expect(sent).toEqual([
-			{ type: "image", action: "model:1", svg: "mark", label: "Opus 4.5" },
-			{ type: "image", action: "model:1", svg: "mark", label: "Sonnet 4.5" },
+			{ type: "image", action: "model:1", size: 80, svg: "mark", label: "Opus 4.5" },
+			{ type: "image", action: "model:1", size: 80, svg: "mark", label: "Sonnet 4.5" },
 		]);
 	});
 
@@ -134,7 +134,7 @@ describe("Keys", () => {
 		state.shown = "b";
 		time = STALE_MS + 1;
 		subject.repaint();
-		expect(sent).toEqual([{ type: "image", action: "counter:fresh", svg: "b" }]);
+		expect(sent).toEqual([{ type: "image", action: "counter:fresh", size: 80, svg: "b" }]);
 	});
 
 	it("a key that appears again after being forgotten paints again", () => {
@@ -146,8 +146,8 @@ describe("Keys", () => {
 		subject.repaint();
 		subject.handle({ type: "appear", action: "counter:", size: 80 });
 		expect(sent).toEqual([
-			{ type: "image", action: "counter:", svg: "a" },
-			{ type: "image", action: "counter:", svg: "a" },
+			{ type: "image", action: "counter:", size: 80, svg: "a" },
+			{ type: "image", action: "counter:", size: 80, svg: "a" },
 		]);
 	});
 
@@ -162,7 +162,7 @@ describe("Keys", () => {
 		subject.repaint();
 		subject.handle({ type: "press", action: "counter:" });
 		expect(pressed).toEqual([0]);
-		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", svg: "@1" });
+		expect(sent.at(-1)).toEqual({ type: "image", action: "counter:", size: 80, svg: "@1" });
 		// A turn counts as seen too, so the key keeps its place past a day from its revival.
 		time = STALE_MS * 2;
 		subject.handle({ type: "turn", action: "counter:", ticks: 1 });
@@ -170,5 +170,97 @@ describe("Keys", () => {
 		subject.repaint();
 		subject.handle({ type: "press", action: "counter:" });
 		expect(pressed).toEqual([0, 1]);
+	});
+	it("hands a kind the size its key appeared at, 80 until one did", () => {
+		const sizes: number[] = [];
+		const subject = new Keys({ sized: { face: (_index, _parameter, size) => (sizes.push(size), `${size}`) } }, () => undefined);
+		subject.handle({ type: "press", action: "sized:" });
+		subject.handle({ type: "appear", action: "sized:", size: 116 });
+		subject.handle({ type: "appear", action: "sized:other", size: 60 });
+		expect(sizes).toEqual([80, 116, 60]);
+	});
+
+	it("keeps a face per size, so the Ring's glyph and a keypad's tile of one action never overwrite each other", () => {
+		const sent: SidecarMessage[] = [];
+		const state = { shown: "a" };
+		const stop: KeyKind = { face: (_index, _parameter, size) => (size <= 80 ? `glyph ${state.shown}` : `tile ${state.shown}`), press: () => undefined };
+		const subject = new Keys({ stop }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "stop:", size: 80 });
+		subject.handle({ type: "appear", action: "stop:", size: 116 });
+		// Each asks again on every show; neither repaints the other.
+		subject.handle({ type: "appear", action: "stop:", size: 80 });
+		subject.handle({ type: "appear", action: "stop:", size: 116 });
+		expect(sent).toEqual([
+			{ type: "image", action: "stop:", size: 80, svg: "glyph a" },
+			{ type: "image", action: "stop:", size: 116, svg: "tile a" },
+		]);
+		state.shown = "b";
+		subject.repaint();
+		expect(sent.slice(2)).toEqual([
+			{ type: "image", action: "stop:", size: 80, svg: "glyph b" },
+			{ type: "image", action: "stop:", size: 116, svg: "tile b" },
+		]);
+	});
+
+	it("acts once on a press of an action shown at two sizes, and forgets both when it hides", () => {
+		const pressed: number[] = [];
+		const calls: string[] = [];
+		const sent: SidecarMessage[] = [];
+		const counter: KeyKind = { face: (index, _parameter, size) => `${size}@${index}`, press: (index) => (pressed.push(index), index + 1), disappear: (action) => void calls.push(action) };
+		const subject = new Keys({ counter }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "counter:", size: 80 });
+		subject.handle({ type: "appear", action: "counter:", size: 116 });
+		subject.handle({ type: "press", action: "counter:", heldMs: 700 });
+		expect(pressed).toEqual([0]);
+		expect(sent.slice(2)).toEqual([
+			{ type: "image", action: "counter:", size: 80, svg: "80@1" },
+			{ type: "image", action: "counter:", size: 116, svg: "116@1" },
+		]);
+		subject.handle({ type: "disappear", action: "counter:" });
+		expect(calls).toEqual(["counter:"]);
+		sent.length = 0;
+		subject.repaint();
+		expect(sent).toEqual([]);
+	});
+
+	it("passes a press's hold time, and none for a Ring click", () => {
+		const held: (number | undefined)[] = [];
+		const subject = new Keys({ held: { face: () => "face", press: (_index, _parameter, heldMs) => void held.push(heldMs) } }, () => undefined);
+		subject.handle({ type: "press", action: "held:", heldMs: 650 });
+		subject.handle({ type: "press", action: "held:" });
+		expect(held).toEqual([650, undefined]);
+	});
+
+	it("sends nothing for a key its kind has no face for", () => {
+		const sent: SidecarMessage[] = [];
+		const subject = new Keys({ none: { face: () => undefined } }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "none:nope", size: 80 });
+		subject.repaint();
+		expect(sent).toEqual([]);
+	});
+
+	it("tells a kind its key was hidden, once, and not for a key it never saw", () => {
+		const calls: string[] = [];
+		const watched: KeyKind = { face: () => "x", appear: (action) => calls.push(`on ${action}`), disappear: (action) => calls.push(`off ${action}`) };
+		const subject = new Keys({ watched }, () => undefined);
+		subject.handle({ type: "disappear", action: "watched:a" });
+		subject.handle({ type: "appear", action: "watched:a", size: 80 });
+		subject.handle({ type: "disappear", action: "watched:a" });
+		subject.handle({ type: "disappear", action: "watched:a" });
+		expect(calls).toEqual(["on watched:a", "off watched:a"]);
+	});
+
+	it("sends a kind's own name with its face, and again when the name changes", () => {
+		const sent: SidecarMessage[] = [];
+		let name = "Health";
+		const named: KeyKind = { face: () => "x", name: () => name };
+		const subject = new Keys({ named }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "named:", size: 80 });
+		name = "Zustand";
+		subject.repaint();
+		expect(sent).toEqual([
+			{ type: "image", action: "named:", size: 80, svg: "x", name: "Health" },
+			{ type: "image", action: "named:", size: 80, svg: "x", name: "Zustand" },
+		]);
 	});
 });

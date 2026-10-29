@@ -3,26 +3,20 @@ import { createInterface } from "node:readline";
 
 import { ThreadBoard } from "../core/board.js";
 import { openExternal, openThread } from "../core/commands.js";
-import { threadCounts } from "../core/infobar.js";
-import { COLORS } from "../core/render.js";
-import { findModel, modelColor } from "../core/models.js";
-import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
-import { QUICK_PROMPTS } from "../core/prompts.js";
-import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
-import type { LimitPool, LimitPoolWindow } from "../core/usage/limits.js";
 import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
 import { Machines } from "../core/t3/machines.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
+import { configWatch } from "./configwatch.js";
 import { HapticCues } from "./haptics.js";
+import { sidecarKinds } from "./kinds.js";
 import { Keys } from "./keys.js";
 import { useLanguage } from "./language.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
-import { continueStep, nextChoice } from "./controls.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
+import { logiRuntime } from "./runtime.js";
 import { keptMachines, machineRows } from "./rows.js";
 import { pluginStatus, waitsForSync } from "./status.js";
 import { FileCredentials } from "./store.js";
@@ -57,228 +51,35 @@ const machines = new Machines(
 const board = new ThreadBoard(() => machines.all);
 const failed = (what: string) => (error: unknown) => log("warn", `Couldn't ${what}: ${error instanceof Error ? error.message : String(error)}`);
 
-/** The thread open in T3 Code, which the prompt, Continue, access and effort actions act on, when its machine lets them. */
-const selected = () => {
-	const thread = board.selectedOn();
-	return thread?.machine.canOperate ? thread : undefined;
-};
 const selectThread = (key: string, url: string) => board.select(key, url).catch(failed("select the thread"));
 const open = (thread: Parameters<typeof openThread>[0]) => void openThread(thread, selectThread).catch(failed("open the thread"));
-const isPrompt = (name: string): name is keyof typeof PROMPT_GLYPHS => Object.hasOwn(PROMPT_GLYPHS, name);
-
-type Thread = NonNullable<ReturnType<typeof selected>>;
-
-// Ultrathink only prefixes prompts Turnkey sends, and on Logitech you type yours in T3 Code, so it is never offered.
-const NO_ULTRATHINK: UltrathinkControl = { armed: false, arm: () => undefined, disarm: () => undefined };
-const modelOf = (thread: Thread) => findModel(thread.machine.modelConfig, thread.model);
-const sendPrompt = (thread: Thread, text: string) => thread.machine.send(thread, text, "auto");
-
-/** The model, effort or access choices for `thread`, without prompt-only efforts. */
-const powerOf = (thread: Thread, control: DialControl) => powerState(control, thread.machine.modelConfig, thread, false, { promptInjected: false });
-
-/** The model at `place`, from 1, in the open thread's picker, and the thread's own model's key. */
-function modelAt(place: string): { choice?: Extract<PowerChoice, { kind: "model" }>; current?: string } {
-	const thread = selected();
-	const state = thread && powerOf(thread, "model");
-	const choice = state?.choices[Number(place) - 1];
-	return { choice: choice?.kind === "model" ? choice : undefined, current: state?.current?.key };
-}
-
-/** The open thread's current effort or access, as T3 Code names it, for a slot's label. */
-function currentLabel(control: "effort" | "permissions"): string | undefined {
-	const thread = selected();
-	return thread && powerOf(thread, control).current?.label;
-}
-
-const CHANGE: Record<DialControl, string> = { model: "change the model", effort: "change the effort", permissions: "change the access mode" };
-
-/** Applies the choice `choose` picks from the thread's model, effort or access, unless it is the current one. */
-function pick(control: DialControl, choose: (state: PowerState) => PowerChoice | undefined): void {
-	const thread = selected();
-	if (thread === undefined) return;
-	const state = powerOf(thread, control);
-	const choice = choose(state);
-	if (choice === undefined || choice.key === state.current?.key) return;
-	void applyChoice(thread, choice, NO_ULTRATHINK)?.().catch(failed(CHANGE[control]));
-}
 
 /**
  * Limits keep each machine on T3 Code's config subscription once a Limits slot has shown, and refresh when the ring
  * shows them, through T3 Code's five-minute throttle; nothing polls while the ring is closed.
  */
 const refresher = new LimitsRefresher();
-const watchingConfig = new Set<string>();
 const ready = () => machines.all.filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
-/** Keeps each machine's config live (limits, models and favorites) once a slot that shows it has appeared. */
-function watchConfigs(): void {
-	for (const each of ready()) {
-		// shortcut: held until the sidecar exits, since Logi never says a slot is hidden; release it if Logi adds that.
-		if (!watchingConfig.has(each.url)) {
-			watchingConfig.add(each.url);
-			each.watchConfig();
-		}
-	}
-}
-function showLimits(): void {
-	watchConfigs();
+// shortcut: Limits and the top-level config keys never report hiding, so one that showed holds the config until the sidecar exits; the Turnkey folder's own keys (git, pr, health, open preview) release theirs.
+const { watch: watchConfigs, unwatch: unwatchConfigs } = configWatch(ready);
+/** Refreshes the limits for the Limits slot `action`, which keeps the config live while it shows; a press (no action) only refreshes. */
+function showLimits(action?: string): void {
+	if (action !== undefined) watchConfigs(action);
 	for (const each of ready()) void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 }
-type Limit = { percent: number; stale: boolean; driver: string; window: string };
-
-/** A pool's limit as a slot shows it: its tightest window, used. */
-function limitOf({ pool, window }: { pool: LimitPool; window: LimitPoolWindow }, now: number): Limit {
-	const gauge = limitGauge(pool, window, now, "used");
-	return { percent: gauge.percent, stale: gauge.stale, driver: pool.driver, window: gauge.label };
-}
-function tightestLimit(): Limit | undefined {
-	const now = Date.now();
-	const tightest = tightestWindow(machineLimitPools(machines.all, now));
-	return tightest && limitOf(tightest, now);
-}
-/** The Limits folder's slots: the provider at `place`, from 1, in the order T3 Code's Limits lists them. */
-function limitAt(place: string): Limit | undefined {
-	const now = Date.now();
-	const pool = machineLimitPools(machines.all, now)[Number(place) - 1];
-	const tightest = pool && tightestWindow([pool]);
-	return tightest && limitOf(tightest, now);
-}
-
-const operable = () => board.threads.filter((thread) => thread.deck === "running" && thread.machine.canOperate);
-
 const keys = new Keys(
-	{
-		prompt: {
-			face: (_index, name) => (isPrompt(name) ? promptFace(name) : ringFace(COLORS.muted, "chat", { dim: true })),
-			press: (_index, name) => {
-				const thread = selected();
-				if (thread && isPrompt(name)) void sendPrompt(thread, QUICK_PROMPTS[name].text).catch(failed("send the prompt"));
-			},
-		},
-		// A prompt written in the action's editor travels as its parameter, so each placed copy is its own key.
-		send: {
-			face: (_index, text) => customPromptFace(text.trim() !== ""),
-			press: (_index, text) => {
-				const thread = selected();
-				if (thread && text.trim()) void sendPrompt(thread, text.trim()).catch(failed("send the prompt"));
-			},
-		},
-		continue: {
-			face: () => continueFace(continueStep(selected())),
-			label: () => selected()?.title,
-			press: () => {
-				const thread = selected();
-				const step = continueStep(thread);
-				if (thread && step === "open") open(thread);
-				if (thread && step === "send") void sendPrompt(thread, QUICK_PROMPTS.continue.text).catch(failed("continue the thread"));
-			},
-		},
-		access: {
-			face: () => modeFace(selected()?.runtimeMode),
-			label: () => currentLabel("permissions"),
-			press: () => pick("permissions", nextChoice),
-			turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)),
-		},
-		effort: {
-			face: () => {
-				const thread = selected();
-				const state = thread && powerOf(thread, "effort");
-				if (thread === undefined || state === undefined || state.choices.length < 2) return effortFace(undefined);
-				const index = Math.max(state.choices.findIndex((choice) => choice.key === state.current?.key), 0);
-				const model = modelOf(thread);
-				// Stream Deck's default effort colors, as Logi has no Colors setting.
-				const tone = effortToneOf(effortChoices(model, { promptInjected: false }), state.current?.key, "gradient", model && modelColor(model));
-				return effortFace({ index, count: state.choices.length, color: tone?.text ?? COLORS.accent });
-			},
-			label: () => currentLabel("effort"),
-			press: () => pick("effort", nextChoice),
-			turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)),
-		},
-		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
-		model: {
-			face: (_index, place) => {
-				const { choice, current } = modelAt(place);
-				return modelFace(choice?.model, choice !== undefined && choice.key === current);
-			},
-			label: (_index, place) => modelAt(place).choice?.model.label,
-			press: (_index, place) => pick("model", (state) => state.choices[Number(place) - 1]),
-			appear: watchConfigs,
-		},
-		limit: {
-			face: (_index, place) => {
-				const limit = limitAt(place);
-				return limit ? limitsFace(limit.percent, limit.stale, limit.driver) : limitsFace(undefined, false);
-			},
-			label: (_index, place) => {
-				const limit = limitAt(place);
-				return limit && limitsLabel(limit.driver, limit.window, limit.percent);
-			},
-			appear: showLimits,
-			press: showLimits,
-		},
-		limits: {
-			face: () => {
-				const limit = tightestLimit();
-				return limitsFace(limit?.percent, limit?.stale ?? false);
-			},
-			label: () => {
-				const limit = tightestLimit();
-				return limit && limitsLabel(limit.driver, limit.window, limit.percent);
-			},
-			appear: showLimits,
-		},
-		status: {
-			face: () => statusFace(threadCounts(board.threads)),
-			label: () => statusLabel(threadCounts(board.threads)),
-			press: () => {
-				const top = board.threads[0];
-				if (top) open(top);
-			},
-		},
-		// The Threads folder's halves; the board lists threads most urgent first, and running ones newest first.
-		waiting: {
-			face: () => waitingFace(board.threads),
-			label: () => statusLabel(threadCounts(board.threads)),
-			press: () => {
-				const top = board.threads.find((thread) => thread.deck === "approval" || thread.deck === "question");
-				if (top) open(top);
-			},
-		},
-		running: {
-			face: () => runningFace(board.threads),
-			label: () => statusLabel(threadCounts(board.threads)),
-			press: () => {
-				const newest = board.threads.find((thread) => thread.deck === "running");
-				if (newest) open(newest);
-			},
-		},
-		stopAll: {
-			face: () => stopAllFace(operable().length),
-			press: () => {
-				for (const thread of operable()) void thread.machine.stopRun(thread).catch(failed("stop a run"));
-			},
-		},
-		urgent: {
-			face: () => urgentFace(board.threads),
-			label: () => board.threads[0]?.title,
-			press: () => {
-				const top = board.threads[0];
-				if (top) open(top);
-			},
-		},
-		// Logi shows the banner, and its button, only for a warning or an error: this is the way to the page once paired.
-		settings: {
-			face: settingsFace,
-			press: () => void openExternal(page.url).catch(failed("open Turnkey Settings")),
-		},
-		stop: {
-			face: () => stopFace(stopTarget(board.threads, board.selectedOn())?.machine.canOperate === true),
-			label: () => stopTarget(board.threads, board.selectedOn())?.title,
-			press: () => {
-				const target = stopTarget(board.threads, board.selectedOn());
-				if (target?.machine.canOperate) void target.machine.stopRun(target).catch(failed("stop the run"));
-			},
-		},
-	},
+	sidecarKinds({
+		board,
+		open,
+		openExternal,
+		refreshLimits: showLimits,
+		watchConfigs,
+		unwatchConfigs,
+		failed,
+		settingsUrl: () => page.url,
+		// `changed` is declared below; the runtime only calls it once keys exist.
+		runtime: logiRuntime({ machines: () => machines.all, board, openThread: (thread) => openThread(thread, selectThread), selectThread: (thread) => void selectThread(thread.key, thread.machine.url), repaint: () => changed(), warn: (message) => log("warn", message) }),
+	}),
 	send,
 );
 // Cues keep following threads while haptics are off, so turning them on doesn't buzz for old changes.

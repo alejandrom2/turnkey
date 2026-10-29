@@ -180,6 +180,14 @@ The default ring, clockwise from the top:
 
 Ring faces are drawn small, so names and figures go in the hover label rather than on the face. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails; Turnkey Settings switches that off. Effort and Access also come as adjustments to scroll, for devices with a dial. Ultrathink isn't offered: it prefixes prompts Turnkey sends, and on Logitech you type yours in T3 Code.
 
+### MX Keypad
+
+On an MX Keypad, the T3 Code app's **Default** profile fills the page: Thread 1, Thread 2 and Thread 3, then Approve, Continue and Deny, then the **Turnkey** folder, Effort and Limits. Keypad keys are larger than ring slots, so each shows the full face with its name and details on the key, as on Stream Deck.
+
+These actions are in Options+'s list for the keypad and the ring: Thread 1 to 8, Approve (allows once), Deny, Activity, New Thread, Speed, Plan, Stop workflow, Fork, Merge back, Branch, Settle, Pin, Snooze, Archive, Mark unread, Wake thread, Open in editor, Update T3, Share thread and Usage. Git (Commit, Push, Create PR, Pull), Pull Request (Show, Fix findings, Explain, Ask, Review guide), Health and Open preview live in the **Turnkey** folder, on the keypad only: the ring doesn't tell Turnkey when its folder opens or closes. Update T3 and Share thread are dimmed on Logitech: they need access a Logitech pairing doesn't ask for.
+
+On the keypad, a key that can't be undone acts only when held: Approve, Deny, Stop workflow, Merge back, Archive, Git and Fix findings. Their keys say **hold**, and a tap only says to hold. On the ring a click is the confirmation. Stop run and Stop all runs act on a single press on both.
+
 ## Languages
 
 Turnkey shows keys, strips, settings pages and its action list in Stream Deck's language: English, German, Spanish, French, Japanese, Korean, Simplified Chinese and Traditional Chinese. Labels from T3 Code itself, such as **Settings → Sharing & access**, stay in English because T3 Code is in English. Thread titles, project and branch names, models, providers and T3 Code's own messages show as T3 Code sends them, and prompts the deck sends to agents stay in English.

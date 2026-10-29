@@ -10,12 +10,20 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly String _kind;
         private readonly Func<Sidecar> _sidecar;
         private readonly Action _changed;
-        private readonly ConcurrentDictionary<String, String> _images = new ConcurrentDictionary<String, String>();
+
+        // By action and pixel size: the Ring and a keypad can show one action at once, as a glyph and as a tile.
+        private readonly ConcurrentDictionary<(String, Int32), String> _images = new ConcurrentDictionary<(String, Int32), String>();
         private readonly ConcurrentDictionary<String, String> _labels = new ConcurrentDictionary<String, String>();
+        private readonly ConcurrentDictionary<String, String> _names = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
-        private readonly ConcurrentDictionary<String, ManualResetEventSlim> _waiting = new ConcurrentDictionary<String, ManualResetEventSlim>();
+        private readonly ConcurrentDictionary<(String, Int32), ManualResetEventSlim> _waiting = new ConcurrentDictionary<(String, Int32), ManualResetEventSlim>();
+        private readonly ConcurrentDictionary<String, Int64> _buttonPressed = new ConcurrentDictionary<String, Int64>();
+
+        // When each keypad key went down: the service sends the keypad's Release with PressDuration 0.
+        private readonly ConcurrentDictionary<(String, String, Int32), Int64> _downAt = new ConcurrentDictionary<(String, String, Int32), Int64>();
 
         private const Int32 FirstFaceWaitMs = 250;
+        private const Int64 DoubleFireMs = 1000;
 
         public SidecarFaces(String kind, Func<Sidecar> sidecar, Action changed)
         {
@@ -38,14 +46,71 @@ namespace Loupedeck.TurnkeyPlugin
             this._sidecar().Stopped -= this.OnStopped;
         }
 
-        public void Press(String actionParameter) => this._sidecar().Send(new { type = "press", action = this.ActionId(actionParameter) });
+        // `heldMs` is left out for a click on the Actions Ring, which is itself the confirmation.
+        private void Press(String actionParameter, Int32? heldMs) => this._sidecar().Send(heldMs is Int32 held
+            ? (Object)new { type = "press", action = this.ActionId(actionParameter), heldMs = held }
+            : new { type = "press", action = this.ActionId(actionParameter) });
+
+        // RunCommand: a press with no hold time, which the sidecar takes for a confirmed Ring click.
+        public void Run(String actionParameter)
+        {
+            // Should the SDK also deliver a press ProcessButtonEvent2 just handled, it would land here as an unheld, confirmed click.
+            if (this._buttonPressed.TryGetValue(this.ActionId(actionParameter), out var at) && Environment.TickCount64 - at < DoubleFireMs)
+            {
+                return;
+            }
+
+            this.Press(actionParameter, null);
+        }
+
+        // Ring: a click fires at once on Press. Others: act on Release with the hold time, so a press fires once. True for every event so the SDK never also calls RunCommand.
+        public Boolean Button(String actionParameter, DeviceButtonEvent2 e)
+        {
+            var action = this.ActionId(actionParameter);
+
+            // Every event, so a RunCommand the SDK delivers for any part of this press is the double it is.
+            this._buttonPressed[action] = Environment.TickCount64;
+            Int32? held;
+            if (e.DeviceType.HasFlag(DeviceType.Loupedeck72))
+            {
+                if (e.EventType != DeviceButtonEventType.Press)
+                {
+                    return true;
+                }
+
+                held = null;
+            }
+            else if (e.EventType == DeviceButtonEventType.Press)
+            {
+                this._downAt[(action, e.DeviceId, e.ControlId)] = Environment.TickCount64;
+                return true;
+            }
+            else if (e.EventType == DeviceButtonEventType.Release)
+            {
+                var timed = this._downAt.TryRemove((action, e.DeviceId, e.ControlId), out var downAt) ? Math.Min(Environment.TickCount64 - downAt, 600000) : 0;
+                held = Math.Clamp(Math.Max(e.PressDuration, (Int32)timed), 0, 600000);
+            }
+            else
+            {
+                return true;
+            }
+
+            this.Press(actionParameter, held);
+            return true;
+        }
 
         public void Turn(String actionParameter, Int32 ticks) => this._sidecar().Send(new { type = "turn", action = this.ActionId(actionParameter), ticks });
 
         public BitmapImage Image(String actionParameter, PluginImageSize imageSize) => this.Image(actionParameter, Pixels(imageSize));
 
+        // A folder's keys appear and disappear with the folder, not with each image request.
+        public void Appear(String actionParameter, Int32 pixels) =>
+            this._sidecar().Send(new { type = "appear", action = this.ActionId(actionParameter), size = pixels >= 16 ? pixels : 80 });
+
+        public void Disappear(String actionParameter) => this._sidecar().Send(new { type = "disappear", action = this.ActionId(actionParameter) });
+
         // The SDK has no "now visible" event: an image request is when a key shows, as each time the Actions Ring opens.
-        public BitmapImage Image(String actionParameter, Int32 pixels)
+        public BitmapImage Image(String actionParameter, Int32 pixels, Boolean announce = true)
         {
             // An action editor's image request can come without a usable width; the sidecar refuses one under 16.
             pixels = pixels >= 16 ? pixels : 80;
@@ -63,19 +128,26 @@ namespace Loupedeck.TurnkeyPlugin
             }
 
             // A face the sidecar hasn't drawn yet is waited for briefly: an action editor's preview asks once and keeps what it gets.
-            var known = this._images.ContainsKey(action);
-            var drawn = known ? null : this._waiting.GetOrAdd(action, _ => new ManualResetEventSlim(false));
-            this._sidecar().Send(new { type = "appear", action, size = pixels });
-            drawn?.Wait(FirstFaceWaitMs);
+            var face = (action, pixels);
+            var known = this._images.ContainsKey(face);
+            if (announce)
+            {
+                var drawn = known ? null : this._waiting.GetOrAdd(face, _ => new ManualResetEventSlim(false));
+                this._sidecar().Send(new { type = "appear", action, size = pixels });
+                drawn?.Wait(FirstFaceWaitMs);
+            }
 
-            return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
+            return this._images.TryGetValue(face, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
         }
 
         // The name the sidecar gave the face, such as the model a slot stands for; null keeps the action's own.
         public String Label(String actionParameter) => this._labels.TryGetValue(this.ActionId(actionParameter), out var label) ? label : null;
 
+        // The action's own translated name, for a folder entry Options+ would otherwise list by its id; null until the sidecar has drawn it.
+        public String Name(String actionParameter) => this._names.TryGetValue(this.ActionId(actionParameter), out var name) ? name : null;
+
         // Logitech's samples draw 80 px faces on the 90 sizes.
-        private static Int32 Pixels(PluginImageSize imageSize) => imageSize switch
+        public static Int32 Pixels(PluginImageSize imageSize) => imageSize switch
         {
             PluginImageSize.Width60 or PluginImageSize.Width60Pixels => 60,
             PluginImageSize.Width116 or PluginImageSize.Width116Pixels => 116,
@@ -102,14 +174,14 @@ namespace Loupedeck.TurnkeyPlugin
 
         private String ActionId(String actionParameter) => $"{this._kind}:{actionParameter ?? ""}";
 
-        private void OnImage(String action, String svg, String label)
+        private void OnImage(String action, Int32 size, String svg, String label, String name)
         {
             if (!action.StartsWith($"{this._kind}:"))
             {
                 return;
             }
 
-            this._images[action] = svg;
+            this._images[(action, size)] = svg;
             if (label == null)
             {
                 this._labels.TryRemove(action, out _);
@@ -119,7 +191,16 @@ namespace Loupedeck.TurnkeyPlugin
                 this._labels[action] = label;
             }
 
-            if (this._waiting.TryRemove(action, out var drawn))
+            if (name == null)
+            {
+                this._names.TryRemove(action, out _);
+            }
+            else
+            {
+                this._names[action] = name;
+            }
+
+            if (this._waiting.TryRemove((action, size), out var drawn))
             {
                 drawn.Set();
             }

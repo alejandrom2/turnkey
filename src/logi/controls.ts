@@ -17,7 +17,3 @@ export function continueStep(thread: { deck: DeckState } | undefined): "open" | 
 			return "send";
 	}
 }
-
-/** The choice after the current one, wrapping, as the Stream Deck's keys step; the first when none is current. */
-export const nextChoice = <T extends { key: string }>(state: { choices: readonly T[]; current: { key: string } | undefined }): T | undefined =>
-	state.choices[(state.choices.findIndex((choice) => choice.key === state.current?.key) + 1) % state.choices.length];

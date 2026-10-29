@@ -1,0 +1,2 @@
+launch({"scratch":true}, "Build it", {})
+select ["env/new-thread"]

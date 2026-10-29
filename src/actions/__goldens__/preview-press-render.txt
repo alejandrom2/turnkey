@@ -1,0 +1,4 @@
+call("preview.list", {"threadId":"preview-1"})
+htmlRender("thread Thread")
+assetUrl({"_tag":"attachment","attachmentId":"att","fileName":"Report.html","mimeType":"text/html","disposition":"inline"})
+openUrl https://assets.test/render.html

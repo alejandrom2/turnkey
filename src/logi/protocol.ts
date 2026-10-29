@@ -2,7 +2,8 @@
 export type HostMessage =
 	| { type: "appear"; action: string; size: number }
 	| { type: "disappear"; action: string }
-	| { type: "press"; action: string }
+	/** `heldMs` is how long a keypad press was held; none means an Actions Ring click, which is itself the confirmation. */
+	| { type: "press"; action: string; heldMs?: number }
 	/** A scroll on an adjustment: whole ticks, negative for back. */
 	| { type: "turn"; action: string; ticks: number }
 	| { type: "language"; language: string };
@@ -10,9 +11,9 @@ export type HostMessage =
 /** A moment worth a buzz on an MX Master 4; the plugin raises it as a Logi event of the same name. */
 export type HapticEvent = "approvalNeeded" | "questionAsked" | "runFinished" | "runFailed";
 
-/** Lines sent back: `svg` is the face's markup, which the plugin draws, and `label` the name it shows for it, if not its own. Log lines are the only way to log, since stdout is the channel. */
+/** Lines sent back: `svg` is the face's markup at `size` px (the size its key appeared at), which the plugin draws, and `label` the name it shows for it, if not its own, and `name` the action's own translated name where the plugin has none to give (the Turnkey folder's entries). Log lines are the only way to log, since stdout is the channel. */
 export type SidecarMessage =
-	| { type: "image"; action: string; svg: string; label?: string }
+	| { type: "image"; action: string; size: number; svg: string; label?: string; name?: string }
 	| { type: "haptic"; event: HapticEvent }
 	/** Logi's banner for the plugin; `url` is a button's target, such as the pairing page. */
 	| { type: "status"; level: "normal" | "warning" | "error"; message: string; url?: string; urlTitle?: string }
@@ -29,15 +30,18 @@ export function parseHostMessage(line: string): HostMessage | undefined {
 		return undefined;
 	}
 	if (typeof value !== "object" || value === null) return undefined;
-	const { type, action, size, language, ticks } = value as Record<string, unknown>;
+	const { type, action, size, language, ticks, heldMs } = value as Record<string, unknown>;
 	if (type === "language") return typeof language === "string" ? { type, language } : undefined;
 	if (typeof action !== "string") return undefined;
 	switch (type) {
 		case "appear":
 			return isSize(size) ? { type, action, size } : undefined;
 		case "disappear":
-		case "press":
 			return { type, action };
+		case "press":
+			// Only an absent heldMs is a Ring click (confirmed), so a present but bad one reads as a tap, never as a click.
+			if (heldMs === undefined) return { type, action };
+			return { type, action, heldMs: Number.isInteger(heldMs) ? Math.min(Math.max(heldMs as number, 0), 600000) : 0 };
 		case "turn":
 			return Number.isInteger(ticks) ? { type, action, ticks: ticks as number } : undefined;
 		default:

@@ -1,3 +1,4 @@
+import en from "../../com.alejandrom2.turnkey.sdPlugin/en.json";
 import de from "../../com.alejandrom2.turnkey.sdPlugin/de.json";
 import es from "../../com.alejandrom2.turnkey.sdPlugin/es.json";
 import fr from "../../com.alejandrom2.turnkey.sdPlugin/fr.json";
@@ -15,9 +16,18 @@ const lookup = (table: unknown, key: string): string | undefined => {
 	return typeof value === "string" ? value : undefined;
 };
 
+let manifest: Record<string, unknown> = en;
+
 /** Speaks the plugin's language from here on; English, and any language Turnkey lacks, fall back to en.json. */
 export function useLanguage(language: string): void {
 	const table = TABLES[language] ?? TABLES[language.split("-")[0]!];
+	manifest = table ?? en;
 	// t() falls back to English when the translator hands back the key itself.
 	setTranslator((key) => (table ? (lookup(table.Localization, key) ?? key) : key));
+}
+
+/** The manifest's name for an action, such as "health" for Health, in the language in use. */
+export function actionName(action: string): string {
+	const read = (from: Record<string, unknown>) => (from[`com.alejandrom2.turnkey.${action}`] as { Name?: string } | undefined)?.Name;
+	return read(manifest) ?? read(en) ?? action;
 }

@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { Machine } from "../core/t3/machine.js";
+import type { Machine } from "./t3/machine.js";
 import { MachineWatch } from "./watch.js";
-
-vi.mock("../deck.js", () => ({ deck: { onRepaint: () => undefined } }));
 
 const machine = (url: string) => ({ url }) as unknown as Machine;
 
@@ -11,12 +9,15 @@ describe("MachineWatch", () => {
 	it("subscribes again to a machine removed and added back under the same address", () => {
 		const released: string[] = [];
 		const opened: Machine[] = [];
-		const watch = new MachineWatch({
-			open: (target) => {
-				opened.push(target);
-				return () => released.push(target.url);
+		const watch = new MachineWatch(
+			{
+				open: (target) => {
+					opened.push(target);
+					return () => released.push(target.url);
+				},
 			},
-		});
+			() => undefined,
+		);
 		const first = machine("http://a");
 		let shown = [first];
 		watch.show("key", () => shown);
@@ -33,7 +34,10 @@ describe("MachineWatch", () => {
 	it("ticks once a minute only while an instance shows", () => {
 		vi.useFakeTimers();
 		try {
-			const watch = new MachineWatch({ open: () => () => undefined });
+			const watch = new MachineWatch(
+				{ open: () => () => undefined },
+				() => undefined,
+			);
 			const tick = vi.fn();
 			watch.onTick(tick);
 			watch.show("key", () => [machine("http://a")]);

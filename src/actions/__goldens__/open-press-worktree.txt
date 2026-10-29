@@ -1,0 +1,1 @@
+call("shell.openInEditor", {"cwd":"/work/tree","editor":"vscode"}, "orchestration:operate")

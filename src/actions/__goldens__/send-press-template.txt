@@ -1,0 +1,1 @@
+send("thread Thread", "Run the tests and fix any failures.", "auto")

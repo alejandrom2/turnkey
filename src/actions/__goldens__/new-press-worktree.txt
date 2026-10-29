@@ -1,0 +1,3 @@
+launch({"projectId":"project"}, "Build it", {"fallbackModel":{"instanceId":"codex","model":"gpt-5"},"workspaceStrategy":{"type":"new_worktree"}})
+worktreeStrategy("project")
+select ["env/new-thread"]

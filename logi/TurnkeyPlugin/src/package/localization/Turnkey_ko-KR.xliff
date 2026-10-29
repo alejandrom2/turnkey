@@ -20,6 +20,30 @@
           <source>Steps the thread open in T3 Code to its next access mode.</source>
           <target>T3 Code에서 열려 있는 스레드를 다음 권한 모드로 바꿉니다.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ActivityCommand" translate="yes">
+          <source>Activity</source>
+          <target>활동</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ActivityCommand###description" translate="yes">
+          <source>Shows the most urgent thread on your T3 Code board. Choose it to open that thread.</source>
+          <target>T3 Code 보드에서 가장 급한 스레드를 보여 줍니다. 선택하면 해당 스레드를 엽니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand" translate="yes">
+          <source>Approve</source>
+          <target>승인</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand###description" translate="yes">
+          <source>Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>T3 Code에서 열린 스레드가 요청한 승인을 한 번 허용합니다. 키패드에서는 길게 누르세요.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand" translate="yes">
+          <source>Branch</source>
+          <target>브랜치</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand###description" translate="yes">
+          <source>Shows the branch of the thread open in T3 Code. Choose it to open the thread.</source>
+          <target>T3 Code에서 열려 있는 스레드의 브랜치를 보여줍니다. 선택하면 스레드를 엽니다.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>커밋</target>
@@ -35,6 +59,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand###description" translate="yes">
           <source>Nudges the thread open in T3 Code to continue; opens it when it waits on you.</source>
           <target>T3 Code에서 열려 있는 스레드에 계속하라고 보냅니다. 확인이 필요하면 스레드를 엽니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand" translate="yes">
+          <source>Deny</source>
+          <target>거부</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand###description" translate="yes">
+          <source>Denies what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>T3 Code에서 열린 스레드가 요청한 승인을 거부합니다. 키패드에서는 길게 누르세요.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
           <source>Diagnose</source>
@@ -55,6 +87,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.FixTestsCommand" translate="yes">
           <source>Fix tests</source>
           <target>테스트 수정</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand" translate="yes">
+          <source>Fork</source>
+          <target>포크</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand###description" translate="yes">
+          <source>Forks the thread open in T3 Code from its last finished turn, and opens the fork.</source>
+          <target>T3 Code에서 열려 있는 스레드를 마지막으로 끝난 턴에서 포크하고, 포크를 엽니다.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
           <source>Limit 1</source>
@@ -88,6 +128,14 @@
           <source>Shows your tightest T3 Code usage limit.</source>
           <target>T3 Code에서 가장 빠듯한 사용량 한도를 보여 줍니다.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand" translate="yes">
+          <source>Merge back</source>
+          <target>다시 병합</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand###description" translate="yes">
+          <source>Merges the fork open in T3 Code back into the thread it came from, and opens that thread. On a keypad, hold it.</source>
+          <target>T3 Code에서 열려 있는 포크를 원래 스레드에 병합하고, 그 스레드를 엽니다. 키패드에서는 길게 누르세요.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command" translate="yes">
           <source>Model 1</source>
           <target>모델 1</target>
@@ -120,6 +168,78 @@
           <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
           <target>T3 Code에서 확인이 필요한 항목을 보여 줍니다. 선택하면 해당 스레드를 엽니다.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand" translate="yes">
+          <source>New Thread</source>
+          <target>새 스레드</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand###description" translate="yes">
+          <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
+          <target>T3 Code에서 열린 스레드의 프로젝트에 새 스레드를 시작하고, 입력할 수 있도록 그곳에서 엽니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OpenEditorCommand" translate="yes">
+          <source>Open in editor</source>
+          <target>에디터에서 열기</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OpenEditorCommand###description" translate="yes">
+          <source>Opens the folder of the thread open in T3 Code in your editor: its worktree, else its project's folder.</source>
+          <target>T3 Code에서 열린 스레드의 폴더를 에디터에서 엽니다. worktree, 없으면 프로젝트 폴더입니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand" translate="yes">
+          <source>Archive</source>
+          <target>보관</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand###description" translate="yes">
+          <source>Archives the thread open in T3 Code. On a keypad, hold it.</source>
+          <target>T3 Code에서 열려 있는 스레드를 보관합니다. 키패드에서는 길게 누르세요.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand" translate="yes">
+          <source>Mark unread</source>
+          <target>읽지 않음으로 표시</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand###description" translate="yes">
+          <source>Marks the thread open in T3 Code unread.</source>
+          <target>T3 Code에서 열려 있는 스레드를 읽지 않음으로 표시합니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand" translate="yes">
+          <source>Pin</source>
+          <target>고정</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand###description" translate="yes">
+          <source>Pins the thread open in T3 Code, or unpins it when it's pinned.</source>
+          <target>T3 Code에서 열려 있는 스레드를 고정하거나, 이미 고정되어 있으면 해제합니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand" translate="yes">
+          <source>Settle</source>
+          <target>처리</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand###description" translate="yes">
+          <source>Settles the thread open in T3 Code, taking it off the board.</source>
+          <target>T3 Code에서 열려 있는 스레드를 정리해 보드에서 내립니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand" translate="yes">
+          <source>Snooze</source>
+          <target>미루기</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand###description" translate="yes">
+          <source>Snoozes the thread open in T3 Code for an hour.</source>
+          <target>T3 Code에서 열려 있는 스레드를 1시간 동안 미룹니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand" translate="yes">
+          <source>Wake thread</source>
+          <target>스레드 깨우기</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand###description" translate="yes">
+          <source>Wakes the thread you snoozed last in T3 Code.</source>
+          <target>T3 Code에서 마지막으로 미룬 스레드를 깨웁니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand" translate="yes">
+          <source>Plan</source>
+          <target>계획</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand###description" translate="yes">
+          <source>Switches the thread open in T3 Code between Build and Plan.</source>
+          <target>T3 Code에서 열려 있는 스레드를 빌드와 계획 사이에서 전환합니다.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
           <source>Running threads</source>
           <target>실행 중인 스레드</target>
@@ -135,6 +255,22 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
           <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
           <target>Turnkey 설정을 엽니다: 기기, 페어링, 햅틱.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ShareCommand" translate="yes">
+          <source>Share thread</source>
+          <target>스레드 공유</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ShareCommand###description" translate="yes">
+          <source>Makes a guest link for the thread open in T3 Code and copies it. On a keypad, hold it to stop sharing. Needs sharing access, which pairing from Logitech doesn't ask for.</source>
+          <target>T3 Code에서 열린 스레드의 게스트 링크를 만들어 복사합니다. 키패드에서 길게 누르면 공유를 중지합니다. 공유 접근 권한이 필요하며, Logitech에서 페어링할 때는 요청하지 않습니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand" translate="yes">
+          <source>Speed</source>
+          <target>속도</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand###description" translate="yes">
+          <source>Turns fast mode on or off for the thread open in T3 Code, where its model offers it.</source>
+          <target>모델이 지원하는 경우 T3 Code에서 열려 있는 스레드의 빠른 모드를 켜거나 끕니다.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StatusCommand" translate="yes">
           <source>Thread status</source>
@@ -159,6 +295,66 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>T3 Code에서 마지막으로 시작된 실행을 중지합니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand" translate="yes">
+          <source>Stop workflow</source>
+          <target>워크플로 중지</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand###description" translate="yes">
+          <source>Stops the workflows the thread open in T3 Code runs (Claude). On a keypad, hold it.</source>
+          <target>T3 Code에서 열려 있는 스레드가 실행하는 워크플로를 중지합니다(Claude). 키패드에서는 길게 누르세요.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command" translate="yes">
+          <source>Thread 1</source>
+          <target>스레드 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command###description" translate="yes">
+          <source>Shows the thread at this place on your T3 Code board, most urgent first. Choose it to open that thread; on a keypad, hold it to select the thread without opening it.</source>
+          <target>T3 Code 보드의 이 위치에 있는 스레드를 가장 급한 순서로 보여 줍니다. 선택하면 해당 스레드를 엽니다. 키패드에서는 길게 누르면 열지 않고 선택만 합니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread2Command" translate="yes">
+          <source>Thread 2</source>
+          <target>스레드 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread3Command" translate="yes">
+          <source>Thread 3</source>
+          <target>스레드 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread4Command" translate="yes">
+          <source>Thread 4</source>
+          <target>스레드 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread5Command" translate="yes">
+          <source>Thread 5</source>
+          <target>스레드 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread6Command" translate="yes">
+          <source>Thread 6</source>
+          <target>스레드 6</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread7Command" translate="yes">
+          <source>Thread 7</source>
+          <target>스레드 7</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread8Command" translate="yes">
+          <source>Thread 8</source>
+          <target>스레드 8</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UpdateCommand" translate="yes">
+          <source>Update T3</source>
+          <target>T3 업데이트</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UpdateCommand###description" translate="yes">
+          <source>Shows T3 Code's version and updates it to the newest release. On a keypad, hold it. Needs update access, which pairing from Logitech doesn't ask for.</source>
+          <target>T3 Code 버전을 보여 주고 최신 릴리스로 업데이트합니다. 키패드에서는 길게 누르세요. 업데이트 접근 권한이 필요하며, Logitech에서 페어링할 때는 요청하지 않습니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UsageCommand" translate="yes">
+          <source>Usage</source>
+          <target>사용량</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UsageCommand###description" translate="yes">
+          <source>Shows what your T3 Code usage cost over the last 30 days. Choose it to read it again; on a keypad, hold it to reload model prices first.</source>
+          <target>지난 30일 동안 T3 Code 사용에 든 비용을 보여 줍니다. 선택하면 다시 읽고, 키패드에서 길게 누르면 먼저 모델 가격을 다시 불러옵니다.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
           <source>Waiting on you</source>
@@ -208,13 +404,13 @@
           <source>Model</source>
           <target>모델</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
-          <source>Prompts</source>
-          <target>프롬프트</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___AED0D0FDAA3E69A00007" translate="yes">
           <source>Threads</source>
           <target>스레드</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
+          <source>Prompts</source>
+          <target>프롬프트</target>
         </trans-unit>
         <trans-unit id="$Turnkey___GroupName___33CC4FB3447813B80005" translate="yes">
           <source>Usage</source>

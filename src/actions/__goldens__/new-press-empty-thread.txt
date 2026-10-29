@@ -1,0 +1,3 @@
+launch({"projectId":"project"}, "", {"fallbackModel":{"instanceId":"codex","model":"gpt-5"}})
+spawn open t3://threads/env/new-thread
+select ["env/new-thread"]
