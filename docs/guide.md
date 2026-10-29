@@ -186,7 +186,7 @@ On an MX Keypad, the T3 Code app's **Default** profile fills the page: Thread 1,
 
 These actions are in Options+'s list for the keypad and the ring: Thread 1 to 8, Approve (allows once), Deny, Activity, New Thread, Speed, Plan, Stop workflow, Fork, Merge back, Branch, Settle, Pin, Snooze, Archive, Mark unread, Wake thread, Open in editor, Update T3, Share thread and Usage. Git (Commit, Push, Create PR, Pull), Pull Request (Show, Fix findings, Explain, Ask, Review guide), Health and Open preview live in the **Turnkey** folder, on the keypad only: the ring doesn't tell Turnkey when its folder opens or closes. Update T3 and Share thread are dimmed on Logitech: they need access a Logitech pairing doesn't ask for.
 
-On the keypad, a key that can't be undone acts only when held: Approve, Deny, Stop workflow, Merge back, Archive, Git, Fix findings and Update T3. Their keys say **hold**, and a tap only says to hold. On the ring a click is the confirmation. Stop run and Stop all runs act on a single press on both.
+On the keypad, a key that can't be undone acts only when held: Approve, Deny, Stop workflow, Merge back, Archive, Git and Fix findings. Their keys say **hold**, and a tap only says to hold. On the ring a click is the confirmation. Stop run and Stop all runs act on a single press on both.
 
 ## Languages
 
