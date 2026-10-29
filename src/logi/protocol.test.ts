@@ -51,4 +51,8 @@ describe("encodeMessage", () => {
 		expect(line.endsWith("\n")).toBe(true);
 		expect(line.slice(0, -1)).not.toContain("\n");
 	});
+
+	it("says which size a face was drawn for, as one action can show at two", () => {
+		expect(JSON.parse(encodeMessage({ type: "image", action: "stop:", size: 116, svg: "<svg/>" }))).toEqual({ type: "image", action: "stop:", size: 116, svg: "<svg/>" });
+	});
 });

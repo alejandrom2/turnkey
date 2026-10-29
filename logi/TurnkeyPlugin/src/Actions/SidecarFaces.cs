@@ -10,11 +10,12 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly String _kind;
         private readonly Func<Sidecar> _sidecar;
         private readonly Action _changed;
-        private readonly ConcurrentDictionary<String, String> _images = new ConcurrentDictionary<String, String>();
+        // By action and pixel size: the Ring and a keypad can show one action at once, as a glyph and as a tile.
+        private readonly ConcurrentDictionary<(String, Int32), String> _images = new ConcurrentDictionary<(String, Int32), String>();
         private readonly ConcurrentDictionary<String, String> _labels = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, String> _names = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
-        private readonly ConcurrentDictionary<String, ManualResetEventSlim> _waiting = new ConcurrentDictionary<String, ManualResetEventSlim>();
+        private readonly ConcurrentDictionary<(String, Int32), ManualResetEventSlim> _waiting = new ConcurrentDictionary<(String, Int32), ManualResetEventSlim>();
 
         private const Int32 FirstFaceWaitMs = 250;
 
@@ -91,15 +92,16 @@ namespace Loupedeck.TurnkeyPlugin
             }
 
             // A face the sidecar hasn't drawn yet is waited for briefly: an action editor's preview asks once and keeps what it gets.
-            var known = this._images.ContainsKey(action);
+            var face = (action, pixels);
+            var known = this._images.ContainsKey(face);
             if (announce)
             {
-                var drawn = known ? null : this._waiting.GetOrAdd(action, _ => new ManualResetEventSlim(false));
+                var drawn = known ? null : this._waiting.GetOrAdd(face, _ => new ManualResetEventSlim(false));
                 this._sidecar().Send(new { type = "appear", action, size = pixels });
                 drawn?.Wait(FirstFaceWaitMs);
             }
 
-            return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
+            return this._images.TryGetValue(face, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
         }
 
         // The name the sidecar gave the face, such as the model a slot stands for; null keeps the action's own.
@@ -136,14 +138,14 @@ namespace Loupedeck.TurnkeyPlugin
 
         private String ActionId(String actionParameter) => $"{this._kind}:{actionParameter ?? ""}";
 
-        private void OnImage(String action, String svg, String label, String name)
+        private void OnImage(String action, Int32 size, String svg, String label, String name)
         {
             if (!action.StartsWith($"{this._kind}:"))
             {
                 return;
             }
 
-            this._images[action] = svg;
+            this._images[(action, size)] = svg;
             if (label == null)
             {
                 this._labels.TryRemove(action, out _);
@@ -162,7 +164,7 @@ namespace Loupedeck.TurnkeyPlugin
                 this._names[action] = name;
             }
 
-            if (this._waiting.TryRemove(action, out var drawn))
+            if (this._waiting.TryRemove((action, size), out var drawn))
             {
                 drawn.Set();
             }

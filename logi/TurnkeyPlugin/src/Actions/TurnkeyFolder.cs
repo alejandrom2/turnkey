@@ -1,6 +1,7 @@
 namespace Loupedeck.TurnkeyPlugin
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -25,7 +26,9 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly Dictionary<String, SidecarFaces> _faces = new Dictionary<String, SidecarFaces>();
 
         private Boolean _active;
-        private Int32 _size = 80;
+
+        // Every size the folder has drawn at, as the Ring and a keypad can both show it; its keys appear at each.
+        private readonly ConcurrentDictionary<Int32, Boolean> _sizes = new ConcurrentDictionary<Int32, Boolean>();
 
         public TurnkeyFolder()
         {
@@ -53,9 +56,13 @@ namespace Loupedeck.TurnkeyPlugin
         public override Boolean Activate()
         {
             this._active = true;
+            var sizes = this._sizes.IsEmpty ? new[] { 80 } : this._sizes.Keys.ToArray();
             foreach (var action in Actions.Where(IsFolderOnly))
             {
-                this.Faces(action)?.Appear(ParameterOf(action), this._size);
+                foreach (var size in sizes)
+                {
+                    this.Faces(action)?.Appear(ParameterOf(action), size);
+                }
             }
 
             return true;
@@ -95,8 +102,9 @@ namespace Loupedeck.TurnkeyPlugin
             }
 
             // A closed folder asks for images too (Options+ lists it); those must not start its own keys' reads.
-            this._size = SidecarFaces.Pixels(imageSize);
-            return faces.Image(ParameterOf(actionParameter), this._size, this._active || !IsFolderOnly(actionParameter));
+            var pixels = SidecarFaces.Pixels(imageSize);
+            this._sizes.TryAdd(pixels, true);
+            return faces.Image(ParameterOf(actionParameter), pixels, this._active || !IsFolderOnly(actionParameter));
         }
 
         public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) =>

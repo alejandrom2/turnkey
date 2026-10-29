@@ -11,9 +11,9 @@ export type HostMessage =
 /** A moment worth a buzz on an MX Master 4; the plugin raises it as a Logi event of the same name. */
 export type HapticEvent = "approvalNeeded" | "questionAsked" | "runFinished" | "runFailed";
 
-/** Lines sent back: `svg` is the face's markup, which the plugin draws, and `label` the name it shows for it, if not its own, and `name` the action's own translated name where the plugin has none to give (the Turnkey folder's entries). Log lines are the only way to log, since stdout is the channel. */
+/** Lines sent back: `svg` is the face's markup at `size` px (the size its key appeared at), which the plugin draws, and `label` the name it shows for it, if not its own, and `name` the action's own translated name where the plugin has none to give (the Turnkey folder's entries). Log lines are the only way to log, since stdout is the channel. */
 export type SidecarMessage =
-	| { type: "image"; action: string; svg: string; label?: string; name?: string }
+	| { type: "image"; action: string; size: number; svg: string; label?: string; name?: string }
 	| { type: "haptic"; event: HapticEvent }
 	/** Logi's banner for the plugin; `url` is a button's target, such as the pairing page. */
 	| { type: "status"; level: "normal" | "warning" | "error"; message: string; url?: string; urlTitle?: string }

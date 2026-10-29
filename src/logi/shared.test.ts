@@ -245,7 +245,7 @@ describe("sharedKind in Keys", () => {
 		await settle();
 		keys.repaint();
 		keys.handle({ type: "press", action: "approve:", heldMs: 100 });
-		expect(sent.at(-1)).toEqual({ type: "image", action: "approve:", svg: decoded(renderResultKey({ ok: false, label: t("result.holdToAllow") })), label: t("result.holdToAllow") });
+		expect(sent.at(-1)).toEqual({ type: "image", action: "approve:", size: 116, svg: decoded(renderResultKey({ ok: false, label: t("result.holdToAllow") })), label: t("result.holdToAllow") });
 	});
 });
 
