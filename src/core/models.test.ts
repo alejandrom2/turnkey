@@ -257,6 +257,10 @@ describe("ACP registry icons", () => {
 		expect(sanitizeIconSvg("<html>not an svg</html>")).toBeUndefined();
 	});
 
+	it("rejects dangerous tags exposed by sanitization", () => {
+		expect(sanitizeIconSvg("<svg><scr<script>alert(1)</script>ipt></svg>")).toBeUndefined();
+	});
+
 	it("loads each icon once, remembers failures, and repaints when one arrives", async () => {
 		const ok = "https://cdn.agentclientprotocol.com/registry/v1/latest/ok.svg";
 		const bad = "https://cdn.agentclientprotocol.com/registry/v1/latest/bad.svg";
