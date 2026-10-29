@@ -300,15 +300,31 @@ function mergeGlobalSettings(current , patch ) {
 			send("strings");
 			send("status");
 			{
-				const field = document.querySelector('[setting="destination"]');
-				const apply = (value) => { $("project").hidden = !((value) => value === "project")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "destination");
+				const condition = {"kind":"equals","value":"project"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("project").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["destination"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["destination"]));
 			}
 			{
-				const field = document.querySelector('[setting="startIn"]');
-				const apply = (value) => { $("worktree-hint").hidden = !((value) => value === "worktree")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "startIn");
+				const condition = {"kind":"equals","value":"worktree"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("worktree-hint").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["startIn"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["startIn"]));
