@@ -1,6 +1,6 @@
 import { HOLD_CONFIRM_MS } from "../approvals.js";
 import type { DeckThread, ThreadBoard } from "../board.js";
-import type { VcsStatus } from "../git.js";
+import type { GitStatuses } from "../git.js";
 import type { AcpIcons } from "../models.js";
 import type { MotionMode, Transitions } from "../motion.js";
 import type { ReviewCard } from "../render.js";
@@ -57,8 +57,12 @@ export interface KeyRuntime {
 	scheme(): string | undefined;
 	/** Where the host arms Ultrathink; undefined where it sends no prompts of its own to prefix (Logitech). */
 	ultrathink: UltrathinkArming | undefined;
-	/** The checkout status the git keys last read for the thread, read on demand; absent where nothing reads it (Logitech). */
-	gitStatus?(thread: DeckThread): VcsStatus | undefined;
+	/** The checkout statuses the git keys and Branch share, read on demand. */
+	git: GitStatuses;
+	/** Opens a web page in the browser. */
+	openUrl(url: string): Promise<void>;
+	/** Logs what went wrong in the background, after a press already showed it went ahead. */
+	warn(message: string): void;
 }
 
 export type KeyContext<S> = {
@@ -68,6 +72,8 @@ export type KeyContext<S> = {
 	target(): Target<DeckThread>;
 	/** The board slot the host worked out for this key (Stream Deck: by position among its siblings); absent where the settings say. */
 	slot?: SlotIndex;
+	/** This key on its host, for what a press leaves on its own face: a git action's progress. */
+	instance?: string;
 };
 
 export interface KeyDefinition<S, St> {

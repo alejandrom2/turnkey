@@ -32,7 +32,7 @@ function context<S>(world: GoldenOptions, settings: S, gitStatus?: VcsStatus): K
 		openExternal: vi.fn(async () => undefined),
 		selectThread: vi.fn(),
 		scheme: () => undefined,
-		gitStatus: () => gitStatus,
+		git: { of: () => gitStatus },
 	} as unknown as KeyRuntime;
 	const lookup = (key: string) => {
 		const found = threads.find((each) => each.key === key);

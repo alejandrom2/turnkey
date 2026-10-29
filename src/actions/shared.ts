@@ -24,7 +24,7 @@ export abstract class SharedKey<S extends JsonObject, St> extends DeckAction<S> 
 	}
 
 	#context(action: Action<S>): KeyContext<S> {
-		return { settings: this.definitionSettings(action), machine: this.machineOf(action), runtime: deckRuntime, target: () => this.target(action), slot: this.slotFor(action) };
+		return { settings: this.definitionSettings(action), machine: this.machineOf(action), runtime: deckRuntime, target: () => this.target(action), slot: this.slotFor(action), instance: action.id };
 	}
 
 	/** The definition's state for this instance now. */

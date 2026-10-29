@@ -47,14 +47,15 @@ export function sharedKind<S, St>(
 
 	function contextOf(parameter: string): KeyContext<S> | undefined {
 		const target = () => ({ thread: runtime.board.selectedOn(), pinned: false });
-		if (typeof variants === "function") return { settings: variants(parameter), machine: undefined, runtime, target };
+		const instance = `${name}:${parameter}`;
+		if (typeof variants === "function") return { settings: variants(parameter), machine: undefined, runtime, target, instance };
 		if (!Object.hasOwn(variants, parameter)) {
 			// The parameter only reaches the log by kind: Logi could hand any text.
 			if (!warned) warn(`${name}: dropped an action variant Turnkey doesn't know.`);
 			warned = true;
 			return undefined;
 		}
-		return { settings: variants[parameter]!, machine: undefined, runtime, target };
+		return { settings: variants[parameter]!, machine: undefined, runtime, target, instance };
 	}
 
 	function clearFlash(parameter: string): void {

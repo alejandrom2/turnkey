@@ -165,7 +165,7 @@ export const branchKey: KeyDefinition<{ machine?: string }, BranchState> = {
 	// The checkout's status is shared with the git keys: read when it first shows and when the turn moves, never on a press.
 	tile({ thread, check }, ctx) {
 		if (!check.available) return renderInfoKey({ glyph: "branch", title: t("face.branch"), detail: check.reason, available: false });
-		const status = ctx.runtime.gitStatus?.(thread!);
+		const status = ctx.runtime.git.of(thread!);
 		return renderInfoKey({ glyph: thread!.worktreePath ? "worktree" : "branch", title: thread!.branch!, detail: (status && branchSummary(status)) ?? (thread!.projectTitle || undefined) });
 	},
 

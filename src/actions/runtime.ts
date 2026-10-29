@@ -1,8 +1,12 @@
+import streamDeck from "@elgato/streamdeck";
+
+import { openExternal } from "../core/commands.js";
+import { GitStatuses } from "../core/git.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { deck } from "../deck.js";
 import { openThread, queuedCount, selectThread } from "./base.js";
-import { gitStatus } from "./git.js";
-import { openExternal } from "../core/commands.js";
+
+const logger = streamDeck.logger.createScope("keys");
 
 export const deckRuntime: KeyRuntime = {
 	machines: () => deck.machines,
@@ -18,5 +22,7 @@ export const deckRuntime: KeyRuntime = {
 	selectThread,
 	scheme: () => deck.scheme,
 	ultrathink: deck.ultrathink,
-	gitStatus,
+	git: new GitStatuses(() => deck.repaint()),
+	openUrl: (url) => streamDeck.system.openUrl(url),
+	warn: (message) => void logger.warn(message),
 };

@@ -85,7 +85,7 @@ const keys = new Keys(
 		failed,
 		settingsUrl: () => page.url,
 		// `changed` is declared below; the runtime only calls it once keys exist.
-		runtime: logiRuntime({ machines: () => machines.all, board, openThread: (thread) => openThread(thread, selectThread), selectThread: (thread) => void selectThread(thread.key, thread.machine.url), repaint: () => changed() }),
+		runtime: logiRuntime({ machines: () => machines.all, board, openThread: (thread) => openThread(thread, selectThread), selectThread: (thread) => void selectThread(thread.key, thread.machine.url), repaint: () => changed(), warn: (message) => log("warn", message) }),
 		warn: (message) => log("warn", message),
 	}),
 	send,

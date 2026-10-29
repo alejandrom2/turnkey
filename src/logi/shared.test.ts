@@ -40,7 +40,7 @@ function setup(selected: { current: DeckThread | undefined }) {
 		threadsOn: () => (selected.current ? [selected.current] : []),
 		selectedOn: () => selected.current,
 	} as unknown as ThreadBoard;
-	const runtime = logiRuntime({ machines: () => [machine()], board, openThread, selectThread: () => undefined, repaint });
+	const runtime = logiRuntime({ machines: () => [machine()], board, openThread, selectThread: () => undefined, repaint, warn: () => undefined });
 	const warn = vi.fn<(message: string) => void>();
 	return { runtime, repaint, openThread, warn };
 }
@@ -237,7 +237,7 @@ describe("sharedKind over the board's threads", () => {
 		const selectThread = vi.fn();
 		const all = [running, ...threads];
 		const world = { threads: all, threadsOn: () => all, selectedOn: () => threads[0] } as unknown as ThreadBoard;
-		const runtime = logiRuntime({ machines: () => [owner], board: world, openThread, selectThread, repaint });
+		const runtime = logiRuntime({ machines: () => [owner], board: world, openThread, selectThread, repaint, warn: () => undefined });
 		const warn = vi.fn<(message: string) => void>();
 		const kind = sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), runtime, warn);
 		return { all, owner, runtime, repaint, openThread, selectThread, kind, warn };
