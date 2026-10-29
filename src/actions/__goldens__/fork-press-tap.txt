@@ -1,0 +1,3 @@
+fork("thread Thread")
+spawn open t3://threads/env/fork-1
+select ["env/fork-1"]

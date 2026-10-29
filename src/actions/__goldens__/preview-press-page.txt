@@ -1,0 +1,2 @@
+call("preview.list", {"threadId":"preview-1"})
+openUrl http://localhost:5173/app

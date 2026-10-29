@@ -1,0 +1,2 @@
+workflows("thread Thread")
+stopWorkflow("thread Thread", "wf-a")
