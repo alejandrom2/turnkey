@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/alejandrom2/turnkey/compare/v1.1.1...v1.1.2) (2026-10-29)
+
+
+### Fixes
+
+* show Stream Deck's alert on failed presses and use checkboxes for on/off settings ([#41](https://github.com/alejandrom2/turnkey/issues/41)) ([a71aec5](https://github.com/alejandrom2/turnkey/commit/a71aec5829901bb8cbd70b43b3aed4ca0706c64b))
+
 ## [1.1.1](https://github.com/alejandrom2/turnkey/compare/v1.1.0...v1.1.1) (2026-10-29)
 
 
