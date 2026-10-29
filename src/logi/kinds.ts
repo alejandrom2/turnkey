@@ -1,6 +1,8 @@
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { threadCounts } from "../core/infobar.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
+import { gitKey } from "../core/keys/git.js";
+import { pullRequestKey } from "../core/keys/pr.js";
 import { effortKey, modelKey, permissionsKey, planKey, speedKey } from "../core/keys/power.js";
 import { branchKey, forkKey, stopKey } from "../core/keys/lineage.js";
 import { ORGANIZE_ACTIONS, organizeKey } from "../core/keys/organize.js";
@@ -199,5 +201,9 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		branch: sharedKind("branch", branchKey, { "": {} }, deps.runtime, deps.warn),
 		// One action per organize action but Unpin; Snooze takes Stream Deck's default hour, and Pin toggles, as there.
 		organize: sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((organize) => [organize, { organize }])), deps.runtime, deps.warn),
+		// In the Turnkey folder only, as their reads are heavier. Every git action needs a keypad hold; T3 Code writes the commit message.
+		git: sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), deps.runtime, deps.warn),
+		// Show is `pr`; of the handoffs only Fix findings needs a keypad hold, as Stream Deck holds it by default.
+		pr: sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime, deps.warn),
 	};
 }

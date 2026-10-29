@@ -265,7 +265,7 @@ describe("sidecarKinds before keypad tiles", () => {
 	it("draw today's face at every size, the shared keys aside", () => {
 		const { kinds } = setup([{ key: "a", deck: "approval" }, { key: "r", deck: "running" }], { selected: "a" });
 		for (const [name, kind] of Object.entries(kinds)) {
-			if (["approve", "deny", "thread", "activity", "newThread", "speed", "plan", "stopWorkflow", "fork", "merge", "branch", "organize"].includes(name)) continue;
+			if (["approve", "deny", "thread", "activity", "newThread", "speed", "plan", "stopWorkflow", "fork", "merge", "branch", "organize", "git", "pr"].includes(name)) continue;
 			for (const parameter of ["", "1", "fix"]) for (const size of [60, 116, 144]) expect(kind.face(0, parameter, size), `${name}:${parameter} at ${size}`).toBe(kind.face(0, parameter, 80));
 		}
 	});

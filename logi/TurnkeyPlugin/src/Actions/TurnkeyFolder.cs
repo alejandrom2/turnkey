@@ -13,6 +13,8 @@ namespace Loupedeck.TurnkeyPlugin
             "urgent:", "status:", "continue:", "stop:", "stopAll:",
             "prompt:test", "prompt:fix", "prompt:explain", "prompt:commit",
             "limits:", "settings:", "activity:",
+            "git:commit", "git:push", "git:create_pr", "git:pull",
+            "pr:pr", "pr:fix", "pr:explain", "pr:ask", "pr:guide",
         };
 
         private readonly Dictionary<String, SidecarFaces> _faces = new Dictionary<String, SidecarFaces>();

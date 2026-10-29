@@ -5,9 +5,11 @@ import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { FLASH_MS } from "../core/feedback.js";
 import { t } from "../core/i18n.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
+import { gitKey } from "../core/keys/git.js";
 import { branchKey, forkKey, stopKey } from "../core/keys/lineage.js";
 import { ORGANIZE_ACTIONS, organizeKey } from "../core/keys/organize.js";
 import { planKey, speedKey } from "../core/keys/power.js";
+import { pullRequestKey } from "../core/keys/pr.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyDefinition } from "../core/keys/key.js";
 import { COLORS, glyph, renderResultKey, renderSkeletonKey, svgImage, svgMarkup } from "../core/render.js";
@@ -435,5 +437,65 @@ describe("sharedKind over the lineage and organize keys", () => {
 		expect(claude.thread!.machine.workflows).not.toHaveBeenCalled();
 		claude.stopWorkflow.press!(0, "");
 		expect(claude.thread!.machine.workflows).toHaveBeenCalledExactlyOnceWith(claude.thread);
+	});
+});
+
+describe("sharedKind over the git and pull request keys", () => {
+	const dirty = { isRepo: true, hasPrimaryRemote: true, isDefaultRef: false, refName: "feat/x", hasWorkingTreeChanges: true, workingTree: { files: [{}, {}], insertions: 4, deletions: 1 }, hasUpstream: true, aheadCount: 1, behindCount: 0, aheadOfDefaultCount: 1, pr: null };
+	const link = { url: "https://github.com/acme/app/pull/7", number: 7, repository: "acme/app", state: "open" as const, title: "Fix the build", headBranch: "feat/x" };
+	const quiet = { comments: [], reviewThreads: [], commentsTruncated: false };
+	const reviewThread = { id: "thread-a", path: "src/app.ts", line: 4, side: "right" as const, isResolved: false, comments: [{ id: "c1", author: { login: "r" }, body: "Handle null." }] };
+
+	function keys() {
+		const owner = machine({
+			url: "http://git-keys:3773",
+			rpc: { "vcs.refreshStatus": dirty, "pullRequests.summary": { number: 7, title: "Fix the build", url: link.url, state: "open" }, "pullRequests.checks": { checks: [] }, "pullRequests.activity": { ...quiet, reviewThreads: [reviewThread] } },
+			streams: { "git.runStackedAction": [{ kind: "action_started" }, { kind: "action_finished", result: { action: "commit", pr: { status: "skipped_not_requested" }, toast: { title: "Done" } } }] },
+		});
+		const selected = { current: thread({ title: "Open thread", branch: "feat/x", machine: owner, pullRequests: [link] }) };
+		const made = setup(selected);
+		return {
+			...made,
+			thread: selected.current,
+			git: sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), made.runtime, made.warn),
+			pr: sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, made.runtime, made.warn),
+		};
+	}
+
+	it("draws their Ring glyphs and keypad tiles once the checkout and the pull request are read", async () => {
+		const { git, pr } = keys();
+		git.face(0, "commit", 80);
+		pr.face(0, "pr", 80);
+		await settle();
+		await expect(git.face(0, "commit", 80)).toMatchFileSnapshot("./__goldens__/sharedGit-commit-80.svg");
+		await expect(git.face(0, "commit", 116)).toMatchFileSnapshot("./__goldens__/sharedGit-commit-116.svg");
+		await expect(pr.face(0, "pr", 80)).toMatchFileSnapshot("./__goldens__/sharedPr-80.svg");
+		await expect(pr.face(0, "fix", 80)).toMatchFileSnapshot("./__goldens__/sharedPr-fix-80.svg");
+		expect(git.label!(0, "commit")).toBe("Open thread");
+	});
+
+	it("commits only after a keypad hold, or on a Ring click, with T3 Code's own message", async () => {
+		vi.useFakeTimers();
+		const { git, thread: open } = keys();
+		git.press!(0, "commit", 100);
+		expect(git.label!(0, "commit")).toBe(t("repo.holdTo"));
+		expect(open!.machine.stream).not.toHaveBeenCalled();
+		git.press!(0, "commit");
+		await vi.advanceTimersByTimeAsync(0);
+		const sent = vi.mocked(open!.machine.stream).mock.calls[0]![1] as Record<string, unknown>;
+		expect(sent).toMatchObject({ action: "commit", cwd: "/work/project" });
+		expect(sent.commitMessage).toBeUndefined();
+	});
+
+	it("holds Fix findings on a keypad and asks about the pull request on a tap", async () => {
+		vi.useFakeTimers();
+		const { pr, openThread, thread: open } = keys();
+		pr.face(0, "fix", 116);
+		await vi.advanceTimersByTimeAsync(0);
+		pr.press!(0, "fix", 100);
+		expect(pr.label!(0, "fix")).toBe(t("repo.holdTo"));
+		expect(open!.machine.send).not.toHaveBeenCalled();
+		pr.press!(0, "ask", 0);
+		expect(openThread).toHaveBeenCalledExactlyOnceWith(open);
 	});
 });
