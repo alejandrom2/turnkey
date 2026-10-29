@@ -451,9 +451,12 @@ describe("sidecarKinds by size", () => {
 		const { kinds } = world();
 		for (const name of [...EXISTING, "thread", "activity"]) {
 			for (const parameter of ["", "1", "fix"]) {
+				// A quarter second turns a Reduced spinner a step; half a second, an effort twinkle.
 				const before = kinds[name]!.face(0, parameter, 116);
 				vi.advanceTimersByTime(250);
-				expect(kinds[name]!.face(0, parameter, 116), `${name}:${parameter}`).toBe(before);
+				expect(kinds[name]!.face(0, parameter, 116), `${name}:${parameter} +250 ms`).toBe(before);
+				vi.advanceTimersByTime(250);
+				expect(kinds[name]!.face(0, parameter, 116), `${name}:${parameter} +500 ms`).toBe(before);
 			}
 		}
 	});

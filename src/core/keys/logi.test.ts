@@ -30,7 +30,8 @@ describe("Logitech-only keypad tiles", () => {
 	it("draw Continue as Quick Prompt's Continue", () => expect(decoded(continueTile("send"))).toBe(golden("quick-idle")));
 
 	it("match their goldens", async () => {
-		await expect(decoded(continueTile("open"))).toMatchFileSnapshot(keypad("continue-open"));
+		await expect(decoded(continueTile("open", "approval"))).toMatchFileSnapshot(keypad("continue-open"));
+		await expect(decoded(continueTile("open", "question"))).toMatchFileSnapshot(keypad("continue-question"));
 		await expect(decoded(continueTile(undefined))).toMatchFileSnapshot(keypad("continue-none"));
 		await expect(decoded(stopAllTile(3))).toMatchFileSnapshot(keypad("stopAll-three"));
 		await expect(decoded(stopAllTile(0))).toMatchFileSnapshot(keypad("stopAll-none"));

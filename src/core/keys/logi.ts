@@ -1,4 +1,4 @@
-import type { DeckThread } from "../board.js";
+import type { DeckState, DeckThread } from "../board.js";
 import { t } from "../i18n.js";
 import { QUICK_PROMPTS } from "../prompts.js";
 import { COLORS, renderControlKey, renderInfoKey, STATE_COLOR } from "../render.js";
@@ -20,9 +20,10 @@ export function statusTile(counts: { approval: number; question: number; running
 	return renderInfoKey({ glyph: "queued", color, title: t("logi.labels.status", { waiting, running: counts.running }), available: waiting + counts.running > 0 });
 }
 
-/** Quick Prompt's Continue; a thread that waits on you is opened instead, so the key wears its approval look then. */
-export function continueTile(step: "open" | "send" | undefined): string {
+/** Quick Prompt's Continue; a thread that waits on you is opened instead, so the key wears its approval or question look then. */
+export function continueTile(step: "open" | "send" | undefined, deck?: DeckState): string {
 	const label = t(QUICK_PROMPTS.continue.label);
+	if (step === "open" && deck === "question") return renderControlKey({ glyph: "question", primary: true, glyphColor: STATE_COLOR.question, label });
 	if (step === "open") return renderControlKey({ glyph: "shield", primary: true, glyphColor: STATE_COLOR.approval, label });
 	return renderControlKey({ glyph: "spark", primary: true, label, available: step !== undefined });
 }

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { machine } from "../../actions/testing/fixtures.js";
 import { failureLabel } from "../feedback.js";
 import { t } from "../i18n.js";
+import { GLYPHS } from "../render.js";
 import { needsAccessLabel } from "../scopes.js";
 import type { Machine } from "../t3/machine.js";
 import { MAINTAIN_SCOPE } from "../t3/pairing.js";
@@ -83,6 +84,9 @@ describe("Update T3", () => {
 		await plan.work();
 		expect(shown.updateServer).toHaveBeenCalledWith("1.1.0", expect.any(Function));
 		expect(face(ctx)).toContain(t("update.restarting"));
+		// Motion off, as Logitech's runtime answers: the update mark rests, no spinner to freeze mid-turn on a keypad.
+		expect(face(ctx)).not.toContain(GLYPHS.spinner);
+		expect(updateKey.moving?.(updateKey.state(ctx))).toBe(false);
 		expect(press(ctx, HELD)).toEqual({ kind: "nothing" });
 		Object.assign(shown, { updateEnvironment: { ...service, serverVersion: "1.1.0" } });
 		updateKey.settle(ctx.runtime);

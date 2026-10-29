@@ -97,7 +97,7 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		// A prompt written in the action's editor travels as its parameter, so each placed copy is its own key.
 		send: sharedKind("send", sendKey, (text) => ({ template: "custom", prompt: text }), deps.runtime, deps.warn, { quiet: failed("send the prompt") }),
 		continue: {
-			face: (_index, _parameter, size) => sized(size, () => continueFace(continueStep(selected())), () => continueTile(continueStep(selected()))),
+			face: (_index, _parameter, size) => sized(size, () => continueFace(continueStep(selected())), () => continueTile(continueStep(selected()), selected()?.deck)),
 			label: () => selected()?.title,
 			press: () => {
 				const thread = selected();
