@@ -53,7 +53,7 @@ A few house rules keep the plugin consistent:
 - **Every user-facing string** goes in `en.json` and in all seven translations. The i18n test fails if a key is missing. A best-effort translation is fine; mention it in the PR.
 - **Settings pages, icons and profiles are generated** by `scripts/`. Edit the scripts, not the generated files.
 - **American English** in code, comments and copy. T3 Code's own wire values stay as T3 Code spells them.
-- **A press that works shows no confirmation**: the key or strip just shows its new state. Failures say why. Anything destructive asks for a hold.
+- **A press that works shows no confirmation**: the key or strip just shows its new state. Failures say why. Anything destructive on a key asks for a hold; the Actions Ring's click is its confirmation.
 - **No polling while actions are hidden**, and animation follows the Motion setting.
 - **Don't copy anyone's art.** Icons come from Lucide (the set T3 Code uses) or are drawn in code.
 

@@ -84,11 +84,11 @@ Add each machine once; every action can follow one machine or all of them. Pairi
 
 ### Logitech
 
-You need Logi Options+ on macOS, an MX mouse or keyboard with the Actions Ring, and T3 Code as above. Haptics need an MX Master 4. Windows isn't tested yet.
+You need Logi Options+ on macOS, an MX mouse or keyboard with the Actions Ring, or an MX Keypad, and T3 Code as above. Haptics need an MX Master 4. Windows isn't tested yet.
 
 1. **Install.** Download [`Turnkey.lplug4`](https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.lplug4) and open it to install it in Logi Options+.
 2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. Its button opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
-3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
+3. **Pick the ring.** On an MX Keypad, Turnkey's default page fills the keys. In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
 
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
 
