@@ -3,6 +3,7 @@ import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { ThreadBoard } from "./core/board.js";
 import { openExternal } from "./core/commands.js";
+import type { Appearance } from "./core/keys/key.js";
 import { QueueStore } from "./core/queues.js";
 import { dropScopeRequest, optInStatus, type OptInStatus, readScopeRequests, requestScope, type ScopeRequests, settleScopeRequests } from "./core/scopes.js";
 import { VERBOSE_MS, verboseOn } from "./core/diagnostics.js";
@@ -44,7 +45,7 @@ type GlobalSettings = {
 	verboseUntil?: number;
 };
 
-const appearanceOf = ({ stripBackground, stripColor, stripStyle, textScroll, motion, idlePet, confirmSend, maxEffort }: GlobalSettings) => ({
+const appearanceOf = ({ stripBackground, stripColor, stripStyle, textScroll, motion, idlePet, confirmSend, maxEffort }: GlobalSettings): Appearance => ({
 	stripBackground,
 	stripColor,
 	stripStyle,

@@ -8,14 +8,14 @@ import type { MachineWatch } from "../watch.js";
 
 /** The global strip appearance settings, as the host resolves them. */
 export type Appearance = {
-  stripBackground?: string;
-  stripColor?: string;
-  stripStyle?: string;
-  textScroll?: string;
-  motion?: string;
-  idlePet?: string;
-  confirmSend?: string;
-  maxEffort?: string;
+	stripBackground?: string;
+	stripColor?: string;
+	stripStyle?: string;
+	textScroll?: string;
+	motion?: string;
+	idlePet?: string;
+	confirmSend?: string;
+	maxEffort?: string;
 };
 
 export type FaceStyle = "tile" | "glyph";
@@ -23,45 +23,45 @@ export type FaceStyle = "tile" | "glyph";
 export type ConfirmBy = "settings" | "hold" | "click";
 export type PressInput = { heldMs: number; confirmBy: ConfirmBy };
 export type PressPlan =
-  | { kind: "run"; work: () => Promise<unknown> }
-  | { kind: "fail"; label: string }
-  | { kind: "needsHold"; label: string }
-  | { kind: "nothing" };
+	| { kind: "run"; work: () => Promise<unknown> }
+	| { kind: "fail"; label: string }
+	| { kind: "needsHold"; label: string }
+	| { kind: "nothing" };
 
 export interface KeyRuntime {
-  machines(): readonly Machine[];
-  board: ThreadBoard;
-  openThread(thread: DeckThread): Promise<void>;
-  openExternal(url: string): Promise<void>;
-  repaint(): void;
-  appearance(): Appearance;
-  acpIcons: AcpIcons | undefined;
-  /** Stream Deck: the Motion setting. The sidecar always answers "reduced": Logi faces stay still. */
-  motion(): MotionMode;
+	machines(): readonly Machine[];
+	board: ThreadBoard;
+	openThread(thread: DeckThread): Promise<void>;
+	openExternal(url: string): Promise<void>;
+	repaint(): void;
+	appearance(): Appearance;
+	acpIcons: AcpIcons | undefined;
+	/** Stream Deck: the Motion setting. The sidecar always answers "reduced": Logi faces stay still. */
+	motion(): MotionMode;
 }
 
 export type KeyContext<S> = {
-  settings: S;
-  machine: string | undefined;
-  runtime: KeyRuntime;
-  target(): Target<DeckThread>;
+	settings: S;
+	machine: string | undefined;
+	runtime: KeyRuntime;
+	target(): Target<DeckThread>;
 };
 
 export interface KeyDefinition<S, St> {
-  state(ctx: KeyContext<S>): St;
-  tile(state: St, ctx: KeyContext<S>): string;
-  glyph?(state: St, ctx: KeyContext<S>): string;
-  label?(state: St, ctx: KeyContext<S>): string | undefined;
-  press(state: St, ctx: KeyContext<S>, input: PressInput): PressPlan;
-  watch?: ConstructorParameters<typeof MachineWatch>[0];
+	state(ctx: KeyContext<S>): St;
+	tile(state: St, ctx: KeyContext<S>): string;
+	glyph?(state: St, ctx: KeyContext<S>): string;
+	label?(state: St, ctx: KeyContext<S>): string | undefined;
+	press(state: St, ctx: KeyContext<S>, input: PressInput): PressPlan;
+	watch?: ConstructorParameters<typeof MachineWatch>[0];
 }
 
 /** Whether an irreversible press may go ahead: "settings" defers to `fromSettings`, the key's own rule. */
 export function confirmed(
-  input: PressInput,
-  fromSettings: () => boolean,
+	input: PressInput,
+	fromSettings: () => boolean,
 ): boolean {
-  if (input.confirmBy === "click") return true;
-  if (input.confirmBy === "hold") return input.heldMs >= HOLD_CONFIRM_MS;
-  return fromSettings();
+	if (input.confirmBy === "click") return true;
+	if (input.confirmBy === "hold") return input.heldMs >= HOLD_CONFIRM_MS;
+	return fromSettings();
 }
