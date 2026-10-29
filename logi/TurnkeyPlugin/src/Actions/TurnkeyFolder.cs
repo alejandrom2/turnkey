@@ -128,14 +128,23 @@ namespace Loupedeck.TurnkeyPlugin
 
         public override void RunCommand(String actionParameter)
         {
+            if (this.IsClosedFolderOnly(actionParameter))
+            {
+                return;
+            }
+
             if (this._faces.TryGetValue(KindOf(actionParameter), out var faces))
             {
                 faces.Run(ParameterOf(actionParameter));
             }
         }
 
+        // Swallowed, so the SDK doesn't run it either.
         public override Boolean ProcessButtonEvent2(String actionParameter, DeviceButtonEvent2 buttonEvent) =>
-            this.Faces(actionParameter)?.Button(ParameterOf(actionParameter), buttonEvent) ?? false;
+            this.IsClosedFolderOnly(actionParameter) || (this.Faces(actionParameter)?.Button(ParameterOf(actionParameter), buttonEvent) ?? false);
+
+        // A folder-only key pressed with the folder closed (the Ring never opens it) has never appeared, so its face was blank: it mustn't act blind.
+        private Boolean IsClosedFolderOnly(String action) => action != null && IsFolderOnly(action) && Volatile.Read(ref this._opens) == 0;
 
         private SidecarFaces Faces(String action) => this._faces.TryGetValue(KindOf(action ?? ""), out var faces) ? faces : null;
 
