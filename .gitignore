@@ -18,3 +18,8 @@ logi/dist/
 
 # Working plans and specs stay local
 docs/superpowers/
+
+# The Marketplace listing and working notes stay local
+docs/listing.md
+docs/going-public.md
+docs/logitech/
