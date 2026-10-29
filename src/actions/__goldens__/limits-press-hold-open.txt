@@ -1,0 +1,2 @@
+refreshProviders()
+spawn open t3://usage
