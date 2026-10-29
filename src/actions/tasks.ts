@@ -12,7 +12,7 @@ import { deck } from "../deck.js";
 import { canOperate, DeckAction, errorMessage, machineName, pressWhileDisconnected, readyMachines, sendChoices } from "./base.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
-import { MachineWatch } from "./watch.js";
+import { DeckWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("tasks");
@@ -20,7 +20,7 @@ const logger = streamDeck.logger.createScope("tasks");
 const STATE_COLOR: Record<TaskState, string> = { running: COLORS.accent, failed: COLORS.error, on: COLORS.text, off: COLORS.muted };
 
 /** The task lists of the machines visible task keys and dials show stay live; a minute tick redraws the "in 4m" times. */
-const watch = new MachineWatch({ open: (machine) => machine.watchTasks() });
+const watch = new DeckWatch({ open: (machine) => machine.watchTasks() });
 
 /** A task with the machine it runs on, keyed `${environmentId}/${taskId}` like a thread. */
 type MachineTask = { key: string; task: ScheduledTask; machine: Machine };

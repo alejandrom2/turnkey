@@ -17,7 +17,7 @@ import { fetchUpdateTarget, RESTART_TIMEOUT_MS, updateFailure, updateRoute, type
 import { deck } from "../deck.js";
 import { connectionFace, DeckAction, errorMessage, held, machineName, pressWhileDisconnected, sendChoices } from "./base.js";
 import { connectionOf, threadNeeds } from "./needs.js";
-import { MachineWatch } from "./watch.js";
+import { DeckWatch } from "./watch.js";
 
 /**
  * Keys that need access a standard pairing doesn't ask for: updating T3 Code, running scripts in its terminals, and
@@ -220,7 +220,7 @@ const SCRIPT_SCOPES = [TERMINAL_SCOPE, TERMINAL_READ_SCOPE] as const;
 const scriptRuns = new Map<string, { startedAt?: number; stoppedAt?: number }>();
 
 /** The terminal states of the machines visible Run Script keys run on stay live. */
-const terminals = new MachineWatch({ open: (machine) => machine.watchTerminals() });
+const terminals = new DeckWatch({ open: (machine) => machine.watchTerminals() });
 
 const SCRIPT_DETAIL: Record<Exclude<ScriptState["kind"], "exited">, Parameters<typeof t>[0]> = {
 	idle: "script.idle",

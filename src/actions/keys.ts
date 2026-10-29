@@ -74,7 +74,7 @@ import {
 	ultrathinkArmed,
 	ultrathinkControl,
 } from "./base.js";
-import { MachineWatch } from "./watch.js";
+import { DeckWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -786,7 +786,7 @@ export const healthMachine = (machine: Machine): HealthMachine => ({
 	providers: machine.modelConfig?.providers,
 });
 
-const healthWatch = new MachineWatch({ open: (machine) => machine.watchConfig() });
+const healthWatch = new DeckWatch({ open: (machine) => machine.watchConfig() });
 
 const HEALTH_COLOR = { error: COLORS.error, attention: COLORS.attention, note: COLORS.done, ok: COLORS.done, connecting: COLORS.muted } as const;
 

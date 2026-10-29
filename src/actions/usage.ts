@@ -20,7 +20,7 @@ import { DeckAction, driverMark, driverName, errorMessage, LONG_PRESS_MS, pressW
 import { connectionNotice } from "./infobar.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
-import { MachineWatch } from "./watch.js";
+import { DeckWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("usage");
@@ -47,7 +47,7 @@ const store = new UsageStore(
 );
 
 /** The shown machines' settings stay live, so a price or alias change reads again, as in T3 Code. */
-const watch = new MachineWatch({ open: (machine) => machine.watchConfig() });
+const watch = new DeckWatch({ open: (machine) => machine.watchConfig() });
 
 /** A shown period's usage, read on a machine that hasn't yet (one newly ready) or whose settings moved. */
 function usageView(url: string | undefined, period: UsagePeriod) {

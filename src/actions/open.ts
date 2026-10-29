@@ -15,7 +15,7 @@ import { pinnedName } from "../core/target.js";
 import { deck } from "../deck.js";
 import { canOperate, DeckAction, machineName, machinesOn, pressWhileDisconnected, selectedThread, sendChoices } from "./base.js";
 import { threadNeeds } from "./needs.js";
-import { MachineWatch } from "./watch.js";
+import { DeckWatch } from "./watch.js";
 import { setCapped } from "../core/capped.js";
 
 const ID = "com.alejandrom2.turnkey";
@@ -44,7 +44,7 @@ type ThreadPreview = {
  */
 class Previews {
 	readonly #threads = new Map<string, ThreadPreview>();
-	readonly watch = new MachineWatch({
+	readonly watch = new DeckWatch({
 		open: (machine) => machine.live("subscribePreviewEvents", {}, (value) => this.#apply(machine, value as PreviewEvent), () => this.#forget(machine)),
 		closed: (machine) => this.#forget(machine),
 	});

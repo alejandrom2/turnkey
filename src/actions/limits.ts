@@ -37,7 +37,7 @@ import { DeckAction, driverMark, driverName, errorMessage, held, pressWhileDisco
 import { connectionNotice } from "./infobar.js";
 import { connectionOf } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
-import { MachineWatch } from "./watch.js";
+import { DeckWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("limits");
@@ -66,7 +66,7 @@ const refreshing = (url: string | undefined): boolean => readyMachines(url).some
  * watched and whenever an instance shows them, when they go stale (T3 Code's widget rule, checked on the minute tick
  * that also redraws) and on a press, all through T3 Code's throttle.
  */
-const watch = new MachineWatch({ open: (machine) => machine.watchConfig(), opened: automatic });
+const watch = new DeckWatch({ open: (machine) => machine.watchConfig(), opened: automatic });
 watch.onTick(() => {
 	const now = Date.now();
 	for (const machine of watch.machines()) if (pools(machine.url, now).some((pool) => limitsStale(pool, now))) automatic(machine);

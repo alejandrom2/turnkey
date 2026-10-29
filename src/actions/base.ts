@@ -43,7 +43,7 @@ import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { ultrathinkControl as coreUltrathinkControl } from "../core/ultrathink.js";
 import { deck } from "../deck.js";
 import { exportDiagnostics, openLogsFolder } from "../diagnostics.js";
-import type { MachineWatch } from "./watch.js";
+import type { MachineWatch } from "../core/watch.js";
 
 export const LONG_PRESS_MS = 500;
 /** At most one animation write per instance in this long. */
