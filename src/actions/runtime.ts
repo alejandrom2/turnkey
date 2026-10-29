@@ -2,6 +2,7 @@ import streamDeck from "@elgato/streamdeck";
 
 import { openExternal } from "../core/commands.js";
 import { GitStatuses } from "../core/git.js";
+import { htmlLang } from "../core/i18n.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { UsageStore } from "../core/usage/store.js";
 import { deck } from "../deck.js";
@@ -23,6 +24,7 @@ export const deckRuntime: KeyRuntime = {
 	queued: queuedCount,
 	selectThread,
 	scheme: () => deck.scheme,
+	locale: () => htmlLang(streamDeck.i18n.language),
 	ultrathink: deck.ultrathink,
 	git: new GitStatuses(() => deck.repaint()),
 	openUrl: (url) => streamDeck.system.openUrl(url),

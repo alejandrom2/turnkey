@@ -36,7 +36,6 @@ function setup(threads: Array<Partial<DeckThread> & { key: string }>, options: {
 	const all = threads.map((each, index) => ({ deck: "idle", unseen: false, title: `Thread ${index}`, threadId: each.key, activeRunId: "run", model: { instanceId: "claudeAgent", model: "opus" }, runtimeMode: "auto", machine, ...each }) as unknown as DeckThread);
 	const board = { threads: all, selectedOn: () => all.find((each) => each.key === options.selected) } as unknown as ThreadBoard;
 	const deps = {
-		machines: () => [machine as unknown as Machine],
 		board,
 		open: vi.fn<(thread: DeckThread) => void>(),
 		openExternal: vi.fn(async () => undefined),

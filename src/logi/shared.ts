@@ -105,7 +105,9 @@ export function sharedKind<S, St>(
 						clearFlash(parameter);
 						runtime.repaint();
 					}
-					void plan.work().then(
+					const working = plan.work();
+					if (plan.notice !== undefined && legacy === undefined) flash(parameter, plan.notice);
+					void working.then(
 						() => runtime.repaint(),
 						(error: unknown) => {
 							if (legacy !== undefined) return legacy.quiet(error);

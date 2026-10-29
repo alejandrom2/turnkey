@@ -76,7 +76,6 @@ function showLimits(): void {
 }
 const keys = new Keys(
 	sidecarKinds({
-		machines: () => machines.all,
 		board,
 		open,
 		openExternal,

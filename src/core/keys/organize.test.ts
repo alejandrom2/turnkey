@@ -77,13 +77,13 @@ describe("Organize", () => {
 		const snooze = plan(world, { organize: "snooze", snoozeMinutes: 30 });
 		if (snooze.kind !== "guard") throw new Error(`expected a guard, got ${snooze.kind}`);
 		expect(snooze.guard.card().verb).toBe(t("review.snooze", { duration: "30m" }));
-		await snooze.work();
+		await snooze.work("");
 		expect(world.selected!.machine.snooze).toHaveBeenCalledExactlyOnceWith(world.selected, 30);
 		// Every action passes the guard on Stream Deck: off for all but Settle and Snooze, as the key's confirm mode says.
 		for (const organize of ["pin", "archive", "mark_unread"] as const) expect(plan(scene(), { organize }).kind).toBe("guard");
 		const wake = plan(asleep(), { organize: "wake" });
 		if (wake.kind !== "guard") throw new Error(`expected a guard, got ${wake.kind}`);
-		await wake.work();
+		await wake.work("");
 	});
 
 	it("flashes why it can't act, as recorded", () => {

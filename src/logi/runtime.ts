@@ -17,6 +17,7 @@ export function logiRuntime(deps: { machines(): readonly Machine[]; board: Threa
 		transitions: { age: () => undefined },
 		queued: () => 0,
 		scheme: () => undefined,
+		locale: () => undefined,
 		// Ultrathink only prefixes prompts Turnkey sends, and on Logitech you type yours in T3 Code.
 		ultrathink: undefined,
 		git: new GitStatuses(deps.repaint),

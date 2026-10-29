@@ -17,7 +17,8 @@ import { findModel, modelColor, speedToggle } from "../core/models.js";
 import { activityBar, renderActivityBar, renderInfoBar, renderNoticeBar } from "../core/infobar.js";
 import { currentEffort, effortChoices } from "../core/power.js";
 import { modeOf } from "../core/modes.js";
-import { migratePromptSettings, templatePrompt } from "../core/prompts.js";
+import { migratePromptSettings } from "../core/prompts.js";
+import { sendKey, type SendSettings, type SendState } from "../core/keys/prompt.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
 import { COLORS, type GlyphName, renderControlKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
@@ -91,6 +92,19 @@ export class Activity extends SharedKey<ActivitySettings, ThreadState> {
 
 type PromptSettings = { title?: string; prompt?: string; machine?: string; target?: string; thread?: string; threadTitle?: string };
 
+/** A prompt key on the Neo info bar: what waits in the target thread's queue, and whether a stop holds it. */
+function queueBar(thread: DeckThread | undefined): string {
+	if (thread === undefined) return renderInfoBar({ icon: { glyph: "queued", color: COLORS.muted }, title: t("strip.queue"), detail: t("reason.noThread"), available: false });
+	const queue = queueOf(thread);
+	const count = queue?.items.length ?? 0;
+	return renderInfoBar({
+		icon: { glyph: "queued", color: count > 0 ? COLORS.text : COLORS.muted },
+		title: count > 0 ? t("infobar.queued", { count }) : t("strip.nothingQueued"),
+		detail: thread.title,
+		...(count > 0 && queue?.held ? { right: { text: t("infobar.held"), color: COLORS.attention } } : {}),
+	});
+}
+
 /**
  * A key that sends a prompt to the selected thread. Tap starts, steers or queues it as T3 Code decides; hold
  * interrupts and restarts with it. Steer keys only ever steer the running turn.
@@ -135,20 +149,7 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 	/** On the Neo info bar: what waits in the target thread's queue, and whether a stop holds it. */
 	async #paintBar(action: Action<T>): Promise<void> {
 		const notice = connectionNotice(this.machineOf(action));
-		if (notice) return this.setBar(action, renderNoticeBar(notice));
-		const { thread } = this.target(action);
-		if (thread === undefined) return this.setBar(action, renderInfoBar({ icon: { glyph: "queued", color: COLORS.muted }, title: t("strip.queue"), detail: t("reason.noThread"), available: false }));
-		const queue = queueOf(thread);
-		const count = queue?.items.length ?? 0;
-		await this.setBar(
-			action,
-			renderInfoBar({
-				icon: { glyph: "queued", color: count > 0 ? COLORS.text : COLORS.muted },
-				title: count > 0 ? t("infobar.queued", { count }) : t("strip.nothingQueued"),
-				detail: thread.title,
-				...(count > 0 && queue?.held ? { right: { text: t("infobar.held"), color: COLORS.attention } } : {}),
-			}),
-		);
+		await this.setBar(action, notice ? renderNoticeBar(notice) : queueBar(this.target(action).thread));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
@@ -173,21 +174,34 @@ abstract class PromptKey<T extends PromptSettings & JsonObject> extends DeckActi
 	}
 }
 
-type SendSettings = PromptSettings & { template?: string };
-
 /** Sends the key's own prompt, or one of a few everyday ones (continue, fix tests, …), to the selected thread. */
-abstract class SendAction extends PromptKey<SendSettings> {
-	protected override migrateSettings(settings: SendSettings): SendSettings | undefined {
+abstract class SendAction extends SharedKey<SendSettings & JsonObject, SendState> {
+	protected readonly definition = sendKey;
+
+	protected override migrateSettings(settings: SendSettings & JsonObject): (SendSettings & JsonObject) | undefined {
 		return migratePromptSettings(settings);
 	}
 
-	protected override glyphName(settings: SendSettings): GlyphName {
-		return modeOf("send", this.manifestId, settings) === "custom" ? "send" : "spark";
+	/** Quick Prompt's template, when none is saved, is its UUID's: Continue. */
+	protected override definitionSettings(action: Action<SendSettings & JsonObject>): SendSettings & JsonObject {
+		const settings = this.settingsOf(action);
+		return { ...settings, template: modeOf("send", this.manifestId, settings) };
 	}
 
-	protected prompt(settings: SendSettings) {
-		const { text, label } = templatePrompt(modeOf("send", this.manifestId, settings), settings.prompt);
-		return { text, label: settings.title || label };
+	override needs(action: Action<SendSettings & JsonObject>): Need[] {
+		const { text, thread, pinned } = this.stateOf(action);
+		return [...threadNeeds(this.machineOf(action), thread, true, pinned ? pinnedName(this.settingsOf(action)) : undefined), { kind: "prompt", ok: text !== "" }];
+	}
+
+	protected override reviewScope(action: Action<SendSettings & JsonObject>): string | undefined {
+		const { text, thread } = this.stateOf(action);
+		return thread && JSON.stringify([thread.key, text]);
+	}
+
+	protected override async draw(action: Action<SendSettings & JsonObject>): Promise<void> {
+		if (!action.isNeoInfobar()) return super.draw(action);
+		const notice = connectionNotice(this.machineOf(action));
+		await this.setBar(action, notice ? renderNoticeBar(notice) : queueBar(this.target(action).thread));
 	}
 }
 

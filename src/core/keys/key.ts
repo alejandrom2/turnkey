@@ -32,9 +32,13 @@ export type FaceStyle = "tile" | "glyph";
 export type ConfirmBy = "settings" | "hold" | "click";
 export type PressInput = { heldMs: number; confirmBy: ConfirmBy };
 export type PressPlan =
-	| { kind: "run"; work: () => Promise<unknown> }
-	/** Stream Deck only ("settings"): the key's Confirm setting decides, with this review card, hold hint and scope (any change reviews again). */
-	| { kind: "guard"; guard: { scope: string; holdHint: string; card: () => ReviewCard }; work: () => Promise<unknown> }
+	/** `notice`: a reason the press didn't do all it could, flashed once the work has started (Limits' "Hold to use reset"). */
+	| { kind: "run"; work: () => Promise<unknown>; notice?: string }
+	/**
+	 * Stream Deck only ("settings"): the key's Confirm setting decides, with this review card, hold hint and scope (any
+	 * change reviews again). `work` gets the `detail` the press was reviewed with, so a second press does what the first showed.
+	 */
+	| { kind: "guard"; guard: { scope: string; holdHint: string; card: () => ReviewCard; detail?: string }; work: (detail: string) => Promise<unknown> }
 	| { kind: "fail"; label: string }
 	| { kind: "needsHold"; label: string }
 	| { kind: "nothing" };
@@ -74,6 +78,8 @@ export interface KeyRuntime {
 	 * asks for it, so keys that need it there only say so.
 	 */
 	optIn?: { requested(url: string, scope: OptInScope): boolean; request(url: string, ...scopes: OptInScope[]): Promise<void> };
+	/** The language dates are written in: Stream Deck's; undefined for this computer's. */
+	locale(): string | undefined;
 	/** The usage periods Usage keys show, read on demand. */
 	usage: UsageStore;
 }

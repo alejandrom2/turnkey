@@ -61,9 +61,14 @@ export abstract class SharedKey<S extends JsonObject, St> extends DeckAction<S> 
 		const ctx = this.#context(ev.action);
 		await this.definition.prepare?.(ctx);
 		const plan = this.pressPlan(ev.action, this.definition.state(ctx), ctx, { heldMs, confirmBy: "settings" });
-		if (plan.kind === "run") await this.run(ev.action, plan.work);
+		if (plan.kind === "run" && plan.notice !== undefined) {
+			const working = plan.work();
+			await this.flash(ev.action, false, plan.notice);
+			await this.run(ev.action, () => working);
+		} else if (plan.kind === "run") await this.run(ev.action, plan.work);
 		else if (plan.kind === "guard") {
-			if ((await this.guard(ev.action, { ...plan.guard, held: heldMs })) !== undefined) await this.run(ev.action, plan.work);
+			const detail = await this.guard(ev.action, { ...plan.guard, held: heldMs });
+			if (detail !== undefined) await this.run(ev.action, () => plan.work(detail));
 		}
 		else if (plan.kind !== "nothing") await this.flash(ev.action, false, plan.label);
 	}

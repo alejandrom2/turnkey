@@ -8,6 +8,8 @@ import { branchKey, forkKey, stopKey } from "../core/keys/lineage.js";
 import { healthKey } from "../core/keys/health.js";
 import { openKey } from "../core/keys/open.js";
 import { ORGANIZE_ACTIONS, organizeKey } from "../core/keys/organize.js";
+import { limitsKey } from "../core/keys/limits.js";
+import { sendKey } from "../core/keys/prompt.js";
 import { shareKey } from "../core/keys/share.js";
 import { createUpdateKey } from "../core/keys/update.js";
 import { readShown, usageKey } from "../core/keys/usage.js";
@@ -15,19 +17,14 @@ import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { applyChoice, type DialControl, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
-import { COLORS } from "../core/render.js";
-import type { Machine } from "../core/t3/machine.js";
-import type { LimitPool, LimitPoolWindow } from "../core/usage/limits.js";
 import { usagePeriod } from "../core/usage/store.js";
-import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
 import { continueStep } from "./controls.js";
 import type { KeyKind } from "./keys.js";
-import { continueFace, customPromptFace, limitsFace, limitsLabel, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, urgentFace, runningFace, waitingFace } from "./ring.js";
+import { continueFace, PROMPT_GLYPHS, settingsFace, statusFace, statusLabel, stopAllFace, urgentFace, runningFace, waitingFace } from "./ring.js";
 import { sharedKind } from "./shared.js";
 
-/** What the sidecar's keys reach for beyond the board: the machines, opening things, the limits and config watches, and the shared keys' runtime. */
+/** What the sidecar's keys reach for beyond the board: opening things, the limits and config watches, and the shared keys' runtime. */
 export type SidecarDeps = {
-	machines(): readonly Machine[];
 	board: ThreadBoard;
 	open(thread: DeckThread): void;
 	openExternal(url: string): Promise<void>;
@@ -69,25 +66,9 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		void applyChoice(thread, choice, NO_ULTRATHINK)?.().catch(failed(CHANGE[control]));
 	}
 
-	type Limit = { percent: number; stale: boolean; driver: string; window: string };
-
-	/** A pool's limit as a slot shows it: its tightest window, used. */
-	function limitOf({ pool, window }: { pool: LimitPool; window: LimitPoolWindow }, now: number): Limit {
-		const gauge = limitGauge(pool, window, now, "used");
-		return { percent: gauge.percent, stale: gauge.stale, driver: pool.driver, window: gauge.label };
-	}
-	function tightestLimit(): Limit | undefined {
-		const now = Date.now();
-		const tightest = tightestWindow(machineLimitPools(deps.machines(), now));
-		return tightest && limitOf(tightest, now);
-	}
-	/** The Limits folder's slots: the provider at `place`, from 1, in the order T3 Code's Limits lists them. */
-	function limitAt(place: string): Limit | undefined {
-		const now = Date.now();
-		const pool = machineLimitPools(deps.machines(), now)[Number(place) - 1];
-		const tightest = pool && tightestWindow([pool]);
-		return tightest && limitOf(tightest, now);
-	}
+	// Limit n and the Limits folder were Logitech actions before they were shared: same faces, and a press only refreshes, as it always did.
+	const limitsQuiet = { quiet: failed("refresh limits"), glyphOnly: true };
+	const { press: _folderPress, ...limitsFolder } = sharedKind("limits", limitsKey, () => ({}), deps.runtime, deps.warn, limitsQuiet);
 
 	// Update's runs live with this host; how one ended flashes on its key, after the press.
 	const updateKey = createUpdateKey();
@@ -104,21 +85,11 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		thread: sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), deps.runtime, deps.warn),
 		activity: sharedKind("activity", activityKey, { "": {} }, deps.runtime, deps.warn),
 		newThread: sharedKind("newThread", newThreadKey, { "": {} }, deps.runtime, deps.warn),
-		prompt: {
-			face: (_index, name) => (isPrompt(name) ? promptFace(name) : ringFace(COLORS.muted, "chat", { dim: true })),
-			press: (_index, name) => {
-				const thread = selected();
-				if (thread && isPrompt(name)) void sendPrompt(thread, QUICK_PROMPTS[name].text).catch(failed("send the prompt"));
-			},
-		},
+		// Prompt n and Send were Logitech actions before they were shared: they keep how they looked and acted, sending at once.
+		// A name with no glyph of its own (Continue is its own action) sends nothing, as before.
+		prompt: sharedKind("prompt", sendKey, (name) => (isPrompt(name) ? { template: name } : {}), deps.runtime, deps.warn, { quiet: failed("send the prompt"), glyphOnly: true }),
 		// A prompt written in the action's editor travels as its parameter, so each placed copy is its own key.
-		send: {
-			face: (_index, text) => customPromptFace(text.trim() !== ""),
-			press: (_index, text) => {
-				const thread = selected();
-				if (thread && text.trim()) void sendPrompt(thread, text.trim()).catch(failed("send the prompt"));
-			},
-		},
+		send: sharedKind("send", sendKey, (text) => ({ template: "custom", prompt: text }), deps.runtime, deps.warn, { quiet: failed("send the prompt"), glyphOnly: true }),
 		continue: {
 			face: () => continueFace(continueStep(selected())),
 			label: () => selected()?.title,
@@ -136,29 +107,9 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { quiet: failed(CHANGE.model), glyphOnly: true }), appear: watchConfigs },
 		speed: sharedKind("speed", speedKey, { "": {} }, deps.runtime, deps.warn),
 		plan: sharedKind("plan", planKey, { "": {} }, deps.runtime, deps.warn),
-		limit: {
-			face: (_index, place) => {
-				const limit = limitAt(place);
-				return limit ? limitsFace(limit.percent, limit.stale, limit.driver) : limitsFace(undefined, false);
-			},
-			label: (_index, place) => {
-				const limit = limitAt(place);
-				return limit && limitsLabel(limit.driver, limit.window, limit.percent);
-			},
-			appear: deps.refreshLimits,
-			press: deps.refreshLimits,
-		},
-		limits: {
-			face: () => {
-				const limit = tightestLimit();
-				return limitsFace(limit?.percent, limit?.stale ?? false);
-			},
-			label: () => {
-				const limit = tightestLimit();
-				return limit && limitsLabel(limit.driver, limit.window, limit.percent);
-			},
-			appear: deps.refreshLimits,
-		},
+		// A Limits folder's slots: the parameter is the place, from 1, in T3 Code's Limits.
+		limit: { ...sharedKind("limit", limitsKey, (place) => ({ poolSlot: Number(place) }), deps.runtime, deps.warn, limitsQuiet), appear: deps.refreshLimits, press: deps.refreshLimits },
+		limits: { ...limitsFolder, appear: deps.refreshLimits },
 		status: {
 			face: () => statusFace(threadCounts(board.threads)),
 			label: () => statusLabel(threadCounts(board.threads)),

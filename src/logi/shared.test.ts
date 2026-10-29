@@ -210,6 +210,21 @@ describe("sharedKind presses", () => {
 		expect(kind.face(0, "", 80)).not.toBe(glyphResult(false, t("result.holdToAllow")));
 	});
 
+	it("flashes a run's notice once its work has started, and keeps it after the work succeeds", async () => {
+		const { runtime, warn } = setup({ current: undefined });
+		const work = vi.fn(async () => undefined);
+		const noticing: KeyDefinition<object, null> = { state: () => null, tile: () => renderSkeletonKey(), press: () => ({ kind: "run", work, notice: "Hold to use reset" }) };
+		const kind = sharedKind("noticing", noticing, { "": {} }, runtime, warn);
+		kind.press!(0, "");
+		expect(work).toHaveBeenCalledOnce();
+		expect(kind.label!(0, "")).toBe("Hold to use reset");
+		await settle();
+		expect(kind.face(0, "", 80)).toBe(glyphResult(false, "Hold to use reset"));
+		const quiet = sharedKind("quiet", noticing, { "": {} }, runtime, warn, { quiet: () => undefined });
+		quiet.press!(0, "");
+		expect(quiet.label!(0, "")).toBeUndefined();
+	});
+
 	it("flashes and logs a press T3 Code refuses, naming the kind", async () => {
 		const { kind, target, warn } = await approve();
 		vi.mocked(target.machine.respond).mockRejectedValueOnce(new Error("timed out"));
