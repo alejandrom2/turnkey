@@ -4,7 +4,7 @@ import { organize, type OrganizeAction } from "../commands.js";
 import { elapsed, type MessageKey, t } from "../i18n.js";
 import { type GlyphName, renderControlKey, renderInfoKey } from "../render.js";
 import { latestSnoozed } from "../t3/shell.js";
-import { canOperate, confirmed, type KeyDefinition, type KeyRuntime } from "./key.js";
+import { canOperate, confirmed, type KeyDefinition, type KeyRuntime, withHold } from "./key.js";
 
 export type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; confirm?: string; confirmSettle?: string; machine?: string };
 
@@ -73,7 +73,7 @@ export const organizeKey: KeyDefinition<OrganizeSettings, OrganizeState> = {
 			const detail = check.available ? thread?.title : check.reason;
 			return renderInfoKey({ glyph, title: t(label), detail, available: check.available });
 		}
-		const text = which === "snooze" ? t("organize.snoozeFor", { duration: snoozeLabel(ctx.settings) }) : t(label);
+		const text = which === "snooze" ? t("organize.snoozeFor", { duration: snoozeLabel(ctx.settings) }) : which === "archive" && check.available ? withHold(ctx, t(label)) : t(label);
 		return renderControlKey({ glyph, label: text, available: check.available, active: pinned, pinned: targeted });
 	},
 

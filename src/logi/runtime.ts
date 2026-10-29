@@ -32,5 +32,7 @@ export function logiRuntime(deps: { machines(): readonly Machine[]; board: Threa
 		},
 		// A slow scan is only an info line on Stream Deck; the sidecar's log has no place for it.
 		usage: new UsageStore(deps.repaint, Date.now, () => undefined),
+		// Only keypad tiles show it: the Ring draws glyphs, and a click there is the confirmation.
+		holdHints: true,
 	};
 }

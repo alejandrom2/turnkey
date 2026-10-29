@@ -1,6 +1,7 @@
 import { HOLD_CONFIRM_MS } from "../approvals.js";
 import type { DeckThread, ThreadBoard } from "../board.js";
 import type { GitStatuses } from "../git.js";
+import { t } from "../i18n.js";
 import type { AcpIcons } from "../models.js";
 import type { MotionMode, Transitions } from "../motion.js";
 import type { ReviewCard } from "../render.js";
@@ -81,6 +82,8 @@ export interface KeyRuntime {
 	locale(): string | undefined;
 	/** The usage periods Usage keys show, read on demand. */
 	usage: UsageStore;
+	/** Logitech: tiles of keys a keypad holds for say so up front, as a tap there only explains. Stream Deck has its Confirm settings. */
+	holdHints?: true;
 }
 
 export type KeyContext<S> = {
@@ -113,6 +116,9 @@ export interface KeyDefinition<S, St> {
 /** Whether the machine that owns `thread`, else any machine, may act: with no thread the key's own machine setting is not consulted, as on Stream Deck always. */
 export const canOperate = (ctx: KeyContext<unknown>, thread: DeckThread | undefined): boolean =>
 	thread !== undefined ? thread.machine.canOperate : ctx.runtime.machines().some((machine) => machine.canOperate);
+
+/** `label`, saying "hold" where the host's tiles do. */
+export const withHold = (ctx: KeyContext<unknown>, label: string): string => (ctx.runtime.holdHints ? t("strip.withHold", { label }) : label);
 
 /** Whether an irreversible press may go ahead: "settings" defers to `fromSettings`, the key's own rule. */
 export function confirmed(

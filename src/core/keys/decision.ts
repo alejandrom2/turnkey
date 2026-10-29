@@ -5,7 +5,7 @@ import { t } from "../i18n.js";
 import { renderDecisionKey, renderSkeletonKey } from "../render.js";
 import type { ApprovalPress } from "../approvals.js";
 import type { PendingRequest } from "../t3/machine.js";
-import { canOperate, type KeyContext, type KeyDefinition, type PressPlan, confirmed } from "./key.js";
+import { canOperate, type KeyContext, type KeyDefinition, type PressPlan, confirmed, withHold } from "./key.js";
 import { requestFor } from "./requests.js";
 
 /** What a request is about, in a line: the approval's summary, or the heading of one the deck can't answer. */
@@ -64,9 +64,10 @@ export const denyKey: KeyDefinition<Record<string, unknown>, DenyState> = {
 		return { thread, pinned, check, request: check.available && thread !== undefined ? requestFor(ctx.runtime, thread) : undefined };
 	},
 
-	tile({ check, request, pinned }) {
+	tile({ check, request, pinned }, ctx) {
 		if (check.available && request === undefined) return renderSkeletonKey();
-		return renderDecisionKey({ kind: "deny", armed: check.available, caption: t("face.deny"), detail: request ? requestSummary(request) : check.available ? undefined : check.reason, pinned });
+		const caption = check.available && request?.type === "approval" ? withHold(ctx, t("face.deny")) : t("face.deny");
+		return renderDecisionKey({ kind: "deny", armed: check.available, caption, detail: request ? requestSummary(request) : check.available ? undefined : check.reason, pinned });
 	},
 
 	// Declining is a tap today; Logi's hold on the keypad comes from `confirmBy`.

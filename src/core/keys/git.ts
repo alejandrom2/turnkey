@@ -19,7 +19,7 @@ import { COLORS, type GlyphName, renderInfoKey } from "../render.js";
 import { grants, needsAccessLabel } from "../scopes.js";
 import { SOURCE_CONTROL_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
-import { confirmed, type KeyContext, type KeyDefinition, type KeyRuntime } from "./key.js";
+import { confirmed, type KeyContext, type KeyDefinition, type KeyRuntime, withHold } from "./key.js";
 
 export type GitSettings = { machine?: string; gitAction?: string; commitMessage?: string; confirm?: string; title?: string };
 
@@ -107,7 +107,7 @@ export const gitKey: KeyDefinition<GitSettings, GitState> = {
 		return { which, title, busy, check: busy === undefined ? gitCheck(ctx.runtime, ctx.machine, which) : undefined };
 	},
 
-	tile({ which, title, busy, check }) {
+	tile({ which, title, busy, check }, ctx) {
 		if (busy !== undefined) return renderInfoKey({ glyph: "running", color: COLORS.accent, title, detail: busy });
 		if (!check!.ok) return renderInfoKey({ glyph: GLYPH[which], title, detail: check!.reason, available: false });
 		const { status } = check!;
@@ -117,7 +117,7 @@ export const gitKey: KeyDefinition<GitSettings, GitState> = {
 				: needsDefaultBranchHold(status, which)
 					? t("repo.holdOnDefault", { branch: status.refName ?? "" })
 					: (gitSummary(status, which) ?? status.refName ?? undefined);
-		return renderInfoKey({ glyph: GLYPH[which], title, detail });
+		return renderInfoKey({ glyph: GLYPH[which], title: withHold(ctx, title), detail });
 	},
 
 	label: ({ check }) => check?.target?.thread.title,

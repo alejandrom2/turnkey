@@ -9,7 +9,7 @@ import { isThisComputer, MAINTAIN_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
 import { fetchUpdateTarget, RESTART_TIMEOUT_MS, updateFailure, updateRoute, type UpdateStage } from "../update.js";
 import { accessFace, accessPlan, awaitingPairing, unreachable } from "./access.js";
-import { confirmed, type KeyDefinition, type KeyRuntime } from "./key.js";
+import { confirmed, type KeyDefinition, type KeyRuntime, withHold } from "./key.js";
 
 export type UpdateSettings = { machine?: string };
 
@@ -151,9 +151,10 @@ export function createUpdateKey(): UpdateKey {
 			const environment = machine.updateEnvironment;
 			const route = updateRoute(environment);
 			const version = environment?.serverVersion;
+			const title = version ? t("update.version", { version }) : t("update.noVersion");
 			return renderInfoKey({
 				glyph: "update",
-				title: version ? t("update.version", { version }) : t("update.noVersion"),
+				title: route.kind === "manual" ? title : withHold(ctx, title),
 				detail: route.kind === "manual" ? t(route.reason) : machineName(machine),
 				available: route.kind !== "manual",
 			});

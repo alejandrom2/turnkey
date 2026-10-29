@@ -85,6 +85,8 @@ describe("sharedKind faces", () => {
 		await settle();
 		expect(approve.face(0, "", 80)).toBe(ringFace(COLORS.accent, "check"));
 		expect(deny.face(0, "", 80)).toBe(ringFace(COLORS.accent, "denyCircle"));
+		// A keypad holds to deny, so its tile says so before a tap is refused.
+		await expect(deny.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedDeny-hold-116.svg");
 		selected.current = undefined;
 		expect(approve.face(0, "", 80)).toBe(ringFace(COLORS.accent, "check", { dim: true }));
 		expect(deny.face(0, "", 80)).toBe(ringFace(COLORS.accent, "denyCircle", { dim: true }));
@@ -414,6 +416,17 @@ describe("sharedKind over the lineage and organize keys", () => {
 		expect(keys.fork.label!(0, "")).toBe("Open thread");
 	});
 
+	it("says hold on the keypad tiles of the keys a keypad holds for, and only those", async () => {
+		const claude = lineage({ model: { instanceId: "claudeAgent", model: "opus" }, ...RUNNING });
+		await expect(claude.stopWorkflow.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedStopWorkflow-hold-116.svg");
+		const keys = lineage({ mergeInto: "parent" });
+		await expect(keys.merge.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedMerge-hold-116.svg");
+		await expect(keys.organize.face(0, "archive", 116)).toMatchFileSnapshot("./__goldens__/sharedOrganize-archive-hold-116.svg");
+		const hold = t("strip.withHold", { label: "" });
+		for (const which of ORGANIZE_ACTIONS.filter((which) => which !== "archive")) expect(keys.organize.face(0, which, 116)).not.toContain(hold);
+		expect(keys.fork.face(0, "", 116)).not.toContain(hold);
+	});
+
 	it("archives only after a keypad hold, or on a Ring click", async () => {
 		vi.useFakeTimers();
 		const { organize, thread: open } = lineage();
@@ -481,9 +494,11 @@ describe("sharedKind over the git and pull request keys", () => {
 		pr.face(0, "pr", 80);
 		await settle();
 		await expect(git.face(0, "commit", 80)).toMatchFileSnapshot("./__goldens__/sharedGit-commit-80.svg");
-		await expect(git.face(0, "commit", 116)).toMatchFileSnapshot("./__goldens__/sharedGit-commit-116.svg");
+		await expect(git.face(0, "commit", 116)).toMatchFileSnapshot("./__goldens__/sharedGit-commit-hold-116.svg");
 		await expect(pr.face(0, "pr", 80)).toMatchFileSnapshot("./__goldens__/sharedPr-80.svg");
 		await expect(pr.face(0, "fix", 80)).toMatchFileSnapshot("./__goldens__/sharedPr-fix-80.svg");
+		await expect(pr.face(0, "fix", 116)).toMatchFileSnapshot("./__goldens__/sharedPr-fix-hold-116.svg");
+		expect(pr.face(0, "explain", 116)).not.toContain(t("strip.withHold", { label: "" }));
 		expect(git.label!(0, "commit")).toBe("Open thread");
 	});
 
