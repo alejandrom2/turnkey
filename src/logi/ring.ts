@@ -69,13 +69,13 @@ export const stopAllFace = (running: number): string => ringFace(COLORS.error, "
 export function limitsFace(percent: number | undefined, stale: boolean, driver?: string): string {
 	if (percent === undefined) return ringFace(COLORS.muted, "gauge", { dim: true });
 	const color = percent >= 90 ? COLORS.error : percent >= 70 ? STATE_COLOR.approval : COLORS.done;
-	const radius = 60;
+	const radius = 64;
 	const length = 2 * Math.PI * radius;
 	const used = Math.min(Math.max(percent, 0), 100) / 100;
 	const ring =
-		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="14"/>` +
-		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
-		(driver === undefined ? glyph("gauge", 38, 38, 68, color, 3.2) : providerMarkOf(driver, 40, 64));
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="10"/>` +
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
+		(driver === undefined ? glyph("gauge", 38, 38, 68, color, 3.2) : providerMarkOf(driver, 28, 88));
 	return svgMarkup(144, 144, stale ? `<g opacity=".5">${ring}</g>` : ring);
 }
 
