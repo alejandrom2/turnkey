@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Sigue y dirige los hilos de T3 Code desde Stream Deck: estado del hilo, detener, prompts, opciones de modelo y respuestas, con todos los proveedores.",
+	"Description": "Sigue y dirige los hilos de T3 Code desde Stream Deck: estado del hilo, detener, prompts, opciones de modelo y respuestas, con todos los proveedores. Sin afiliación con T3 Code ni Elgato.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Hilo",
@@ -803,7 +803,8 @@
 				"languages": "Idiomas",
 				"languagesHint": "Turnkey usa el idioma de Stream Deck.",
 				"readme": "Guía",
-				"openReadme": "Abrir el README"
+				"openReadme": "Abrir el README",
+				"independent": "Turnkey es un proyecto independiente, sin afiliación ni respaldo de T3 Code, Elgato o Logitech."
 			},
 			"advanced": {
 				"appLink": "Enlace de la app",

@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Stream Deck から T3 Code のスレッドを確認・操作。スレッドの状態、停止、プロンプト、モデルオプション、回答を、すべてのプロバイダーで。",
+	"Description": "Stream Deck から T3 Code のスレッドを確認・操作。スレッドの状態、停止、プロンプト、モデルオプション、回答を、すべてのプロバイダーで。T3 Code および Elgato とは提携していません。",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "スレッド",
@@ -803,7 +803,8 @@
 				"languages": "言語",
 				"languagesHint": "Turnkey は Stream Deck の言語に従います。",
 				"readme": "ガイド",
-				"openReadme": "README を開く"
+				"openReadme": "README を開く",
+				"independent": "Turnkey は独立したプロジェクトで、T3 Code、Elgato、Logitech とは提携しておらず、承認も受けていません。"
 			},
 			"advanced": {
 				"appLink": "アプリリンク",

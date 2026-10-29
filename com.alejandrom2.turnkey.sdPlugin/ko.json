@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Stream Deck에서 T3 Code 스레드를 확인하고 조작하세요. 스레드 상태, 중지, 프롬프트, 모델 옵션과 응답까지 모든 프로바이더에서 사용할 수 있습니다.",
+	"Description": "Stream Deck에서 T3 Code 스레드를 확인하고 조작하세요. 스레드 상태, 중지, 프롬프트, 모델 옵션과 응답까지 모든 프로바이더에서 사용할 수 있습니다. T3 Code 및 Elgato와 제휴하지 않았습니다.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "스레드",
@@ -803,7 +803,8 @@
 				"languages": "언어",
 				"languagesHint": "Turnkey은 Stream Deck의 언어를 따릅니다.",
 				"readme": "가이드",
-				"openReadme": "README 열기"
+				"openReadme": "README 열기",
+				"independent": "Turnkey는 독립 프로젝트로, T3 Code, Elgato, Logitech과 제휴하거나 보증을 받지 않았습니다."
 			},
 			"advanced": {
 				"appLink": "앱 링크",

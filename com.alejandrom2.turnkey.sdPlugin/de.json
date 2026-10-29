@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "T3 Code-Threads vom Stream Deck aus beobachten und steuern: Thread-Status, Stopp, Prompts, Modelloptionen und Antworten, über alle Anbieter hinweg.",
+	"Description": "T3 Code-Threads vom Stream Deck aus beobachten und steuern: Thread-Status, Stopp, Prompts, Modelloptionen und Antworten, über alle Anbieter hinweg. Nicht mit T3 Code oder Elgato verbunden.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Thread",
@@ -803,7 +803,8 @@
 				"languages": "Sprachen",
 				"languagesHint": "Turnkey folgt der Sprache von Stream Deck.",
 				"readme": "Anleitung",
-				"openReadme": "README öffnen"
+				"openReadme": "README öffnen",
+				"independent": "Turnkey ist ein unabhängiges Projekt und weder mit T3 Code, Elgato noch Logitech verbunden oder von ihnen unterstützt."
 			},
 			"advanced": {
 				"appLink": "App-Link",

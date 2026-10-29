@@ -12,7 +12,7 @@ name: Turnkey
 displayName: Turnkey
 
 # Short description of the plugin.
-description: Watch and steer T3 Code from your Logitech devices. The Actions Ring shows the thread that needs you and stops a run, and an MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
+description: Watch and steer T3 Code from your Logitech devices. T3 Code gets its own Actions Ring, with the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails. Not affiliated with T3 Code or Logitech.
 
 # Name of the plugin library file.
 pluginFileName: TurnkeyPlugin.dll

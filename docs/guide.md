@@ -1,6 +1,6 @@
 # Turnkey guide
 
-Everything Turnkey does, key by key. For a quick overview, see the [README](../README.md).
+Everything Turnkey does on Stream Deck and Logitech, key by key. For a quick overview, see the [README](../README.md). Turnkey is an independent project, not affiliated with or endorsed by T3 Code, Elgato or Logitech.
 
 ## Setup
 

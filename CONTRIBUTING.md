@@ -1,6 +1,6 @@
 # Contributing to Turnkey
 
-Thanks for helping. Turnkey is a small, independent project, and bug reports, fixes, translations and ideas are all welcome.
+Thanks for helping. Turnkey is a small, independent project for Stream Deck and Logitech, not affiliated with T3 Code, Elgato or Logitech. Bug reports, fixes, translations and ideas are all welcome.
 
 ## Ways to help
 

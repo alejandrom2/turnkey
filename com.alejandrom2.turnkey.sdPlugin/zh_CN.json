@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "在 Stream Deck 上查看并操控 T3 Code 对话：对话状态、停止、提示词、模型选项与回答，支持所有提供方。",
+	"Description": "在 Stream Deck 上查看并操控 T3 Code 对话：对话状态、停止、提示词、模型选项与回答，支持所有提供方。与 T3 Code 和 Elgato 无关联。",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "对话",
@@ -803,7 +803,8 @@
 				"languages": "语言",
 				"languagesHint": "Turnkey 跟随 Stream Deck 的语言。",
 				"readme": "指南",
-				"openReadme": "打开 README"
+				"openReadme": "打开 README",
+				"independent": "Turnkey 是一个独立项目，与 T3 Code、Elgato 和 Logitech 无关联，也未获其认可。"
 			},
 			"advanced": {
 				"appLink": "应用链接",

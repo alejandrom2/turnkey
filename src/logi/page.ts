@@ -72,7 +72,8 @@ function page(actions: PageActions, notice?: { ok: boolean; text: string }): str
 			`<h2>${escapeXml(t("inspector.card.addMachine"))}</h2><p>${escapeXml(t("needs.fix.newPairLink"))}</p>` +
 			(notice ? `<p class="${notice.ok ? "ok" : "bad"}">${escapeXml(notice.text)}</p>` : "") +
 			`<form method="post"><input name="link" type="url" required autocomplete="off" placeholder="${escapeXml(t("inspector.card.linkPlaceholder"))}"><button>${escapeXml(t("inspector.card.connect"))}</button></form>` +
-			haptics(actions.haptics()),
+			haptics(actions.haptics()) +
+			`<p><small>${escapeXml(t("inspector.settings.independent"))}</small></p>`,
 	);
 }
 

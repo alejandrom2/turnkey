@@ -532,7 +532,7 @@ const settingsPage = `<!doctype html>
 						"inspector.settings.languages",
 						`<span>${languages}</span>`,
 						"inspector.settings.languagesHint",
-					)}${field("inspector.settings.readme", `<button class="sd" id="t3-readme" type="button"${text("inspector.settings.openReadme")}</button>`)}
+					)}${field("inspector.settings.readme", `<button class="sd" id="t3-readme" type="button"${text("inspector.settings.openReadme")}</button>`)}<p class="hint"${text("inspector.settings.independent")}</p>
 				</section>
 			</main>
 		</div>

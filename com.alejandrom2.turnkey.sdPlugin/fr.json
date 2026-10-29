@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Suivez et pilotez les fils T3 Code depuis Stream Deck : état des fils, arrêt, prompts, options de modèle et réponses, pour tous les fournisseurs.",
+	"Description": "Suivez et pilotez les fils T3 Code depuis Stream Deck : état des fils, arrêt, prompts, options de modèle et réponses, pour tous les fournisseurs. Sans lien avec T3 Code ni Elgato.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Fil",
@@ -803,7 +803,8 @@
 				"languages": "Langues",
 				"languagesHint": "Turnkey suit la langue de Stream Deck.",
 				"readme": "Guide",
-				"openReadme": "Ouvrir le README"
+				"openReadme": "Ouvrir le README",
+				"independent": "Turnkey est un projet indépendant, sans lien avec T3 Code, Elgato ou Logitech, ni approuvé par eux."
 			},
 			"advanced": {
 				"appLink": "Lien de l'app",

@@ -1,6 +1,6 @@
 # Turnkey for agents
 
-Turnkey is a Stream Deck (+) plugin that controls [T3 Code](https://github.com/pingdotgg/t3code) through T3 Code's own client API (pair link → Bearer session → WebSocket RPC). It is independent of T3 Code and of Stream Deck's maker. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the README first.
+Turnkey is a Stream Deck and Logitech plugin that controls [T3 Code](https://github.com/pingdotgg/t3code) through T3 Code's own client API (pair link → Bearer session → WebSocket RPC). It is independent of T3 Code, Elgato and Logitech. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the README first.
 
 ## Where things live
 
