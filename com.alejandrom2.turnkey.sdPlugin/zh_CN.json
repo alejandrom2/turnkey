@@ -1255,6 +1255,9 @@
 				"connected": "已连接到 {name}。"
 			},
 			"actions": {
+				"limit": { "slot1": "限额 1", "slot2": "限额 2", "slot3": "限额 3", "slot4": "限额 4", "slot5": "限额 5", "description": "按 T3 Code 限额中的顺序，显示某个提供方最紧的限额已用多少。选择它可刷新。" },
+				"waiting": { "name": "等你处理", "description": "统计等你处理的 T3 Code 对话。选择它可打开最紧急的一个。" },
+				"running": { "name": "运行中的对话", "description": "统计运行中的 T3 Code 对话。选择它可打开最近开始的一个。" },
 				"model": { "slot1": "模型 1", "slot2": "模型 2", "slot3": "模型 3", "slot4": "模型 4", "slot5": "模型 5", "description": "将 T3 Code 中打开的对话切换到 T3 Code 模型选择器中此位置的模型：收藏优先。" },
 				"urgent": {
 					"name": "最紧急的对话",

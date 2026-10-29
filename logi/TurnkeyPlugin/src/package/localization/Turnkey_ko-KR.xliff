@@ -40,6 +40,30 @@
           <source>Fix tests</source>
           <target>테스트 수정</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
+          <source>Limit 1</source>
+          <target>한도 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command###description" translate="yes">
+          <source>Shows how much of a provider's tightest limit is used, in the order T3 Code's Limits lists providers. Choose it to refresh.</source>
+          <target>공급자의 가장 빠듯한 한도를 얼마나 썼는지 T3 Code 한도 순서대로 보여줍니다. 선택하면 새로 고칩니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit2Command" translate="yes">
+          <source>Limit 2</source>
+          <target>한도 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit3Command" translate="yes">
+          <source>Limit 3</source>
+          <target>한도 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit4Command" translate="yes">
+          <source>Limit 4</source>
+          <target>한도 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit5Command" translate="yes">
+          <source>Limit 5</source>
+          <target>한도 5</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand" translate="yes">
           <source>Limits</source>
           <target>한도</target>
@@ -80,6 +104,14 @@
           <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
           <target>T3 Code에서 확인이 필요한 항목을 보여 줍니다. 선택하면 해당 스레드를 엽니다.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
+          <source>Running threads</source>
+          <target>실행 중인 스레드</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that are running. Choose it to open the one that started last.</source>
+          <target>실행 중인 T3 Code 스레드 수를 보여줍니다. 선택하면 가장 최근에 시작된 스레드를 엽니다.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand" translate="yes">
           <source>Turnkey Settings</source>
           <target>Turnkey 설정</target>
@@ -111,6 +143,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>T3 Code에서 마지막으로 시작된 실행을 중지합니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
+          <source>Waiting on you</source>
+          <target>응답 대기</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that wait on you. Choose it to open the most urgent.</source>
+          <target>응답을 기다리는 T3 Code 스레드 수를 보여줍니다. 선택하면 가장 급한 스레드를 엽니다.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand" translate="yes">
           <source>Send prompt</source>

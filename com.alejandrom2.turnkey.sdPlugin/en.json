@@ -1255,6 +1255,9 @@
 				"connected": "Connected to {name}."
 			},
 			"actions": {
+				"limit": { "slot1": "Limit 1", "slot2": "Limit 2", "slot3": "Limit 3", "slot4": "Limit 4", "slot5": "Limit 5", "description": "Shows how much of a provider's tightest limit is used, in the order T3 Code's Limits lists providers. Choose it to refresh." },
+				"waiting": { "name": "Waiting on you", "description": "Counts the T3 Code threads that wait on you. Choose it to open the most urgent." },
+				"running": { "name": "Running threads", "description": "Counts the T3 Code threads that are running. Choose it to open the one that started last." },
 				"model": { "slot1": "Model 1", "slot2": "Model 2", "slot3": "Model 3", "slot4": "Model 4", "slot5": "Model 5", "description": "Switches the thread open in T3 Code to the model at this place in your T3 Code model picker: favorites first." },
 				"urgent": {
 					"name": "Most urgent thread",

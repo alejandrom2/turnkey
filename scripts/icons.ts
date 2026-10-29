@@ -105,6 +105,8 @@ write("plugin/category-icon.svg", logo(56, false));
 const SYMBOLS: Record<string, GlyphName> = {
 	MostUrgentCommand: "shield",
 	StatusCommand: "queued",
+	WaitingCommand: "shield",
+	RunningCommand: "pulse",
 	ContinueCommand: "play",
 	StopRunCommand: "stop",
 	StopAllCommand: "stop",
@@ -121,10 +123,17 @@ const SYMBOLS: Record<string, GlyphName> = {
 	Model5Command: "model",
 	// Not actions: the icons of the default ring profile's folders (scripts/logi-profile.ts).
 	PromptsFolder: "chat",
+	ThreadsFolder: "queued",
+	LimitsFolder: "gauge",
 	ModelsFolder: "model",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
 	LimitsCommand: "gauge",
+	Limit1Command: "gauge",
+	Limit2Command: "gauge",
+	Limit3Command: "gauge",
+	Limit4Command: "gauge",
+	Limit5Command: "gauge",
 	SettingsCommand: "sliders",
 };
 const symbols = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "actionsymbols");

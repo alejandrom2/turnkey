@@ -1255,6 +1255,9 @@
 				"connected": "Verbunden mit {name}."
 			},
 			"actions": {
+				"limit": { "slot1": "Limit 1", "slot2": "Limit 2", "slot3": "Limit 3", "slot4": "Limit 4", "slot5": "Limit 5", "description": "Zeigt, wie viel vom engsten Limit eines Anbieters verbraucht ist, in der Reihenfolge der Limits von T3 Code. Wähle es zum Aktualisieren." },
+				"waiting": { "name": "Wartet auf dich", "description": "Zählt die T3-Code-Threads, die auf dich warten. Wähle es, um den dringendsten zu öffnen." },
+				"running": { "name": "Laufende Threads", "description": "Zählt die laufenden T3-Code-Threads. Wähle es, um den zuletzt gestarteten zu öffnen." },
 				"model": { "slot1": "Modell 1", "slot2": "Modell 2", "slot3": "Modell 3", "slot4": "Modell 4", "slot5": "Modell 5", "description": "Wechselt den in T3 Code geöffneten Thread zum Modell an dieser Stelle deiner Modellauswahl in T3 Code: Favoriten zuerst." },
 				"urgent": {
 					"name": "Dringendster Thread",

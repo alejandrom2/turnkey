@@ -63,10 +63,10 @@ export const continueFace = (step: "open" | "send" | undefined): string =>
 export const stopAllFace = (running: number): string => ringFace(COLORS.error, "stop", running > 0 ? { badge: running } : { dim: true });
 
 /**
- * The tightest limit as a ring filling clockwise around the gauge glyph, in green, amber past 70% and red past 90%. No
- * percentage: at the 80 px Options+ draws, it can't be read; the slot's label says it.
+ * A limit as a ring filling clockwise, in green, amber past 70% and red past 90%, around the gauge glyph, or the mark of
+ * the provider `driver` names. No percentage: at the 80 px Options+ draws, it can't be read; the slot's label says it.
  */
-export function limitsFace(percent: number | undefined, stale: boolean): string {
+export function limitsFace(percent: number | undefined, stale: boolean, driver?: string): string {
 	if (percent === undefined) return ringFace(COLORS.muted, "gauge", { dim: true });
 	const color = percent >= 90 ? COLORS.error : percent >= 70 ? STATE_COLOR.approval : COLORS.done;
 	const radius = 60;
@@ -75,8 +75,14 @@ export function limitsFace(percent: number | undefined, stale: boolean): string 
 	const ring =
 		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="14"/>` +
 		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
-		glyph("gauge", 38, 38, 68, color, 3.2);
+		(driver === undefined ? glyph("gauge", 38, 38, 68, color, 3.2) : providerMarkOf(driver, 40, 64));
 	return svgMarkup(144, 144, stale ? `<g opacity=".5">${ring}</g>` : ring);
+}
+
+/** A provider's mark, in its color, from its driver alone, as limits know providers. */
+function providerMarkOf(driver: string, at: number, size: number): string {
+	const provider = { driver, providerName: providerDisplayName({ instanceId: driver, driver }), accentColor: undefined, iconUrl: undefined, badge: false };
+	return providerMark(provider, at, at, size, { color: modelColor(provider) ?? COLORS.accent });
 }
 
 /** The Limits slot's label: which limit it shows, and how much of it is used. */
@@ -86,9 +92,23 @@ export const limitsLabel = (driver: string, window: string, percent: number): st
 /** What waits on you, in amber, else what runs, in blue, counted on the badge; the label gives both. */
 export function statusFace(counts: { approval: number; question: number; running: number }): string {
 	const waiting = counts.approval + counts.question;
-	if (waiting > 0) return ringFace(STATE_COLOR.approval, "queued", { badge: waiting > 9 ? "9+" : waiting });
-	if (counts.running > 0) return ringFace(STATE_COLOR.running, "queued", { badge: counts.running > 9 ? "9+" : counts.running });
+	if (waiting > 0) return ringFace(STATE_COLOR.approval, "queued", { badge: counted(waiting) });
+	if (counts.running > 0) return ringFace(STATE_COLOR.running, "queued", { badge: counted(counts.running) });
 	return ringFace(COLORS.muted, "queued", { dim: true });
+}
+
+const counted = (count: number) => (count > 9 ? "9+" : count);
+
+/** The Threads folder's half for what waits on you: approvals and questions, in T3 Code's amber. */
+export function waitingFace(threads: readonly RingThread[]): string {
+	const count = threads.filter((thread) => waiting(thread.deck)).length;
+	return count > 0 ? ringFace(STATE_COLOR.approval, "shield", { badge: counted(count) }) : ringFace(COLORS.muted, "shield", { dim: true });
+}
+
+/** The Threads folder's half for what runs, in blue. */
+export function runningFace(threads: readonly RingThread[]): string {
+	const count = threads.filter((thread) => thread.deck === "running").length;
+	return count > 0 ? ringFace(STATE_COLOR.running, "pulse", { badge: counted(count) }) : ringFace(COLORS.muted, "pulse", { dim: true });
 }
 
 export const statusLabel = (counts: { approval: number; question: number; running: number }): string =>

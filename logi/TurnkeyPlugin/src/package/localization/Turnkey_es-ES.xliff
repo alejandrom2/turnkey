@@ -40,6 +40,30 @@
           <source>Fix tests</source>
           <target>Arreglar tests</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
+          <source>Limit 1</source>
+          <target>Límite 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command###description" translate="yes">
+          <source>Shows how much of a provider's tightest limit is used, in the order T3 Code's Limits lists providers. Choose it to refresh.</source>
+          <target>Muestra cuánto se ha usado del límite más ajustado de un proveedor, en el orden de Límites de T3 Code. Elígelo para actualizar.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit2Command" translate="yes">
+          <source>Limit 2</source>
+          <target>Límite 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit3Command" translate="yes">
+          <source>Limit 3</source>
+          <target>Límite 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit4Command" translate="yes">
+          <source>Limit 4</source>
+          <target>Límite 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit5Command" translate="yes">
+          <source>Limit 5</source>
+          <target>Límite 5</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand" translate="yes">
           <source>Limits</source>
           <target>Límites</target>
@@ -80,6 +104,14 @@
           <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
           <target>Muestra lo que te espera en T3 Code. Elígelo para abrir ese hilo.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
+          <source>Running threads</source>
+          <target>Hilos en curso</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that are running. Choose it to open the one that started last.</source>
+          <target>Cuenta los hilos de T3 Code en curso. Elígelo para abrir el último que empezó.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand" translate="yes">
           <source>Turnkey Settings</source>
           <target>Ajustes de Turnkey</target>
@@ -111,6 +143,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>Detiene la última ejecución que empezó en T3 Code.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
+          <source>Waiting on you</source>
+          <target>Te esperan</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that wait on you. Choose it to open the most urgent.</source>
+          <target>Cuenta los hilos de T3 Code que te esperan. Elígelo para abrir el más urgente.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand" translate="yes">
           <source>Send prompt</source>

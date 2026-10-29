@@ -9,6 +9,7 @@ import { findModel, modelColor } from "../core/models.js";
 import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
 import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
+import type { LimitPool, LimitPoolWindow } from "../core/usage/limits.js";
 import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
 import { Machines } from "../core/t3/machines.js";
 import { UltrathinkArming, ultrathinkControl } from "../core/ultrathink.js";
@@ -20,7 +21,7 @@ import { useLanguage } from "./language.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { continueStep, nextChoice } from "./controls.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
 import { keptMachines, machineRows } from "./rows.js";
@@ -117,13 +118,24 @@ function showLimits(): void {
 	watchConfigs();
 	for (const each of ready()) void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 }
-function tightestLimit(): { percent: number; stale: boolean; driver: string; window: string } | undefined {
+type Limit = { percent: number; stale: boolean; driver: string; window: string };
+
+/** A pool's limit as a slot shows it: its tightest window, used. */
+function limitOf({ pool, window }: { pool: LimitPool; window: LimitPoolWindow }, now: number): Limit {
+	const gauge = limitGauge(pool, window, now, "used");
+	return { percent: gauge.percent, stale: gauge.stale, driver: pool.driver, window: gauge.label };
+}
+function tightestLimit(): Limit | undefined {
 	const now = Date.now();
-	const pools = machineLimitPools(machines.all, now);
-	const tightest = tightestWindow(pools);
-	if (tightest === undefined) return undefined;
-	const gauge = limitGauge(tightest.pool, tightest.window, now, "used");
-	return { percent: gauge.percent, stale: gauge.stale, driver: tightest.pool.driver, window: gauge.label };
+	const tightest = tightestWindow(machineLimitPools(machines.all, now));
+	return tightest && limitOf(tightest, now);
+}
+/** The Limits folder's slots: the provider at `place`, from 1, in the order T3 Code's Limits lists them. */
+function limitAt(place: string): Limit | undefined {
+	const now = Date.now();
+	const pool = machineLimitPools(machines.all, now)[Number(place) - 1];
+	const tightest = pool && tightestWindow([pool]);
+	return tightest && limitOf(tightest, now);
 }
 
 const operable = () => board.threads.filter((thread) => thread.deck === "running" && thread.machine.canOperate);
@@ -184,6 +196,18 @@ const keys = new Keys(
 			press: (_index, place) => pick("model", (state) => state.choices[Number(place) - 1]),
 			appear: watchConfigs,
 		},
+		limit: {
+			face: (_index, place) => {
+				const limit = limitAt(place);
+				return limit ? limitsFace(limit.percent, limit.stale, limit.driver) : limitsFace(undefined, false);
+			},
+			label: (_index, place) => {
+				const limit = limitAt(place);
+				return limit && limitsLabel(limit.driver, limit.window, limit.percent);
+			},
+			appear: showLimits,
+			press: showLimits,
+		},
 		limits: {
 			face: () => {
 				const limit = tightestLimit();
@@ -201,6 +225,23 @@ const keys = new Keys(
 			press: () => {
 				const top = board.threads[0];
 				if (top) open(top);
+			},
+		},
+		// The Threads folder's halves; the board lists threads most urgent first, and running ones newest first.
+		waiting: {
+			face: () => waitingFace(board.threads),
+			label: () => statusLabel(threadCounts(board.threads)),
+			press: () => {
+				const top = board.threads.find((thread) => thread.deck === "approval" || thread.deck === "question");
+				if (top) open(top);
+			},
+		},
+		running: {
+			face: () => runningFace(board.threads),
+			label: () => statusLabel(threadCounts(board.threads)),
+			press: () => {
+				const newest = board.threads.find((thread) => thread.deck === "running");
+				if (newest) open(newest);
 			},
 		},
 		stopAll: {

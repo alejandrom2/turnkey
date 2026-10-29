@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CatalogModel } from "../core/models.js";
 import { COLORS, sampleStops, SPECTRUM, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
 
 const thread = (deck: DeckState, unseen = false) => ({ deck, unseen });
 
@@ -91,6 +91,17 @@ describe("the controls' faces", () => {
 		expect(limitsFace(62, false)).not.toContain("<text");
 		expect(limitsFace(undefined, false)).toBe(ringFace(COLORS.muted, "gauge", { dim: true }));
 		expect(limitsLabel("claudeAgent", "5-hour", 82.4)).toBe("Claude · 5-hour: 82% used");
+		const claude = limitsFace(40, false, "claudeAgent");
+		expect(claude).toContain(COLORS.done);
+		expect(claude).not.toContain(limitsFace(40, false).match(/<g transform[^>]*>/)![0]);
+	});
+
+	it("splits threads into what waits on you and what runs, each counted, dimmed at none", () => {
+		const threads = [thread("approval"), thread("question"), thread("running"), thread("done")];
+		expect(waitingFace(threads)).toBe(ringFace(STATE_COLOR.approval, "shield", { badge: 2 }));
+		expect(runningFace(threads)).toBe(ringFace(STATE_COLOR.running, "pulse", { badge: 1 }));
+		expect(waitingFace([])).toBe(ringFace(COLORS.muted, "shield", { dim: true }));
+		expect(runningFace([])).toBe(ringFace(COLORS.muted, "pulse", { dim: true }));
 	});
 
 	it("shows what waits on you first, else what runs, and both counts on hover", () => {

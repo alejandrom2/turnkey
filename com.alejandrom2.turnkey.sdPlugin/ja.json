@@ -1255,6 +1255,9 @@
 				"connected": "{name} に接続しました。"
 			},
 			"actions": {
+				"limit": { "slot1": "制限 1", "slot2": "制限 2", "slot3": "制限 3", "slot4": "制限 4", "slot5": "制限 5", "description": "プロバイダーの最も厳しい制限の使用量を、T3 Code の制限の順に表示します。選ぶと更新します。" },
+				"waiting": { "name": "対応待ち", "description": "対応待ちの T3 Code スレッドを数えます。選ぶと最も緊急のスレッドを開きます。" },
+				"running": { "name": "実行中のスレッド", "description": "実行中の T3 Code スレッドを数えます。選ぶと最後に始まったスレッドを開きます。" },
 				"model": { "slot1": "モデル 1", "slot2": "モデル 2", "slot3": "モデル 3", "slot4": "モデル 4", "slot5": "モデル 5", "description": "T3 Code で開いているスレッドを、T3 Code のモデル選択でこの位置にあるモデルに切り替えます（お気に入りが先）。" },
 				"urgent": {
 					"name": "最優先のスレッド",
