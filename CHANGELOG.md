@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/alejandrom2/turnkey/compare/v1.1.0...v1.1.1) (2026-10-29)
+
+
+### Fixes
+
+* avoid generated visibility expressions ([#38](https://github.com/alejandrom2/turnkey/issues/38)) ([6dfa7fd](https://github.com/alejandrom2/turnkey/commit/6dfa7fdebb3d2e81af8f132525cb8249c6ec2991))
+* hide review comments revealed by overlapping comment markers ([#36](https://github.com/alejandrom2/turnkey/issues/36)) ([6ee0813](https://github.com/alejandrom2/turnkey/commit/6ee08132d0f099aa7cf9890939fbac0cb3b6eeb6))
+* reject active markup in registry SVG icons ([#37](https://github.com/alejandrom2/turnkey/issues/37)) ([aa7d1fa](https://github.com/alejandrom2/turnkey/commit/aa7d1fa63a7d39269b965cb573c98d479ee6bea1))
+
 ## [1.1.0](https://github.com/alejandrom2/turnkey/compare/v1.0.0...v1.1.0) (2026-10-29)
 
 
