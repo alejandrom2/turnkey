@@ -152,6 +152,14 @@
           <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
           <target>在 T3 Code 中開啟的對話所在專案內開始新對話，並在 T3 Code 中開啟以便輸入。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand" translate="yes">
+          <source>Plan</source>
+          <target>規劃</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand###description" translate="yes">
+          <source>Switches the thread open in T3 Code between Build and Plan.</source>
+          <target>在「建置」與「規劃」之間切換 T3 Code 中開啟的對話。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
           <source>Running threads</source>
           <target>執行中的對話</target>
@@ -167,6 +175,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
           <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
           <target>開啟 Turnkey 設定：裝置、配對和觸感。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand" translate="yes">
+          <source>Speed</source>
+          <target>速度</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand###description" translate="yes">
+          <source>Turns fast mode on or off for the thread open in T3 Code, where its model offers it.</source>
+          <target>在模型支援時，切換 T3 Code 中開啟的對話的快速模式。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StatusCommand" translate="yes">
           <source>Thread status</source>

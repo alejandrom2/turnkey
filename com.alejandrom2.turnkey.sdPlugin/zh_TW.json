@@ -1264,6 +1264,8 @@
 				"thread": { "slot1": "對話 1", "slot2": "對話 2", "slot3": "對話 3", "slot4": "對話 4", "slot5": "對話 5", "slot6": "對話 6", "slot7": "對話 7", "slot8": "對話 8", "description": "依緊急程度顯示 T3 Code 看板上此位置的對話。選擇即可開啟該對話；在鍵盤上長按則只選取，不開啟。" },
 				"activity": { "name": "動態", "description": "顯示 T3 Code 看板上最緊急的對話。選擇即可開啟該對話。" },
 				"newThread": { "name": "新對話", "description": "在 T3 Code 中開啟的對話所在專案內開始新對話，並在 T3 Code 中開啟以便輸入。" },
+				"speed": { "name": "速度", "description": "在模型支援時，切換 T3 Code 中開啟的對話的快速模式。" },
+				"plan": { "description": "在「建置」與「規劃」之間切換 T3 Code 中開啟的對話。" },
 				"urgent": {
 					"name": "最緊急的對話",
 					"description": "顯示 T3 Code 中需要你處理的內容。選擇即可開啟該對話。"

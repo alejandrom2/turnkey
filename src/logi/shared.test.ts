@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { machine, RUNNING, thread } from "../actions/testing/fixtures.js";
+import { machine, modelConfig, RUNNING, thread } from "../actions/testing/fixtures.js";
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { FLASH_MS } from "../core/feedback.js";
 import { t } from "../core/i18n.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
+import { planKey, speedKey } from "../core/keys/power.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyDefinition } from "../core/keys/key.js";
 import { COLORS, glyph, renderResultKey, renderSkeletonKey, svgImage, svgMarkup } from "../core/render.js";
@@ -276,5 +277,68 @@ describe("sharedKind over the board's threads", () => {
 		await expect(kind.face(0, "1", 80)).toMatchFileSnapshot("./__goldens__/sharedThread-running-80.svg");
 		await expect(kind.face(0, "2", 80)).toMatchFileSnapshot("./__goldens__/sharedThread-idle-80.svg");
 		await expect(kind.face(0, "8", 80)).toMatchFileSnapshot("./__goldens__/sharedThread-empty-80.svg");
+	});
+});
+
+describe("sharedKind for an action that shipped before shared keys", () => {
+	const refusing: KeyDefinition<{ place: number }, number> = {
+		state: (ctx) => ctx.settings.place,
+		tile: () => svgImage(144, 144, `<rect class="tile"/>`),
+		glyph: (place) => svgMarkup(144, 144, `<circle class="glyph ${place}"/>`),
+		press: (place) => (place === 0 ? { kind: "fail", label: "No" } : { kind: "run", work: async () => Promise.reject(new Error("refused")) }),
+	};
+
+	it("takes its settings from the parameter, draws its glyph at every size, and never flashes", async () => {
+		const { runtime, repaint, warn } = setup({ current: undefined });
+		const failed = vi.fn();
+		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, warn, { failed });
+		expect(kind.face(0, "7", 116)).toBe(svgMarkup(144, 144, `<circle class="glyph 7"/>`));
+		kind.press!(0, "0");
+		kind.press!(0, "7", 600);
+		await settle();
+		expect(failed).toHaveBeenCalledExactlyOnceWith(new Error("refused"));
+		expect(kind.face(0, "0", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph 0"/>`));
+		expect(kind.label?.(0, "0")).toBeUndefined();
+		expect(repaint).not.toHaveBeenCalled();
+		expect(warn).not.toHaveBeenCalled();
+	});
+});
+
+describe("sharedKind over the power keys", () => {
+	function power(overrides: Partial<DeckThread> = {}, config: object = modelConfig()) {
+		const selected = { current: thread({ machine: machine({ modelConfig: config }), ...overrides }) };
+		const made = setup(selected);
+		return { ...made, thread: selected.current, speed: sharedKind("speed", speedKey, { "": {} }, made.runtime, made.warn), plan: sharedKind("plan", planKey, { "": {} }, made.runtime, made.warn) };
+	}
+	const tile = <S, St>(key: KeyDefinition<S, St>, runtime: ReturnType<typeof setup>["runtime"]) => {
+		const ctx = { settings: {} as S, machine: undefined, runtime, target: () => ({ thread: runtime.board.selectedOn(), pinned: false }) };
+		return decoded(key.tile(key.state(ctx), ctx));
+	};
+
+	it("draws Speed and Plan from their tiles: the glyph on the Ring, the tile on a keypad", async () => {
+		const standard = power();
+		expect(standard.speed.face(0, "", 116)).toBe(tile(speedKey, standard.runtime));
+		expect(standard.plan.face(0, "", 116)).toBe(tile(planKey, standard.runtime));
+		await expect(standard.speed.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedSpeed-standard-80.svg");
+		await expect(standard.plan.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedPlan-build-80.svg");
+		await expect(power({ model: { instanceId: "codex", model: "gpt-5", options: [{ id: "serviceTier", value: "fast" }] } }).speed.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedSpeed-fast-80.svg");
+		await expect(power({ interactionMode: "plan" }).plan.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedPlan-plan-80.svg");
+	});
+
+	it("toggles fast mode and Build or Plan on a click or a tap", () => {
+		const { speed, plan, thread: open } = power();
+		speed.press!(0, "");
+		plan.press!(0, "", 100);
+		expect(open!.machine.setModelSelection).toHaveBeenCalledExactlyOnceWith(open, { instanceId: "codex", model: "gpt-5", options: [{ id: "serviceTier", value: "fast" }] });
+		expect(open!.machine.setInteractionMode).toHaveBeenCalledExactlyOnceWith(open, "plan");
+	});
+
+	it("says why it can't, as Stream Deck does", () => {
+		const { speed, plan } = power({ model: { instanceId: "codex", model: "gpt-5-mini" } }, modelConfig({ codexPlanToggle: false }));
+		expect(speed.face(0, "", 80)).toContain(`<g opacity=".6">`);
+		speed.press!(0, "");
+		plan.press!(0, "");
+		expect(speed.label!(0, "")).toBe(t("reason.noFastMode"));
+		expect(plan.label!(0, "")).toBe(t("reason.noPlanMode"));
 	});
 });

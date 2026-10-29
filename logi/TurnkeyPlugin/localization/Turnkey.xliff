@@ -160,6 +160,14 @@
           <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
           <target />
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand" translate="yes">
+          <source>Plan</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand###description" translate="yes">
+          <source>Switches the thread open in T3 Code between Build and Plan.</source>
+          <target />
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
           <source>Running threads</source>
           <target />
@@ -174,6 +182,14 @@
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
           <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand" translate="yes">
+          <source>Speed</source>
+          <target />
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand###description" translate="yes">
+          <source>Turns fast mode on or off for the thread open in T3 Code, where its model offers it.</source>
           <target />
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StatusCommand" translate="yes">

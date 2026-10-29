@@ -1264,6 +1264,8 @@
 				"thread": { "slot1": "对话 1", "slot2": "对话 2", "slot3": "对话 3", "slot4": "对话 4", "slot5": "对话 5", "slot6": "对话 6", "slot7": "对话 7", "slot8": "对话 8", "description": "按紧急程度显示 T3 Code 看板上此位置的对话。选择即可打开该对话；在键盘上长按则只选中，不打开。" },
 				"activity": { "name": "动态", "description": "显示 T3 Code 看板上最紧急的对话。选择即可打开该对话。" },
 				"newThread": { "name": "新对话", "description": "在 T3 Code 中打开的对话所在项目里新建对话，并在 T3 Code 中打开以便输入。" },
+				"speed": { "name": "速度", "description": "在模型支持时，为 T3 Code 中打开的对话开关快速模式。" },
+				"plan": { "description": "在“构建”和“计划”之间切换 T3 Code 中打开的对话。" },
 				"urgent": {
 					"name": "最紧急的对话",
 					"description": "显示 T3 Code 中需要你处理的内容。选择即可打开该对话。"

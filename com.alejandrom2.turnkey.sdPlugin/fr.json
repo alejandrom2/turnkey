@@ -1264,6 +1264,8 @@
 				"thread": { "slot1": "Fil 1", "slot2": "Fil 2", "slot3": "Fil 3", "slot4": "Fil 4", "slot5": "Fil 5", "slot6": "Fil 6", "slot7": "Fil 7", "slot8": "Fil 8", "description": "Montre le fil à cette place de votre tableau T3 Code, le plus urgent d'abord. Choisissez-le pour l'ouvrir ; sur un pavé, maintenez-le pour le sélectionner sans l'ouvrir." },
 				"activity": { "name": "Activité", "description": "Montre le fil le plus urgent de votre tableau T3 Code. Choisissez-le pour ouvrir ce fil." },
 				"newThread": { "name": "Nouveau fil", "description": "Démarre un nouveau fil dans le projet du fil ouvert dans T3 Code et l'ouvre là-bas pour écrire." },
+				"speed": { "name": "Vitesse", "description": "Active ou désactive le mode rapide du fil ouvert dans T3 Code quand son modèle le propose." },
+				"plan": { "description": "Bascule le fil ouvert dans T3 Code entre Exécution et Plan." },
 				"urgent": {
 					"name": "Fil le plus urgent",
 					"description": "Montre ce qui vous attend dans T3 Code. Choisissez-le pour ouvrir ce fil."

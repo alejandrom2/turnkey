@@ -1264,6 +1264,8 @@
 				"thread": { "slot1": "Thread 1", "slot2": "Thread 2", "slot3": "Thread 3", "slot4": "Thread 4", "slot5": "Thread 5", "slot6": "Thread 6", "slot7": "Thread 7", "slot8": "Thread 8", "description": "Zeigt den Thread an dieser Stelle deines T3-Code-Boards, dringendste zuerst. Wähle ihn, um ihn zu öffnen; auf einem Keypad gedrückt halten, um ihn ohne Öffnen auszuwählen." },
 				"activity": { "name": "Aktivität", "description": "Zeigt den dringendsten Thread auf deinem T3-Code-Board. Wähle ihn, um ihn zu öffnen." },
 				"newThread": { "name": "Neuer Thread", "description": "Startet einen neuen Thread im Projekt des in T3 Code geöffneten Threads und öffnet ihn dort zum Tippen." },
+				"speed": { "name": "Tempo", "description": "Schaltet den Schnellmodus des in T3 Code geöffneten Threads um, wo sein Modell ihn bietet." },
+				"plan": { "description": "Wechselt den in T3 Code geöffneten Thread zwischen Umsetzen und Planen." },
 				"urgent": {
 					"name": "Dringendster Thread",
 					"description": "Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen."

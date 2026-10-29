@@ -1,7 +1,7 @@
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { threadCounts } from "../core/infobar.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
-import { effortKey, modelKey, permissionsKey } from "../core/keys/power.js";
+import { effortKey, modelKey, permissionsKey, planKey, speedKey } from "../core/keys/power.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { applyChoice, type DialControl, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
@@ -119,6 +119,8 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		effort: { ...sharedKind("effort", effortKey, () => ({}), deps.runtime, deps.warn, { failed: failed(CHANGE.effort) }), turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)) },
 		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
 		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { failed: failed(CHANGE.model) }), appear: watchConfigs },
+		speed: sharedKind("speed", speedKey, { "": {} }, deps.runtime, deps.warn),
+		plan: sharedKind("plan", planKey, { "": {} }, deps.runtime, deps.warn),
 		limit: {
 			face: (_index, place) => {
 				const limit = limitAt(place);
