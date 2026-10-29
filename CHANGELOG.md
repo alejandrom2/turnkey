@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.0.0](https://github.com/alejandrom2/turnkey/compare/v0.12.0...v1.0.0) (2026-10-29)
+
+Turnkey 1.0 controls T3 Code from a Stream Deck or a Logitech mouse or keyboard. It pairs with T3 Code the way T3 Code's own web and mobile clients do, and talks only to the T3 Code servers you pair it with.
+
+### Stream Deck
+
+* Every thread on keys and dials: status, run time, diffs, queued messages and subagents, tinted when one needs you.
+* Approve, deny or answer agents, send prompts and quick prompts, steer or stop a turn, start, fork and merge back threads.
+* Model, effort with Ultrathink, speed, access and plan mode, from keys or the Power dial, across every provider.
+* Git and pull requests: commit, push, open a PR, watch its checks and send Fix findings to the thread.
+* Usage and limits as T3 Code's Usage page shows them, plus scheduled tasks, devices, health and diagnostics.
+* A ready-made profile for the Stream Deck +, the 15-key Stream Deck, XL, Mini and Neo, with folders, that switches in when T3 Code opens. On a Neo, the info bar follows the page.
+
+### Logitech
+
+* T3 Code gets its own Actions Ring on an MX mouse or keyboard: the most urgent thread, Continue, Stop, and folders for your threads, quick prompts, models and limits.
+* Each slot shows live state, and hovering names its thread, model or limit.
+* An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
+* Every action is also in Logi Options+'s list, for any profile or console.
+
+### Both
+
+* Pair any number of machines with a T3 Code pair link; each action follows one machine or all of them.
+* Eight languages: English, German, Spanish, French, Japanese, Korean, and Simplified and Traditional Chinese.
+* Downloads keep fixed names, `Turnkey.streamDeckPlugin` and `Turnkey.lplug4`, so the README's buttons always fetch the latest.
+
+### Upgrading from 0.x
+
+* Install over the old version.
+* On Logitech, choose T3 Code's **Default** profile again in Options+ to get the new ring and its folders.
+
+Turnkey is an independent project, not affiliated with or endorsed by T3 Code, Elgato or Logitech.
+
 ## [0.12.0](https://github.com/alejandrom2/turnkey/compare/v0.11.0...v0.12.0) (2026-10-29)
 
 

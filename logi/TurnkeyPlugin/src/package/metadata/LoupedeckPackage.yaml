@@ -18,7 +18,7 @@ description: Watch and steer T3 Code from your Logitech devices. T3 Code gets it
 pluginFileName: TurnkeyPlugin.dll
 
 # Plugin version.
-version: 0.12.0
+version: 1.0.0
 
 # Author of the plugin. The author can be a company or an individual developer.
 author: Alejandro Martinez
