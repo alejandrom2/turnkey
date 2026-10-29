@@ -10,11 +10,11 @@ type RingThread = Pick<DeckThread, "deck" | "unseen">;
  * color, drawn heavy enough for both, plus a count when one matters.
  */
 export function ringFace(color: string, name: GlyphName, options: { badge?: number | string; dim?: boolean } = {}): string {
-	const mark = glyph(name, 42, 42, 60, options.dim ? COLORS.muted : color, 3);
+	const mark = glyph(name, 28, 28, 88, options.dim ? COLORS.muted : color, 3.2);
 	const badge =
 		options.badge === undefined
 			? ""
-			: `<circle cx="108" cy="36" r="20" fill="${COLORS.key}"/><text x="108" y="44" font-size="24" font-weight="700" text-anchor="middle" fill="${COLORS.text}">${options.badge}</text>`;
+			: `<circle cx="118" cy="26" r="24" fill="${COLORS.key}"/><text x="118" y="35" font-size="28" font-weight="700" text-anchor="middle" fill="${COLORS.text}">${options.badge}</text>`;
 	return svgMarkup(144, 144, (options.dim ? `<g opacity=".6">${mark}</g>` : mark) + badge);
 }
 
@@ -64,23 +64,23 @@ export const stopAllFace = (running: number): string => ringFace(COLORS.error, "
 export function limitsFace(percent: number | undefined, stale: boolean): string {
 	if (percent === undefined) return ringFace(COLORS.muted, "gauge", { dim: true });
 	const color = percent >= 90 ? COLORS.error : percent >= 70 ? STATE_COLOR.approval : COLORS.done;
-	const radius = 52;
+	const radius = 58;
 	const length = 2 * Math.PI * radius;
 	const used = Math.min(Math.max(percent, 0), 100) / 100;
 	const ring =
-		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="12"/>` +
-		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
-		`<text x="72" y="88" font-size="44" font-weight="700" text-anchor="middle" fill="${color}">${Math.round(percent)}</text>`;
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="16"/>` +
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
+		`<text x="72" y="91" font-size="54" font-weight="700" text-anchor="middle" fill="${color}">${Math.round(percent)}</text>`;
 	return svgMarkup(144, 144, stale ? `<g opacity=".5">${ring}</g>` : ring);
 }
 
 /** What waits on you, in amber, over what runs, in blue. */
 export function statusFace(counts: { approval: number; question: number; running: number }): string {
-	const figure = (value: number, y: number, color: string) => `<text x="72" y="${y}" font-size="50" font-weight="700" text-anchor="middle" fill="${color}">${value}</text>`;
+	const figure = (value: number, y: number, color: string) => `<text x="72" y="${y}" font-size="66" font-weight="700" text-anchor="middle" fill="${color}">${value}</text>`;
 	return svgMarkup(
 		144,
 		144,
-		figure(counts.approval + counts.question, 66, STATE_COLOR.approval) + `<rect x="40" y="76" width="64" height="4" rx="2" fill="${COLORS.muted}" fill-opacity=".5"/>` + figure(counts.running, 128, STATE_COLOR.running),
+		figure(counts.approval + counts.question, 62, STATE_COLOR.approval) + `<rect x="32" y="71" width="80" height="5" rx="2.5" fill="${COLORS.muted}" fill-opacity=".5"/>` + figure(counts.running, 136, STATE_COLOR.running),
 	);
 }
 
@@ -91,10 +91,10 @@ export const modeFace = (mode: RuntimeMode | undefined): string =>
 /** The selected thread's effort: its glyph over one dot per level, filled up to the current one. */
 export function effortFace(level: { index: number; count: number } | undefined): string {
 	if (level === undefined) return ringFace(COLORS.muted, "effort", { dim: true });
-	const mark = glyph("effort", 46, 22, 52, COLORS.accent, 3);
-	const gap = 18;
+	const mark = glyph("effort", 34, 8, 76, COLORS.accent, 3.2);
+	const gap = 24;
 	const left = 72 - ((level.count - 1) * gap) / 2;
-	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="104" r="6" fill="${COLORS.accent}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
+	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="114" r="8.5" fill="${COLORS.accent}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
 	return svgMarkup(144, 144, mark + dots);
 }
 
