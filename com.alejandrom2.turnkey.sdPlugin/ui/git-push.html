@@ -301,22 +301,46 @@ function mergeGlobalSettings(current , patch ) {
 			send("strings");
 			send("status");
 			{
-				const field = document.querySelector('[setting="gitAction"]');
-				const apply = (value) => { $("git-message").hidden = !((value) => ["commit","commit_push","commit_push_pr"].includes(value === "" ? "push" : value))(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "gitAction");
+				const condition = {"kind":"oneOf","values":["commit","commit_push","commit_push_pr"],"fallback":"push"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("git-message").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["gitAction"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["gitAction"]));
 			}
 			{
-				const field = document.querySelector('[setting="gitAction"]');
-				const apply = (value) => { $("git-hint").hidden = !((value) => ["commit","commit_push","commit_push_pr","push","create_pr"].includes(value === "" ? "push" : value))(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "gitAction");
+				const condition = {"kind":"oneOf","values":["commit","commit_push","commit_push_pr","push","create_pr"],"fallback":"push"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("git-hint").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["gitAction"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["gitAction"]));
 			}
 			{
-				const field = document.querySelector('[setting="gitAction"]');
-				const apply = (value) => { $("git-pull-hint").hidden = !((value) => ["pull"].includes(value === "" ? "push" : value))(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "gitAction");
+				const condition = {"kind":"oneOf","values":["pull"],"fallback":"push"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("git-pull-hint").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["gitAction"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["gitAction"]));

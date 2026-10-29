@@ -316,36 +316,76 @@ function mergeGlobalSettings(current , patch ) {
 			send("strings");
 			send("status");
 			{
-				const field = document.querySelector('[setting="organize"]');
-				const apply = (value) => { $("snooze-for").hidden = !((value) => value === "snooze")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "organize");
+				const condition = {"kind":"equals","value":"snooze"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("snooze-for").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["organize"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["organize"]));
 			}
 			{
-				const field = document.querySelector('[setting="organize"]');
-				const apply = (value) => { $("confirm-first").hidden = !((value) => value === "" || value === "settle" || value === "snooze")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "organize");
+				const condition = {"kind":"oneOf","values":["","settle","snooze"]};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("confirm-first").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["organize"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["organize"]));
 			}
 			{
-				const field = document.querySelector('[setting="organize"]');
-				const apply = (value) => { $("organize-target").hidden = !((value) => value !== "wake")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "organize");
+				const condition = {"kind":"notEquals","value":"wake"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("organize-target").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["organize"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["organize"]));
 			}
 			{
-				const field = document.querySelector('[setting="target"]');
-				const apply = (value) => { $("target-thread").hidden = !((value) => value === "thread")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "target");
+				const condition = {"kind":"equals","value":"thread"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("target-thread").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["target"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["target"]));
 			}
 			{
-				const field = document.querySelector('[setting="target"]');
-				const apply = (value) => { $("target-hint").hidden = !((value) => value === "thread")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "target");
+				const condition = {"kind":"equals","value":"thread"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("target-hint").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["target"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["target"]));
