@@ -2,7 +2,8 @@ import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { threadCounts } from "../core/infobar.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
 import { effortKey, modelKey, permissionsKey, planKey, speedKey } from "../core/keys/power.js";
-import { stopKey } from "../core/keys/lineage.js";
+import { branchKey, forkKey, stopKey } from "../core/keys/lineage.js";
+import { ORGANIZE_ACTIONS, organizeKey } from "../core/keys/organize.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { applyChoice, type DialControl, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
@@ -191,5 +192,12 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		},
 		// Stop run was a Logitech action before it was shared: the open thread if it runs, else the newest run, on any press, as it always acted.
 		stop: sharedKind("stop", stopKey, () => ({ fallback: "newestRunning" }), deps.runtime, deps.warn, { quiet: failed("stop the run"), glyphOnly: true }),
+		// Stop workflow and Merge can't be undone: a keypad holds for them, a Ring click is itself the confirmation.
+		stopWorkflow: sharedKind("stopWorkflow", stopKey, { "": { mode: "workflow" } }, deps.runtime, deps.warn),
+		fork: sharedKind("fork", forkKey, { "": {} }, deps.runtime, deps.warn),
+		merge: sharedKind("merge", forkKey, { "": { mode: "merge" } }, deps.runtime, deps.warn),
+		branch: sharedKind("branch", branchKey, { "": {} }, deps.runtime, deps.warn),
+		// One action per organize action; Snooze takes Stream Deck's default hour, and Pin and Unpin both toggle, as there.
+		organize: sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((organize) => [organize, { organize }])), deps.runtime, deps.warn),
 	};
 }

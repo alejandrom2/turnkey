@@ -36,6 +36,14 @@
           <source>Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
           <target>T3 Code で開いているスレッドが求める承認を今回のみ許可します。キーパッドでは長押しします。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand" translate="yes">
+          <source>Branch</source>
+          <target>ブランチ</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand###description" translate="yes">
+          <source>Shows the branch of the thread open in T3 Code. Choose it to open the thread.</source>
+          <target>T3 Code で開いているスレッドのブランチを表示します。選ぶとスレッドを開きます。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>コミット</target>
@@ -80,6 +88,14 @@
           <source>Fix tests</source>
           <target>テスト修正</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand" translate="yes">
+          <source>Fork</source>
+          <target>フォーク</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand###description" translate="yes">
+          <source>Forks the thread open in T3 Code from its last finished turn, and opens the fork.</source>
+          <target>T3 Code で開いているスレッドを最後に完了したターンからフォークし、フォークを開きます。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
           <source>Limit 1</source>
           <target>制限 1</target>
@@ -111,6 +127,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand###description" translate="yes">
           <source>Shows your tightest T3 Code usage limit.</source>
           <target>T3 Code で最も余裕のない使用量の上限を表示します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand" translate="yes">
+          <source>Merge back</source>
+          <target>元へマージ</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand###description" translate="yes">
+          <source>Merges the fork open in T3 Code back into the thread it came from, and opens that thread. On a keypad, hold it.</source>
+          <target>T3 Code で開いているフォークを元のスレッドにマージし、そのスレッドを開きます。キーパッドでは長押しします。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command" translate="yes">
           <source>Model 1</source>
@@ -151,6 +175,62 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand###description" translate="yes">
           <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
           <target>T3 Code で開いているスレッドのプロジェクトに新しいスレッドを作成し、入力できるようにそこで開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand" translate="yes">
+          <source>Archive</source>
+          <target>アーカイブ</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand###description" translate="yes">
+          <source>Archives the thread open in T3 Code. On a keypad, hold it.</source>
+          <target>T3 Code で開いているスレッドをアーカイブします。キーパッドでは長押しします。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand" translate="yes">
+          <source>Mark unread</source>
+          <target>未読にする</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand###description" translate="yes">
+          <source>Marks the thread open in T3 Code unread.</source>
+          <target>T3 Code で開いているスレッドを未読にします。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand" translate="yes">
+          <source>Pin</source>
+          <target>ピン</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand###description" translate="yes">
+          <source>Pins the thread open in T3 Code, or unpins it when it's pinned.</source>
+          <target>T3 Code で開いているスレッドをピン留めします。ピン留め済みなら外します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand" translate="yes">
+          <source>Settle</source>
+          <target>完了扱い</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand###description" translate="yes">
+          <source>Settles the thread open in T3 Code, taking it off the board.</source>
+          <target>T3 Code で開いているスレッドを完了にして、ボードから外します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand" translate="yes">
+          <source>Snooze</source>
+          <target>スヌーズ</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand###description" translate="yes">
+          <source>Snoozes the thread open in T3 Code for an hour.</source>
+          <target>T3 Code で開いているスレッドを 1 時間スヌーズします。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand" translate="yes">
+          <source>Unpin</source>
+          <target>ピン解除</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand###description" translate="yes">
+          <source>Unpins the thread open in T3 Code, or pins it when it isn't pinned.</source>
+          <target>T3 Code で開いているスレッドのピン留めを外します。ピン留めしていなければピン留めします。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand" translate="yes">
+          <source>Wake thread</source>
+          <target>スヌーズ解除</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand###description" translate="yes">
+          <source>Wakes the thread you snoozed last in T3 Code.</source>
+          <target>T3 Code で最後にスヌーズしたスレッドを起こします。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand" translate="yes">
           <source>Plan</source>
@@ -207,6 +287,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>T3 Code で最後に始まった実行を停止します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand" translate="yes">
+          <source>Stop workflow</source>
+          <target>ワークフロー停止</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand###description" translate="yes">
+          <source>Stops the workflows the thread open in T3 Code runs (Claude). On a keypad, hold it.</source>
+          <target>T3 Code で開いているスレッドが実行中のワークフローを停止します (Claude)。キーパッドでは長押しします。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command" translate="yes">
           <source>Thread 1</source>

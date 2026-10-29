@@ -36,6 +36,14 @@
           <source>Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
           <target>Permite una vez lo que el hilo abierto en T3 Code pide aprobar. En un teclado, mantenlo pulsado.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand" translate="yes">
+          <source>Branch</source>
+          <target>Rama</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand###description" translate="yes">
+          <source>Shows the branch of the thread open in T3 Code. Choose it to open the thread.</source>
+          <target>Muestra la rama del hilo abierto en T3 Code. Elígelo para abrir el hilo.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>Commit</target>
@@ -80,6 +88,14 @@
           <source>Fix tests</source>
           <target>Arreglar tests</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand" translate="yes">
+          <source>Fork</source>
+          <target>Bifurcar</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand###description" translate="yes">
+          <source>Forks the thread open in T3 Code from its last finished turn, and opens the fork.</source>
+          <target>Bifurca el hilo abierto en T3 Code desde su último turno terminado y abre la bifurcación.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
           <source>Limit 1</source>
           <target>Límite 1</target>
@@ -111,6 +127,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand###description" translate="yes">
           <source>Shows your tightest T3 Code usage limit.</source>
           <target>Muestra tu límite de uso más ajustado en T3 Code.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand" translate="yes">
+          <source>Merge back</source>
+          <target>Reintegrar</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand###description" translate="yes">
+          <source>Merges the fork open in T3 Code back into the thread it came from, and opens that thread. On a keypad, hold it.</source>
+          <target>Fusiona la bifurcación abierta en T3 Code con el hilo del que salió y abre ese hilo. En un teclado, mantenlo pulsado.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command" translate="yes">
           <source>Model 1</source>
@@ -151,6 +175,62 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand###description" translate="yes">
           <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
           <target>Inicia un hilo nuevo en el proyecto del hilo abierto en T3 Code y lo abre allí para escribir.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand" translate="yes">
+          <source>Archive</source>
+          <target>Archivar</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand###description" translate="yes">
+          <source>Archives the thread open in T3 Code. On a keypad, hold it.</source>
+          <target>Archiva el hilo abierto en T3 Code. En un teclado, mantenlo pulsado.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand" translate="yes">
+          <source>Mark unread</source>
+          <target>Marcar como no leído</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand###description" translate="yes">
+          <source>Marks the thread open in T3 Code unread.</source>
+          <target>Marca como no leído el hilo abierto en T3 Code.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand" translate="yes">
+          <source>Pin</source>
+          <target>Fijar</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand###description" translate="yes">
+          <source>Pins the thread open in T3 Code, or unpins it when it's pinned.</source>
+          <target>Fija el hilo abierto en T3 Code, o lo desfija si ya está fijado.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand" translate="yes">
+          <source>Settle</source>
+          <target>Resolver</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand###description" translate="yes">
+          <source>Settles the thread open in T3 Code, taking it off the board.</source>
+          <target>Da por resuelto el hilo abierto en T3 Code y lo quita del tablero.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand" translate="yes">
+          <source>Snooze</source>
+          <target>Posponer</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand###description" translate="yes">
+          <source>Snoozes the thread open in T3 Code for an hour.</source>
+          <target>Pospone el hilo abierto en T3 Code durante una hora.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand" translate="yes">
+          <source>Unpin</source>
+          <target>Desfijar</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand###description" translate="yes">
+          <source>Unpins the thread open in T3 Code, or pins it when it isn't pinned.</source>
+          <target>Desfija el hilo abierto en T3 Code, o lo fija si no está fijado.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand" translate="yes">
+          <source>Wake thread</source>
+          <target>Despertar hilo</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand###description" translate="yes">
+          <source>Wakes the thread you snoozed last in T3 Code.</source>
+          <target>Reactiva el último hilo que pospusiste en T3 Code.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand" translate="yes">
           <source>Plan</source>
@@ -207,6 +287,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>Detiene la última ejecución que empezó en T3 Code.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand" translate="yes">
+          <source>Stop workflow</source>
+          <target>Detener workflow</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand###description" translate="yes">
+          <source>Stops the workflows the thread open in T3 Code runs (Claude). On a keypad, hold it.</source>
+          <target>Detiene los flujos de trabajo que ejecuta el hilo abierto en T3 Code (Claude). En un teclado, mantenlo pulsado.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command" translate="yes">
           <source>Thread 1</source>

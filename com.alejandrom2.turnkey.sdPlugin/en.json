@@ -1267,6 +1267,11 @@
 				"newThread": { "name": "New Thread", "description": "Starts a new thread in the project of the thread open in T3 Code, and opens it there to type." },
 				"speed": { "name": "Speed", "description": "Turns fast mode on or off for the thread open in T3 Code, where its model offers it." },
 				"plan": { "description": "Switches the thread open in T3 Code between Build and Plan." },
+				"stopWorkflow": { "description": "Stops the workflows the thread open in T3 Code runs (Claude). On a keypad, hold it." },
+				"fork": { "description": "Forks the thread open in T3 Code from its last finished turn, and opens the fork." },
+				"merge": { "description": "Merges the fork open in T3 Code back into the thread it came from, and opens that thread. On a keypad, hold it." },
+				"branch": { "description": "Shows the branch of the thread open in T3 Code. Choose it to open the thread." },
+				"organize": { "settle": "Settles the thread open in T3 Code, taking it off the board.", "pin": "Pins the thread open in T3 Code, or unpins it when it's pinned.", "unpin": "Unpins the thread open in T3 Code, or pins it when it isn't pinned.", "snooze": "Snoozes the thread open in T3 Code for an hour.", "archive": "Archives the thread open in T3 Code. On a keypad, hold it.", "markUnread": "Marks the thread open in T3 Code unread.", "wake": "Wakes the thread you snoozed last in T3 Code." },
 				"urgent": {
 					"name": "Most urgent thread",
 					"description": "Shows what needs you in T3 Code. Choose it to open that thread."

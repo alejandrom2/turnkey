@@ -5,6 +5,8 @@ import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { FLASH_MS } from "../core/feedback.js";
 import { t } from "../core/i18n.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
+import { branchKey, forkKey, stopKey } from "../core/keys/lineage.js";
+import { ORGANIZE_ACTIONS, organizeKey } from "../core/keys/organize.js";
 import { planKey, speedKey } from "../core/keys/power.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyDefinition } from "../core/keys/key.js";
@@ -349,5 +351,72 @@ describe("sharedKind over the power keys", () => {
 		plan.press!(0, "");
 		expect(speed.label!(0, "")).toBe(t("reason.noFastMode"));
 		expect(plan.label!(0, "")).toBe(t("reason.noPlanMode"));
+	});
+});
+
+describe("sharedKind over the lineage and organize keys", () => {
+	function lineage(overrides: Partial<DeckThread> = {}) {
+		const selected = { current: thread({ title: "Open thread", machine: machine({ modelConfig: modelConfig() }), ...overrides }) };
+		const made = setup(selected);
+		const organize = sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((which) => [which, { organize: which }])), made.runtime, made.warn);
+		return {
+			...made,
+			thread: selected.current,
+			stopWorkflow: sharedKind("stopWorkflow", stopKey, { "": { mode: "workflow" } }, made.runtime, made.warn),
+			fork: sharedKind("fork", forkKey, { "": {} }, made.runtime, made.warn),
+			merge: sharedKind("merge", forkKey, { "": { mode: "merge" } }, made.runtime, made.warn),
+			branch: sharedKind("branch", branchKey, { "": {} }, made.runtime, made.warn),
+			organize,
+		};
+	}
+
+	it("draws their Ring glyphs", async () => {
+		const keys = lineage({ model: { instanceId: "claudeAgent", model: "opus" }, mergeInto: "parent", branch: "feat/x", ...RUNNING });
+		await expect(keys.stopWorkflow.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedStopWorkflow-80.svg");
+		await expect(keys.fork.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedFork-80.svg");
+		await expect(keys.merge.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedMerge-80.svg");
+		await expect(keys.branch.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedBranch-80.svg");
+		for (const which of ORGANIZE_ACTIONS) await expect(keys.organize.face(0, which, 80)).toMatchFileSnapshot(`./__goldens__/sharedOrganize-${which}-80.svg`);
+		await expect(lineage({ mergeInto: "parent" }).merge.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedMerge-available-80.svg");
+		expect(keys.branch.label!(0, "")).toBe("feat/x");
+		expect(keys.fork.label!(0, "")).toBe("Open thread");
+	});
+
+	it("archives only after a keypad hold, or on a Ring click", async () => {
+		vi.useFakeTimers();
+		const { organize, thread: open } = lineage();
+		organize.press!(0, "archive", 100);
+		expect(organize.label!(0, "archive")).toBe(t("result.holdToArchive"));
+		expect(open!.machine.archive).not.toHaveBeenCalled();
+		organize.press!(0, "archive", 600);
+		organize.press!(0, "archive");
+		expect(open!.machine.archive).toHaveBeenCalledTimes(2);
+	});
+
+	it("settles, snoozes for Stream Deck's default hour and toggles a pin on a tap", () => {
+		const { organize, thread: open } = lineage();
+		organize.press!(0, "settle", 0);
+		organize.press!(0, "snooze", 0);
+		organize.press!(0, "unpin", 0);
+		expect(open!.machine.settle).toHaveBeenCalledExactlyOnceWith(open);
+		expect(open!.machine.snooze).toHaveBeenCalledExactlyOnceWith(open, 60);
+		expect(open!.machine.pin).toHaveBeenCalledExactlyOnceWith(open);
+	});
+
+	it("needs a keypad hold to merge or stop a workflow, and forks on a tap", async () => {
+		vi.useFakeTimers();
+		const keys = lineage({ mergeInto: "parent" });
+		keys.merge.press!(0, "", 0);
+		expect(keys.merge.label!(0, "")).toBe(t("lineage.holdToMerge"));
+		keys.merge.press!(0, "", 600);
+		keys.fork.press!(0, "", 0);
+		expect(keys.thread!.machine.mergeBack).toHaveBeenCalledExactlyOnceWith(keys.thread, "parent");
+		expect(keys.thread!.machine.fork).toHaveBeenCalledExactlyOnceWith(keys.thread);
+		const claude = lineage({ model: { instanceId: "claudeAgent", model: "opus" }, ...RUNNING });
+		claude.stopWorkflow.press!(0, "", 0);
+		expect(claude.stopWorkflow.label!(0, "")).toBe(t("workflow.holdToStop"));
+		expect(claude.thread!.machine.workflows).not.toHaveBeenCalled();
+		claude.stopWorkflow.press!(0, "");
+		expect(claude.thread!.machine.workflows).toHaveBeenCalledExactlyOnceWith(claude.thread);
 	});
 });

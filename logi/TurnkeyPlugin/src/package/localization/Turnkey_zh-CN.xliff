@@ -36,6 +36,14 @@
           <source>Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
           <target>允许一次 T3 Code 中打开的线程请求批准的操作。在键盘上需长按。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand" translate="yes">
+          <source>Branch</source>
+          <target>分支</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.BranchCommand###description" translate="yes">
+          <source>Shows the branch of the thread open in T3 Code. Choose it to open the thread.</source>
+          <target>显示 T3 Code 中打开的对话所在的分支。选择即可打开该对话。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>提交</target>
@@ -80,6 +88,14 @@
           <source>Fix tests</source>
           <target>修复测试</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand" translate="yes">
+          <source>Fork</source>
+          <target>分叉</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ForkCommand###description" translate="yes">
+          <source>Forks the thread open in T3 Code from its last finished turn, and opens the fork.</source>
+          <target>从 T3 Code 中打开的对话最后完成的回合分叉出新对话，并打开它。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
           <source>Limit 1</source>
           <target>限额 1</target>
@@ -111,6 +127,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand###description" translate="yes">
           <source>Shows your tightest T3 Code usage limit.</source>
           <target>显示你在 T3 Code 中最紧张的用量限额。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand" translate="yes">
+          <source>Merge back</source>
+          <target>合并回去</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MergeCommand###description" translate="yes">
+          <source>Merges the fork open in T3 Code back into the thread it came from, and opens that thread. On a keypad, hold it.</source>
+          <target>将 T3 Code 中打开的分叉对话合并回原来的对话，并打开该对话。在小键盘上请长按。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command" translate="yes">
           <source>Model 1</source>
@@ -151,6 +175,62 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand###description" translate="yes">
           <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
           <target>在 T3 Code 中打开的对话所在项目里新建对话，并在 T3 Code 中打开以便输入。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand" translate="yes">
+          <source>Archive</source>
+          <target>归档</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand###description" translate="yes">
+          <source>Archives the thread open in T3 Code. On a keypad, hold it.</source>
+          <target>归档 T3 Code 中打开的对话。在小键盘上请长按。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand" translate="yes">
+          <source>Mark unread</source>
+          <target>标为未读</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeMarkUnreadCommand###description" translate="yes">
+          <source>Marks the thread open in T3 Code unread.</source>
+          <target>将 T3 Code 中打开的对话标为未读。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand" translate="yes">
+          <source>Pin</source>
+          <target>置顶</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizePinCommand###description" translate="yes">
+          <source>Pins the thread open in T3 Code, or unpins it when it's pinned.</source>
+          <target>置顶 T3 Code 中打开的对话；已置顶时则取消置顶。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand" translate="yes">
+          <source>Settle</source>
+          <target>完结</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSettleCommand###description" translate="yes">
+          <source>Settles the thread open in T3 Code, taking it off the board.</source>
+          <target>将 T3 Code 中打开的对话标为已处理，并从看板移除。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand" translate="yes">
+          <source>Snooze</source>
+          <target>延后</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeSnoozeCommand###description" translate="yes">
+          <source>Snoozes the thread open in T3 Code for an hour.</source>
+          <target>将 T3 Code 中打开的对话延后一小时。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand" translate="yes">
+          <source>Unpin</source>
+          <target>取消置顶</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand###description" translate="yes">
+          <source>Unpins the thread open in T3 Code, or pins it when it isn't pinned.</source>
+          <target>取消置顶 T3 Code 中打开的对话；未置顶时则置顶。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand" translate="yes">
+          <source>Wake thread</source>
+          <target>唤醒对话</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand###description" translate="yes">
+          <source>Wakes the thread you snoozed last in T3 Code.</source>
+          <target>唤醒你在 T3 Code 中最后延后的对话。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.PlanCommand" translate="yes">
           <source>Plan</source>
@@ -207,6 +287,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>停止 T3 Code 中最后开始的那次运行。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand" translate="yes">
+          <source>Stop workflow</source>
+          <target>停止工作流</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopWorkflowCommand###description" translate="yes">
+          <source>Stops the workflows the thread open in T3 Code runs (Claude). On a keypad, hold it.</source>
+          <target>停止 T3 Code 中打开的对话所运行的工作流（Claude）。在小键盘上请长按。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command" translate="yes">
           <source>Thread 1</source>

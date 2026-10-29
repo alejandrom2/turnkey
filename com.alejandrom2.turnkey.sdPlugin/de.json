@@ -1267,6 +1267,11 @@
 				"newThread": { "name": "Neuer Thread", "description": "Startet einen neuen Thread im Projekt des in T3 Code geöffneten Threads und öffnet ihn dort zum Tippen." },
 				"speed": { "name": "Tempo", "description": "Schaltet den Schnellmodus des in T3 Code geöffneten Threads um, wo sein Modell ihn bietet." },
 				"plan": { "description": "Wechselt den in T3 Code geöffneten Thread zwischen Umsetzen und Planen." },
+				"stopWorkflow": { "description": "Stoppt die Workflows, die der in T3 Code geöffnete Thread ausführt (Claude). Auf einem Keypad gedrückt halten." },
+				"fork": { "description": "Forkt den in T3 Code geöffneten Thread ab seinem letzten fertigen Turn und öffnet den Fork." },
+				"merge": { "description": "Mergt den in T3 Code geöffneten Fork zurück in den Thread, aus dem er stammt, und öffnet diesen. Auf einem Keypad gedrückt halten." },
+				"branch": { "description": "Zeigt den Branch des in T3 Code geöffneten Threads. Wählen, um den Thread zu öffnen." },
+				"organize": { "settle": "Erledigt den in T3 Code geöffneten Thread und nimmt ihn vom Board.", "pin": "Heftet den in T3 Code geöffneten Thread an oder löst ihn, wenn er angeheftet ist.", "unpin": "Löst den in T3 Code geöffneten Thread oder heftet ihn an, wenn er nicht angeheftet ist.", "snooze": "Stellt den in T3 Code geöffneten Thread für eine Stunde zurück.", "archive": "Archiviert den in T3 Code geöffneten Thread. Auf einem Keypad gedrückt halten.", "markUnread": "Markiert den in T3 Code geöffneten Thread als ungelesen.", "wake": "Weckt den Thread, den du in T3 Code zuletzt zurückgestellt hast." },
 				"urgent": {
 					"name": "Dringendster Thread",
 					"description": "Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen."
