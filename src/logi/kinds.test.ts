@@ -68,6 +68,30 @@ describe("sidecarKinds presses", () => {
 		expect(machine.stopRun).not.toHaveBeenCalled();
 	});
 
+	it("stop acts on a single keypad tap, as on a Ring click", () => {
+		const { kinds, machine, all } = setup([{ key: "a", deck: "running" }]);
+		kinds.stop!.press!(0, "", 0);
+		expect(machine.stopRun).toHaveBeenCalledExactlyOnceWith(all[0]);
+	});
+
+	it("stop names the run it would stop, even on a machine that can't be operated", () => {
+		expect(setup([{ key: "a", deck: "running" }], { canOperate: false }).kinds.stop!.label!(0, "")).toBe("Thread 0");
+		expect(setup([{ key: "a", deck: "done" }]).kinds.stop!.label!(0, "")).toBeUndefined();
+	});
+
+	it("stop reports a failed stop to the log only", async () => {
+		const { machine, deps } = setup([{ key: "a", deck: "running" }]);
+		const reported = vi.fn();
+		machine.stopRun.mockRejectedValueOnce(new Error("boom"));
+		const failed = vi.fn(() => reported);
+		const stop = sidecarKinds({ ...deps, failed }).stop!;
+		stop.press!(0, "");
+		await vi.waitFor(() => expect(reported).toHaveBeenCalledOnce());
+		expect(failed).toHaveBeenCalledWith("stop the run");
+		expect(stop.face(0, "", 80)).toBe(golden("stopFace-available"));
+		expect(stop.label!(0, "")).toBe("Thread 0");
+	});
+
 	it("stopAll stops every running thread on one press", () => {
 		const { kinds, machine, all } = setup([{ key: "a", deck: "running" }, { key: "b", deck: "done" }, { key: "c", deck: "running" }]);
 		kinds.stopAll!.press!(0, "");
