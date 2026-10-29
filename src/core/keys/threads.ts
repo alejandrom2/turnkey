@@ -19,7 +19,7 @@ type Motion = ReturnType<typeof threadMotion>;
 export type ThreadState = { thread: DeckThread | undefined; selected: DeckThread | undefined; now: number; motion: Motion["motion"]; moving: boolean; check: Availability };
 
 /** The state of the key at `slot` of `threads`. */
-function stateAt(ctx: KeyContext<unknown>, threads: readonly DeckThread[], slot: SlotIndex): ThreadState {
+export function stateAt(ctx: KeyContext<unknown>, threads: readonly DeckThread[], slot: SlotIndex): ThreadState {
 	const thread = slot === "selected" ? ctx.runtime.board.selectedOn(ctx.machine) : threads[slot];
 	const now = Date.now();
 	const { motion, moving } = thread === undefined ? { motion: {}, moving: false } : threadMotion(ctx.runtime.motion(), thread, ctx.runtime.transitions, now);
@@ -27,7 +27,7 @@ function stateAt(ctx: KeyContext<unknown>, threads: readonly DeckThread[], slot:
 }
 
 /** A thread's key face, or `emptyLabel` when the slot holds none. */
-function threadTile({ thread, selected, now, motion }: ThreadState, ctx: KeyContext<unknown>, emptyLabel: string): string {
+export function threadTile({ thread, selected, now, motion }: ThreadState, ctx: KeyContext<unknown>, emptyLabel: string): string {
 	if (thread === undefined) return renderNoticeKey({ glyph: "chat", title: emptyLabel, tone: "muted" });
 	return renderThreadKey({
 		state: thread.deck,

@@ -66,12 +66,12 @@ describe("sharedKind faces", () => {
 		press: () => ({ kind: "nothing" }),
 	};
 
-	it("draws the glyph at 80 px or less and the tile above, as markup, with Motion reduced", () => {
+	it("draws the glyph at 80 px or less and the tile above, as markup, with Motion off: Logitech draws no frames", () => {
 		const kind = sharedKind("still", still, { "": {} }, setup({ current: undefined }).runtime, () => undefined);
-		expect(kind.face(0, "", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph reduced"/>`));
-		expect(kind.face(0, "", 60)).toBe(svgMarkup(144, 144, `<circle class="glyph reduced"/>`));
-		expect(kind.face(0, "", 116)).toBe(svgMarkup(144, 144, `<rect class="tile reduced"/>`));
-		expect(kind.face(0, "", 144)).toBe(svgMarkup(144, 144, `<rect class="tile reduced"/>`));
+		expect(kind.face(0, "", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph off"/>`));
+		expect(kind.face(0, "", 60)).toBe(svgMarkup(144, 144, `<circle class="glyph off"/>`));
+		expect(kind.face(0, "", 116)).toBe(svgMarkup(144, 144, `<rect class="tile off"/>`));
+		expect(kind.face(0, "", 144)).toBe(svgMarkup(144, 144, `<rect class="tile off"/>`));
 	});
 
 	it("builds a ring glyph from the tile's icon when a key has no glyph, dimmed as the tile dims it", async () => {
@@ -330,28 +330,20 @@ describe("sharedKind for an action that shipped before shared keys", () => {
 		press: (place) => (place === 0 ? { kind: "fail", label: "No" } : { kind: "run", work: async () => Promise.reject(new Error("refused")) }),
 	};
 
-	it("takes its settings from the parameter, draws its glyph at every size, and never flashes", async () => {
+	it("takes its settings from the parameter, draws the tile on a keypad, and never flashes", async () => {
 		const { runtime, repaint, warn } = setup({ current: undefined });
 		const failed = vi.fn();
-		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, warn, { quiet: failed, glyphOnly: true });
-		expect(kind.face(0, "7", 116)).toBe(svgMarkup(144, 144, `<circle class="glyph 7"/>`));
+		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, warn, { quiet: failed });
+		expect(kind.face(0, "7", 116)).toBe(svgMarkup(144, 144, `<rect class="tile"/>`));
 		kind.press!(0, "0");
 		kind.press!(0, "7", 600);
 		await settle();
 		expect(failed).toHaveBeenCalledExactlyOnceWith(new Error("refused"));
 		expect(kind.face(0, "0", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph 0"/>`));
+		expect(kind.face(0, "0", 116)).toBe(svgMarkup(144, 144, `<rect class="tile"/>`));
 		expect(kind.label?.(0, "0")).toBeUndefined();
 		expect(repaint).not.toHaveBeenCalled();
 		expect(warn).not.toHaveBeenCalled();
-	});
-
-	it("draws the tile on a keypad once only quiet is asked for, still without a flash", () => {
-		const { runtime } = setup({ current: undefined });
-		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, () => undefined, { quiet: () => undefined });
-		expect(kind.face(0, "0", 116)).toBe(svgMarkup(144, 144, `<rect class="tile"/>`));
-		kind.press!(0, "0");
-		expect(kind.face(0, "0", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph 0"/>`));
-		expect(kind.label?.(0, "0")).toBeUndefined();
 	});
 });
 

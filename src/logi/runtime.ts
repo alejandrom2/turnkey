@@ -12,7 +12,8 @@ export function logiRuntime(deps: { machines(): readonly Machine[]; board: Threa
 		openExternal,
 		appearance: () => ({}),
 		acpIcons: undefined,
-		motion: () => "reduced",
+		// Off, not Reduced: Logi draws no animation frames, so a keypad tile would freeze a spinner or twinkle mid-turn.
+		motion: () => "off",
 		// shortcut: no flash wash or queue badge on Logitech faces, which stay still; read queues on demand if a keypad tile should show them.
 		transitions: { age: () => undefined },
 		queued: () => 0,

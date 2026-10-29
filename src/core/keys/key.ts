@@ -51,7 +51,7 @@ export interface KeyRuntime {
 	repaint(): void;
 	appearance(): Appearance;
 	acpIcons: AcpIcons | undefined;
-	/** Stream Deck: the Motion setting. The sidecar always answers "reduced": Logi faces stay still. */
+	/** Stream Deck: the Motion setting. The sidecar always answers "off": Logi asks for no frames, so its faces must be still ones. */
 	motion(): MotionMode;
 	/** When threads last changed state, for the flash on their faces. */
 	transitions: Pick<Transitions, "age">;

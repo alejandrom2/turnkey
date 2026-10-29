@@ -12,6 +12,7 @@ import { effortFace, limitsFace, ringFace } from "./ring.js";
 import { logiRuntime } from "./runtime.js";
 
 const golden = (name: string) => readFileSync(new URL(`./__goldens__/${name}.svg`, import.meta.url), "utf8");
+const keypad = (name: string) => golden(`keypad-${name}-116`);
 
 const effort = { id: "effort", label: "Effort", type: "select" as const, options: [{ id: "low", label: "Low" }, { id: "high", label: "High", isDefault: true }] };
 const CONFIG: ModelConfig = {
@@ -32,9 +33,10 @@ function setup(threads: Array<Partial<DeckThread> & { key: string }>, options: {
 		send: vi.fn(async () => undefined),
 		setRuntimeMode: vi.fn(async () => undefined),
 		setModelSelection: vi.fn(async () => undefined),
+		turnDiff: () => undefined,
 	};
 	const all = threads.map((each, index) => ({ deck: "idle", unseen: false, title: `Thread ${index}`, threadId: each.key, activeRunId: "run", model: { instanceId: "claudeAgent", model: "opus" }, runtimeMode: "auto", machine, ...each }) as unknown as DeckThread);
-	const board = { threads: all, selectedOn: () => all.find((each) => each.key === options.selected) } as unknown as ThreadBoard;
+	const board = { threads: all, threadsOn: () => all, selectedOn: () => all.find((each) => each.key === options.selected) } as unknown as ThreadBoard;
 	const deps = {
 		board,
 		open: vi.fn<(thread: DeckThread) => void>(),
@@ -406,13 +408,53 @@ describe("sidecarKinds faces match their goldens", () => {
 	});
 });
 
-describe("sidecarKinds before keypad tiles", () => {
-	it("draw today's face at every size, the shared keys aside", () => {
-		const { kinds } = setup([{ key: "a", deck: "approval" }, { key: "r", deck: "running" }], { selected: "a" });
-		for (const [name, kind] of Object.entries(kinds)) {
-			if (["approve", "deny", "thread", "activity", "newThread", "speed", "plan", "stopWorkflow", "fork", "merge", "branch", "organize", "git", "pr", "open", "health", "update", "share", "usage"].includes(name)) continue;
-			for (const parameter of ["", "1", "fix"]) for (const size of [60, 116, 144]) expect(kind.face(0, parameter, size), `${name}:${parameter} at ${size}`).toBe(kind.face(0, parameter, 80));
-		}
+describe("sidecarKinds by size", () => {
+	// A fixed clock, so thread tiles' elapsed times stay put.
+	beforeEach(() => void vi.useFakeTimers().setSystemTime(new Date("2026-06-01T12:00:00.250Z")));
+	afterEach(() => void vi.useRealTimers());
+
+	// The actions Logitech had before shared keys; shared.test.ts covers the ones added with them.
+	const EXISTING = ["urgent", "waiting", "running", "status", "continue", "settings", "stopAll", "stop", "access", "effort", "model", "prompt", "send", "limit", "limits"];
+	const world = () => setup([{ key: "a", deck: "approval" }, { key: "q", deck: "question" }, { key: "r", deck: "running" }, { key: "s", deck: "running" }, { key: "t", deck: "running" }], { selected: "a" });
+
+	it("draw the Ring's glyph at 80 px or less", () => {
+		const { kinds } = world();
+		expect(Object.keys(kinds)).toEqual(expect.arrayContaining(EXISTING));
+		for (const name of EXISTING) for (const parameter of ["", "1", "fix"]) expect(kinds[name]!.face(0, parameter, 60), `${name}:${parameter}`).toBe(kinds[name]!.face(0, parameter, 80));
 	});
 
+	it("draw the full tile on a keypad, the Logitech-only actions as their nearest Stream Deck key", async () => {
+		const { kinds } = world();
+		// Recorded with the shared definitions' own tile tests: Continue on a thread waiting on you, Status counting it all, Stop all over three runs.
+		expect(kinds.continue!.face(0, "", 116)).toBe(keypad("continue-open"));
+		expect(kinds.status!.face(0, "", 116)).toBe(keypad("status-waiting"));
+		expect(kinds.stopAll!.face(0, "", 116)).toBe(keypad("stopAll-three"));
+		expect(kinds.settings!.face(0, "", 116)).toBe(keypad("settings"));
+		const recorded: [string, string, string][] = [
+			["urgent", "", "urgent"],
+			["waiting", "", "waiting"],
+			["running", "", "running"],
+			["stop", "", "stop"],
+			["access", "", "access"],
+			["effort", "", "effort"],
+			["model", "1", "model-1"],
+			["model", "2", "model-2"],
+			["prompt", "fix", "prompt-fix"],
+			["send", "hi", "send"],
+			["limit", "1", "limit-1"],
+			["limits", "", "limits"],
+		];
+		for (const [kind, parameter, name] of recorded) await expect(kinds[kind]!.face(0, parameter, 116)).toMatchFileSnapshot(`./__goldens__/keypad-${name}-116.svg`);
+	});
+
+	it("keep a keypad tile still: Logitech draws no animation frames", () => {
+		const { kinds } = world();
+		for (const name of [...EXISTING, "thread", "activity"]) {
+			for (const parameter of ["", "1", "fix"]) {
+				const before = kinds[name]!.face(0, parameter, 116);
+				vi.advanceTimersByTime(250);
+				expect(kinds[name]!.face(0, parameter, 116), `${name}:${parameter}`).toBe(before);
+			}
+		}
+	});
 });

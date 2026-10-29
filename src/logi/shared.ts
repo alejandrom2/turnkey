@@ -7,7 +7,7 @@ import { glyphResult, ringFace } from "./ring.js";
 const DATA_URL = "data:image/svg+xml;base64,";
 
 /** Stream Deck's renderers return data URLs; Logi takes the markup. */
-const markup = (image: string): string => (image.startsWith(DATA_URL) ? Buffer.from(image.slice(DATA_URL.length), "base64").toString("utf8") : image);
+export const markup = (image: string): string => (image.startsWith(DATA_URL) ? Buffer.from(image.slice(DATA_URL.length), "base64").toString("utf8") : image);
 
 /** A ring glyph from the tile's first icon; a dim placeholder while the tile has none (a loading skeleton). */
 export function glyphFallback(tile: string, dim: boolean): string {
@@ -20,12 +20,10 @@ export function glyphFallback(tile: string, dim: boolean): string {
 }
 
 /**
- * How a Logi action that shipped before shared keys keeps behaving as it did. `quiet`: a press that can't act does
- * nothing and a failed one only reaches this log, never a flash, as the Ring always had it. `glyphOnly`: its glyph at
- * every size, no keypad tile.
+ * How a Logi action that shipped before shared keys keeps behaving as it did: a press that can't act does nothing and a
+ * failed one only reaches this log (`quiet`), never a flash, as the Ring always had it.
  */
-// shortcut: glyphOnly keeps the keypad on today's glyph until these kinds get keypad tiles; drop only it then, as quiet is what keeps their Ring faces unchanged.
-export type Legacy = { quiet: (error: unknown) => void; glyphOnly?: boolean };
+export type Legacy = { quiet: (error: unknown) => void };
 
 /**
  * A Logi kind over a shared definition: each parameter is a variant standing for its settings (a table, or a function
@@ -81,7 +79,7 @@ export function sharedKind<S, St>(
 			const flashing = flashes.get(parameter);
 			if (flashing !== undefined) return size <= 80 ? glyphResult(false, flashing.label) : markup(renderResultKey({ ok: false, label: flashing.label }));
 			const state = definition.state(ctx);
-			if (size > 80 && legacy?.glyphOnly !== true) return markup(definition.tile(state, ctx));
+			if (size > 80) return markup(definition.tile(state, ctx));
 			return definition.glyph ? markup(definition.glyph(state, ctx)) : glyphFallback(markup(definition.tile(state, ctx)), definition.available?.(state) === false);
 		},
 		label(_index, parameter) {
