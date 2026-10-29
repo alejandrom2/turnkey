@@ -218,10 +218,10 @@ function ultrathinkFrame(width: number, height: number, radius: number, stroke: 
 	);
 }
 
+/** One stack for macOS and Linux, so the bundled profiles come out the same on either build machine. */
 export function fontFamily(platform: NodeJS.Platform = process.platform): string {
 	if (platform === "win32") return `'Segoe UI Variable','Segoe UI',sans-serif`;
-	if (platform === "linux") return `'Inter','Noto Sans','DejaVu Sans',sans-serif`;
-	return `-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif`;
+	return `-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter','Noto Sans','DejaVu Sans',sans-serif`;
 }
 
 const FONT_FAMILY = fontFamily();

@@ -305,7 +305,8 @@ describe("fit", () => {
 });
 
 describe("fontFamily", () => {
-	it("names fonts Linux has, ending in a generic family resvg can resolve", () => expect(fontFamily("linux")).toBe("'Inter','Noto Sans','DejaVu Sans',sans-serif"));
+	it("draws the same faces whether macOS or Linux builds the assets", () => expect(fontFamily("linux")).toBe(fontFamily("darwin")));
+	it("falls back to fonts Linux has, then a generic family resvg can resolve", () => expect(fontFamily("linux")).toMatch(/'Noto Sans','DejaVu Sans',sans-serif$/));
 	it("keeps the system fonts on macOS and Windows", () => {
 		expect(fontFamily("darwin")).toMatch(/^-apple-system/);
 		expect(fontFamily("win32")).toMatch(/^'Segoe UI Variable'/);
