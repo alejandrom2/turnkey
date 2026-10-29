@@ -1,0 +1,4 @@
+call("pullRequests.reviewGuide", {"projectId":"project","repository":"acme/app","number":7})
+call("pullRequests.reviewGuide", {"projectId":"project","repository":"acme/app","number":7})
+spawn open t3://threads/env/pr-1
+select ["env/pr-1"]
