@@ -34,29 +34,33 @@ See every agent thread, approve and answer from a key, switch models and effort 
 </tr>
 </table>
 
-## Stream Deck Neo and Logitech
+## Supported devices
+
+Each device gets a ready-made Turnkey profile, and you can drag any action onto your own.
 
 <table>
 <tr>
-<td width="50%"><img src="docs/readme/neo.png" alt="Three Stream Deck Neo info bars: a thread that needs approval, the selected thread's model with Fast on, and Codex's weekly limit at 62%" width="320"></td>
-<td width="50%"><b>Stream Deck Neo</b><br>The info bar follows the page you're on: the most urgent thread on home, the model in Controls, the branch in Git, the pull request in Pull Requests, the queue in Prompts and the tightest limit in Usage.</td>
+<td width="40%"><img src="docs/marketplace/gallery-4-dial.png" alt="The Power dial's strip on a Stream Deck +: model, effort, speed and access mode" width="320"></td>
+<td><b>Stream Deck +</b><br>Keys for everyday actions and dials for threads, usage, the Power dial (model, effort and access) and skills. Swipe the touch strip to a menu of folders: Threads, Controls, Prompts, Skills, Git, Pull Requests, Usage and More, each with its own dials.</td>
+</tr>
+<tr>
+<td width="40%" align="center"><img src="docs/readme/threads.png" alt="A thread's key: done, three minutes" width="96"></td>
+<td><b>Stream Deck, XL and Mini</b><br>The 15-key Stream Deck has four thread keys and the everyday actions, then pages for threads, controls, skills, git and usage. The XL shows eight threads on its first page, and the Mini fits two threads with Activity, Approve and Stop.</td>
+</tr>
+<tr>
+<td width="40%"><img src="docs/readme/neo.png" alt="Three Stream Deck Neo info bars: a thread that needs approval, the selected thread's model with Fast on, and Codex's weekly limit at 62%" width="320"></td>
+<td><b>Stream Deck Neo</b><br>The Stream Deck + pages on keys. The info bar follows the page you're on: the most urgent thread on home, the model in Controls, the branch in Git, the pull request in Pull Requests, the queue in Prompts and the tightest limit in Usage.</td>
+</tr>
+<tr>
+<td colspan="2"><b>Logitech Actions Ring</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Each slot shows live state, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.<br><br><img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="100%"></td>
 </tr>
 </table>
-
-<b>Logitech Actions Ring</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Each slot shows live state, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
-
-<img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="100%">
 
 ## See it
 
 https://github.com/user-attachments/assets/64852819-5e90-46e4-a6ac-824dbe0ff64f
 
-<table>
-<tr>
-<td align="center"><img src="docs/marketplace/gallery-2-approve.png" alt="Allow once and Deny keys for an agent's command approval"></td>
-<td align="center"><img src="docs/marketplace/gallery-4-dial.png" alt="The Power dial's strip: model, effort, speed and access mode"></td>
-</tr>
-</table>
+<p align="center"><img src="docs/marketplace/gallery-2-approve.png" alt="Allow once and Deny keys for an agent's command approval" width="640"></p>
 
 ## Get started
 
