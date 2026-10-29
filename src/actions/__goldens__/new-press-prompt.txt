@@ -1,0 +1,2 @@
+launch({"projectId":"project"}, "Build it", {"title":"Build","fallbackModel":{"instanceId":"codex","model":"gpt-5"}})
+select ["env/new-thread"]

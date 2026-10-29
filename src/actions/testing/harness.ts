@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { expect, vi } from "vitest";
 
 import type { DeckThread } from "../../core/board.js";
 import type { Machine } from "../../core/t3/machine.js";
@@ -19,8 +19,10 @@ export type GoldenOptions = {
 	selected?: DeckThread;
 	/** Machines connected; by default those of `threads`, or one when there are none. */
 	machines?: Machine[];
-	/** Presses the key, held this many ms (0 is a tap); leave out to only draw the face. */
-	held?: number;
+	/** The Motion setting; off by default, so faces hold still. */
+	motion?: "full" | "reduced" | "off";
+	/** Presses the key, held this many ms (0 is a tap); leave out to only draw the face. A list presses it again after each, a second apart. */
+	held?: number | number[];
 };
 
 export type Golden = {
@@ -30,23 +32,29 @@ export type Golden = {
 	calls: string[];
 };
 
-const json = (value: unknown) => JSON.stringify(value);
+// A thread argument reads as its title, so records do not depend on ids and machine URLs.
+const json = (value: unknown) =>
+	JSON.stringify(value, (_key, item: unknown) => {
+		const candidate = item as { threadId?: unknown; machine?: unknown; title?: unknown } | null;
+		return candidate !== null && typeof candidate === "object" && "threadId" in candidate && "machine" in candidate ? `thread ${String(candidate.title)}` : item;
+	});
 
 /**
  * Drives a real Stream Deck action class against fake deck state: shows one key, then optionally presses it.
  * Each call uses fresh timers and a fresh instance, so goldens do not depend on each other.
  */
 export async function goldenKey(Class: new () => object, options: GoldenOptions = {}): Promise<Golden> {
-	const { settings = {}, threads = [], selected, held, machines = [...new Set(threads.map((candidate) => candidate.machine))] } = options;
+	const { settings = {}, threads = [], selected, held, motion = "off", machines = [...new Set(threads.map((candidate) => candidate.machine))] } = options;
 	world.threads = threads;
 	world.selected = selected;
 	world.machines = machines;
 	world.selects = [];
 	world.spawned = [];
+	world.motion = motion;
 	resetListeners();
 	vi.useFakeTimers();
 	// Elapsed times and countdowns on faces read the clock.
-	vi.setSystemTime(new Date("2026-06-01T12:00:00Z"));
+	vi.setSystemTime(new Date("2026-06-01T12:00:00.250Z"));
 	try {
 		const instance = new Class() as Instance;
 		const action = new FakeAction();
@@ -57,10 +65,15 @@ export async function goldenKey(Class: new () => object, options: GoldenOptions 
 		const calls: string[] = [];
 		if (held !== undefined) {
 			action.writes.length = 0;
-			instance.onKeyDown({ action });
-			await vi.advanceTimersByTimeAsync(held);
-			await instance.onKeyUp({ action });
-			await vi.advanceTimersByTimeAsync(0);
+			const presses = typeof held === "number" ? [held] : held;
+			for (const [index, ms] of presses.entries()) {
+				if (typeof held !== "number") action.writes.push(`-- press ${index + 1} --`);
+				if (index > 0) await vi.advanceTimersByTimeAsync(1000);
+				instance.onKeyDown({ action, payload: { settings } });
+				await vi.advanceTimersByTimeAsync(ms);
+				await instance.onKeyUp({ action, payload: { settings } });
+				await vi.advanceTimersByTimeAsync(0);
+			}
 			for (const machine of world.machines) {
 				for (const [name, value] of Object.entries(machine)) {
 					const spy = value as { mock?: { calls: unknown[][] } } | undefined;
@@ -79,4 +92,23 @@ export async function goldenKey(Class: new () => object, options: GoldenOptions 
 		vi.clearAllTimers();
 		vi.useRealTimers();
 	}
+}
+
+const written = new Set<string>();
+const file = (name: string, value: string, ext: "svg" | "txt") => {
+	// Two tests writing one file would pass each other's goldens only by luck.
+	if (written.has(`${name}.${ext}`)) throw new Error(`Golden ${name}.${ext} is recorded twice.`);
+	written.add(`${name}.${ext}`);
+	return check(name, value, ext);
+};
+const check = (name: string, value: string, ext: "svg" | "txt") => expect(value).toMatchFileSnapshot(`./__goldens__/${name}.${ext}`);
+
+/** Records the key's face as `__goldens__/<name>.svg`. */
+export async function recordFace(name: string, Class: new () => object, options: GoldenOptions = {}): Promise<void> {
+	await file(name, (await goldenKey(Class, { ...options, held: undefined })).image, "svg");
+}
+
+/** Records what pressing the key (held `held` ms) does as `__goldens__/<name>.txt`. */
+export async function recordPress(name: string, Class: new () => object, options: GoldenOptions = {}, held: number | number[] = 0): Promise<void> {
+	await file(name, (await goldenKey(Class, { ...options, held })).calls.join("\n") + "\n", "txt");
 }

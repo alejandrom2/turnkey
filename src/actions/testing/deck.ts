@@ -4,12 +4,13 @@ import type { Machine } from "../../core/t3/machine.js";
 type Listener = () => void;
 
 // Stands in for src/deck.ts in golden tests; a test sets `world` before it drives a key.
-export const world: { threads: DeckThread[]; selected: DeckThread | undefined; machines: Machine[]; selects: string[]; spawned: string[] } = {
+export const world: { threads: DeckThread[]; selected: DeckThread | undefined; machines: Machine[]; selects: string[]; spawned: string[]; motion: "full" | "reduced" | "off" } = {
 	threads: [],
 	selected: undefined,
 	machines: [],
 	selects: [],
 	spawned: [],
+	motion: "off",
 };
 
 const listeners: Listener[] = [];
@@ -40,12 +41,17 @@ export const deck = {
 	optInScope: async (url: string, ...scopes: string[]) => void world.spawned.push(`optInScope ${url} ${scopes.join(" ")}`),
 	scopeRequested: () => false,
 	scheme: "t3",
-	animator: { mode: "still", set: () => undefined },
+	animator: {
+		get mode() {
+			return world.motion;
+		},
+		set: () => undefined,
+	},
 	appearance: { confirmSend: "off", maxEffort: "solid" },
 	acpIcons: {},
 	queues: { of: () => undefined },
 	ultrathink: { armed: () => false, prompt: (_key: string, _model: unknown, text: string) => text },
-	transitions: undefined,
+	transitions: { age: () => undefined },
 	useChecklist: () => undefined,
 	board: {
 		get threads() {
