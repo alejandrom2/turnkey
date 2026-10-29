@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/alejandrom2/turnkey/compare/v0.11.0...v0.12.0) (2026-10-29)
+
+
+### Features
+
+* Turnkey for Logitech, sharing Turnkey's core with Stream Deck ([#22](https://github.com/alejandrom2/turnkey/issues/22)) ([6c3db8b](https://github.com/alejandrom2/turnkey/commit/6c3db8b692e4d74dc138c2838f970395741dcbf4))
+
 ## [0.11.0](https://github.com/alejandrom2/turnkey/compare/v0.10.0...v0.11.0) (2026-10-28)
 
 
