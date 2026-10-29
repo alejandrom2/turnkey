@@ -19,6 +19,8 @@ export type GoldenOptions = {
 	selected?: DeckThread;
 	/** Machines connected; by default those of `threads`, or one when there are none. */
 	machines?: Machine[];
+	/** Opt-in scopes the deck has already flagged for the next pairing. */
+	requested?: string[];
 	/** The Motion setting; off by default, so faces hold still. */
 	motion?: "full" | "reduced" | "off";
 	/** Presses the key, held this many ms (0 is a tap); leave out to only draw the face. A list presses it again after each, a second apart. */
@@ -45,13 +47,14 @@ const json = (value: unknown) =>
  * Each call uses fresh timers and a fresh instance, so goldens do not depend on each other.
  */
 export async function goldenKey(Class: new () => object, options: GoldenOptions = {}): Promise<Golden> {
-	const { settings = {}, threads = [], selected, held, motion = "off", machines = [...new Set(threads.map((candidate) => candidate.machine))] } = options;
+	const { settings = {}, threads = [], selected, held, motion = "off", requested = [], machines = [...new Set(threads.map((candidate) => candidate.machine))] } = options;
 	world.threads = threads;
 	world.selected = selected;
 	world.machines = machines;
 	world.selects = [];
 	world.spawned = [];
 	world.motion = motion;
+	world.requested = requested;
 	resetListeners();
 	vi.useFakeTimers();
 	// Elapsed times and countdowns on faces read the clock.

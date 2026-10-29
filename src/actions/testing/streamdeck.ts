@@ -10,8 +10,15 @@ export const action =
 		target.prototype.manifestId = info.UUID;
 	};
 
+/** The SDK's list of an action's keys: a collection that also filters. */
+class Actions extends Set<FakeAction> {
+	filter(keep: (action: FakeAction) => boolean): FakeAction[] {
+		return [...this].filter(keep);
+	}
+}
+
 export class SingletonAction {
-	readonly actions = new Set<FakeAction>();
+	readonly actions = new Actions();
 }
 
 const logger = { debug: () => undefined, info: () => undefined, warn: () => undefined, error: () => undefined };
