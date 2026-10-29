@@ -20,7 +20,7 @@ import { useLanguage } from "./language.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { continueStep, nextChoice } from "./controls.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
 import { keptMachines, machineRows } from "./rows.js";
@@ -117,13 +117,13 @@ function showLimits(): void {
 	watchConfigs();
 	for (const each of ready()) void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 }
-function tightestLimit(): { percent: number; stale: boolean } | undefined {
+function tightestLimit(): { percent: number; stale: boolean; driver: string; window: string } | undefined {
 	const now = Date.now();
 	const pools = machineLimitPools(machines.all, now);
 	const tightest = tightestWindow(pools);
 	if (tightest === undefined) return undefined;
 	const gauge = limitGauge(tightest.pool, tightest.window, now, "used");
-	return { percent: gauge.percent, stale: gauge.stale };
+	return { percent: gauge.percent, stale: gauge.stale, driver: tightest.pool.driver, window: gauge.label };
 }
 
 const operable = () => board.threads.filter((thread) => thread.deck === "running" && thread.machine.canOperate);
@@ -189,10 +189,15 @@ const keys = new Keys(
 				const limit = tightestLimit();
 				return limitsFace(limit?.percent, limit?.stale ?? false);
 			},
+			label: () => {
+				const limit = tightestLimit();
+				return limit && limitsLabel(limit.driver, limit.window, limit.percent);
+			},
 			appear: showLimits,
 		},
 		status: {
 			face: () => statusFace(threadCounts(board.threads)),
+			label: () => statusLabel(threadCounts(board.threads)),
 			press: () => {
 				const top = board.threads[0];
 				if (top) open(top);

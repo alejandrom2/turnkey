@@ -1248,6 +1248,7 @@
 			"needsAccess": "Requiere acceso para compartir"
 		},
 		"logi": {
+			"labels": { "limits": "{provider} · {window}: {percent} % usado", "status": "{waiting} te esperan · {running} en curso" },
 			"status": {
 				"unpaired": "Turnkey aún no está vinculado con T3 Code.",
 				"pair": "Vincular con T3 Code",

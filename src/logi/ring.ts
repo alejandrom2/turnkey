@@ -1,5 +1,6 @@
 import type { DeckThread } from "../core/board.js";
-import { type CatalogModel, modelColor, providerMark } from "../core/models.js";
+import { t } from "../core/i18n.js";
+import { type CatalogModel, modelColor, providerDisplayName, providerMark } from "../core/models.js";
 import { COLORS, glyph, type GlyphName, MODE_GLYPH, sampleStops, SPECTRUM, STATE_COLOR, svgMarkup } from "../core/render.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 
@@ -61,29 +62,37 @@ export const continueFace = (step: "open" | "send" | undefined): string =>
 
 export const stopAllFace = (running: number): string => ringFace(COLORS.error, "stop", running > 0 ? { badge: running } : { dim: true });
 
-/** The tightest limit as a ring filling clockwise, in green, amber past 70% and red past 90%, around its percentage. */
+/**
+ * The tightest limit as a ring filling clockwise around the gauge glyph, in green, amber past 70% and red past 90%. No
+ * percentage: at the 80 px Options+ draws, it can't be read; the slot's label says it.
+ */
 export function limitsFace(percent: number | undefined, stale: boolean): string {
 	if (percent === undefined) return ringFace(COLORS.muted, "gauge", { dim: true });
 	const color = percent >= 90 ? COLORS.error : percent >= 70 ? STATE_COLOR.approval : COLORS.done;
-	const radius = 58;
+	const radius = 60;
 	const length = 2 * Math.PI * radius;
 	const used = Math.min(Math.max(percent, 0), 100) / 100;
 	const ring =
-		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="16"/>` +
-		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
-		`<text x="72" y="91" font-size="54" font-weight="700" text-anchor="middle" fill="${color}">${Math.round(percent)}</text>`;
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="14"/>` +
+		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
+		glyph("gauge", 38, 38, 68, color, 3.2);
 	return svgMarkup(144, 144, stale ? `<g opacity=".5">${ring}</g>` : ring);
 }
 
-/** What waits on you, in amber, over what runs, in blue. */
+/** The Limits slot's label: which limit it shows, and how much of it is used. */
+export const limitsLabel = (driver: string, window: string, percent: number): string =>
+	t("logi.labels.limits", { provider: providerDisplayName({ instanceId: driver, driver }), window, percent: Math.round(percent) });
+
+/** What waits on you, in amber, else what runs, in blue, counted on the badge; the label gives both. */
 export function statusFace(counts: { approval: number; question: number; running: number }): string {
-	const figure = (value: number, y: number, color: string) => `<text x="72" y="${y}" font-size="66" font-weight="700" text-anchor="middle" fill="${color}">${value}</text>`;
-	return svgMarkup(
-		144,
-		144,
-		figure(counts.approval + counts.question, 62, STATE_COLOR.approval) + `<rect x="32" y="71" width="80" height="5" rx="2.5" fill="${COLORS.muted}" fill-opacity=".5"/>` + figure(counts.running, 136, STATE_COLOR.running),
-	);
+	const waiting = counts.approval + counts.question;
+	if (waiting > 0) return ringFace(STATE_COLOR.approval, "queued", { badge: waiting > 9 ? "9+" : waiting });
+	if (counts.running > 0) return ringFace(STATE_COLOR.running, "queued", { badge: counts.running > 9 ? "9+" : counts.running });
+	return ringFace(COLORS.muted, "queued", { dim: true });
 }
+
+export const statusLabel = (counts: { approval: number; question: number; running: number }): string =>
+	t("logi.labels.status", { waiting: counts.approval + counts.question, running: counts.running });
 
 /** The selected thread's access mode; Full access in amber, as T3 Code warns about it. */
 export const modeFace = (mode: RuntimeMode | undefined): string =>

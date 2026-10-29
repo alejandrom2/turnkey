@@ -1248,6 +1248,7 @@
 			"needsAccess": "共有アクセスが必要"
 		},
 		"logi": {
+			"labels": { "limits": "{provider} · {window}：{percent}% 使用", "status": "{waiting} 件が対応待ち · {running} 件が実行中" },
 			"status": {
 				"unpaired": "Turnkey はまだ T3 Code とペアリングされていません。",
 				"pair": "T3 Code とペアリング",

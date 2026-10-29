@@ -1248,6 +1248,7 @@
 			"needsAccess": "需要分享權限"
 		},
 		"logi": {
+			"labels": { "limits": "{provider} · {window}：已用 {percent}%", "status": "{waiting} 個等你處理 · {running} 個執行中" },
 			"status": {
 				"unpaired": "Turnkey 尚未與 T3 Code 配對。",
 				"pair": "與 T3 Code 配對",

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CatalogModel } from "../core/models.js";
 import { COLORS, sampleStops, SPECTRUM, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, modelFace, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 
 const thread = (deck: DeckState, unseen = false) => ({ deck, unseen });
 
@@ -84,18 +84,20 @@ describe("the controls' faces", () => {
 		expect(stopAllFace(3)).toBe(ringFace(COLORS.error, "stop", { badge: 3 }));
 	});
 
-	it("colors a limit by how close it is", () => {
+	it("colors a limit by how close it is, around the gauge glyph, and names it on hover", () => {
 		expect(limitsFace(40, false)).toContain(COLORS.done);
 		expect(limitsFace(80, false)).toContain(STATE_COLOR.approval);
 		expect(limitsFace(95, false)).toContain(COLORS.error);
-		expect(limitsFace(62, false)).toContain(">62<");
+		expect(limitsFace(62, false)).not.toContain("<text");
 		expect(limitsFace(undefined, false)).toBe(ringFace(COLORS.muted, "gauge", { dim: true }));
+		expect(limitsLabel("claudeAgent", "5-hour", 82.4)).toBe("Claude · 5-hour: 82% used");
 	});
 
-	it("counts what waits and what runs", () => {
-		const face = statusFace({ approval: 1, question: 1, running: 3 });
-		expect(face).toContain(`fill="${STATE_COLOR.approval}">2<`);
-		expect(face).toContain(`fill="${STATE_COLOR.running}">3<`);
+	it("shows what waits on you first, else what runs, and both counts on hover", () => {
+		expect(statusFace({ approval: 1, question: 1, running: 3 })).toBe(ringFace(STATE_COLOR.approval, "queued", { badge: 2 }));
+		expect(statusFace({ approval: 0, question: 0, running: 3 })).toBe(ringFace(STATE_COLOR.running, "queued", { badge: 3 }));
+		expect(statusFace({ approval: 0, question: 0, running: 0 })).toBe(ringFace(COLORS.muted, "queued", { dim: true }));
+		expect(statusLabel({ approval: 1, question: 1, running: 3 })).toBe("2 wait on you · 3 running");
 	});
 
 	it("shows the selected thread's access mode and effort, dimmed without one", () => {

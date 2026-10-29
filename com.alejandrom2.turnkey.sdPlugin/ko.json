@@ -1248,6 +1248,7 @@
 			"needsAccess": "공유 권한 필요"
 		},
 		"logi": {
+			"labels": { "limits": "{provider} · {window}: {percent}% 사용", "status": "{waiting}개 응답 대기 · {running}개 실행 중" },
 			"status": {
 				"unpaired": "Turnkey가 아직 T3 Code와 페어링되지 않았습니다.",
 				"pair": "T3 Code와 페어링",
