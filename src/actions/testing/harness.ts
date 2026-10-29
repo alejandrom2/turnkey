@@ -3,7 +3,7 @@ import { vi } from "vitest";
 import type { DeckThread } from "../../core/board.js";
 import type { Machine } from "../../core/t3/machine.js";
 import { FakeAction } from "./action.js";
-import { world } from "./deck.js";
+import { resetListeners, world } from "./deck.js";
 
 type Instance = {
 	actions: Set<FakeAction>;
@@ -43,7 +43,10 @@ export async function goldenKey(Class: new () => object, options: GoldenOptions 
 	world.machines = machines;
 	world.selects = [];
 	world.spawned = [];
+	resetListeners();
 	vi.useFakeTimers();
+	// Elapsed times and countdowns on faces read the clock.
+	vi.setSystemTime(new Date("2026-06-01T12:00:00Z"));
 	try {
 		const instance = new Class() as Instance;
 		const action = new FakeAction();
@@ -68,6 +71,8 @@ export async function goldenKey(Class: new () => object, options: GoldenOptions 
 			calls.push(...world.spawned);
 			if (world.selects.length > 0) calls.push(`select ${json(world.selects)}`);
 		}
+		// Releases the watches the key opened, so they do not carry into the next golden.
+		await (instance as unknown as { onWillDisappear(ev: unknown): unknown }).onWillDisappear({ action });
 		instance.actions.clear();
 		return { image, calls };
 	} finally {

@@ -4,8 +4,16 @@ import type { DeckThread } from "../../core/board.js";
 import type { Machine, PendingRequest } from "../../core/t3/machine.js";
 
 /** A ready, operable machine whose operations are spies; `pendingRequest` resolves to `request`. */
-export function machine(overrides: Partial<Record<keyof Machine, unknown>> & { request?: PendingRequest | Promise<PendingRequest | undefined> } = {}): Machine {
-	const { request, ...rest } = overrides;
+export function machine(
+	overrides: Partial<Record<keyof Machine, unknown>> & {
+		request?: PendingRequest | Promise<PendingRequest | undefined>;
+		/** What `call` answers by RPC tag; a function answers with its result, an Error throws. */
+		rpc?: Record<string, unknown>;
+		/** What `stream` hands its callback by RPC tag. */
+		streams?: Record<string, unknown[]>;
+	} = {},
+): Machine {
+	const { request, rpc = {}, streams = {}, ...rest } = overrides;
 	return {
 		url: "http://studio:3773",
 		environmentId: "env",
@@ -17,6 +25,23 @@ export function machine(overrides: Partial<Record<keyof Machine, unknown>> & { r
 		respond: vi.fn(async () => undefined),
 		stop: vi.fn(async () => undefined),
 		send: vi.fn(async () => undefined),
+		// What the board would show once T3 Code applies the change, so a press record includes the face that follows it.
+		setModelSelection: vi.fn(async (target: DeckThread, model: DeckThread["model"]) => void (target.model = model)),
+		setRuntimeMode: vi.fn(async (target: DeckThread, mode: DeckThread["runtimeMode"]) => void (target.runtimeMode = mode)),
+		setInteractionMode: vi.fn(async (target: DeckThread, mode: DeckThread["interactionMode"]) => void (target.interactionMode = mode)),
+		call: vi.fn(async (tag: string) => {
+			const answer = rpc[tag];
+			if (answer instanceof Error) throw answer;
+			return typeof answer === "function" ? (answer as () => unknown)() : answer;
+		}),
+		stream: vi.fn(async (tag: string, _payload: unknown, onValue: (value: unknown) => void) => void (streams[tag] ?? []).forEach(onValue)),
+		scopes: ["orchestration:read", "orchestration:operate", "source-control:write"],
+		project: () => ({ id: "project", title: "Project", workspaceRoot: "/work/project" }),
+		isScratch: () => false,
+		turnDiff: () => undefined,
+		editors: [],
+		watchConfig: () => () => undefined,
+		stopRun: vi.fn(async (target: DeckThread) => void Object.assign(target, { active: false, deck: "idle", runStatus: "idle" })),
 		...rest,
 	} as unknown as Machine;
 }
