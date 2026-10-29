@@ -22,13 +22,13 @@ export type DenyState = Decided;
 const canOperate = (ctx: KeyContext<unknown>, thread: DeckThread | undefined): boolean =>
 	thread !== undefined ? thread.machine.canOperate : ctx.runtime.machines().some((machine) => machine.canOperate);
 
-/** Open the request in T3 Code, or answer it; `answer` is the decision to send and whether it needs confirming first. */
-function plan(state: Decided, ctx: KeyContext<unknown>, answer: { decision: Parameters<DeckThread["machine"]["respond"]>[2]; allowed: boolean } | undefined): PressPlan {
+/** Open the request in T3 Code, or answer it; `answer` is the decision to send, whether it needs confirming first, and the face saying so. */
+function plan(state: Decided, ctx: KeyContext<unknown>, answer: { decision: Parameters<DeckThread["machine"]["respond"]>[2]; allowed: boolean; hold: string } | undefined): PressPlan {
 	const { thread, check, request } = state;
 	if (!check.available) return { kind: "fail", label: check.reason };
 	if (request === undefined) return { kind: "fail", label: t("result.loading") };
 	if (answer === undefined || request.type !== "approval") return { kind: "run", work: () => ctx.runtime.openThread(thread!) };
-	if (!answer.allowed) return { kind: "needsHold", label: t("result.holdToAllow") };
+	if (!answer.allowed) return { kind: "needsHold", label: answer.hold };
 	return { kind: "run", work: () => thread!.machine.respond(request.threadId, request.requestId, answer.decision) };
 }
 
@@ -53,7 +53,7 @@ export const approveKey: KeyDefinition<ApproveSettings, ApproveState> = {
 	press(state, ctx, input) {
 		const { press, confirm } = state;
 		if (press === undefined || press.kind === "open") return plan(state, ctx, undefined);
-		return plan(state, ctx, { decision: press.decision, allowed: confirmed(input, () => approvalConfirmed(press, confirm, input.heldMs)) });
+		return plan(state, ctx, { decision: press.decision, allowed: confirmed(input, () => approvalConfirmed(press, confirm, input.heldMs)), hold: t("result.holdToAllow") });
 	},
 };
 
@@ -70,5 +70,5 @@ export const denyKey: KeyDefinition<Record<string, unknown>, DenyState> = {
 	},
 
 	// Declining is a tap today; Logi's hold on the keypad comes from `confirmBy`.
-	press: (state, ctx, input) => plan(state, ctx, { decision: "decline", allowed: confirmed(input, () => true) }),
+	press: (state, ctx, input) => plan(state, ctx, { decision: "decline", allowed: confirmed(input, () => true), hold: t("result.holdToDeny") }),
 };

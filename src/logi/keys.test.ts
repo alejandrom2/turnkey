@@ -171,4 +171,28 @@ describe("Keys", () => {
 		subject.handle({ type: "press", action: "counter:" });
 		expect(pressed).toEqual([0, 1]);
 	});
+	it("hands a kind the size its key appeared at, 80 until one did", () => {
+		const sizes: number[] = [];
+		const subject = new Keys({ sized: { face: (_index, _parameter, size) => (sizes.push(size), `${size}`) } }, () => undefined);
+		subject.handle({ type: "press", action: "sized:" });
+		subject.handle({ type: "appear", action: "sized:", size: 116 });
+		subject.handle({ type: "appear", action: "sized:other", size: 60 });
+		expect(sizes).toEqual([80, 116, 60]);
+	});
+
+	it("passes a press's hold time, and none for a Ring click", () => {
+		const held: (number | undefined)[] = [];
+		const subject = new Keys({ held: { face: () => "face", press: (_index, _parameter, heldMs) => void held.push(heldMs) } }, () => undefined);
+		subject.handle({ type: "press", action: "held:", heldMs: 650 });
+		subject.handle({ type: "press", action: "held:" });
+		expect(held).toEqual([650, undefined]);
+	});
+
+	it("sends nothing for a key its kind has no face for", () => {
+		const sent: SidecarMessage[] = [];
+		const subject = new Keys({ none: { face: () => undefined } }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "none:nope", size: 80 });
+		subject.repaint();
+		expect(sent).toEqual([]);
+	});
 });

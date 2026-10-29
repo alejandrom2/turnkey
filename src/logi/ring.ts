@@ -1,7 +1,7 @@
 import type { DeckThread } from "../core/board.js";
 import { t } from "../core/i18n.js";
 import { type CatalogModel, modelColor, providerDisplayName, providerMark } from "../core/models.js";
-import { COLORS, glyph, type GlyphName, MODE_GLYPH, STATE_COLOR, svgMarkup } from "../core/render.js";
+import { COLORS, escapeXml, glyph, type GlyphName, MODE_GLYPH, STATE_COLOR, svgMarkup } from "../core/render.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 
 /** What the Actions Ring reads from a thread. */
@@ -49,6 +49,10 @@ export const stopFace = (available: boolean): string => ringFace(COLORS.accent, 
 
 
 export const settingsFace = (): string => ringFace(COLORS.accent, "sliders");
+
+/** A press's outcome on the ring: a check or a mark. The label goes with it as the slot's name, since 80 px can't carry text. */
+export const glyphResult = (ok: boolean, label: string): string =>
+	svgMarkup(144, 144, `<title>${escapeXml(label)}</title>` + glyph(ok ? "check" : "error", 28, 28, 88, ok ? COLORS.done : COLORS.error, 3.2));
 
 /** The prompts a ring slot can send, each as its own glyph; Continue is its own action. */
 export const PROMPT_GLYPHS = { test: "scriptTest", fix: "hammer", explain: "book", commit: "gitCommit" } as const satisfies Record<string, GlyphName>;

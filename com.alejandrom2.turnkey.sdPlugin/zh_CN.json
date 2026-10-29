@@ -247,6 +247,7 @@
 			"started": "已开始",
 			"loading": "加载中…",
 			"holdToAllow": "长按允许",
+			"holdToDeny": "长按拒绝",
 			"holdToAnswer": "长按回答",
 			"holdToSend": "长按发送",
 			"holdToSettle": "长按完结",
@@ -1253,6 +1254,8 @@
 			},
 			"actions": {
 				"nextEffort": { "name": "下一推理强度", "description": "将 T3 Code 中打开的对话切换到其模型的下一推理强度。" },
+				"approve": { "name": "批准", "description": "允许一次 T3 Code 中打开的线程请求批准的操作。在键盘上需长按。" },
+				"deny": { "description": "拒绝 T3 Code 中打开的线程请求批准的操作。在键盘上需长按。" },
 				"nextAccess": { "name": "下一权限", "description": "将 T3 Code 中打开的对话切换到下一个权限模式。" },
 				"limit": { "slot1": "限额 1", "slot2": "限额 2", "slot3": "限额 3", "slot4": "限额 4", "slot5": "限额 5", "description": "按 T3 Code 限额中的顺序，显示某个提供方最紧的限额已用多少。选择它可刷新。" },
 				"waiting": { "name": "等你处理", "description": "统计等你处理的 T3 Code 对话。选择它可打开最紧急的一个。" },

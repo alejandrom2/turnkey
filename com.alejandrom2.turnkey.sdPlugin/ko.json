@@ -247,6 +247,7 @@
 			"started": "시작됨",
 			"loading": "불러오는 중…",
 			"holdToAllow": "길게 눌러 허용",
+			"holdToDeny": "길게 눌러 거부",
 			"holdToAnswer": "길게 눌러 응답",
 			"holdToSend": "길게 눌러 보내기",
 			"holdToSettle": "길게 눌러 처리",
@@ -1253,6 +1254,8 @@
 			},
 			"actions": {
 				"nextEffort": { "name": "다음 강도", "description": "T3 Code에서 열려 있는 스레드를 모델의 다음 강도로 바꿉니다." },
+				"approve": { "name": "승인", "description": "T3 Code에서 열린 스레드가 요청한 승인을 한 번 허용합니다. 키패드에서는 길게 누르세요." },
+				"deny": { "description": "T3 Code에서 열린 스레드가 요청한 승인을 거부합니다. 키패드에서는 길게 누르세요." },
 				"nextAccess": { "name": "다음 권한", "description": "T3 Code에서 열려 있는 스레드를 다음 권한 모드로 바꿉니다." },
 				"limit": { "slot1": "한도 1", "slot2": "한도 2", "slot3": "한도 3", "slot4": "한도 4", "slot5": "한도 5", "description": "공급자의 가장 빠듯한 한도를 얼마나 썼는지 T3 Code 한도 순서대로 보여줍니다. 선택하면 새로 고칩니다." },
 				"waiting": { "name": "응답 대기", "description": "응답을 기다리는 T3 Code 스레드 수를 보여줍니다. 선택하면 가장 급한 스레드를 엽니다." },

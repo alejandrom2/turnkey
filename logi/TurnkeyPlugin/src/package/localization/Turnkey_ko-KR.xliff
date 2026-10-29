@@ -20,6 +20,14 @@
           <source>Steps the thread open in T3 Code to its next access mode.</source>
           <target>T3 Code에서 열려 있는 스레드를 다음 권한 모드로 바꿉니다.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand" translate="yes">
+          <source>Approve</source>
+          <target>승인</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand###description" translate="yes">
+          <source>Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>T3 Code에서 열린 스레드가 요청한 승인을 한 번 허용합니다. 키패드에서는 길게 누르세요.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>커밋</target>
@@ -35,6 +43,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand###description" translate="yes">
           <source>Nudges the thread open in T3 Code to continue; opens it when it waits on you.</source>
           <target>T3 Code에서 열려 있는 스레드에 계속하라고 보냅니다. 확인이 필요하면 스레드를 엽니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand" translate="yes">
+          <source>Deny</source>
+          <target>거부</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand###description" translate="yes">
+          <source>Denies what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>T3 Code에서 열린 스레드가 요청한 승인을 거부합니다. 키패드에서는 길게 누르세요.</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
           <source>Diagnose</source>

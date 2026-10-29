@@ -8,6 +8,7 @@ import { QUICK_PROMPTS } from "../core/prompts.js";
 import type { Machine } from "../core/t3/machine.js";
 import { type SidecarDeps, sidecarKinds } from "./kinds.js";
 import { effortFace, limitsFace } from "./ring.js";
+import { logiRuntime } from "./runtime.js";
 
 const golden = (name: string) => readFileSync(new URL(`./__goldens__/${name}.svg`, import.meta.url), "utf8");
 
@@ -42,6 +43,8 @@ function setup(threads: Array<Partial<DeckThread> & { key: string }>, options: {
 		watchConfigs: vi.fn(),
 		failed: () => () => undefined,
 		settingsUrl: () => "http://settings",
+		runtime: logiRuntime({ machines: () => [machine as unknown as Machine], board, openThread: async () => undefined, repaint: () => undefined }),
+		warn: () => undefined,
 	} satisfies SidecarDeps;
 	return { kinds: sidecarKinds(deps), machine, deps, all };
 }
@@ -153,47 +156,58 @@ describe("sidecarKinds presses", () => {
 
 describe("sidecarKinds faces match their goldens", () => {
 	it("stop", () => {
-		expect(setup([{ key: "a", deck: "running" }], { selected: "a" }).kinds.stop!.face(0, "")).toBe(golden("stopFace-available"));
-		expect(setup([{ key: "a", deck: "done" }]).kinds.stop!.face(0, "")).toBe(golden("stopFace-dim"));
+		expect(setup([{ key: "a", deck: "running" }], { selected: "a" }).kinds.stop!.face(0, "", 80)).toBe(golden("stopFace-available"));
+		expect(setup([{ key: "a", deck: "done" }]).kinds.stop!.face(0, "", 80)).toBe(golden("stopFace-dim"));
 	});
 
 	it("stopAll", () => {
 		const { kinds } = setup([{ key: "a", deck: "running" }, { key: "b", deck: "running" }, { key: "c", deck: "running" }]);
-		expect(kinds.stopAll!.face(0, "")).toBe(golden("stopAllFace-three"));
-		expect(setup([]).kinds.stopAll!.face(0, "")).toBe(golden("stopAllFace-none"));
+		expect(kinds.stopAll!.face(0, "", 80)).toBe(golden("stopAllFace-three"));
+		expect(setup([]).kinds.stopAll!.face(0, "", 80)).toBe(golden("stopAllFace-none"));
 	});
 
 	it("urgent, waiting, running and status", () => {
 		const { kinds } = setup([{ key: "a", deck: "approval" }, { key: "q", deck: "question" }, { key: "r", deck: "running" }, { key: "d", deck: "done" }]);
-		expect(kinds.urgent!.face(0, "")).toBe(golden("urgentFace-two-waiting"));
-		expect(kinds.waiting!.face(0, "")).toBe(golden("waitingFace-some"));
-		expect(kinds.running!.face(0, "")).toBe(golden("runningFace-some"));
-		expect(kinds.status!.face(0, "")).toBe(golden("statusFace-waiting"));
+		expect(kinds.urgent!.face(0, "", 80)).toBe(golden("urgentFace-two-waiting"));
+		expect(kinds.waiting!.face(0, "", 80)).toBe(golden("waitingFace-some"));
+		expect(kinds.running!.face(0, "", 80)).toBe(golden("runningFace-some"));
+		expect(kinds.status!.face(0, "", 80)).toBe(golden("statusFace-waiting"));
 	});
 
 	it("access, continue, prompt, send and settings", () => {
 		const { kinds } = setup([{ key: "a", deck: "approval" }], { selected: "a" });
-		expect(kinds.access!.face(0, "")).toBe(golden("modeFace-auto"));
-		expect(kinds.continue!.face(0, "")).toBe(golden("continueFace-open"));
-		expect(kinds.prompt!.face(0, "fix")).toBe(golden("promptFace-fix"));
-		expect(kinds.send!.face(0, "hi")).toBe(golden("customPromptFace-text"));
-		expect(kinds.send!.face(0, " ")).toBe(golden("customPromptFace-empty"));
-		expect(kinds.settings!.face(0, "")).toBe(golden("settingsFace"));
-		expect(setup([]).kinds.access!.face(0, "")).toBe(golden("modeFace-none"));
+		expect(kinds.access!.face(0, "", 80)).toBe(golden("modeFace-auto"));
+		expect(kinds.continue!.face(0, "", 80)).toBe(golden("continueFace-open"));
+		expect(kinds.prompt!.face(0, "fix", 80)).toBe(golden("promptFace-fix"));
+		expect(kinds.send!.face(0, "hi", 80)).toBe(golden("customPromptFace-text"));
+		expect(kinds.send!.face(0, " ", 80)).toBe(golden("customPromptFace-empty"));
+		expect(kinds.settings!.face(0, "", 80)).toBe(golden("settingsFace"));
+		expect(setup([]).kinds.access!.face(0, "", 80)).toBe(golden("modeFace-none"));
 	});
 
 	it("effort and limits when there is nothing to show", () => {
 		const { kinds } = setup([]);
-		expect(kinds.effort!.face(0, "")).toBe(effortFace(undefined));
-		expect(kinds.effort!.face(0, "")).toBe(golden("effortFace-none"));
-		expect(kinds.limits!.face(0, "")).toBe(limitsFace(undefined, false));
-		expect(kinds.limit!.face(0, "1")).toBe(golden("limitsFace-unavailable"));
+		expect(kinds.effort!.face(0, "", 80)).toBe(effortFace(undefined));
+		expect(kinds.effort!.face(0, "", 80)).toBe(golden("effortFace-none"));
+		expect(kinds.limits!.face(0, "", 80)).toBe(limitsFace(undefined, false));
+		expect(kinds.limit!.face(0, "1", 80)).toBe(golden("limitsFace-unavailable"));
 	});
 
 	it("model slots draw the picker's model, and mark the thread's own", () => {
 		const { kinds } = setup([{ key: "a" }], { selected: "a" });
 		expect(kinds.model!.label!(0, "1")).toBe("Claude · Opus");
-		expect(kinds.model!.face(0, "2")).not.toBe(kinds.model!.face(0, "1"));
-		expect(kinds.model!.face(0, "9")).toBe(golden("modelFace-none"));
+		expect(kinds.model!.face(0, "2", 80)).not.toBe(kinds.model!.face(0, "1", 80));
+		expect(kinds.model!.face(0, "9", 80)).toBe(golden("modelFace-none"));
 	});
+});
+
+describe("sidecarKinds before keypad tiles", () => {
+	it("draw today's face at every size, the shared keys aside", () => {
+		const { kinds } = setup([{ key: "a", deck: "approval" }, { key: "r", deck: "running" }], { selected: "a" });
+		for (const [name, kind] of Object.entries(kinds)) {
+			if (name === "approve" || name === "deny") continue;
+			for (const parameter of ["", "1", "fix"]) for (const size of [60, 116, 144]) expect(kind.face(0, parameter, size), `${name}:${parameter} at ${size}`).toBe(kind.face(0, parameter, 80));
+		}
+	});
+
 });

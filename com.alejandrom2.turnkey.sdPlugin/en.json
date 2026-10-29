@@ -247,6 +247,7 @@
 			"started": "Started",
 			"loading": "Loading…",
 			"holdToAllow": "Hold to allow",
+			"holdToDeny": "Hold to deny",
 			"holdToAnswer": "Hold to answer",
 			"holdToSend": "Hold to send",
 			"holdToSettle": "Hold to settle",
@@ -1253,6 +1254,8 @@
 			},
 			"actions": {
 				"nextEffort": { "name": "Next effort", "description": "Steps the thread open in T3 Code to its model's next effort level." },
+				"approve": { "name": "Approve", "description": "Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it." },
+				"deny": { "description": "Denies what the thread open in T3 Code asks approval for. On a keypad, hold it." },
 				"nextAccess": { "name": "Next access", "description": "Steps the thread open in T3 Code to its next access mode." },
 				"limit": { "slot1": "Limit 1", "slot2": "Limit 2", "slot3": "Limit 3", "slot4": "Limit 4", "slot5": "Limit 5", "description": "Shows how much of a provider's tightest limit is used, in the order T3 Code's Limits lists providers. Choose it to refresh." },
 				"waiting": { "name": "Waiting on you", "description": "Counts the T3 Code threads that wait on you. Choose it to open the most urgent." },

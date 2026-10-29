@@ -247,6 +247,7 @@
 			"started": "Gestartet",
 			"loading": "Lädt…",
 			"holdToAllow": "Halten: erlauben",
+			"holdToDeny": "Halten: ablehnen",
 			"holdToAnswer": "Halten: antworten",
 			"holdToSend": "Halten: senden",
 			"holdToSettle": "Halten: erledigen",
@@ -1253,6 +1254,8 @@
 			},
 			"actions": {
 				"nextEffort": { "name": "Nächster Aufwand", "description": "Schaltet den in T3 Code geöffneten Thread auf die nächste Aufwandsstufe seines Modells." },
+				"approve": { "name": "Freigeben", "description": "Erlaubt einmal, wofür der in T3 Code geöffnete Thread eine Freigabe braucht. Auf einem Keypad gedrückt halten." },
+				"deny": { "description": "Lehnt ab, wofür der in T3 Code geöffnete Thread eine Freigabe braucht. Auf einem Keypad gedrückt halten." },
 				"nextAccess": { "name": "Nächster Zugriff", "description": "Schaltet den in T3 Code geöffneten Thread auf den nächsten Zugriffsmodus." },
 				"limit": { "slot1": "Limit 1", "slot2": "Limit 2", "slot3": "Limit 3", "slot4": "Limit 4", "slot5": "Limit 5", "description": "Zeigt, wie viel vom engsten Limit eines Anbieters verbraucht ist, in der Reihenfolge der Limits von T3 Code. Wähle es zum Aktualisieren." },
 				"waiting": { "name": "Wartet auf dich", "description": "Zählt die T3-Code-Threads, die auf dich warten. Wähle es, um den dringendsten zu öffnen." },

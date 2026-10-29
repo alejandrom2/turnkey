@@ -15,6 +15,7 @@ import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
+import { logiRuntime } from "./runtime.js";
 import { keptMachines, machineRows } from "./rows.js";
 import { pluginStatus, waitsForSync } from "./status.js";
 import { FileCredentials } from "./store.js";
@@ -83,6 +84,9 @@ const keys = new Keys(
 		watchConfigs,
 		failed,
 		settingsUrl: () => page.url,
+		// `changed` is declared below; the runtime only calls it once keys exist.
+		runtime: logiRuntime({ machines: () => machines.all, board, openThread: (thread) => openThread(thread, selectThread), repaint: () => changed() }),
+		warn: (message) => log("warn", message),
 	}),
 	send,
 );

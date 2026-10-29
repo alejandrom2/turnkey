@@ -20,6 +20,14 @@
           <source>Steps the thread open in T3 Code to its next access mode.</source>
           <target>T3 Code で開いているスレッドを、次のアクセスモードに切り替えます。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand" translate="yes">
+          <source>Approve</source>
+          <target>承認</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand###description" translate="yes">
+          <source>Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>T3 Code で開いているスレッドが求める承認を今回のみ許可します。キーパッドでは長押しします。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>コミット</target>
@@ -35,6 +43,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand###description" translate="yes">
           <source>Nudges the thread open in T3 Code to continue; opens it when it waits on you.</source>
           <target>T3 Code で開いているスレッドに続行を促します。対応待ちならそのスレッドを開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand" translate="yes">
+          <source>Deny</source>
+          <target>拒否</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand###description" translate="yes">
+          <source>Denies what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>T3 Code で開いているスレッドが求める承認を拒否します。キーパッドでは長押しします。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
           <source>Diagnose</source>

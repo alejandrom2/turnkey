@@ -39,7 +39,7 @@ export const STATE_COLOR: Record<DeckState, string> = {
 };
 
 /** T3 Code's Lucide icons on a 24-unit grid; Stop is filled like T3's composer stop button. */
-const GLYPHS = {
+export const GLYPHS = {
 	...LUCIDE,
 	stop: `<rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor" stroke="none"/>`,
 	/** Lucide's play, filled: Stop's Resume face. */

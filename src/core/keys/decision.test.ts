@@ -143,6 +143,15 @@ describe("Deny press", () => {
 		expect(denyKey.press(denyKey.state(none.ctx), none.ctx, hold(0))).toEqual({ kind: "fail", label: t("reason.nothingPending") });
 	});
 
+	it("on the keypad, declines only after a 600 ms hold, and says so", async () => {
+		const target = waiting("ready", approval("ready"));
+		const { ctx } = context(target, {});
+		const state = await loaded(denyKey, ctx);
+		expect(denyKey.press(state, ctx, { heldMs: 599, confirmBy: "hold" })).toEqual({ kind: "needsHold", label: t("result.holdToDeny") });
+		await run(denyKey.press(state, ctx, { heldMs: 600, confirmBy: "hold" }));
+		expect(target.machine.respond).toHaveBeenCalledWith("ready", "req", "decline");
+	});
+
 	it("opens the thread for a request the deck can't answer", async () => {
 		const target = waiting("other", { type: "unsupported", threadId: "other", requestId: "req", heading: "Tool call" });
 		const { ctx, openThread } = context(target, {});

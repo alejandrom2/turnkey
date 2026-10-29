@@ -1,5 +1,7 @@
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { threadCounts } from "../core/infobar.js";
+import { approveKey, denyKey } from "../core/keys/decision.js";
+import type { KeyRuntime } from "../core/keys/key.js";
 import { findModel, modelColor } from "../core/models.js";
 import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
@@ -10,8 +12,9 @@ import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/lim
 import { continueStep, nextChoice } from "./controls.js";
 import type { KeyKind } from "./keys.js";
 import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
+import { sharedKind } from "./shared.js";
 
-/** What the sidecar's keys reach for beyond the board: the machines, opening things, and the limits and config watches. */
+/** What the sidecar's keys reach for beyond the board: the machines, opening things, the limits and config watches, and the shared keys' runtime. */
 export type SidecarDeps = {
 	machines(): readonly Machine[];
 	board: ThreadBoard;
@@ -21,6 +24,8 @@ export type SidecarDeps = {
 	watchConfigs(): void;
 	failed(what: string): (error: unknown) => void;
 	settingsUrl(): string;
+	runtime: KeyRuntime;
+	warn(message: string): void;
 };
 
 export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
@@ -91,6 +96,9 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 	const operable = () => board.threads.filter((thread) => thread.deck === "running" && thread.machine.canOperate);
 
 	return {
+		// Approve allows once, as the design has it on Logitech; a keypad holds for it, a Ring click is itself the confirmation.
+		approve: sharedKind(approveKey, { "": { approvalAuthority: "once" } }, deps.runtime, deps.warn),
+		deny: sharedKind(denyKey, { "": {} }, deps.runtime, deps.warn),
 		prompt: {
 			face: (_index, name) => (isPrompt(name) ? promptFace(name) : ringFace(COLORS.muted, "chat", { dim: true })),
 			press: (_index, name) => {

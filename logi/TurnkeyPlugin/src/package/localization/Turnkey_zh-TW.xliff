@@ -20,6 +20,14 @@
           <source>Steps the thread open in T3 Code to its next access mode.</source>
           <target>將 T3 Code 中開啟的對話切換到下一個權限模式。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand" translate="yes">
+          <source>Approve</source>
+          <target>核准</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand###description" translate="yes">
+          <source>Allows once what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>允許一次 T3 Code 中開啟的討論串請求核准的操作。在鍵盤上需長按。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
           <source>Commit</source>
           <target>提交</target>
@@ -35,6 +43,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand###description" translate="yes">
           <source>Nudges the thread open in T3 Code to continue; opens it when it waits on you.</source>
           <target>讓 T3 Code 中開啟的對話繼續；如果它在等你，則開啟它。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand" translate="yes">
+          <source>Deny</source>
+          <target>拒絕</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DenyCommand###description" translate="yes">
+          <source>Denies what the thread open in T3 Code asks approval for. On a keypad, hold it.</source>
+          <target>拒絕 T3 Code 中開啟的討論串請求核准的操作。在鍵盤上需長按。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
           <source>Diagnose</source>

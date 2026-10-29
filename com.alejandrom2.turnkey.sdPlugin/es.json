@@ -247,6 +247,7 @@
 			"started": "Iniciado",
 			"loading": "Cargando…",
 			"holdToAllow": "Mantén para permitir",
+			"holdToDeny": "Mantén para denegar",
 			"holdToAnswer": "Mantén para responder",
 			"holdToSend": "Mantén para enviar",
 			"holdToSettle": "Mantén para resolver",
@@ -1253,6 +1254,8 @@
 			},
 			"actions": {
 				"nextEffort": { "name": "Siguiente esfuerzo", "description": "Pasa el hilo abierto en T3 Code al siguiente nivel de esfuerzo de su modelo." },
+				"approve": { "name": "Aprobar", "description": "Permite una vez lo que el hilo abierto en T3 Code pide aprobar. En un teclado, mantenlo pulsado." },
+				"deny": { "description": "Deniega lo que el hilo abierto en T3 Code pide aprobar. En un teclado, mantenlo pulsado." },
 				"nextAccess": { "name": "Siguiente acceso", "description": "Pasa el hilo abierto en T3 Code al siguiente modo de acceso." },
 				"limit": { "slot1": "Límite 1", "slot2": "Límite 2", "slot3": "Límite 3", "slot4": "Límite 4", "slot5": "Límite 5", "description": "Muestra cuánto se ha usado del límite más ajustado de un proveedor, en el orden de Límites de T3 Code. Elígelo para actualizar." },
 				"waiting": { "name": "Te esperan", "description": "Cuenta los hilos de T3 Code que te esperan. Elígelo para abrir el más urgente." },

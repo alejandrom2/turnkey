@@ -247,6 +247,7 @@
 			"started": "Démarré",
 			"loading": "Chargement…",
 			"holdToAllow": "Maintenir : autoriser",
+			"holdToDeny": "Maintenir : refuser",
 			"holdToAnswer": "Maintenir : répondre",
 			"holdToSend": "Maintenir : envoyer",
 			"holdToSettle": "Maintenir : classer",
@@ -1253,6 +1254,8 @@
 			},
 			"actions": {
 				"nextEffort": { "name": "Effort suivant", "description": "Passe le fil ouvert dans T3 Code au niveau d'effort suivant de son modèle." },
+				"approve": { "name": "Approuver", "description": "Autorise une fois ce que le fil ouvert dans T3 Code demande d'approuver. Sur un pavé, maintenez-le." },
+				"deny": { "description": "Refuse ce que le fil ouvert dans T3 Code demande d'approuver. Sur un pavé, maintenez-le." },
 				"nextAccess": { "name": "Accès suivant", "description": "Passe le fil ouvert dans T3 Code au mode d'accès suivant." },
 				"limit": { "slot1": "Limite 1", "slot2": "Limite 2", "slot3": "Limite 3", "slot4": "Limite 4", "slot5": "Limite 5", "description": "Indique la part utilisée de la limite la plus serrée d'un fournisseur, dans l'ordre des Limites de T3 Code. Choisissez-le pour actualiser." },
 				"waiting": { "name": "Vous attendent", "description": "Compte les fils T3 Code qui vous attendent. Choisissez-le pour ouvrir le plus urgent." },
