@@ -10,6 +10,8 @@ export type KeyKind = {
 	face(index: number, parameter: string, size: number): string | undefined;
 	/** The name Logi shows for the key, such as the model a slot stands for; the action's own name without one. */
 	label?(index: number, parameter: string): string | undefined;
+	/** The action's own translated name, for an entry Logi lists without one; not a thread title. */
+	name?(parameter: string): string | undefined;
 	press?(index: number, parameter: string, heldMs?: number): number | void;
 	turn?(ticks: number, parameter: string): void;
 	appear?(action: string): void;
@@ -25,7 +27,7 @@ export const STALE_MS = 86_400_000;
  * `face` is the last SVG sent, so a repaint that changes nothing sends nothing. `seen` is the last `appear`, press or
  * turn. `size` is the last `appear`'s; a key pressed before any is taken for the Ring's 80 px.
  */
-type Key = { kind: KeyKind; index: number; seen: number; size: number; face?: string; label?: string };
+type Key = { kind: KeyKind; index: number; seen: number; size: number; face?: string; label?: string; name?: string };
 
 /** The plugin's keys and ring slots by action id, `<kind>:<parameter>`, each painted by its kind. */
 export class Keys {
@@ -90,9 +92,11 @@ export class Keys {
 		if (key === undefined) return;
 		const face = key.kind.face(key.index, parameterOf(action), key.size);
 		const label = key.kind.label?.(key.index, parameterOf(action));
-		if (face === undefined || (face === key.face && label === key.label)) return;
+		const name = key.kind.name?.(parameterOf(action));
+		if (face === undefined || (face === key.face && label === key.label && name === key.name)) return;
 		key.face = face;
 		key.label = label;
-		this.send({ type: "image", action, svg: face, ...(label === undefined ? {} : { label }) });
+		key.name = name;
+		this.send({ type: "image", action, svg: face, ...(label === undefined ? {} : { label }), ...(name === undefined ? {} : { name }) });
 	}
 }

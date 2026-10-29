@@ -18,16 +18,9 @@ namespace Loupedeck.TurnkeyPlugin
             "health:", "open:preview",
         };
 
-        // The English names for Options+ where the sidecar names no face (a localized name needs an xliff entry per action).
-        private static readonly Dictionary<String, String> Names = new Dictionary<String, String>
-        {
-            ["urgent:"] = "Most urgent", ["status:"] = "Status", ["continue:"] = "Continue", ["stop:"] = "Stop run", ["stopAll:"] = "Stop all runs",
-            ["prompt:test"] = "Run tests", ["prompt:fix"] = "Fix tests", ["prompt:explain"] = "Explain", ["prompt:commit"] = "Commit prompt",
-            ["limits:"] = "Limits", ["settings:"] = "Settings", ["activity:"] = "Activity",
-            ["git:commit"] = "Git commit", ["git:push"] = "Git push", ["git:create_pr"] = "Create pull request", ["git:pull"] = "Git pull",
-            ["pr:pr"] = "Pull request", ["pr:fix"] = "Fix findings", ["pr:explain"] = "Explain pull request", ["pr:ask"] = "Ask about pull request", ["pr:guide"] = "Pull request guide",
-            ["health:"] = "Health", ["open:preview"] = "Open preview",
-        };
+        // Only these keys live in this folder alone, so only they follow it open and closed: the rest share their id with a
+        // top-level key, whose own visibility must not be cut short.
+        private static Boolean IsFolderOnly(String action) => action.StartsWith("git:") || action.StartsWith("pr:") || action == "health:" || action == "open:preview";
 
         private readonly Dictionary<String, SidecarFaces> _faces = new Dictionary<String, SidecarFaces>();
 
@@ -60,7 +53,7 @@ namespace Loupedeck.TurnkeyPlugin
         public override Boolean Activate()
         {
             this._active = true;
-            foreach (var action in Actions)
+            foreach (var action in Actions.Where(IsFolderOnly))
             {
                 this.Faces(action)?.Appear(ParameterOf(action), this._size);
             }
@@ -71,7 +64,7 @@ namespace Loupedeck.TurnkeyPlugin
         public override Boolean Deactivate()
         {
             this._active = false;
-            foreach (var action in Actions)
+            foreach (var action in Actions.Where(IsFolderOnly))
             {
                 this.Faces(action)?.Disappear(ParameterOf(action));
             }
@@ -101,14 +94,13 @@ namespace Loupedeck.TurnkeyPlugin
                 return null;
             }
 
-            // A closed folder asks for images too (Options+ lists it); those must not start the keys' reads.
+            // A closed folder asks for images too (Options+ lists it); those must not start its own keys' reads.
             this._size = SidecarFaces.Pixels(imageSize);
-            return faces.Image(ParameterOf(actionParameter), this._size, this._active);
+            return faces.Image(ParameterOf(actionParameter), this._size, this._active || !IsFolderOnly(actionParameter));
         }
 
         public override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) =>
-            this.Faces(actionParameter)?.Label(ParameterOf(actionParameter))
-            ?? (Names.TryGetValue(actionParameter ?? "", out var name) ? name : base.GetCommandDisplayName(actionParameter, imageSize));
+            this.Faces(actionParameter)?.Name(ParameterOf(actionParameter)) ?? base.GetCommandDisplayName(actionParameter, imageSize);
 
         public override void RunCommand(String actionParameter)
         {

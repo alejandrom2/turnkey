@@ -7,6 +7,7 @@ import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
 import { Machines } from "../core/t3/machines.js";
 import type { SocketLike } from "../core/t3/rpc.js";
 import { batched } from "./batch.js";
+import { configWatch } from "./configwatch.js";
 import { HapticCues } from "./haptics.js";
 import { sidecarKinds } from "./kinds.js";
 import { Keys } from "./keys.js";
@@ -58,26 +59,12 @@ const open = (thread: Parameters<typeof openThread>[0]) => void openThread(threa
  * shows them, through T3 Code's five-minute throttle; nothing polls while the ring is closed.
  */
 const refresher = new LimitsRefresher();
-/** The machines' config subscriptions, held while any key that needs them shows. */
-const configWatches = new Map<string, () => void>();
-const configUsers = new Set<string>();
 const ready = () => machines.all.filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
-/** Keeps each machine's config live (limits, models and favorites) while a key that shows it has appeared. */
-function watchConfigs(action: string): void {
-	configUsers.add(action);
-	for (const each of ready()) {
-		// shortcut: top-level keys never report hiding, so they hold it until the sidecar exits; the Turnkey folder's keys release it.
-		if (!configWatches.has(each.url)) configWatches.set(each.url, each.watchConfig());
-	}
-}
-function unwatchConfigs(action: string): void {
-	configUsers.delete(action);
-	if (configUsers.size > 0) return;
-	for (const release of configWatches.values()) release();
-	configWatches.clear();
-}
-function showLimits(action: string): void {
-	watchConfigs(action);
+// shortcut: top-level keys never report hiding, so one that showed holds the config until the sidecar exits; the Turnkey folder's keys do report it.
+const { watch: watchConfigs, unwatch: unwatchConfigs } = configWatch(ready);
+/** Refreshes the limits for the Limits slot `action`, which keeps the config live while it shows; a press (no action) only refreshes. */
+function showLimits(action?: string): void {
+	if (action !== undefined) watchConfigs(action);
 	for (const each of ready()) void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 }
 const keys = new Keys(

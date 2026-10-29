@@ -24,7 +24,7 @@ namespace Loupedeck.TurnkeyPlugin
         private Boolean _disposed;
 
         // An action's new face: its id and SVG markup.
-        public event Action<String, String, String> Image;
+        public event Action<String, String, String, String> Image;
 
         // A fresh sidecar knows no keys, so actions announce themselves again.
         public event Action Started;
@@ -227,7 +227,8 @@ namespace Loupedeck.TurnkeyPlugin
                         this.Image?.Invoke(
                             root.GetProperty("action").GetString(),
                             root.GetProperty("svg").GetString(),
-                            root.TryGetProperty("label", out var label) ? label.GetString() : null);
+                            root.TryGetProperty("label", out var label) ? label.GetString() : null,
+                            root.TryGetProperty("name", out var name) ? name.GetString() : null);
                         break;
                     case "haptic":
                         this.Haptic?.Invoke(root.GetProperty("event").GetString());

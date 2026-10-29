@@ -20,8 +20,10 @@ import { applyChoice, type DialControl, type PowerChoice, type PowerState, power
 import { QUICK_PROMPTS } from "../core/prompts.js";
 import { STATE_COLOR } from "../core/render.js";
 import { usagePeriod } from "../core/usage/store.js";
+import { type MessageKey, t } from "../core/i18n.js";
 import { continueStep } from "./controls.js";
 import type { KeyKind } from "./keys.js";
+import { actionName } from "./language.js";
 import { continueFace, PROMPT_GLYPHS, settingsFace, statusFace, statusLabel, stopAllFace, urgentFace, runningFace, waitingFace } from "./ring.js";
 import { markup, sharedKind } from "./shared.js";
 
@@ -30,7 +32,7 @@ export type SidecarDeps = {
 	board: ThreadBoard;
 	open(thread: DeckThread): void;
 	openExternal(url: string): Promise<void>;
-	refreshLimits(action: string): void;
+	refreshLimits(action?: string): void;
 	/** Keeps the machines' config live for the key `action` while it shows; `unwatchConfigs` lets go when it hides. */
 	watchConfigs(action: string): void;
 	unwatchConfigs(action: string): void;
@@ -39,6 +41,10 @@ export type SidecarDeps = {
 	runtime: KeyRuntime;
 	warn(message: string): void;
 };
+
+// The words the Turnkey folder's entries are listed by in Options+, from the translations the manifest already has.
+const GIT_NAMES: Record<string, MessageKey> = { commit: "repo.action.commit", push: "repo.action.push", create_pr: "repo.action.createPr", pull: "repo.action.pull" };
+const PR_NAMES: Record<string, MessageKey> = { fix: "inspector.pr.fix", explain: "inspector.pr.explain", ask: "inspector.pr.ask", guide: "inspector.settings.readme" };
 
 export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 	const { board, failed, open, watchConfigs, unwatchConfigs } = deps;
@@ -127,7 +133,7 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		speed: sharedKind("speed", speedKey, { "": {} }, deps.runtime, deps.warn),
 		plan: sharedKind("plan", planKey, { "": {} }, deps.runtime, deps.warn),
 		// A Limits folder's slots: the parameter is the place, from 1, in T3 Code's Limits.
-		limit: { ...sharedKind("limit", limitsKey, (place) => ({ poolSlot: Number(place) }), deps.runtime, deps.warn, limitsQuiet), appear: deps.refreshLimits, press: () => deps.refreshLimits("limit:press") },
+		limit: { ...sharedKind("limit", limitsKey, (place) => ({ poolSlot: Number(place) }), deps.runtime, deps.warn, limitsQuiet), appear: deps.refreshLimits, press: () => deps.refreshLimits() },
 		limits: { ...limitsFolder, appear: deps.refreshLimits },
 		status: {
 			face: (_index, _parameter, size) => sized(size, () => statusFace(threadCounts(board.threads)), () => statusTile(threadCounts(board.threads))),
@@ -183,12 +189,18 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		// One action per organize action but Unpin; Snooze takes Stream Deck's default hour, and Pin toggles, as there.
 		organize: sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((organize) => [organize, { organize }])), deps.runtime, deps.warn),
 		// In the Turnkey folder only, as their reads are heavier. Every git action needs a keypad hold; T3 Code writes the commit message.
-		git: sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), deps.runtime, deps.warn),
+		git: {
+			...sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), deps.runtime, deps.warn),
+			name: (parameter) => `${actionName("git")} · ${t(GIT_NAMES[parameter]!)}`,
+		},
 		// Show is `pr`; of the handoffs only Fix findings needs a keypad hold, as Stream Deck holds it by default.
-		pr: sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime, deps.warn),
+		pr: {
+			...sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime, deps.warn),
+			name: (parameter) => (parameter === "pr" ? actionName("pr") : `${actionName("pr")} · ${t(PR_NAMES[parameter]!)}`),
+		},
 		// The machines' configs (editors, providers, versions, Labs flags) stay live once these show. Preview and Health are in the folder only.
-		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime, deps.warn), ...watching },
-		health: { ...sharedKind("health", healthKey, { "": {} }, deps.runtime, deps.warn), ...watching },
+		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime, deps.warn), ...watching, name: (parameter) => (parameter === "preview" ? t("openPreview.title") : undefined) },
+		health: { ...sharedKind("health", healthKey, { "": {} }, deps.runtime, deps.warn), ...watching, name: () => actionName("health") },
 		// Update can't be undone: a keypad holds for it, a Ring click is itself the confirmation. Logitech never asks for its access.
 		update: { ...update, ...watching },
 		share: { ...sharedKind("share", shareKey, { "": {} }, deps.runtime, deps.warn), ...watching },

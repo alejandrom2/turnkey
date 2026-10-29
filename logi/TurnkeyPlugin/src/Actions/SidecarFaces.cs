@@ -12,6 +12,7 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly Action _changed;
         private readonly ConcurrentDictionary<String, String> _images = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, String> _labels = new ConcurrentDictionary<String, String>();
+        private readonly ConcurrentDictionary<String, String> _names = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
         private readonly ConcurrentDictionary<String, ManualResetEventSlim> _waiting = new ConcurrentDictionary<String, ManualResetEventSlim>();
 
@@ -104,6 +105,9 @@ namespace Loupedeck.TurnkeyPlugin
         // The name the sidecar gave the face, such as the model a slot stands for; null keeps the action's own.
         public String Label(String actionParameter) => this._labels.TryGetValue(this.ActionId(actionParameter), out var label) ? label : null;
 
+        // The action's own translated name, for a folder entry Options+ would otherwise list by its id; null until the sidecar has drawn it.
+        public String Name(String actionParameter) => this._names.TryGetValue(this.ActionId(actionParameter), out var name) ? name : null;
+
         // Logitech's samples draw 80 px faces on the 90 sizes.
         public static Int32 Pixels(PluginImageSize imageSize) => imageSize switch
         {
@@ -132,7 +136,7 @@ namespace Loupedeck.TurnkeyPlugin
 
         private String ActionId(String actionParameter) => $"{this._kind}:{actionParameter ?? ""}";
 
-        private void OnImage(String action, String svg, String label)
+        private void OnImage(String action, String svg, String label, String name)
         {
             if (!action.StartsWith($"{this._kind}:"))
             {
@@ -147,6 +151,15 @@ namespace Loupedeck.TurnkeyPlugin
             else
             {
                 this._labels[action] = label;
+            }
+
+            if (name == null)
+            {
+                this._names.TryRemove(action, out _);
+            }
+            else
+            {
+                this._names[action] = name;
             }
 
             if (this._waiting.TryRemove(action, out var drawn))

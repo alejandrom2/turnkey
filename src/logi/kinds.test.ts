@@ -189,6 +189,22 @@ describe("sidecarKinds presses", () => {
 		kinds.health!.disappear!("health:");
 		expect(deps.unwatchConfigs).toHaveBeenCalledExactlyOnceWith("health:");
 	});
+
+	it("a limit press refreshes without holding the config for a made-up key", () => {
+		const { kinds, deps } = setup([]);
+		kinds.limit!.press!(0, "1");
+		expect(deps.refreshLimits).toHaveBeenCalledExactlyOnceWith();
+	});
+
+	it("names the folder's own entries, never by a thread's title", () => {
+		const { kinds } = setup([{ key: "a", title: "Fix the bug" }], { selected: "a" });
+		expect(kinds.git!.name!("create_pr")).toBe("Git · Create PR");
+		expect(kinds.pr!.name!("pr")).toBe("Pull Request");
+		expect(kinds.pr!.name!("explain")).toBe("Pull Request · Explain");
+		expect(kinds.health!.name!("")).toBe("Health");
+		expect(kinds.open!.name!("preview")).toBe("Open preview");
+		expect(kinds.open!.name!("editor")).toBeUndefined();
+	});
 });
 
 describe("prompts, Continue and limits as they have always acted", () => {

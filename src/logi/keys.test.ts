@@ -206,4 +206,18 @@ describe("Keys", () => {
 		subject.handle({ type: "disappear", action: "watched:a" });
 		expect(calls).toEqual(["on watched:a", "off watched:a"]);
 	});
+
+	it("sends a kind's own name with its face, and again when the name changes", () => {
+		const sent: SidecarMessage[] = [];
+		let name = "Health";
+		const named: KeyKind = { face: () => "x", name: () => name };
+		const subject = new Keys({ named }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "named:", size: 80 });
+		name = "Zustand";
+		subject.repaint();
+		expect(sent).toEqual([
+			{ type: "image", action: "named:", svg: "x", name: "Health" },
+			{ type: "image", action: "named:", svg: "x", name: "Zustand" },
+		]);
+	});
 });
