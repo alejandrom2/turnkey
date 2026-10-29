@@ -55,12 +55,15 @@ export type MachineState =
 export interface CredentialStore {
 	load(url: string): Credential | undefined;
 	save(url: string, credential: Credential | undefined): Promise<void>;
+	urls(): readonly string[];
 }
 
 /** Everything that touches the outside world, injected so tests never reach a real server. */
 type MachineDeps = {
 	fetch: typeof fetch;
 	socket: SocketFactory;
+	/** Which Turnkey this is, as T3 Code lists its pairings: "Turnkey (Stream Deck)", "Turnkey (Logitech)". */
+	clientLabel: string;
 	/** Where the connection reports frames it couldn't handle. */
 	warn?: (message: string) => void;
 	now?: () => number;
@@ -280,7 +283,7 @@ export class Machine {
 		const credential = this.credential;
 		if (credential === undefined) return this.#set({ kind: "signed-out" });
 		if (credential.expiresAt <= this.#now()) {
-			void this.store.save(this.url, undefined);
+			this.#forgetPairing();
 			return this.#set({ kind: "signed-out", message: t("machine.pairingExpired") });
 		}
 		const rpc: RpcSocket = new RpcSocket({
@@ -318,7 +321,7 @@ export class Machine {
 
 	/** Spends a pair link's one-time code. The current connection keeps running if it fails. */
 	async pair(code: string, extraScopes: readonly string[] = []): Promise<Credential> {
-		const credential = await redeemPairingCode(this.url, code, this.deps.fetch, this.#now(), extraScopes);
+		const credential = await redeemPairingCode(this.url, code, this.deps.fetch, this.#now(), extraScopes, this.deps.clientLabel);
 		this.stop();
 		await this.store.save(this.url, credential);
 		this.#reset();
@@ -362,13 +365,18 @@ export class Machine {
 				this.#rpc = undefined;
 				this.#subscribed = false;
 				if (error instanceof PairingError && error.kind === "repair") {
-					void this.store.save(this.url, undefined);
+					this.#forgetPairing();
 					this.#reset();
 					return this.#set({ kind: "signed-out", message: error.message });
 				}
 				return this.#set({ kind: "error", message: error.message });
 			}
 		}
+	}
+
+	/** Unawaited, so a disk error is reported here rather than becoming an unhandled rejection in the host. */
+	#forgetPairing(): void {
+		void this.store.save(this.url, undefined).catch((error: unknown) => this.deps.warn?.(`Couldn't forget the pairing: ${error instanceof Error ? error.message : String(error)}`));
 	}
 
 	async #opened(rpc: RpcSocket, credential: Credential): Promise<void> {

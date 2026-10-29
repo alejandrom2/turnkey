@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "T3 Code-Threads vom Stream Deck aus beobachten und steuern: Thread-Status, Stopp, Prompts, Modelloptionen und Antworten, über alle Anbieter hinweg.",
+	"Description": "T3 Code-Threads vom Stream Deck aus beobachten und steuern: Thread-Status, Stopp, Prompts, Modelloptionen und Antworten, über alle Anbieter hinweg. Nicht mit T3 Code oder Elgato verbunden.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Thread",
@@ -803,7 +803,8 @@
 				"languages": "Sprachen",
 				"languagesHint": "Turnkey folgt der Sprache von Stream Deck.",
 				"readme": "Anleitung",
-				"openReadme": "README öffnen"
+				"openReadme": "README öffnen",
+				"independent": "Turnkey ist ein unabhängiges Projekt und weder mit T3 Code, Elgato noch Logitech verbunden oder von ihnen unterstützt."
 			},
 			"advanced": {
 				"appLink": "App-Link",
@@ -1246,6 +1247,73 @@
 			"unavailable": "Thread nicht teilbar",
 			"copyFailed": "Kopierfehler",
 			"needsAccess": "Braucht Zugriff zum Teilen"
+		},
+		"logi": {
+			"labels": { "limits": "{provider} · {window}: {percent} % verbraucht", "status": "{waiting} warten auf dich · {running} laufen" },
+			"status": {
+				"unpaired": "Turnkey ist noch nicht mit T3 Code gekoppelt.",
+				"pair": "Mit T3 Code koppeln",
+				"connected": "Verbunden mit {name}."
+			},
+			"actions": {
+				"nextEffort": { "name": "Nächster Aufwand", "description": "Schaltet den in T3 Code geöffneten Thread auf die nächste Aufwandsstufe seines Modells." },
+				"nextAccess": { "name": "Nächster Zugriff", "description": "Schaltet den in T3 Code geöffneten Thread auf den nächsten Zugriffsmodus." },
+				"limit": { "slot1": "Limit 1", "slot2": "Limit 2", "slot3": "Limit 3", "slot4": "Limit 4", "slot5": "Limit 5", "description": "Zeigt, wie viel vom engsten Limit eines Anbieters verbraucht ist, in der Reihenfolge der Limits von T3 Code. Wähle es zum Aktualisieren." },
+				"waiting": { "name": "Wartet auf dich", "description": "Zählt die T3-Code-Threads, die auf dich warten. Wähle es, um den dringendsten zu öffnen." },
+				"running": { "name": "Laufende Threads", "description": "Zählt die laufenden T3-Code-Threads. Wähle es, um den zuletzt gestarteten zu öffnen." },
+				"model": { "slot1": "Modell 1", "slot2": "Modell 2", "slot3": "Modell 3", "slot4": "Modell 4", "slot5": "Modell 5", "description": "Wechselt den in T3 Code geöffneten Thread zum Modell an dieser Stelle deiner Modellauswahl in T3 Code: Favoriten zuerst." },
+				"urgent": {
+					"name": "Dringendster Thread",
+					"description": "Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen."
+				},
+				"stop": {
+					"name": "Lauf stoppen",
+					"description": "Stoppt den zuletzt gestarteten Lauf in T3 Code."
+				},
+				"settings": {
+					"description": "Öffnet die Turnkey-Einstellungen: Geräte, Kopplung und Haptik."
+				},
+				"status": {
+					"name": "Thread-Status",
+					"description": "Zeigt, wie viele T3-Code-Threads auf dich warten und wie viele laufen. Wähle es, um den dringendsten zu öffnen."
+				},
+				"stopAll": {
+					"name": "Alle Läufe stoppen",
+					"description": "Stoppt jeden laufenden T3-Code-Thread."
+				},
+				"prompt": {
+					"description": "Sendet einen Prompt an den in T3 Code geöffneten Thread."
+				},
+				"continue": {
+					"description": "Bittet den in T3 Code geöffneten Thread weiterzumachen; öffnet ihn, wenn er auf dich wartet."
+				},
+				"limits": {
+					"description": "Zeigt dein knappstes Nutzungslimit in T3 Code."
+				},
+				"access": {
+					"description": "Scrolle, um den Zugriff des in T3 Code geöffneten Threads zu ändern; drücke für den nächsten."
+				},
+				"effort": {
+					"description": "Scrolle, um den Aufwand des in T3 Code geöffneten Threads zu ändern; drücke für die nächste Stufe."
+				},
+				"send": {
+					"name": "Prompt senden",
+					"description": "Sendet den hier geschriebenen Prompt an den in T3 Code geöffneten Thread."
+				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "Öffnet Turnkeys Aktionen für T3 Code."
+				},
+				"group": {
+					"threads": "Threads",
+					"settings": "Einstellungen"
+				}
+			},
+			"page": {
+				"haptics": "Haptik",
+				"hapticsHint": "Lässt eine MX Master 4 vibrieren, wenn ein Thread eine Freigabe braucht, eine Frage stellt, fertig wird oder fehlschlägt. Options+ zeigt jede Vibration unter den Ereignissen von Turnkey.",
+				"paired": "Mit {name} gekoppelt. Du kannst diese Seite schließen."
+			}
 		}
 	}
 }

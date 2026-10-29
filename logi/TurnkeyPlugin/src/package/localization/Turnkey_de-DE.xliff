@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2">
+  <file original="$Turnkey___@general" source-language="en-US" target-language="de-DE" datatype="plaintext">
+    <body>
+      <group id="@general">
+      </group>
+      <group id="@modes">
+      </group>
+      <group id="@resources" />
+    </body>
+  </file>
+  <file original="$Turnkey___main" source-language="en-US" target-language="de-DE" datatype="plaintext">
+    <body>
+      <group id="@commands">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand" translate="yes">
+          <source>Next access</source>
+          <target>Nächster Zugriff</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its next access mode.</source>
+          <target>Schaltet den in T3 Code geöffneten Thread auf den nächsten Zugriffsmodus.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
+          <source>Commit</source>
+          <target>Commit</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand###description" translate="yes">
+          <source>Sends a prompt to the thread open in T3 Code.</source>
+          <target>Sendet einen Prompt an den in T3 Code geöffneten Thread.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand" translate="yes">
+          <source>Continue</source>
+          <target>Weiter</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand###description" translate="yes">
+          <source>Nudges the thread open in T3 Code to continue; opens it when it waits on you.</source>
+          <target>Bittet den in T3 Code geöffneten Thread weiterzumachen; öffnet ihn, wenn er auf dich wartet.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
+          <source>Diagnose</source>
+          <target>Diagnose</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand" translate="yes">
+          <source>Next effort</source>
+          <target>Nächster Aufwand</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its model's next effort level.</source>
+          <target>Schaltet den in T3 Code geöffneten Thread auf die nächste Aufwandsstufe seines Modells.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ExplainCommand" translate="yes">
+          <source>Explain</source>
+          <target>Erklären</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.FixTestsCommand" translate="yes">
+          <source>Fix tests</source>
+          <target>Tests fixen</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
+          <source>Limit 1</source>
+          <target>Limit 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command###description" translate="yes">
+          <source>Shows how much of a provider's tightest limit is used, in the order T3 Code's Limits lists providers. Choose it to refresh.</source>
+          <target>Zeigt, wie viel vom engsten Limit eines Anbieters verbraucht ist, in der Reihenfolge der Limits von T3 Code. Wähle es zum Aktualisieren.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit2Command" translate="yes">
+          <source>Limit 2</source>
+          <target>Limit 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit3Command" translate="yes">
+          <source>Limit 3</source>
+          <target>Limit 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit4Command" translate="yes">
+          <source>Limit 4</source>
+          <target>Limit 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit5Command" translate="yes">
+          <source>Limit 5</source>
+          <target>Limit 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand" translate="yes">
+          <source>Limits</source>
+          <target>Limits</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand###description" translate="yes">
+          <source>Shows your tightest T3 Code usage limit.</source>
+          <target>Zeigt dein knappstes Nutzungslimit in T3 Code.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command" translate="yes">
+          <source>Model 1</source>
+          <target>Modell 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command###description" translate="yes">
+          <source>Switches the thread open in T3 Code to the model at this place in your T3 Code model picker: favorites first.</source>
+          <target>Wechselt den in T3 Code geöffneten Thread zum Modell an dieser Stelle deiner Modellauswahl in T3 Code: Favoriten zuerst.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model2Command" translate="yes">
+          <source>Model 2</source>
+          <target>Modell 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model3Command" translate="yes">
+          <source>Model 3</source>
+          <target>Modell 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model4Command" translate="yes">
+          <source>Model 4</source>
+          <target>Modell 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model5Command" translate="yes">
+          <source>Model 5</source>
+          <target>Modell 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
+          <source>Most urgent thread</source>
+          <target>Dringendster Thread</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand###description" translate="yes">
+          <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
+          <target>Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
+          <source>Running threads</source>
+          <target>Laufende Threads</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that are running. Choose it to open the one that started last.</source>
+          <target>Zählt die laufenden T3-Code-Threads. Wähle es, um den zuletzt gestarteten zu öffnen.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand" translate="yes">
+          <source>Turnkey Settings</source>
+          <target>Turnkey-Einstellungen</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
+          <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
+          <target>Öffnet die Turnkey-Einstellungen: Geräte, Kopplung und Haptik.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StatusCommand" translate="yes">
+          <source>Thread status</source>
+          <target>Thread-Status</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StatusCommand###description" translate="yes">
+          <source>Shows how many T3 Code threads wait on you and how many run. Choose it to open the most urgent.</source>
+          <target>Zeigt, wie viele T3-Code-Threads auf dich warten und wie viele laufen. Wähle es, um den dringendsten zu öffnen.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopAllCommand" translate="yes">
+          <source>Stop all runs</source>
+          <target>Alle Läufe stoppen</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopAllCommand###description" translate="yes">
+          <source>Stops every running T3 Code thread.</source>
+          <target>Stoppt jeden laufenden T3-Code-Thread.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand" translate="yes">
+          <source>Stop run</source>
+          <target>Lauf stoppen</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
+          <source>Stops the T3 Code run that started last.</source>
+          <target>Stoppt den zuletzt gestarteten Lauf in T3 Code.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
+          <source>Waiting on you</source>
+          <target>Wartet auf dich</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that wait on you. Choose it to open the most urgent.</source>
+          <target>Zählt die T3-Code-Threads, die auf dich warten. Wähle es, um den dringendsten zu öffnen.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand" translate="yes">
+          <source>Send prompt</source>
+          <target>Prompt senden</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand###description" translate="yes">
+          <source>Sends the prompt you write here to the thread open in T3 Code.</source>
+          <target>Sendet den hier geschriebenen Prompt an den in T3 Code geöffneten Thread.</target>
+        </trans-unit>
+      </group>
+      <group id="@adjustments">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessAdjustment" translate="yes">
+          <source>Access</source>
+          <target>Zugriff</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessAdjustment###description" translate="yes">
+          <source>Scroll to change the access mode of the thread open in T3 Code; press for the next one.</source>
+          <target>Scrolle, um den Zugriff des in T3 Code geöffneten Threads zu ändern; drücke für den nächsten.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortAdjustment" translate="yes">
+          <source>Effort</source>
+          <target>Aufwand</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortAdjustment###description" translate="yes">
+          <source>Scroll to change the effort of the thread open in T3 Code; press for the next level.</source>
+          <target>Scrolle, um den Aufwand des in T3 Code geöffneten Threads zu ändern; drücke für die nächste Stufe.</target>
+        </trans-unit>
+      </group>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder" translate="yes">
+        <source>Turnkey</source>
+        <target>Turnkey</target>
+      </trans-unit>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder###description" translate="yes">
+        <source>Opens Turnkey's actions for T3 Code.</source>
+        <target>Öffnet Turnkeys Aktionen für T3 Code.</target>
+      </trans-unit>
+      <group id="@groups">
+        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
+          <source>Model</source>
+          <target>Modell</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
+          <source>Prompts</source>
+          <target>Prompts</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___AED0D0FDAA3E69A00007" translate="yes">
+          <source>Threads</source>
+          <target>Threads</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___33CC4FB3447813B80005" translate="yes">
+          <source>Usage</source>
+          <target>Nutzung</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
+          <source>Settings</source>
+          <target>Einstellungen</target>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>

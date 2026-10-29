@@ -20,10 +20,10 @@ import {
 	findWindow,
 	type LimitGauge,
 	limitGauge,
-	limitPools,
 	limitTiles,
 	type LimitTile,
 	limitsShow,
+	machineLimitPools,
 	outcomeText,
 	resetAction,
 	resetTarget,
@@ -31,7 +31,7 @@ import {
 	tightestWindow,
 	windowChoices,
 } from "../core/usage/limitsView.js";
-import { LimitsRefresher } from "../core/usage/refresh.js";
+import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
 import { deck } from "../deck.js";
 import { DeckAction, driverMark, driverName, errorMessage, held, pressWhileDisconnected, readyMachines, sendChoices } from "./base.js";
 import { connectionNotice } from "./infobar.js";
@@ -42,16 +42,7 @@ import { MachineWatch } from "./watch.js";
 const ID = "com.alejandrom2.turnkey";
 const logger = streamDeck.logger.createScope("limits");
 
-const pools = (url: string | undefined, now = Date.now()): readonly LimitPool[] =>
-	limitPools(
-		readyMachines(url).map((machine) => ({
-			environmentId: machine.environmentId!,
-			label: machine.state.kind === "ready" ? machine.state.label : machine.url,
-			providers: machine.modelConfig?.providers,
-			sources: machine.limitSources,
-		})),
-		now,
-	);
+const pools = (url: string | undefined, now = Date.now()): readonly LimitPool[] => machineLimitPools(readyMachines(url), now);
 
 const refresher = new LimitsRefresher();
 
@@ -60,9 +51,8 @@ const refresher = new LimitsRefresher();
  * in flight, or with `after` runs again once it ends, as after spending a reset.
  */
 function refresh(machine: Machine, automatic: boolean, after = false): Promise<void> {
-	const environmentId = machine.environmentId;
-	if (environmentId === undefined) return Promise.resolve();
-	const done = refresher.refresh(environmentId, () => machine.refreshProviders(), automatic, after).then(() => undefined);
+	if (machine.environmentId === undefined) return Promise.resolve();
+	const done = refreshLimits(refresher, machine, automatic, after);
 	deck.repaint();
 	return done.finally(() => deck.repaint());
 }

@@ -1,6 +1,9 @@
 // Writes the manifest's static images from the runtime glyph set: `node scripts/icons.ts`.
 import { mkdirSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
+
+import { Resvg } from "@resvg/resvg-js";
 
 import { glyph, type GlyphName, renderControlKey, svgMarkup } from "../src/core/render.ts";
 
@@ -76,8 +79,8 @@ for (const [name, mark] of Object.entries(ACTIONS)) {
 
 /**
  * Turnkey's mark: three keys stacked like a deck of threads, the front one turning, with a prompt on it whose cursor is
- * an agent's spark. On the marketplace tile the spark wears T3 Code's accent blue; the category icon keeps to white and gray,
- * with the prompt and spark drawn dark on the front key.
+ * an agent's spark. On the marketplace tile the spark wears T3 Code's accent blue; the category icon and Logi's plugin
+ * icon keep to white and gray, with the prompt and spark drawn dark on the front key, since both sit on dark cards.
  */
 const T3_BLUE = "#4a68f0";
 // Flat SVG only: Stream Deck's renderer draws a nested <svg> or a mask as nothing.
@@ -94,3 +97,72 @@ const logo = (size: number, tile: boolean) => {
 	return svg(size, `<g transform="scale(${+scale.toFixed(5)})">${body}</g>`);
 };
 write("plugin/category-icon.svg", logo(56, false));
+
+/**
+ * Logi's action symbols, beside each action's name in Options+: black on transparent, as Logi asks, with the glyph its
+ * ring face wears. Named by the action's class, and for a fixed parameter `<class>___<parameter>`.
+ */
+const SYMBOLS: Record<string, GlyphName> = {
+	MostUrgentCommand: "shield",
+	StatusCommand: "queued",
+	WaitingCommand: "shield",
+	RunningCommand: "pulse",
+	ContinueCommand: "play",
+	StopRunCommand: "stop",
+	StopAllCommand: "stop",
+	FixTestsCommand: "scriptTest",
+	DiagnoseCommand: "hammer",
+	ExplainCommand: "book",
+	CommitCommand: "gitCommit",
+	SendPromptCommand: "send",
+	TurnkeyFolder: "cube",
+	Model1Command: "model",
+	Model2Command: "model",
+	Model3Command: "model",
+	Model4Command: "model",
+	Model5Command: "model",
+	// Not actions: the icons of the default ring profile's folders (scripts/logi-profile.ts).
+	PromptsFolder: "chat",
+	ThreadsFolder: "queued",
+	LimitsFolder: "gauge",
+	ModelsFolder: "model",
+	AccessAdjustment: "permissions",
+	EffortAdjustment: "effort",
+	EffortCommand: "effort",
+	AccessCommand: "permissions",
+	LimitsCommand: "gauge",
+	Limit1Command: "gauge",
+	Limit2Command: "gauge",
+	Limit3Command: "gauge",
+	Limit4Command: "gauge",
+	Limit5Command: "gauge",
+	SettingsCommand: "sliders",
+};
+const symbols = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "actionsymbols");
+mkdirSync(symbols, { recursive: true });
+// Options+ paints only fills, as Logitech's own symbols are drawn: Lucide's strokes would stay black or fill solid. So each
+// glyph is rendered large and traced back into filled outlines, white on a 32-unit box like theirs.
+const TRACE_SIZE = 256;
+const ImageTracer = createRequire(import.meta.url)("imagetracerjs") as {
+	imagedataToSVG(image: { width: number; height: number; data: Uint8ClampedArray }, options: Record<string, unknown>): string;
+};
+function symbol(mark: GlyphName): string {
+	const art = new Resvg(svg(32, glyph(mark, 4, 4, 24, "#FFFFFF", 2)), { fitTo: { mode: "width", value: TRACE_SIZE } }).render();
+	const traced = ImageTracer.imagedataToSVG(
+		{ width: art.width, height: art.height, data: new Uint8ClampedArray(art.pixels) },
+		{ numberofcolors: 2, colorsampling: 0, pal: [{ r: 0, g: 0, b: 0, a: 0 }, { r: 255, g: 255, b: 255, a: 255 }], ltres: 0.2, qtres: 0.2, pathomit: 16, roundcoords: 1, strokewidth: 0, viewbox: true },
+	);
+	// The transparent layer comes back with opacity 0; the rest is the glyph, holes as subpaths.
+	const paths = [...traced.matchAll(/<path [^>]*\/>/g)]
+		.map(([path]) => path)
+		.filter((path) => !/opacity="0"/.test(path))
+		.map((path) => `<path fill-rule="evenodd" d="${/ d="([^"]+)"/.exec(path)![1]}" fill="white"/>`);
+	return svg(32, `<g transform="scale(${32 / TRACE_SIZE})">${paths.join("")}</g>`);
+}
+for (const [name, mark] of Object.entries(SYMBOLS)) writeFileSync(join(symbols, `Loupedeck.TurnkeyPlugin.${name}.svg`), symbol(mark));
+console.log(`wrote ${Object.keys(SYMBOLS).length} Logi action symbols`);
+
+// Logi's plugin icon: a 256 px PNG of the category icon's white keys, which Options+ shows on a black card.
+const logiIcon = join(import.meta.dirname, "..", "logi", "TurnkeyPlugin", "src", "package", "metadata", "Icon256x256.png");
+writeFileSync(logiIcon, new Resvg(logo(256, false)).render().asPng());
+console.log("wrote", logiIcon);

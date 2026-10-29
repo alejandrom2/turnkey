@@ -1,6 +1,6 @@
 # Turnkey guide
 
-Everything Turnkey does, key by key. For a quick overview, see the [README](../README.md).
+Everything Turnkey does on Stream Deck and Logitech, key by key. For a quick overview, see the [README](../README.md). Turnkey is an independent project, not affiliated with or endorsed by T3 Code, Elgato or Logitech.
 
 ## Setup
 
@@ -160,6 +160,25 @@ Under **Diagnostics** in Turnkey Settings:
 - **Moving a thread to another machine** isn't possible: T3 Code has no way to export a thread or move it between environments yet.
 - **Queues**: T3 Code's thread list doesn't count queued messages, so the deck reads a shown thread's queue from one snapshot of that thread when its runs change (while it is queued, stopped, or had messages waiting), and after its own queue presses. A message removed or reordered in T3 Code while the thread's runs stay the same shows on the deck after the next change.
 - **Selection** follows the open time T3 Code records, which it keeps for 10 minutes: switching back to a thread you opened in the app a few minutes ago may not move the deck. A read-only pairing selects on the deck only.
+
+## Logitech
+
+Turnkey makes T3 Code an app in Logi Options+, with its own Actions Ring. Choose its **Default** profile to get Turnkey's ring; Options+ applies a default only when it first makes the app's profile, so choose **Default** again after an update changes it. Every action is also in Options+'s list, to place on any profile or console.
+
+The default ring, clockwise from the top:
+
+| Slot | What it does |
+| --- | --- |
+| Most urgent thread | The thread that needs you: an approval, a question, a run, a failure you haven't seen, or all done. Choose it to open that thread. Hover names it. |
+| Threads ▸ | **Waiting on you** (amber, counted) opens the most urgent; **Running threads** (blue, counted) opens the run that started last; **Stop all runs** stops every run. |
+| Continue | Sends "Continue" to the thread open in T3 Code, or opens it when it waits on you. Hover names it. |
+| Prompts ▸ | Fix tests, Diagnose, Explain and Commit, sent to the thread open in T3 Code. |
+| Stop run | Stops the open thread's run, else the one that started last. Hover names it. |
+| Models ▸ | The first five models of T3 Code's picker (favorites first), each by its provider's mark, named on hover; a check marks the open thread's. Then **Next effort** and **Next access**, which step through the thread's effort and access mode, named on hover. |
+| Limits ▸ | Up to five providers in T3 Code's Limits order, each a ring filling with its tightest limit (green, amber past 70%, red past 90%), its figure on hover. Choose one to refresh. |
+| Turnkey Settings | Opens the settings page: machines, pairing and haptics. |
+
+Ring faces are drawn small, so names and figures go in the hover label rather than on the face. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails; Turnkey Settings switches that off. Effort and Access also come as adjustments to scroll, for devices with a dial. Ultrathink isn't offered: it prefixes prompts Turnkey sends, and on Logitech you type yours in T3 Code.
 
 ## Languages
 

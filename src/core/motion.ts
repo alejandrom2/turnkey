@@ -65,17 +65,23 @@ export class Transitions {
 
 	constructor(private readonly now: () => number = Date.now) {}
 
-	update(threads: readonly { key: string; deck: DeckState }[]): void {
+	/** Returns the threads seen before whose state changed. */
+	update(threads: readonly { key: string; deck: DeckState }[]): { key: string; from: DeckState; to: DeckState }[] {
 		const now = this.now();
 		const seen = new Set<string>();
+		const changes: { key: string; from: DeckState; to: DeckState }[] = [];
 		for (const { key, deck } of threads) {
 			seen.add(key);
 			const previous = this.#last.get(key);
-			if (previous !== undefined && previous !== deck && (deck === "done" || deck === "failed")) this.#started.set(key, now);
+			if (previous !== undefined && previous !== deck) {
+				changes.push({ key, from: previous, to: deck });
+				if (deck === "done" || deck === "failed") this.#started.set(key, now);
+			}
 			this.#last.set(key, deck);
 		}
 		for (const key of this.#last.keys()) if (!seen.has(key)) this.#last.delete(key);
 		for (const [key, at] of this.#started) if (!seen.has(key) || now - at >= MOTION.flashMs) this.#started.delete(key);
+		return changes;
 	}
 
 	/** How long ago `key` finished or failed, while that still flashes. */

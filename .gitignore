@@ -9,3 +9,17 @@ logs/
 
 # macOS Finder metadata
 .DS_Store
+
+# Logitech plugin build output
+logi/bin/
+logi/**/bin/
+logi/**/obj/
+logi/dist/
+
+# Working plans and specs stay local
+docs/superpowers/
+
+# The Marketplace listing and working notes stay local
+docs/listing.md
+docs/going-public.md
+docs/logitech/

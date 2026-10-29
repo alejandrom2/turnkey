@@ -3,7 +3,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the idea! A little context goes a long way: what you're trying to do, and how it might look on your Stream Deck.
+        Thanks for the idea! A little context goes a long way: what you're trying to do, and how it might look on your Stream Deck or Logitech ring.
 
   - type: textarea
     id: problem
@@ -22,7 +22,7 @@ body:
   - type: dropdown
     id: device
     attributes:
-      label: Which Stream Deck do you use?
+      label: Which device do you use?
       multiple: true
       options:
         - Stream Deck +
@@ -30,3 +30,4 @@ body:
         - Stream Deck MK.2 / 15-key
         - Stream Deck XL
         - Stream Deck Mini
+        - Logitech Actions Ring (MX mouse or keyboard)

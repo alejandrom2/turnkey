@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import type { ModelConfig } from "./models.js";
+import { findModel, type ModelConfig } from "./models.js";
 import { effortGradient, sampleStops } from "./render.js";
-import { dialControl, effortToneOf, isTopEffort, powerArt, powerState, stepChoice } from "./power.js";
+import type { DeckThread } from "./board.js";
+import { applyChoice, dialControl, effortChoices, effortToneOf, isTopEffort, powerArt, powerState, stepChoice } from "./power.js";
 
 
 const effort = { id: "effort", label: "Effort", type: "select" as const, options: [{ id: "low", label: "Low" }, { id: "high", label: "High", isDefault: true }, { id: "ultrathink", label: "Ultrathink" }], promptInjectedValues: ["ultrathink"] };
@@ -57,6 +58,13 @@ describe("Power dial", () => {
 		expect(powerState("effort", CONFIG, thread, true).current?.label).toBe("Ultrathink");
 		expect(powerState("effort", CONFIG, { ...thread, model: { instanceId: "codex", model: "gpt-5.5" } }).missing).toBe("No effort");
 	});
+
+	it("leaves out levels that only prefix a prompt, for a host that sends none of yours", () => {
+		const state = powerState("effort", CONFIG, thread, false, { promptInjected: false });
+		expect(state.choices.map((choice) => choice.label)).toEqual(["Low", "High"]);
+		expect(state.current?.label).toBe("High");
+		expect(effortChoices(findModel(CONFIG, thread.model), { promptInjected: false }).map((choice) => choice.label)).toEqual(["Low", "High"]);
+	});
 });
 
 describe("isTopEffort", () => {
@@ -90,5 +98,54 @@ describe("effortToneOf", () => {
 		expect(effortToneOf(choices, "ultrathink", "gradient", "#3366FF")).toBeUndefined();
 		expect(effortToneOf(choices, "max", "gradient", "#3366FF")).toBeUndefined();
 		expect(effortToneOf(choices, undefined, "gradient", "#3366FF")).toBeUndefined();
+	});
+});
+
+describe("applyChoice", () => {
+	const setup = (armed = false) => {
+		const machine = { modelConfig: CONFIG, setModelSelection: vi.fn(async () => undefined), setRuntimeMode: vi.fn(async () => undefined) };
+		const target = { ...thread, threadId: "t1", machine: machine as unknown as DeckThread["machine"] };
+		const ultrathink = { armed, arm: vi.fn(), disarm: vi.fn() };
+		const choice = (control: "effort" | "permissions", key: string) => powerState(control, CONFIG, thread).choices.find((each) => each.key === key)!;
+		return { machine, target, ultrathink, choice };
+	};
+
+	it("sets a mode", async () => {
+		const { machine, target, ultrathink, choice } = setup();
+		await applyChoice(target, choice("permissions", "auto"), ultrathink)?.();
+		expect(machine.setRuntimeMode).toHaveBeenCalledWith(target, "auto");
+	});
+
+	it("sets an effort and disarms Ultrathink", async () => {
+		const { machine, target, ultrathink, choice } = setup(true);
+		await applyChoice(target, choice("effort", "low"), ultrathink)?.();
+		expect(machine.setModelSelection).toHaveBeenCalledWith(target, { ...thread.model, options: [{ id: "effort", value: "low" }] });
+		expect(ultrathink.disarm).toHaveBeenCalled();
+		expect(machine.setModelSelection.mock.invocationCallOrder[0]).toBeLessThan(ultrathink.disarm.mock.invocationCallOrder[0]!);
+	});
+
+	it("arms Ultrathink instead of sending", async () => {
+		const { machine, target, ultrathink, choice } = setup();
+		await applyChoice(target, choice("effort", "ultrathink"), ultrathink)?.();
+		expect(ultrathink.arm).toHaveBeenCalled();
+		expect(machine.setModelSelection).not.toHaveBeenCalled();
+		expect(machine.setRuntimeMode).not.toHaveBeenCalled();
+	});
+
+	it("does nothing for Ultrathink while it's armed", () => {
+		const { target, ultrathink, choice } = setup(true);
+		expect(applyChoice(target, choice("effort", "ultrathink"), ultrathink)).toBeUndefined();
+	});
+
+	it("only disarms for the thread's own effort while Ultrathink is armed", async () => {
+		const { machine, target, ultrathink, choice } = setup(true);
+		await applyChoice(target, choice("effort", "high"), ultrathink)?.();
+		expect(ultrathink.disarm).toHaveBeenCalled();
+		expect(machine.setModelSelection).not.toHaveBeenCalled();
+	});
+
+	it("does nothing for the current effort", () => {
+		const { target, ultrathink, choice } = setup();
+		expect(applyChoice(target, choice("effort", "high"), ultrathink)).toBeUndefined();
 	});
 });

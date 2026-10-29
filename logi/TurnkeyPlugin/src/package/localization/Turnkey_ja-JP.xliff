@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2">
+  <file original="$Turnkey___@general" source-language="en-US" target-language="ja-JP" datatype="plaintext">
+    <body>
+      <group id="@general">
+      </group>
+      <group id="@modes">
+      </group>
+      <group id="@resources" />
+    </body>
+  </file>
+  <file original="$Turnkey___main" source-language="en-US" target-language="ja-JP" datatype="plaintext">
+    <body>
+      <group id="@commands">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand" translate="yes">
+          <source>Next access</source>
+          <target>次のアクセス</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its next access mode.</source>
+          <target>T3 Code で開いているスレッドを、次のアクセスモードに切り替えます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand" translate="yes">
+          <source>Commit</source>
+          <target>コミット</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.CommitCommand###description" translate="yes">
+          <source>Sends a prompt to the thread open in T3 Code.</source>
+          <target>T3 Code で開いているスレッドにプロンプトを送ります。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand" translate="yes">
+          <source>Continue</source>
+          <target>続行</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ContinueCommand###description" translate="yes">
+          <source>Nudges the thread open in T3 Code to continue; opens it when it waits on you.</source>
+          <target>T3 Code で開いているスレッドに続行を促します。対応待ちならそのスレッドを開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.DiagnoseCommand" translate="yes">
+          <source>Diagnose</source>
+          <target>診断</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand" translate="yes">
+          <source>Next effort</source>
+          <target>次のエフォート</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortCommand###description" translate="yes">
+          <source>Steps the thread open in T3 Code to its model's next effort level.</source>
+          <target>T3 Code で開いているスレッドを、モデルの次のエフォートに切り替えます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ExplainCommand" translate="yes">
+          <source>Explain</source>
+          <target>説明</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.FixTestsCommand" translate="yes">
+          <source>Fix tests</source>
+          <target>テスト修正</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command" translate="yes">
+          <source>Limit 1</source>
+          <target>制限 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit1Command###description" translate="yes">
+          <source>Shows how much of a provider's tightest limit is used, in the order T3 Code's Limits lists providers. Choose it to refresh.</source>
+          <target>プロバイダーの最も厳しい制限の使用量を、T3 Code の制限の順に表示します。選ぶと更新します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit2Command" translate="yes">
+          <source>Limit 2</source>
+          <target>制限 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit3Command" translate="yes">
+          <source>Limit 3</source>
+          <target>制限 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit4Command" translate="yes">
+          <source>Limit 4</source>
+          <target>制限 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Limit5Command" translate="yes">
+          <source>Limit 5</source>
+          <target>制限 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand" translate="yes">
+          <source>Limits</source>
+          <target>制限</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand###description" translate="yes">
+          <source>Shows your tightest T3 Code usage limit.</source>
+          <target>T3 Code で最も余裕のない使用量の上限を表示します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command" translate="yes">
+          <source>Model 1</source>
+          <target>モデル 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command###description" translate="yes">
+          <source>Switches the thread open in T3 Code to the model at this place in your T3 Code model picker: favorites first.</source>
+          <target>T3 Code で開いているスレッドを、T3 Code のモデル選択でこの位置にあるモデルに切り替えます（お気に入りが先）。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model2Command" translate="yes">
+          <source>Model 2</source>
+          <target>モデル 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model3Command" translate="yes">
+          <source>Model 3</source>
+          <target>モデル 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model4Command" translate="yes">
+          <source>Model 4</source>
+          <target>モデル 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model5Command" translate="yes">
+          <source>Model 5</source>
+          <target>モデル 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
+          <source>Most urgent thread</source>
+          <target>最優先のスレッド</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand###description" translate="yes">
+          <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
+          <target>T3 Code で対応が必要なものを表示します。選ぶとそのスレッドを開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
+          <source>Running threads</source>
+          <target>実行中のスレッド</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that are running. Choose it to open the one that started last.</source>
+          <target>実行中の T3 Code スレッドを数えます。選ぶと最後に始まったスレッドを開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand" translate="yes">
+          <source>Turnkey Settings</source>
+          <target>Turnkey 設定</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
+          <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
+          <target>Turnkey の設定を開きます：マシン、ペアリング、触覚フィードバック。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StatusCommand" translate="yes">
+          <source>Thread status</source>
+          <target>スレッドの状況</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StatusCommand###description" translate="yes">
+          <source>Shows how many T3 Code threads wait on you and how many run. Choose it to open the most urgent.</source>
+          <target>対応待ちと実行中の T3 Code スレッドの数を表示します。選ぶと最優先のスレッドを開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopAllCommand" translate="yes">
+          <source>Stop all runs</source>
+          <target>すべての実行を停止</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopAllCommand###description" translate="yes">
+          <source>Stops every running T3 Code thread.</source>
+          <target>実行中のすべての T3 Code スレッドを停止します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand" translate="yes">
+          <source>Stop run</source>
+          <target>実行を停止</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
+          <source>Stops the T3 Code run that started last.</source>
+          <target>T3 Code で最後に始まった実行を停止します。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
+          <source>Waiting on you</source>
+          <target>対応待ち</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand###description" translate="yes">
+          <source>Counts the T3 Code threads that wait on you. Choose it to open the most urgent.</source>
+          <target>対応待ちの T3 Code スレッドを数えます。選ぶと最も緊急のスレッドを開きます。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand" translate="yes">
+          <source>Send prompt</source>
+          <target>プロンプトを送信</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SendPromptCommand###description" translate="yes">
+          <source>Sends the prompt you write here to the thread open in T3 Code.</source>
+          <target>ここに書いたプロンプトを T3 Code で開いているスレッドに送ります。</target>
+        </trans-unit>
+      </group>
+      <group id="@adjustments">
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessAdjustment" translate="yes">
+          <source>Access</source>
+          <target>アクセス</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.AccessAdjustment###description" translate="yes">
+          <source>Scroll to change the access mode of the thread open in T3 Code; press for the next one.</source>
+          <target>スクロールで T3 Code で開いているスレッドのアクセスを変更します。押すと次へ。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortAdjustment" translate="yes">
+          <source>Effort</source>
+          <target>エフォート</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.EffortAdjustment###description" translate="yes">
+          <source>Scroll to change the effort of the thread open in T3 Code; press for the next level.</source>
+          <target>スクロールで T3 Code で開いているスレッドのエフォートを変更します。押すと次のレベルへ。</target>
+        </trans-unit>
+      </group>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder" translate="yes">
+        <source>Turnkey</source>
+        <target>Turnkey</target>
+      </trans-unit>
+      <trans-unit id="$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.TurnkeyFolder###description" translate="yes">
+        <source>Opens Turnkey's actions for T3 Code.</source>
+        <target>T3 Code 用の Turnkey のアクションを開きます。</target>
+      </trans-unit>
+      <group id="@groups">
+        <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
+          <source>Model</source>
+          <target>モデル</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___6A8A9AD90567715A0007" translate="yes">
+          <source>Prompts</source>
+          <target>プロンプト</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___AED0D0FDAA3E69A00007" translate="yes">
+          <source>Threads</source>
+          <target>スレッド</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___33CC4FB3447813B80005" translate="yes">
+          <source>Usage</source>
+          <target>使用量</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
+          <source>Settings</source>
+          <target>設定</target>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>

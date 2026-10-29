@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 
 import type { DeckThread } from "./board.js";
-import type { Question } from "./t3/machine.js";
+import type { Machine, Question } from "./t3/machine.js";
 
 export type OrganizeAction = "settle" | "pin" | "unpin" | "snooze" | "archive" | "mark_unread" | "wake";
 
@@ -14,6 +14,21 @@ export function threadDeepLink(thread: Pick<DeckThread, "environmentId" | "threa
 export function openExternal(url: string): Promise<void> {
 	const [command, args] = process.platform === "win32" ? ["rundll32", ["url.dll,FileProtocolHandler", url]] : ["open", [url]];
 	return new Promise((resolve, reject) => execFile(command, args, (error) => (error ? reject(error) : resolve())));
+}
+
+/** Selects the thread the way T3 Code's own open does, then opens it in the desktop app, without waiting on the select; a failed select still opens. */
+export async function openThread(
+	thread: Pick<DeckThread, "key" | "environmentId" | "threadId"> & { machine: Pick<Machine, "url"> },
+	select: (key: string, url: string) => Promise<unknown>,
+	scheme?: string,
+	open: (url: string) => Promise<void> = openExternal,
+): Promise<void> {
+	try {
+		void select(thread.key, thread.machine.url).catch(() => undefined);
+	} catch {
+		// A select that throws before returning its promise mustn't keep the thread from opening either.
+	}
+	await open(threadDeepLink(thread, scheme));
 }
 
 export function organize(thread: DeckThread, action: OrganizeAction, snoozeMinutes = 60): Promise<unknown> {

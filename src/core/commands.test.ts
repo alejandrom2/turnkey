@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildAnswers, threadDeepLink } from "./commands.js";
+import { buildAnswers, openThread, threadDeepLink } from "./commands.js";
 import { titleSeed } from "./t3/machine.js";
 
 describe("threadDeepLink", () => {
@@ -30,5 +30,36 @@ describe("titleSeed", () => {
 		expect(titleSeed("  Fix   the tests\nthen push")).toBe("Fix the tests");
 		expect(titleSeed("x".repeat(100))).toHaveLength(80);
 		expect(titleSeed("   ")).toBe("New thread");
+	});
+});
+
+describe("openThread", () => {
+	const thread = { key: "env/thread", environmentId: "env", threadId: "thread", machine: { url: "ws://m" } };
+
+	it("selects the thread, then opens it", async () => {
+		const calls: string[] = [];
+		await openThread(thread, async (key, url) => void calls.push(`select ${key} ${url}`), undefined, async (url) => void calls.push(`open ${url}`));
+		expect(calls).toEqual(["select env/thread ws://m", "open t3code://threads/env/thread"]);
+	});
+
+	it("opens even when selecting fails", async () => {
+		const opened: string[] = [];
+		await openThread(thread, () => Promise.reject(new Error("no")), "t3code-dev", async (url) => void opened.push(url));
+		expect(opened).toEqual(["t3code-dev://threads/env/thread"]);
+	});
+
+	it("opens even when selecting throws", async () => {
+		const opened: string[] = [];
+		const select = () => {
+			throw new Error("no");
+		};
+		await openThread(thread, select, undefined, async (url) => void opened.push(url));
+		expect(opened).toEqual(["t3code://threads/env/thread"]);
+	});
+
+	it("opens without waiting for the selection", async () => {
+		const opened: string[] = [];
+		await openThread(thread, () => new Promise(() => undefined), undefined, async (url) => void opened.push(url));
+		expect(opened).toEqual(["t3code://threads/env/thread"]);
 	});
 });

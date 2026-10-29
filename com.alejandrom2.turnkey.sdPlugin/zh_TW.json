@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "從 Stream Deck 監看並操控 T3 Code 對話：對話狀態、停止、提示詞、模型選項與回答，支援所有供應商。",
+	"Description": "從 Stream Deck 監看並操控 T3 Code 對話：對話狀態、停止、提示詞、模型選項與回答，支援所有供應商。與 T3 Code 和 Elgato 無關聯。",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "對話",
@@ -803,7 +803,8 @@
 				"languages": "語言",
 				"languagesHint": "Turnkey 會跟隨 Stream Deck 的語言。",
 				"readme": "指南",
-				"openReadme": "開啟 README"
+				"openReadme": "開啟 README",
+				"independent": "Turnkey 是一個獨立專案，與 T3 Code、Elgato 和 Logitech 無關聯，也未獲其認可。"
 			},
 			"advanced": {
 				"appLink": "應用程式連結",
@@ -1246,6 +1247,73 @@
 			"unavailable": "無法分享此對話",
 			"copyFailed": "無法複製",
 			"needsAccess": "需要分享權限"
+		},
+		"logi": {
+			"labels": { "limits": "{provider} · {window}：已用 {percent}%", "status": "{waiting} 個等你處理 · {running} 個執行中" },
+			"status": {
+				"unpaired": "Turnkey 尚未與 T3 Code 配對。",
+				"pair": "與 T3 Code 配對",
+				"connected": "已連線到 {name}。"
+			},
+			"actions": {
+				"nextEffort": { "name": "下一個強度", "description": "將 T3 Code 中開啟的對話切換到其模型的下一個強度。" },
+				"nextAccess": { "name": "下一個權限", "description": "將 T3 Code 中開啟的對話切換到下一個權限模式。" },
+				"limit": { "slot1": "限額 1", "slot2": "限額 2", "slot3": "限額 3", "slot4": "限額 4", "slot5": "限額 5", "description": "依 T3 Code 限額中的順序，顯示某個提供者最緊的限額已用多少。選擇它可重新整理。" },
+				"waiting": { "name": "等你處理", "description": "統計等你處理的 T3 Code 對話。選擇它可開啟最緊急的一個。" },
+				"running": { "name": "執行中的對話", "description": "統計執行中的 T3 Code 對話。選擇它可開啟最近開始的一個。" },
+				"model": { "slot1": "模型 1", "slot2": "模型 2", "slot3": "模型 3", "slot4": "模型 4", "slot5": "模型 5", "description": "將 T3 Code 中開啟的對話切換到 T3 Code 模型選擇器中此位置的模型：收藏優先。" },
+				"urgent": {
+					"name": "最緊急的對話",
+					"description": "顯示 T3 Code 中需要你處理的內容。選擇即可開啟該對話。"
+				},
+				"stop": {
+					"name": "停止執行",
+					"description": "停止 T3 Code 中最後開始的執行。"
+				},
+				"settings": {
+					"description": "開啟 Turnkey 設定：裝置、配對和觸感。"
+				},
+				"status": {
+					"name": "對話狀態",
+					"description": "顯示有多少 T3 Code 對話在等你、有多少在執行。選擇即可開啟最緊急的對話。"
+				},
+				"stopAll": {
+					"name": "停止所有執行",
+					"description": "停止所有正在執行的 T3 Code 對話。"
+				},
+				"prompt": {
+					"description": "向 T3 Code 中開啟的對話傳送提示詞。"
+				},
+				"continue": {
+					"description": "讓 T3 Code 中開啟的對話繼續；如果它在等你，則開啟它。"
+				},
+				"limits": {
+					"description": "顯示你在 T3 Code 中最緊的用量限額。"
+				},
+				"access": {
+					"description": "捲動以變更 T3 Code 中開啟的對話的權限；按下切換到下一個。"
+				},
+				"effort": {
+					"description": "捲動以變更 T3 Code 中開啟的對話的強度；按下切換到下一級。"
+				},
+				"send": {
+					"name": "傳送提示詞",
+					"description": "把你在這裡寫的提示詞傳送到 T3 Code 中開啟的對話。"
+				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "開啟 Turnkey 的 T3 Code 操作。"
+				},
+				"group": {
+					"threads": "對話",
+					"settings": "設定"
+				}
+			},
+			"page": {
+				"haptics": "觸感",
+				"hapticsHint": "對話等待核准、提出問題、完成或失敗時讓 MX Master 4 震動。每種震動都列在 Options+ 的 Turnkey 事件中。",
+				"paired": "已與 {name} 配對。可以關閉此頁面。"
+			}
 		}
 	}
 }

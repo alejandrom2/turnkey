@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Suivez et pilotez les fils T3 Code depuis Stream Deck : état des fils, arrêt, prompts, options de modèle et réponses, pour tous les fournisseurs.",
+	"Description": "Suivez et pilotez les fils T3 Code depuis Stream Deck : état des fils, arrêt, prompts, options de modèle et réponses, pour tous les fournisseurs. Sans lien avec T3 Code ni Elgato.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Fil",
@@ -803,7 +803,8 @@
 				"languages": "Langues",
 				"languagesHint": "Turnkey suit la langue de Stream Deck.",
 				"readme": "Guide",
-				"openReadme": "Ouvrir le README"
+				"openReadme": "Ouvrir le README",
+				"independent": "Turnkey est un projet indépendant, sans lien avec T3 Code, Elgato ou Logitech, ni approuvé par eux."
 			},
 			"advanced": {
 				"appLink": "Lien de l'app",
@@ -1246,6 +1247,73 @@
 			"unavailable": "Partage impossible",
 			"copyFailed": "Copie impossible",
 			"needsAccess": "Accès partage requis"
+		},
+		"logi": {
+			"labels": { "limits": "{provider} · {window} : {percent} % utilisé", "status": "{waiting} vous attendent · {running} en cours" },
+			"status": {
+				"unpaired": "Turnkey n'est pas encore associé à T3 Code.",
+				"pair": "Associer à T3 Code",
+				"connected": "Connecté à {name}."
+			},
+			"actions": {
+				"nextEffort": { "name": "Effort suivant", "description": "Passe le fil ouvert dans T3 Code au niveau d'effort suivant de son modèle." },
+				"nextAccess": { "name": "Accès suivant", "description": "Passe le fil ouvert dans T3 Code au mode d'accès suivant." },
+				"limit": { "slot1": "Limite 1", "slot2": "Limite 2", "slot3": "Limite 3", "slot4": "Limite 4", "slot5": "Limite 5", "description": "Indique la part utilisée de la limite la plus serrée d'un fournisseur, dans l'ordre des Limites de T3 Code. Choisissez-le pour actualiser." },
+				"waiting": { "name": "Vous attendent", "description": "Compte les fils T3 Code qui vous attendent. Choisissez-le pour ouvrir le plus urgent." },
+				"running": { "name": "Fils en cours", "description": "Compte les fils T3 Code en cours. Choisissez-le pour ouvrir le dernier lancé." },
+				"model": { "slot1": "Modèle 1", "slot2": "Modèle 2", "slot3": "Modèle 3", "slot4": "Modèle 4", "slot5": "Modèle 5", "description": "Passe le fil ouvert dans T3 Code au modèle à cette place de votre sélecteur de modèles T3 Code : favoris d'abord." },
+				"urgent": {
+					"name": "Fil le plus urgent",
+					"description": "Montre ce qui vous attend dans T3 Code. Choisissez-le pour ouvrir ce fil."
+				},
+				"stop": {
+					"name": "Arrêter l'exécution",
+					"description": "Arrête la dernière exécution lancée dans T3 Code."
+				},
+				"settings": {
+					"description": "Ouvre les réglages de Turnkey : machines, association et haptique."
+				},
+				"status": {
+					"name": "État des fils",
+					"description": "Montre combien de fils T3 Code vous attendent et combien s'exécutent. Choisissez-le pour ouvrir le plus urgent."
+				},
+				"stopAll": {
+					"name": "Tout arrêter",
+					"description": "Arrête chaque fil T3 Code en cours d'exécution."
+				},
+				"prompt": {
+					"description": "Envoie un prompt au fil ouvert dans T3 Code."
+				},
+				"continue": {
+					"description": "Relance le fil ouvert dans T3 Code ; l'ouvre s'il vous attend."
+				},
+				"limits": {
+					"description": "Montre votre limite d'utilisation T3 Code la plus serrée."
+				},
+				"access": {
+					"description": "Faites défiler pour changer l'accès du fil ouvert dans T3 Code ; appuyez pour le suivant."
+				},
+				"effort": {
+					"description": "Faites défiler pour changer l'effort du fil ouvert dans T3 Code ; appuyez pour le niveau suivant."
+				},
+				"send": {
+					"name": "Envoyer un prompt",
+					"description": "Envoie le prompt écrit ici au fil ouvert dans T3 Code."
+				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "Ouvre les actions de Turnkey pour T3 Code."
+				},
+				"group": {
+					"threads": "Fils",
+					"settings": "Réglages"
+				}
+			},
+			"page": {
+				"haptics": "Haptique",
+				"hapticsHint": "Fait vibrer une MX Master 4 quand un fil attend une approbation, pose une question, se termine ou échoue. Options+ liste chaque vibration dans les événements de Turnkey.",
+				"paired": "Associé à {name}. Vous pouvez fermer cette page."
+			}
 		}
 	}
 }

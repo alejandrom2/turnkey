@@ -12,4 +12,4 @@ body:
     id: setup
     attributes:
       label: Your setup
-      description: Stream Deck model, Turnkey version, and how T3 Code is reached (this computer, network, Tailscale, T3 Connect).
+      description: Your device (Stream Deck model or Logitech mouse or keyboard), Turnkey version, and how T3 Code is reached (this computer, network, Tailscale, T3 Connect).

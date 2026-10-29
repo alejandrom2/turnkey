@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Stream Deck から T3 Code のスレッドを確認・操作。スレッドの状態、停止、プロンプト、モデルオプション、回答を、すべてのプロバイダーで。",
+	"Description": "Stream Deck から T3 Code のスレッドを確認・操作。スレッドの状態、停止、プロンプト、モデルオプション、回答を、すべてのプロバイダーで。T3 Code および Elgato とは提携していません。",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "スレッド",
@@ -803,7 +803,8 @@
 				"languages": "言語",
 				"languagesHint": "Turnkey は Stream Deck の言語に従います。",
 				"readme": "ガイド",
-				"openReadme": "README を開く"
+				"openReadme": "README を開く",
+				"independent": "Turnkey は独立したプロジェクトで、T3 Code、Elgato、Logitech とは提携しておらず、承認も受けていません。"
 			},
 			"advanced": {
 				"appLink": "アプリリンク",
@@ -1246,6 +1247,73 @@
 			"unavailable": "このスレッドは共有不可",
 			"copyFailed": "コピーできません",
 			"needsAccess": "共有アクセスが必要"
+		},
+		"logi": {
+			"labels": { "limits": "{provider} · {window}：{percent}% 使用", "status": "{waiting} 件が対応待ち · {running} 件が実行中" },
+			"status": {
+				"unpaired": "Turnkey はまだ T3 Code とペアリングされていません。",
+				"pair": "T3 Code とペアリング",
+				"connected": "{name} に接続しました。"
+			},
+			"actions": {
+				"nextEffort": { "name": "次のエフォート", "description": "T3 Code で開いているスレッドを、モデルの次のエフォートに切り替えます。" },
+				"nextAccess": { "name": "次のアクセス", "description": "T3 Code で開いているスレッドを、次のアクセスモードに切り替えます。" },
+				"limit": { "slot1": "制限 1", "slot2": "制限 2", "slot3": "制限 3", "slot4": "制限 4", "slot5": "制限 5", "description": "プロバイダーの最も厳しい制限の使用量を、T3 Code の制限の順に表示します。選ぶと更新します。" },
+				"waiting": { "name": "対応待ち", "description": "対応待ちの T3 Code スレッドを数えます。選ぶと最も緊急のスレッドを開きます。" },
+				"running": { "name": "実行中のスレッド", "description": "実行中の T3 Code スレッドを数えます。選ぶと最後に始まったスレッドを開きます。" },
+				"model": { "slot1": "モデル 1", "slot2": "モデル 2", "slot3": "モデル 3", "slot4": "モデル 4", "slot5": "モデル 5", "description": "T3 Code で開いているスレッドを、T3 Code のモデル選択でこの位置にあるモデルに切り替えます（お気に入りが先）。" },
+				"urgent": {
+					"name": "最優先のスレッド",
+					"description": "T3 Code で対応が必要なものを表示します。選ぶとそのスレッドを開きます。"
+				},
+				"stop": {
+					"name": "実行を停止",
+					"description": "T3 Code で最後に始まった実行を停止します。"
+				},
+				"settings": {
+					"description": "Turnkey の設定を開きます：マシン、ペアリング、触覚フィードバック。"
+				},
+				"status": {
+					"name": "スレッドの状況",
+					"description": "対応待ちと実行中の T3 Code スレッドの数を表示します。選ぶと最優先のスレッドを開きます。"
+				},
+				"stopAll": {
+					"name": "すべての実行を停止",
+					"description": "実行中のすべての T3 Code スレッドを停止します。"
+				},
+				"prompt": {
+					"description": "T3 Code で開いているスレッドにプロンプトを送ります。"
+				},
+				"continue": {
+					"description": "T3 Code で開いているスレッドに続行を促します。対応待ちならそのスレッドを開きます。"
+				},
+				"limits": {
+					"description": "T3 Code で最も余裕のない使用量の上限を表示します。"
+				},
+				"access": {
+					"description": "スクロールで T3 Code で開いているスレッドのアクセスを変更します。押すと次へ。"
+				},
+				"effort": {
+					"description": "スクロールで T3 Code で開いているスレッドのエフォートを変更します。押すと次のレベルへ。"
+				},
+				"send": {
+					"name": "プロンプトを送信",
+					"description": "ここに書いたプロンプトを T3 Code で開いているスレッドに送ります。"
+				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "T3 Code 用の Turnkey のアクションを開きます。"
+				},
+				"group": {
+					"threads": "スレッド",
+					"settings": "設定"
+				}
+			},
+			"page": {
+				"haptics": "触覚フィードバック",
+				"hapticsHint": "スレッドが承認待ちになったとき、質問したとき、完了または失敗したときに MX Master 4 を振動させます。各振動は Options+ の Turnkey のイベントにあります。",
+				"paired": "{name} とペアリングしました。このページは閉じてかまいません。"
+			}
 		}
 	}
 }

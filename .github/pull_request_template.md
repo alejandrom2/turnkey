@@ -14,7 +14,7 @@ Thanks for contributing! Use a conventional commit title in plain language, such
 ## Verification
 
 <!-- What you checked and what you saw. For anything visible on a key or strip, add a photo or short video
-from your Stream Deck and say which model (Stream Deck +, Neo, MK.2, XL, Mini). Say what you couldn't check. -->
+from your device and say which one (Stream Deck +, Neo, MK.2, XL, Mini, or a Logitech Actions Ring). Say what you couldn't check. -->
 
 - [ ] `npm run typecheck`, `npm test`, `npx oxlint src` and `npx streamdeck validate` pass
 - [ ] `npm run assets` changes are committed

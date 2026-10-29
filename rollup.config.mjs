@@ -47,4 +47,16 @@ const config = {
 	],
 };
 
-export default config;
+/**
+ * The Logitech plugin's sidecar: Turnkey's core over stdin and stdout, in one file with no native parts.
+ * @type {import('rollup').RollupOptions}
+ */
+const sidecar = {
+	...config,
+	input: "src/logi/sidecar.ts",
+	// .mjs, so it runs as a module without a package.json beside it in the plugin.
+	output: { ...config.output, file: "logi/bin/sidecar.mjs" },
+	plugins: config.plugins.filter((plugin) => plugin && plugin.name !== "watch-externals" && plugin.name !== "emit-module-package-file"),
+};
+
+export default [config, sidecar];

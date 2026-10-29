@@ -54,6 +54,14 @@ describe("Transitions", () => {
 		transitions.update([{ key: "a", deck: "done" }]);
 		expect(transitions.age("a")).toBeUndefined();
 	});
+
+	it("reports what changed since the last look", () => {
+		const transitions = new Transitions(() => 0);
+		expect(transitions.update([{ key: "a", deck: "running" }])).toEqual([]);
+		expect(transitions.update([{ key: "a", deck: "done" }])).toEqual([{ key: "a", from: "running", to: "done" }]);
+		transitions.update([]);
+		expect(transitions.update([{ key: "a", deck: "failed" }])).toEqual([]);
+	});
 });
 
 describe("threadMotion", () => {

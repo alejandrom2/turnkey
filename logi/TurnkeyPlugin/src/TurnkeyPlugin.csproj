@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Loupedeck.TurnkeyPlugin</RootNamespace>
+
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>$(NoWarn);SA0001</NoWarn>
+
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <PluginDir Condition="$(OS) == 'Windows_NT'">$(LocalAppData)\Logi\LogiPluginService\Plugins\</PluginDir>
+    <PluginDir Condition="$(OS) != 'Windows_NT'">~/Library/Application\ Support/Logi/LogiPluginService/Plugins/</PluginDir>
+
+    <BaseOutputPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\bin\'))</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)$(Configuration)\bin\</OutputPath>
+
+    <PluginShortName>Turnkey</PluginShortName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LogiPluginApi" Version="6.*" ExcludeAssets="runtime;native" />
+  </ItemGroup>
+
+  <!-- Turnkey's core, built by `npm run build`; it runs in Node beside the plugin. -->
+  <Target Name="CopySidecar" AfterTargets="PostBuildEvent">
+    <Error Condition="!Exists('..\..\bin\sidecar.mjs')" Text="Run `npm run build` first: logi/bin/sidecar.mjs is missing." />
+    <Copy SourceFiles="..\..\bin\sidecar.mjs" DestinationFolder="$(OutputPath)" />
+  </Target>
+
+  <Target Name="CopyPackage" AfterTargets="PostBuildEvent">
+    <Message Text="📦 Copying package files..." Importance="High" />
+    <ItemGroup>
+      <PackageFiles Include="package\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackageFiles)" DestinationFolder="$(OutputPath)..\%(RecursiveDir)" />
+    <Message Text="✅ Package files copied to $(OutputPath)..\" Importance="High" />
+  </Target>
+
+  <!-- Debug builds link into Logi Plugin Service and reload; a Release build is only packed. -->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
+    <Exec Condition="$(OS) == 'Windows_NT'" Command="echo $(BaseOutputPath)$(Configuration)\ &gt; &quot;$(PluginDir)$(ProjectName).link&quot;" />
+    <Exec Condition="$(OS) != 'Windows_NT'" Command="echo $(BaseOutputPath)$(Configuration)\ &gt; $(PluginDir)$(ProjectName).link" />
+    <Message Text="🔨 Created plugin link at: $(PluginDir)$(ProjectName).link" Importance="High" />
+
+    <Message Text="🔄 Sending plugin reload command for $(PluginShortName) to Logi Plugin Service" Importance="High" />
+    <Exec Condition="$(OS) == 'Windows_NT'" Command="start loupedeck:plugin/$(PluginShortName)/reload" ContinueOnError="true" />
+    <Exec Condition="$(OS) != 'Windows_NT'" Command="open loupedeck:plugin/$(PluginShortName)/reload" ContinueOnError="true" />
+    <Message Condition="'$(MSBuildLastTaskResult)' == 'false'" Text="❌ Couldn't reload the plugin, please restart the Logi Plugin Service manually" Importance="High" />
+  </Target>
+
+  <Target Name="PluginClean" AfterTargets="CoreClean">
+    <Message Text="🧹 Cleaning up plugin link file and output directories..." Importance="High" />
+
+    <Delete Condition="$(OS) == 'Windows_NT'" Files="$(PluginDir)$(ProjectName).link" />
+    <Exec Condition="$(OS) != 'Windows_NT'" Command="rm -f $(PluginDir)$(ProjectName).link" />
+
+    <RemoveDir Directories="$(OutputPath)..\" />
+
+    <Message Text="🧼 Plugin link file and output directories have been cleaned!" Importance="High" />
+  </Target>
+
+</Project>

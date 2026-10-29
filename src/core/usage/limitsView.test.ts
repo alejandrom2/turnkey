@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { renderGaugeKey } from "../gauge.js";
-import { accountName, creditsText, findWindow, limitGauge, limitPools, limitTiles, outcomeText, resetTarget, resetText, tightestWindow, windowChoices, windowLabel } from "./limitsView.js";
+import { accountName, creditsText, findWindow, limitGauge, limitPools, limitTiles, machineLimitPools, outcomeText, resetTarget, resetText, tightestWindow, windowChoices, windowLabel } from "./limitsView.js";
 import type { ServerProviderUsageLimits } from "./types.js";
 
 const now = Date.parse("2026-10-27T10:42:00.000Z");
@@ -146,5 +146,18 @@ describe("limits on the deck", () => {
 		expect(svg).toContain(">61%<");
 		expect(svg).toContain(`height="68"`);
 		expect(svg).toContain(">3 resets<");
+	});
+});
+
+describe("machineLimitPools", () => {
+	it("reads only ready machines", () => {
+		const providers = [codex("dev@example.com", codexLimits(37))] as never;
+		const base = { url: "http://a", environmentId: "env-1", modelConfig: { providers } as never, limitSources: undefined };
+		const connecting = { ...base, url: "http://b", environmentId: "env-2", state: { kind: "connecting" as const } };
+		const ready = { ...base, state: { kind: "ready" as const, environmentId: "env-1", label: "Studio", canOperate: true } };
+		expect(machineLimitPools([connecting], now)).toEqual([]);
+		const pools = machineLimitPools([connecting, ready], now);
+		expect(pools).toHaveLength(1);
+		expect(pools[0]!.accounts[0]!.environments[0]!.label).toBe("Studio");
 	});
 });

@@ -5,8 +5,8 @@ import { type ActionKind, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { buildAnswers } from "../core/commands.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
-import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, switchSelection, withOptionValue, runtimeModes } from "../core/models.js";
-import { currentEffort, dialControl, type DialControl, effortChange, effortChoices, effortPlace, effortToneOf, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
+import { bareModelName, type CatalogModel, findModel, modelColor, speedToggle, withOptionValue, runtimeModes } from "../core/models.js";
+import { applyChoice, currentEffort, dialControl, type DialControl, effortChoices, effortPlace, effortToneOf, powerArt, type PowerChoice, powerState, stepChoice } from "../core/power.js";
 import { dialPrompts } from "../core/prompts.js";
 import type { SliderInput } from "../core/slider.js";
 import { spinAngle, twinkleStep } from "../core/motion.js";
@@ -35,8 +35,8 @@ import { type StripItem, type StripList, threadRowsArt } from "../core/styles.js
 import type { Need } from "../core/requirements.js";
 import type { PendingRequest } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
-import { canOperate, colorStyle, LONG_PRESS_MS, markArt, openThread, pressWhileDisconnected, queuedCount, selectedThread, sendToThread, speedPaint, ultrathinkArmed } from "./base.js";
-import { applyEffort, requestFor, startThread } from "./keys.js";
+import { canOperate, colorStyle, LONG_PRESS_MS, markArt, openThread, pressWhileDisconnected, queuedCount, selectedThread, sendToThread, speedPaint, ultrathinkArmed, ultrathinkControl } from "./base.js";
+import { requestFor, startThread } from "./keys.js";
 import { threadNeeds } from "./needs.js";
 import { type DialSettings, StripDial } from "./strip.js";
 
@@ -399,7 +399,7 @@ export class ModelDial extends StripDial<PowerSettings> {
 		// A tap on a model without a Speed option, or on the Access dial, which leaves Speed alone, does nothing.
 		if (wants === "speed" && (toggle === undefined || control === "permissions")) return;
 		if (!(await this.allowed(dial, wants === "apply" ? context.check : speedCheck))) return;
-		const work = wants === "apply" && pending ? this.#apply(thread, pending, context.armed) : undefined;
+		const work = wants === "apply" && pending ? applyChoice(thread, pending, ultrathinkControl(thread, context.armed)) : undefined;
 		if (wants === "apply") {
 			if (work === undefined) return;
 			const { preview } = context;
@@ -409,19 +409,6 @@ export class ModelDial extends StripDial<PowerSettings> {
 			});
 		}
 		if (toggle !== undefined) await this.run(dial, () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)));
-	}
-
-	#apply(thread: DeckThread, choice: PowerChoice, armed: boolean): (() => Promise<unknown>) | undefined {
-		switch (choice.kind) {
-			case "model":
-				return () => thread.machine.setModelSelection(thread, switchSelection(choice.model, thread.model));
-			case "mode":
-				return () => thread.machine.setRuntimeMode(thread, choice.mode);
-			case "effort": {
-				const change = effortChange(findModel(thread.machine.modelConfig, thread.model), thread.model, choice.value);
-				return change === undefined ? undefined : applyEffort(thread, change, armed);
-			}
-		}
 	}
 
 	override onWillDisappear(ev: Parameters<StripDial<PowerSettings>["onWillDisappear"]>[0]): void {

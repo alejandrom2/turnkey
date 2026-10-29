@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Stream Deck에서 T3 Code 스레드를 확인하고 조작하세요. 스레드 상태, 중지, 프롬프트, 모델 옵션과 응답까지 모든 프로바이더에서 사용할 수 있습니다.",
+	"Description": "Stream Deck에서 T3 Code 스레드를 확인하고 조작하세요. 스레드 상태, 중지, 프롬프트, 모델 옵션과 응답까지 모든 프로바이더에서 사용할 수 있습니다. T3 Code 및 Elgato와 제휴하지 않았습니다.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "스레드",
@@ -803,7 +803,8 @@
 				"languages": "언어",
 				"languagesHint": "Turnkey은 Stream Deck의 언어를 따릅니다.",
 				"readme": "가이드",
-				"openReadme": "README 열기"
+				"openReadme": "README 열기",
+				"independent": "Turnkey는 독립 프로젝트로, T3 Code, Elgato, Logitech과 제휴하거나 보증을 받지 않았습니다."
 			},
 			"advanced": {
 				"appLink": "앱 링크",
@@ -1246,6 +1247,73 @@
 			"unavailable": "이 스레드는 공유 불가",
 			"copyFailed": "복사 실패",
 			"needsAccess": "공유 권한 필요"
+		},
+		"logi": {
+			"labels": { "limits": "{provider} · {window}: {percent}% 사용", "status": "{waiting}개 응답 대기 · {running}개 실행 중" },
+			"status": {
+				"unpaired": "Turnkey가 아직 T3 Code와 페어링되지 않았습니다.",
+				"pair": "T3 Code와 페어링",
+				"connected": "{name}에 연결됨."
+			},
+			"actions": {
+				"nextEffort": { "name": "다음 강도", "description": "T3 Code에서 열려 있는 스레드를 모델의 다음 강도로 바꿉니다." },
+				"nextAccess": { "name": "다음 권한", "description": "T3 Code에서 열려 있는 스레드를 다음 권한 모드로 바꿉니다." },
+				"limit": { "slot1": "한도 1", "slot2": "한도 2", "slot3": "한도 3", "slot4": "한도 4", "slot5": "한도 5", "description": "공급자의 가장 빠듯한 한도를 얼마나 썼는지 T3 Code 한도 순서대로 보여줍니다. 선택하면 새로 고칩니다." },
+				"waiting": { "name": "응답 대기", "description": "응답을 기다리는 T3 Code 스레드 수를 보여줍니다. 선택하면 가장 급한 스레드를 엽니다." },
+				"running": { "name": "실행 중인 스레드", "description": "실행 중인 T3 Code 스레드 수를 보여줍니다. 선택하면 가장 최근에 시작된 스레드를 엽니다." },
+				"model": { "slot1": "모델 1", "slot2": "모델 2", "slot3": "모델 3", "slot4": "모델 4", "slot5": "모델 5", "description": "T3 Code에서 열려 있는 스레드를 T3 Code 모델 선택기의 이 위치에 있는 모델로 바꿉니다. 즐겨찾기가 먼저입니다." },
+				"urgent": {
+					"name": "가장 급한 스레드",
+					"description": "T3 Code에서 확인이 필요한 항목을 보여 줍니다. 선택하면 해당 스레드를 엽니다."
+				},
+				"stop": {
+					"name": "실행 중지",
+					"description": "T3 Code에서 마지막으로 시작된 실행을 중지합니다."
+				},
+				"settings": {
+					"description": "Turnkey 설정을 엽니다: 기기, 페어링, 햅틱."
+				},
+				"status": {
+					"name": "스레드 상태",
+					"description": "확인이 필요한 T3 Code 스레드와 실행 중인 스레드 수를 보여 줍니다. 선택하면 가장 급한 스레드를 엽니다."
+				},
+				"stopAll": {
+					"name": "모든 실행 중지",
+					"description": "실행 중인 모든 T3 Code 스레드를 중지합니다."
+				},
+				"prompt": {
+					"description": "T3 Code에서 열려 있는 스레드에 프롬프트를 보냅니다."
+				},
+				"continue": {
+					"description": "T3 Code에서 열려 있는 스레드에 계속하라고 보냅니다. 확인이 필요하면 스레드를 엽니다."
+				},
+				"limits": {
+					"description": "T3 Code에서 가장 빠듯한 사용량 한도를 보여 줍니다."
+				},
+				"access": {
+					"description": "스크롤해 T3 Code에서 열려 있는 스레드의 권한을 바꿉니다. 누르면 다음 권한으로."
+				},
+				"effort": {
+					"description": "스크롤해 T3 Code에서 열려 있는 스레드의 강도를 바꿉니다. 누르면 다음 단계로."
+				},
+				"send": {
+					"name": "프롬프트 보내기",
+					"description": "여기에 쓴 프롬프트를 T3 Code에서 열려 있는 스레드에 보냅니다."
+				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "T3 Code용 Turnkey 동작을 엽니다."
+				},
+				"group": {
+					"threads": "스레드",
+					"settings": "설정"
+				}
+			},
+			"page": {
+				"haptics": "햅틱",
+				"hapticsHint": "스레드가 승인을 기다리거나, 질문하거나, 완료되거나 실패하면 MX Master 4를 진동시킵니다. 각 진동은 Options+의 Turnkey 이벤트에 있습니다.",
+				"paired": "{name}와 페어링했습니다. 이 페이지를 닫아도 됩니다."
+			}
 		}
 	}
 }

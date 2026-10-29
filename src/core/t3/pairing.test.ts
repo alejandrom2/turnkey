@@ -82,6 +82,12 @@ describe("redeemPairingCode", () => {
 		});
 	});
 
+	it("names the client it pairs as, so Sharing & access tells a Stream Deck from a Logitech pairing", async () => {
+		const { fetch, calls } = fakeFetch({ "/.well-known/t3/environment": environmentRoute(), "/oauth/token": tokenRoute });
+		await redeemPairingCode(URL_, "CODE", fetch, 0, [], "Turnkey (Logitech)");
+		expect(new URLSearchParams(calls[1].body).get("client_label")).toBe("Turnkey (Logitech)");
+	});
+
 	it("asks for opted-in scopes too, ignoring names it doesn't know, and keeps what the token was granted", async () => {
 		const granted = () => Response.json({ access_token: "tok", token_type: "Bearer", expires_in: 60, scope: "orchestration:read orchestration:operate providers:manage" });
 		const { fetch, calls } = fakeFetch({ "/.well-known/t3/environment": environmentRoute(), "/oauth/token": granted });

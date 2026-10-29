@@ -1,6 +1,6 @@
 {
 	"Name": "Turnkey",
-	"Description": "Sigue y dirige los hilos de T3 Code desde Stream Deck: estado del hilo, detener, prompts, opciones de modelo y respuestas, con todos los proveedores.",
+	"Description": "Sigue y dirige los hilos de T3 Code desde Stream Deck: estado del hilo, detener, prompts, opciones de modelo y respuestas, con todos los proveedores. Sin afiliación con T3 Code ni Elgato.",
 	"Category": "Turnkey",
 	"com.alejandrom2.turnkey.slot": {
 		"Name": "Hilo",
@@ -803,7 +803,8 @@
 				"languages": "Idiomas",
 				"languagesHint": "Turnkey usa el idioma de Stream Deck.",
 				"readme": "Guía",
-				"openReadme": "Abrir el README"
+				"openReadme": "Abrir el README",
+				"independent": "Turnkey es un proyecto independiente, sin afiliación ni respaldo de T3 Code, Elgato o Logitech."
 			},
 			"advanced": {
 				"appLink": "Enlace de la app",
@@ -1246,6 +1247,73 @@
 			"unavailable": "No se puede compartir este hilo",
 			"copyFailed": "No se pudo copiar",
 			"needsAccess": "Requiere acceso para compartir"
+		},
+		"logi": {
+			"labels": { "limits": "{provider} · {window}: {percent} % usado", "status": "{waiting} te esperan · {running} en curso" },
+			"status": {
+				"unpaired": "Turnkey aún no está vinculado con T3 Code.",
+				"pair": "Vincular con T3 Code",
+				"connected": "Conectado a {name}."
+			},
+			"actions": {
+				"nextEffort": { "name": "Siguiente esfuerzo", "description": "Pasa el hilo abierto en T3 Code al siguiente nivel de esfuerzo de su modelo." },
+				"nextAccess": { "name": "Siguiente acceso", "description": "Pasa el hilo abierto en T3 Code al siguiente modo de acceso." },
+				"limit": { "slot1": "Límite 1", "slot2": "Límite 2", "slot3": "Límite 3", "slot4": "Límite 4", "slot5": "Límite 5", "description": "Muestra cuánto se ha usado del límite más ajustado de un proveedor, en el orden de Límites de T3 Code. Elígelo para actualizar." },
+				"waiting": { "name": "Te esperan", "description": "Cuenta los hilos de T3 Code que te esperan. Elígelo para abrir el más urgente." },
+				"running": { "name": "Hilos en curso", "description": "Cuenta los hilos de T3 Code en curso. Elígelo para abrir el último que empezó." },
+				"model": { "slot1": "Modelo 1", "slot2": "Modelo 2", "slot3": "Modelo 3", "slot4": "Modelo 4", "slot5": "Modelo 5", "description": "Cambia el hilo abierto en T3 Code al modelo en esta posición de tu selector de modelos de T3 Code: primero los favoritos." },
+				"urgent": {
+					"name": "Hilo más urgente",
+					"description": "Muestra lo que te espera en T3 Code. Elígelo para abrir ese hilo."
+				},
+				"stop": {
+					"name": "Detener ejecución",
+					"description": "Detiene la última ejecución que empezó en T3 Code."
+				},
+				"settings": {
+					"description": "Abre los ajustes de Turnkey: equipos, vinculación y hápticos."
+				},
+				"status": {
+					"name": "Estado de hilos",
+					"description": "Muestra cuántos hilos de T3 Code te esperan y cuántos están en ejecución. Elígelo para abrir el más urgente."
+				},
+				"stopAll": {
+					"name": "Detener todas las ejecuciones",
+					"description": "Detiene todos los hilos de T3 Code en ejecución."
+				},
+				"prompt": {
+					"description": "Envía un prompt al hilo abierto en T3 Code."
+				},
+				"continue": {
+					"description": "Pide al hilo abierto en T3 Code que continúe; lo abre si te está esperando."
+				},
+				"limits": {
+					"description": "Muestra tu límite de uso más ajustado en T3 Code."
+				},
+				"access": {
+					"description": "Desplaza para cambiar el acceso del hilo abierto en T3 Code; pulsa para el siguiente."
+				},
+				"effort": {
+					"description": "Desplaza para cambiar el esfuerzo del hilo abierto en T3 Code; pulsa para el siguiente nivel."
+				},
+				"send": {
+					"name": "Enviar prompt",
+					"description": "Envía el prompt que escribas aquí al hilo abierto en T3 Code."
+				},
+				"folder": {
+					"name": "Turnkey",
+					"description": "Abre las acciones de Turnkey para T3 Code."
+				},
+				"group": {
+					"threads": "Hilos",
+					"settings": "Ajustes"
+				}
+			},
+			"page": {
+				"haptics": "Hápticos",
+				"hapticsHint": "Hace vibrar un MX Master 4 cuando un hilo necesita aprobación, hace una pregunta, termina o falla. Options+ muestra cada vibración en los eventos de Turnkey.",
+				"paired": "Vinculado con {name}. Ya puedes cerrar esta página."
+			}
 		}
 	}
 }

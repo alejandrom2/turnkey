@@ -33,12 +33,13 @@ function leaves(node: Json, path = "", into = new Map<string, string>()): Map<st
 const keys = leaves(en.Localization);
 const namespaces = new Set(Object.keys(en.Localization));
 
-/** Plugin code and the inspector generator; keys are always written as whole literals, never built. */
+/** Plugin code and the generators for the inspector and the Logitech translations; keys are always written as whole literals, never built. */
 const sources = [
 	...readdirSync(join(root, "src"), { recursive: true, encoding: "utf8" })
 		.filter((file) => file.endsWith(".ts") && !file.endsWith(".test.ts"))
 		.map((file) => readFileSync(join(root, "src", file), "utf8")),
 	readFileSync(join(root, "scripts", "ui.ts"), "utf8"),
+	readFileSync(join(root, "scripts", "logi.ts"), "utf8"),
 ].join("\n");
 const referenced = new Set(
 	[...sources.matchAll(/["'`]([A-Za-z]+(?:\.[A-Za-z0-9]+)+)["'`]/g)].map((match) => match[1]!).filter((key) => namespaces.has(key.split(".")[0]!) && !/\.(ts|js|json|html)$/.test(key)),

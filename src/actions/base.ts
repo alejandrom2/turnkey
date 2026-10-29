@@ -13,12 +13,12 @@ import type { JsonObject, JsonValue } from "@elgato/utils";
 import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
-import { openExternal, threadDeepLink } from "../core/commands.js";
+import { openThread as coreOpenThread } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
 import { INFOBAR } from "../core/infobar.js";
 import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
-import { powerArt } from "../core/power.js";
+import { powerArt, type UltrathinkControl } from "../core/power.js";
 import {
 	COLORS,
 	type GlyphName,
@@ -40,6 +40,7 @@ import { pinnedKey, pinnedName, resolveTarget, type Target, type TargetSettings 
 import type { Machine, SendMode } from "../core/t3/machine.js";
 import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
+import { ultrathinkControl as coreUltrathinkControl } from "../core/ultrathink.js";
 import { deck } from "../deck.js";
 import { exportDiagnostics, openLogsFolder } from "../diagnostics.js";
 import type { MachineWatch } from "./watch.js";
@@ -611,6 +612,9 @@ export const ultrathinkPrompt = (thread: DeckThread, text: string): string =>
 export const ultrathinkArmed = (thread: DeckThread | undefined): boolean =>
 	thread !== undefined && deck.ultrathink.armed(thread.key, findModel(thread.machine.modelConfig, thread.model));
 
+/** The deck's Ultrathink for `thread`, as core's applyChoice takes it. */
+export const ultrathinkControl = (thread: DeckThread, armed: boolean): UltrathinkControl => coreUltrathinkControl(deck.ultrathink, thread.key, armed);
+
 /** The thread's queue as last read, read again when it moved; only call it for a thread a visible face shows. */
 export const queueOf = (thread: DeckThread): ThreadQueue | undefined => deck.queues.of(thread, () => thread.machine.queue(thread));
 
@@ -618,10 +622,8 @@ export const queueOf = (thread: DeckThread): ThreadQueue | undefined => deck.que
 export const queuedCount = (thread: DeckThread): number => queueOf(thread)?.items.length ?? 0;
 
 /** Selects the thread the way T3 Code's own open does, and opens it in the desktop app. */
-export async function openThread(thread: DeckThread): Promise<void> {
-	selectThread(thread);
-	await openExternal(threadDeepLink(thread, deck.scheme));
-}
+export const openThread = (thread: DeckThread): Promise<void> =>
+	coreOpenThread(thread, (key, url) => deck.board.select(key, url).catch(logSelectFailure), deck.scheme);
 
 /** Selects a thread `machine` just made, before its shell lists it. */
 export function selectNew(machine: Machine, threadId: string): void {
@@ -630,8 +632,10 @@ export function selectNew(machine: Machine, threadId: string): void {
 
 /** Selects the thread without opening the app; a failed visit only leaves T3 Code's stamp behind. */
 export function selectThread(thread: Pick<DeckThread, "key" | "machine">): void {
-	void deck.board.select(thread.key, thread.machine.url).catch((error: unknown) => logger.warn(`Selecting a thread failed: ${errorMessage(error)}`));
+	void deck.board.select(thread.key, thread.machine.url).catch(logSelectFailure);
 }
+
+const logSelectFailure = (error: unknown): void => void logger.warn(`Selecting a thread failed: ${errorMessage(error)}`);
 
 export type ConnectionProblem = "loading" | "none" | "missing" | "pair" | "offline";
 

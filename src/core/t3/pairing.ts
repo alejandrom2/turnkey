@@ -157,14 +157,14 @@ const SESSION_SECONDS = 30 * 86_400;
 const CLIENT_OS: Partial<Record<NodeJS.Platform, string>> = { darwin: "macOS", win32: "Windows", linux: "Linux" };
 
 /** The token exchange body. No DPoP header, so T3 Code issues a 30-day Bearer session. */
-function tokenExchangeBody(code: string, platform: NodeJS.Platform = process.platform, scopes: readonly string[] = REQUESTED_SCOPES): URLSearchParams {
+function tokenExchangeBody(code: string, platform: NodeJS.Platform = process.platform, scopes: readonly string[] = REQUESTED_SCOPES, clientLabel = "Turnkey"): URLSearchParams {
 	return new URLSearchParams({
 		grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
 		subject_token: code,
 		subject_token_type: "urn:t3:params:oauth:token-type:environment-bootstrap",
 		requested_token_type: "urn:ietf:params:oauth:token-type:access_token",
 		scope: scopes.join(" "),
-		client_label: "Turnkey",
+		client_label: clientLabel,
 		client_device_type: "desktop",
 		client_os: CLIENT_OS[platform] ?? platform,
 	});
@@ -174,11 +174,19 @@ function tokenExchangeBody(code: string, platform: NodeJS.Platform = process.pla
  * Checks the environment, then spends the one-time code. The preflight comes first so a link to an
  * incompatible server is not used up.
  */
-export async function redeemPairingCode(url: string, code: string, fetchFn: typeof fetch, now = Date.now(), extraScopes: readonly string[] = []): Promise<Credential> {
+/** `clientLabel` is the name T3 Code lists the pairing under in Settings → Sharing & access. */
+export async function redeemPairingCode(
+	url: string,
+	code: string,
+	fetchFn: typeof fetch,
+	now = Date.now(),
+	extraScopes: readonly string[] = [],
+	clientLabel = "Turnkey",
+): Promise<Credential> {
 	const environment = await readEnvironment(url, fetchFn);
 	let response: Response;
 	try {
-		response = await fetchFn(`${url}/oauth/token`, { method: "POST", body: tokenExchangeBody(code, process.platform, requestedScopes(extraScopes)), signal: AbortSignal.timeout(15_000) });
+		response = await fetchFn(`${url}/oauth/token`, { method: "POST", body: tokenExchangeBody(code, process.platform, requestedScopes(extraScopes), clientLabel), signal: AbortSignal.timeout(15_000) });
 	} catch {
 		throw unreachable(url);
 	}

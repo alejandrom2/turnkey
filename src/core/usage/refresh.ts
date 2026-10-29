@@ -1,3 +1,5 @@
+import type { Machine } from "../t3/machine.js";
+
 /**
  * Ported from `refreshUsageLimits` in T3 Code's packages/client-runtime/src/state/usage.ts: one limits refresh in
  * flight per environment, and automatic ones at most every five minutes after any refresh ends, failed or not. A
@@ -38,4 +40,11 @@ export class LimitsRefresher {
 	pending(environmentId: string): boolean {
 		return this.#pending.has(environmentId);
 	}
+}
+
+/** One machine's limits through T3 Code's throttle; resolves when done, at once for a machine with no environment. */
+export async function refreshLimits(refresher: LimitsRefresher, machine: Pick<Machine, "environmentId" | "refreshProviders">, automatic: boolean, after = false): Promise<void> {
+	const environmentId = machine.environmentId;
+	if (environmentId === undefined) return;
+	await refresher.refresh(environmentId, () => machine.refreshProviders(), automatic, after);
 }

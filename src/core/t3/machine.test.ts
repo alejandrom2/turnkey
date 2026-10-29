@@ -99,6 +99,7 @@ function memoryStore(initial?: Credential) {
 	const store: CredentialStore = {
 		load: (url) => saved.get(url),
 		save: async (url, credential) => void (credential ? saved.set(url, credential) : saved.delete(url)),
+		urls: () => [...saved.keys()],
 	};
 	return { store, saved };
 }
@@ -114,7 +115,7 @@ function setup(options: { credential?: Credential; ticket?: () => Response; conf
 	const sockets = fakeSockets();
 	let ids = 0;
 	const onChange = vi.fn();
-	const machine = new Machine(URL_, store, { fetch, socket: sockets.factory, random: () => 0, uuid: () => `uuid-${++ids}` }, onChange);
+	const machine = new Machine(URL_, store, { fetch, socket: sockets.factory, clientLabel: "Turnkey (Test)", random: () => 0, uuid: () => `uuid-${++ids}` }, onChange);
 	return { machine, sockets, calls, saved, onChange, config: options.config ?? CONFIG };
 }
 
@@ -254,6 +255,15 @@ describe("Machine connection", () => {
 		h.machine.start();
 		expect(h.machine.state).toMatchObject({ kind: "signed-out", message: expect.stringContaining("expired") });
 		expect(h.calls).toEqual([]);
+	});
+
+	it("reports a failed save when it forgets an expired pairing", async () => {
+		const warn = vi.fn();
+		const store: CredentialStore = { load: () => ({ ...CREDENTIAL, expiresAt: NOW - 1 }), save: () => Promise.reject(new Error("disk full")), urls: () => [URL_] };
+		const { fetch } = fakeFetch({});
+		new Machine(URL_, store, { fetch, socket: fakeSockets().factory, clientLabel: "Turnkey (Test)", warn }, () => undefined).start();
+		await flush();
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining("disk full"));
 	});
 
 	it("is read-only when the pairing did not grant orchestration:operate", async () => {
