@@ -43,7 +43,7 @@ See every agent thread at a glance, approve and answer from a key, switch models
 
 <b>And on Logitech</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Every slot is a live face, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
 
-<img src="docs/readme/ring.gif" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="100%">
+<img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="100%">
 
 Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, then a live WebSocket feed of your threads. It doesn't read app files or drive the UI, and it talks only to the T3 Code servers you pair it with.
 
