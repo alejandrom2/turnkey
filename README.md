@@ -81,6 +81,8 @@ You need Logi Options+ with an MX mouse or keyboard for the Actions Ring (haptic
 2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. It opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
 3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose the **Default** profile: Turnkey's ring, folders and all. Rearrange it, or drag Turnkey's actions onto any other profile. **Turnkey Settings** brings the settings page back later, to add machines, re-pair or switch haptics off.
 
+<img src="docs/readme/ring-folders.png" alt="Turnkey's default Actions Ring for T3 Code with its folders opened: Threads (waiting on you, running, stop all), Prompts (Fix tests, Diagnose, Explain, Commit), Models (five picker models with the current one checked, Next effort and Next access) and Limits (each provider's tightest limit)" width="100%">
+
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
 
 ## Support Turnkey
