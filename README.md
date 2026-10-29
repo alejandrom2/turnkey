@@ -9,6 +9,11 @@ See every agent thread, approve and answer from a key, switch models and effort 
 
 <a href="https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.streamDeckPlugin"><img src="https://img.shields.io/badge/Download-for_Stream_Deck-4a68f0?style=for-the-badge" alt="Download for Stream Deck" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.lplug4"><img src="https://img.shields.io/badge/Download-for_Logitech-4a68f0?style=for-the-badge" alt="Download for Logitech" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_a_coffee-%E2%98%95-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me a coffee" height="36"></a>
 
+<a href="https://www.elgato.com/s/explore-stream-deck"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/badges/works-with-stream-deck-light.svg"><img src="docs/badges/works-with-stream-deck-dark.svg" alt="Works with Stream Deck" title="Learn more about Stream Deck" height="40"></picture></a>
+<!-- Uncomment once the Marketplace listing is live, with its product URL:
+&nbsp;&nbsp;<a href="https://marketplace.elgato.com/product/TODO"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/badges/marketplace-light.svg"><img src="docs/badges/marketplace-dark.svg" alt="Get it on Marketplace" title="Get Turnkey on Marketplace" height="40"></picture></a>
+-->
+
 [![CI](https://github.com/alejandrom2/turnkey/actions/workflows/release.yml/badge.svg)](https://github.com/alejandrom2/turnkey/actions/workflows/release.yml)
 [![Release](https://img.shields.io/github/v/release/alejandrom2/turnkey?include_prereleases&label=release)](https://github.com/alejandrom2/turnkey/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
