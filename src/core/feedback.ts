@@ -12,11 +12,14 @@ export class Refusal extends Error {
 	}
 }
 
+/** What an error says, for the log. */
+export const errorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+
 /** A failure in a dozen characters or so, or T3 Code's own reason for refusing, for a key face; the full message goes to the log. */
 export function failureLabel(error: unknown): string {
 	// Matches the deck's own English errors (machine.ts, rpc.ts), which stay untranslated so these patterns hold.
 	if (error instanceof Refusal) return error.label;
-	const message = error instanceof Error ? error.message : String(error);
+	const message = errorMessage(error);
 	const { reason, requiredPermission } = (error ?? {}) as { reason?: unknown; requiredPermission?: unknown };
 	// T3 Code names the missing scope in `requiredPermission`; `requiredScope` is its legacy parent.
 	if (typeof requiredPermission === "string") return needsAccessLabel(requiredPermission);

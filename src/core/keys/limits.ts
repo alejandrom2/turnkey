@@ -1,4 +1,4 @@
-import { failureLabel, Refusal } from "../feedback.js";
+import { errorMessage, failureLabel, Refusal } from "../feedback.js";
 import { renderGaugeKey } from "../gauge.js";
 import { t } from "../i18n.js";
 import { driverMark, driverName } from "../models.js";
@@ -31,8 +31,6 @@ import type { KeyContext, KeyDefinition, KeyRuntime } from "./key.js";
  * Limits folder has none and shows the tightest window of all.
  */
 export type LimitsSettings = { machine?: string; provider?: string; window?: string; show?: string; resetAction?: string; poolSlot?: number };
-
-const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 /** The connected machines an instance following `url` (or every machine) reads from. */
 export const readyOn = (runtime: Pick<KeyRuntime, "machines">, url: string | undefined): Machine[] =>

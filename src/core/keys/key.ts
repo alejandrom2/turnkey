@@ -27,7 +27,6 @@ export type Appearance = {
 /** How long a press counts as a hold rather than a tap. */
 export const LONG_PRESS_MS = 500;
 
-export type FaceStyle = "tile" | "glyph";
 /** "settings": Stream Deck, each key's own Confirm/approval setting. "hold": MX Keypad. "click": Actions Ring, already deliberate. */
 export type ConfirmBy = "settings" | "hold" | "click";
 export type PressInput = { heldMs: number; confirmBy: ConfirmBy };

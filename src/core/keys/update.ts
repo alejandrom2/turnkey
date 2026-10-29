@@ -1,4 +1,5 @@
 import { HOLD_CONFIRM_MS } from "../approvals.js";
+import { errorMessage } from "../feedback.js";
 import { t } from "../i18n.js";
 import { spinAngle } from "../motion.js";
 import { COLORS, type GlyphName, renderInfoKey } from "../render.js";
@@ -28,8 +29,6 @@ export function updateMachineOf(runtime: Pick<KeyRuntime, "machines">, url: stri
 	if (url !== undefined) return machines.find((machine) => machine.url === url);
 	return machines.find((machine) => isThisComputer(new URL(machine.url).hostname)) ?? (machines.length === 1 ? machines[0] : undefined);
 }
-
-const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 export type UpdateState = { machine: Machine | undefined; run: UpdateRun | undefined; awaiting: boolean; moving: boolean };
 

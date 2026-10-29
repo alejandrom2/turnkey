@@ -1,4 +1,4 @@
-import { failureLabel } from "../feedback.js";
+import { errorMessage, failureLabel } from "../feedback.js";
 import { renderGaugeKey } from "../gauge.js";
 import { type MessageKey, t } from "../i18n.js";
 import { driverMark } from "../models.js";
@@ -12,8 +12,6 @@ import { periodLabel, type UsageItem, usageDriver, usageItems, usageProvider } f
 import { type KeyDefinition, type KeyRuntime, LONG_PRESS_MS } from "./key.js";
 
 export type UsageSettings = { machine?: string; period?: string; provider?: string };
-
-const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 /** The ready machines an instance following `url` (or every machine) reads usage from: those whose pairing may. */
 export const usageMachines = (runtime: Pick<KeyRuntime, "machines">, url: string | undefined): Machine[] =>
