@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/alejandrom2/turnkey/compare/v1.0.0...v1.1.0) (2026-10-29)
+
+
+### Features
+
+* Turnkey runs under OpenDeck, including on Linux ([#28](https://github.com/alejandrom2/turnkey/issues/28)) ([4329cf5](https://github.com/alejandrom2/turnkey/commit/4329cf56cc8f1894a97dc5a25618a11529011415))
+
 ## [1.0.0](https://github.com/alejandrom2/turnkey/compare/v0.12.0...v1.0.0) (2026-10-29)
 
 Turnkey 1.0 controls T3 Code from a Stream Deck or a Logitech mouse or keyboard. It pairs with T3 Code the way T3 Code's own web and mobile clients do, and talks only to the T3 Code servers you pair it with.
