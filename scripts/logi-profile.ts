@@ -30,7 +30,7 @@ const RING: readonly (readonly [string, string, string])[] = [
 	slot("MostUrgentCommand", "Most urgent thread"),
 	slot("StatusCommand", "Thread status"),
 	slot("ContinueCommand", "Continue"),
-	[FOLDER, "Prompts", "SendPromptCommand"],
+	[FOLDER, "Prompts", "PromptsFolder"],
 	slot("StopRunCommand", "Stop run"),
 	slot("StopAllCommand", "Stop all"),
 	slot("LimitsCommand", "Limits"),
@@ -144,7 +144,7 @@ const folderIcon = {
 	items: [
 		{
 			$type: "Loupedeck.Service.ActionIconImageItem, LoupedeckShared",
-			image: Buffer.from(symbol("SendPromptCommand")).toString("base64"),
+			image: Buffer.from(symbol("PromptsFolder")).toString("base64"),
 			imageFileName: "prompts.svg",
 			imageColor: 0xffffffff,
 			imageRotation: "None",

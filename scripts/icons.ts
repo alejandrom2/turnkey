@@ -114,6 +114,8 @@ const SYMBOLS: Record<string, GlyphName> = {
 	CommitCommand: "gitCommit",
 	SendPromptCommand: "send",
 	TurnkeyFolder: "cube",
+	// Not an action: the icon of the default ring profile's Prompts folder (scripts/logi-profile.ts).
+	PromptsFolder: "chat",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
 	LimitsCommand: "gauge",
