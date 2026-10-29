@@ -5,7 +5,7 @@
 <h1>Turnkey<br><sub>for T3 Code</sub></h1>
 
 **Control [T3 Code](https://github.com/pingdotgg/t3code) from your Stream Deck or your Logitech mouse.**<br>
-See every agent thread at a glance, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without leaving your flow.
+See every agent thread, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without switching to T3 Code.
 
 <a href="https://github.com/alejandrom2/turnkey/releases/latest"><img src="https://img.shields.io/badge/Download-for_Stream_Deck-4a68f0?style=for-the-badge" alt="Download for Stream Deck" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/alejandrom2/turnkey/releases/latest"><img src="https://img.shields.io/badge/Download-for_Logitech-4a68f0?style=for-the-badge" alt="Download for Logitech" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_an_energy_drink-%E2%9A%A1-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me an energy drink" height="36"></a>
 
@@ -30,22 +30,22 @@ See every agent thread at a glance, approve and answer from a key, switch models
 <tr>
 <td align="center" width="33%"><img src="docs/readme/git.png" alt="A pull request key with one check failing" width="96"><br><b>Git and pull requests</b><br>Commit, push, open a PR, watch its checks and send Fix findings to the thread.</td>
 <td align="center" width="33%"><img src="docs/readme/usage.png" alt="A usage key: 72% of the 5-hour limit" width="96"><br><b>Usage and limits</b><br>Cost, tokens and subscription limit windows, as on T3 Code's Usage page.</td>
-<td align="center" width="33%"><img src="docs/readme/machines.png" alt="A machine's key: Studio, connected" width="96"><br><b>Every provider, every machine</b><br>Codex, Claude, Cursor, OpenCode and the rest, on local and remote T3 Code.</td>
+<td align="center" width="33%"><img src="docs/readme/machines.png" alt="A machine's key: Studio, connected" width="96"><br><b>Every provider and machine</b><br>Codex, Claude, Cursor, OpenCode and the rest, on local and remote T3 Code.</td>
 </tr>
 </table>
+
+## Stream Deck Neo and Logitech
 
 <table>
 <tr>
 <td width="50%"><img src="docs/readme/neo.png" alt="Three Stream Deck Neo info bars: a thread that needs approval, the selected thread's model with Fast on, and Codex's weekly limit at 62%" width="320"></td>
-<td width="50%"><b>On Stream Deck Neo too</b><br>The info bar follows the page you're on: the most urgent thread on home, the model in Controls, the branch in Git, the pull request in Pull Requests, the queue in Prompts and the tightest limit in Usage.</td>
+<td width="50%"><b>Stream Deck Neo</b><br>The info bar follows the page you're on: the most urgent thread on home, the model in Controls, the branch in Git, the pull request in Pull Requests, the queue in Prompts and the tightest limit in Usage.</td>
 </tr>
 </table>
 
-<b>And on Logitech</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Every slot is a live face, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
+<b>Logitech Actions Ring</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Each slot shows live state, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.
 
 <img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="100%">
-
-Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, then a live WebSocket feed of your threads. It doesn't read app files or drive the UI, and it talks only to the T3 Code servers you pair it with.
 
 ## See it
 
@@ -60,9 +60,11 @@ https://github.com/user-attachments/assets/64852819-5e90-46e4-a6ac-824dbe0ff64f
 
 ## Get started
 
+Turnkey connects the way T3 Code's own web and mobile clients do: a pair link, then a live WebSocket feed of your threads. It doesn't read app files or drive the UI, and it talks only to the T3 Code servers you pair it with.
+
 ### Stream Deck
 
-You need the Stream Deck app 7.6 or newer (macOS 12+ or Windows 10+), any Stream Deck (Stream Deck +, the 15-key Stream Deck, XL, Mini or Neo; dials need a Stream Deck +), and [T3 Code](https://github.com/pingdotgg/t3code) running on this computer or one you can reach.
+You need the Stream Deck app 7.6 or newer on macOS 12+ or Windows 10+, and [T3 Code](https://github.com/pingdotgg/t3code) running on this computer or one you can reach. Turnkey works on the Stream Deck +, the 15-key Stream Deck, XL, Mini and Neo; dials need a Stream Deck +.
 
 1. **Install.** Download `com.alejandrom2.turnkey.streamDeckPlugin` from the [latest release](https://github.com/alejandrom2/turnkey/releases/latest) and double-click it. Stream Deck offers Turnkey's ready-made profiles: pick one, or drag actions from the **Turnkey** category onto your deck.
 2. **Create a pair link.** In T3 Code, open **Settings → Sharing & access** and create one.
@@ -72,10 +74,10 @@ Add each machine once; every action can follow one machine or all of them. Pairi
 
 ### Logitech
 
-You need Logi Options+ with an MX mouse or keyboard for the Actions Ring (haptics need an MX Master 4), on macOS, and T3 Code as above. Windows isn't tested yet.
+You need Logi Options+ on macOS, an MX mouse or keyboard with the Actions Ring, and T3 Code as above. Haptics need an MX Master 4. Windows isn't tested yet.
 
 1. **Install.** Download `Turnkey_<version>.lplug4` from the [latest release](https://github.com/alejandrom2/turnkey/releases/latest) and open it to install it in Logi Options+.
-2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. It opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
+2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. Its button opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
 3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
 
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
