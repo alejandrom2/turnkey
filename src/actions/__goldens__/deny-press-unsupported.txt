@@ -1,0 +1,2 @@
+spawn open t3://threads/env/other
+select ["env/other"]
