@@ -2,6 +2,7 @@ import { type Action, action, type KeyUpEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { approvalAuthority, approvalConfirm, approvePress, authorityLabel, confirmed } from "../core/approvals.js";
+import { requestFor as coreRequestFor } from "../core/keys/requests.js";
 import { type Availability, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openExternal, organize, type OrganizeAction, threadDeepLink } from "../core/commands.js";
@@ -684,28 +685,7 @@ export class PlanKey extends SettingKey<JsonObject> {
 	}
 }
 
-/** Approval details per thread and request, loaded once and shared by every Approve and Deny key. */
-const requests = new Map<string, PendingRequest | "loading">();
-
-export function requestFor(thread: DeckThread): PendingRequest | undefined {
-	const pending = thread.pendingRequest;
-	if (pending === undefined) return undefined;
-	const id = `${thread.key}#${pending.id}`;
-	const cached = requests.get(id);
-	if (cached !== undefined) return cached === "loading" ? undefined : cached;
-	const live = new Set(deck.board.threads.flatMap((other) => (other.pendingRequest ? [`${other.key}#${other.pendingRequest.id}`] : [])));
-	for (const key of requests.keys()) if (!live.has(key)) requests.delete(key);
-	requests.set(id, "loading");
-	thread.machine
-		.pendingRequest(thread)
-		.catch((): PendingRequest => ({ type: "unsupported", threadId: pending.threadId, requestId: pending.id, heading: t("approval.needsYou") }))
-		.then((request) => {
-			if (request === undefined) requests.delete(id);
-			else requests.set(id, request);
-			deck.repaint();
-		});
-	return undefined;
-}
+export const requestFor = (thread: DeckThread): PendingRequest | undefined => coreRequestFor(deck, thread);
 
 /** What a request is about, in a line: the approval's summary, or the heading of one the deck can't answer. */
 const requestSummary = (request: PendingRequest): string =>
