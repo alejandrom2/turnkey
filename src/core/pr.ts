@@ -97,7 +97,13 @@ function boundedField(value: string): string {
 
 /** Marker-only bodies are empty; otherwise retain text, including fenced HTML comments. */
 export function visibleBody(body: string): string | null {
-	return body.replace(/<!--[\s\S]*?-->/gu, "").trim().length === 0 ? null : body.trim();
+	let visible = body;
+	while (true) {
+		const next = visible.replace(/<!--[\s\S]*?-->/gu, "");
+		if (next === visible) break;
+		visible = next;
+	}
+	return visible.trim().length === 0 ? null : body.trim();
 }
 
 function inferReviewCommentFenceLanguage(filePath: string): string {

@@ -13,6 +13,7 @@ import {
 	prRequests,
 	threadPullRequest,
 	threadPullRequestRef,
+	visibleBody,
 } from "./pr.js";
 
 type FixInput = Parameters<typeof buildFixFindingsHandoff>[0];
@@ -34,6 +35,10 @@ describe("handoffs match T3 Code's own output", () => {
 });
 
 describe("pull request helpers", () => {
+	it("treats comments revealed by overlapping delimiters as hidden", () => {
+		expect(visibleBody("<!<!--x-->-->payload-->")).toBeNull();
+	});
+
 	it("count what a Fix Findings handoff would carry", () => {
 		const input = fixtures.inputs.fix.mixed as unknown as FixInput;
 		const found = findings(input);
