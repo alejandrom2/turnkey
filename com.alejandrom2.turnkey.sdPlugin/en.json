@@ -1261,6 +1261,9 @@
 				"waiting": { "name": "Waiting on you", "description": "Counts the T3 Code threads that wait on you. Choose it to open the most urgent." },
 				"running": { "name": "Running threads", "description": "Counts the T3 Code threads that are running. Choose it to open the one that started last." },
 				"model": { "slot1": "Model 1", "slot2": "Model 2", "slot3": "Model 3", "slot4": "Model 4", "slot5": "Model 5", "description": "Switches the thread open in T3 Code to the model at this place in your T3 Code model picker: favorites first." },
+				"thread": { "slot1": "Thread 1", "slot2": "Thread 2", "slot3": "Thread 3", "slot4": "Thread 4", "slot5": "Thread 5", "slot6": "Thread 6", "slot7": "Thread 7", "slot8": "Thread 8", "description": "Shows the thread at this place on your T3 Code board, most urgent first. Choose it to open that thread; on a keypad, hold it to select the thread without opening it." },
+				"activity": { "name": "Activity", "description": "Shows the most urgent thread on your T3 Code board. Choose it to open that thread." },
+				"newThread": { "name": "New Thread", "description": "Starts a new thread in the project of the thread open in T3 Code, and opens it there to type." },
 				"urgent": {
 					"name": "Most urgent thread",
 					"description": "Shows what needs you in T3 Code. Choose it to open that thread."

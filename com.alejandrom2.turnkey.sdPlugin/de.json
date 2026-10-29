@@ -1261,6 +1261,9 @@
 				"waiting": { "name": "Wartet auf dich", "description": "Zählt die T3-Code-Threads, die auf dich warten. Wähle es, um den dringendsten zu öffnen." },
 				"running": { "name": "Laufende Threads", "description": "Zählt die laufenden T3-Code-Threads. Wähle es, um den zuletzt gestarteten zu öffnen." },
 				"model": { "slot1": "Modell 1", "slot2": "Modell 2", "slot3": "Modell 3", "slot4": "Modell 4", "slot5": "Modell 5", "description": "Wechselt den in T3 Code geöffneten Thread zum Modell an dieser Stelle deiner Modellauswahl in T3 Code: Favoriten zuerst." },
+				"thread": { "slot1": "Thread 1", "slot2": "Thread 2", "slot3": "Thread 3", "slot4": "Thread 4", "slot5": "Thread 5", "slot6": "Thread 6", "slot7": "Thread 7", "slot8": "Thread 8", "description": "Zeigt den Thread an dieser Stelle deines T3-Code-Boards, dringendste zuerst. Wähle ihn, um ihn zu öffnen; auf einem Keypad gedrückt halten, um ihn ohne Öffnen auszuwählen." },
+				"activity": { "name": "Aktivität", "description": "Zeigt den dringendsten Thread auf deinem T3-Code-Board. Wähle ihn, um ihn zu öffnen." },
+				"newThread": { "name": "Neuer Thread", "description": "Startet einen neuen Thread im Projekt des in T3 Code geöffneten Threads und öffnet ihn dort zum Tippen." },
 				"urgent": {
 					"name": "Dringendster Thread",
 					"description": "Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen."

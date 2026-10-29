@@ -20,6 +20,14 @@
           <source>Steps the thread open in T3 Code to its next access mode.</source>
           <target>Passe le fil ouvert dans T3 Code au mode d&apos;accès suivant.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ActivityCommand" translate="yes">
+          <source>Activity</source>
+          <target>Activité</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ActivityCommand###description" translate="yes">
+          <source>Shows the most urgent thread on your T3 Code board. Choose it to open that thread.</source>
+          <target>Montre le fil le plus urgent de votre tableau T3 Code. Choisissez-le pour ouvrir ce fil.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand" translate="yes">
           <source>Approve</source>
           <target>Approuver</target>
@@ -136,6 +144,14 @@
           <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
           <target>Montre ce qui vous attend dans T3 Code. Choisissez-le pour ouvrir ce fil.</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand" translate="yes">
+          <source>New Thread</source>
+          <target>Nouveau fil</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand###description" translate="yes">
+          <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
+          <target>Démarre un nouveau fil dans le projet du fil ouvert dans T3 Code et l&apos;ouvre là-bas pour écrire.</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
           <source>Running threads</source>
           <target>Fils en cours</target>
@@ -175,6 +191,42 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>Arrête la dernière exécution lancée dans T3 Code.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command" translate="yes">
+          <source>Thread 1</source>
+          <target>Fil 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command###description" translate="yes">
+          <source>Shows the thread at this place on your T3 Code board, most urgent first. Choose it to open that thread; on a keypad, hold it to select the thread without opening it.</source>
+          <target>Montre le fil à cette place de votre tableau T3 Code, le plus urgent d&apos;abord. Choisissez-le pour l&apos;ouvrir ; sur un pavé, maintenez-le pour le sélectionner sans l&apos;ouvrir.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread2Command" translate="yes">
+          <source>Thread 2</source>
+          <target>Fil 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread3Command" translate="yes">
+          <source>Thread 3</source>
+          <target>Fil 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread4Command" translate="yes">
+          <source>Thread 4</source>
+          <target>Fil 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread5Command" translate="yes">
+          <source>Thread 5</source>
+          <target>Fil 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread6Command" translate="yes">
+          <source>Thread 6</source>
+          <target>Fil 6</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread7Command" translate="yes">
+          <source>Thread 7</source>
+          <target>Fil 7</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread8Command" translate="yes">
+          <source>Thread 8</source>
+          <target>Fil 8</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
           <source>Waiting on you</source>

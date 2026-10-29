@@ -1261,6 +1261,9 @@
 				"waiting": { "name": "Te esperan", "description": "Cuenta los hilos de T3 Code que te esperan. Elígelo para abrir el más urgente." },
 				"running": { "name": "Hilos en curso", "description": "Cuenta los hilos de T3 Code en curso. Elígelo para abrir el último que empezó." },
 				"model": { "slot1": "Modelo 1", "slot2": "Modelo 2", "slot3": "Modelo 3", "slot4": "Modelo 4", "slot5": "Modelo 5", "description": "Cambia el hilo abierto en T3 Code al modelo en esta posición de tu selector de modelos de T3 Code: primero los favoritos." },
+				"thread": { "slot1": "Hilo 1", "slot2": "Hilo 2", "slot3": "Hilo 3", "slot4": "Hilo 4", "slot5": "Hilo 5", "slot6": "Hilo 6", "slot7": "Hilo 7", "slot8": "Hilo 8", "description": "Muestra el hilo de este lugar en tu tablero de T3 Code, el más urgente primero. Elígelo para abrirlo; en un teclado, mantenlo pulsado para seleccionarlo sin abrirlo." },
+				"activity": { "name": "Actividad", "description": "Muestra el hilo más urgente de tu tablero de T3 Code. Elígelo para abrir ese hilo." },
+				"newThread": { "name": "Nuevo hilo", "description": "Inicia un hilo nuevo en el proyecto del hilo abierto en T3 Code y lo abre allí para escribir." },
 				"urgent": {
 					"name": "Hilo más urgente",
 					"description": "Muestra lo que te espera en T3 Code. Elígelo para abrir ese hilo."

@@ -1,6 +1,7 @@
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { threadCounts } from "../core/infobar.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
+import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { findModel, modelColor } from "../core/models.js";
 import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
@@ -99,6 +100,10 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		// Approve allows once, as the design has it on Logitech; a keypad holds for it, a Ring click is itself the confirmation.
 		approve: sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, deps.runtime, deps.warn),
 		deny: sharedKind("deny", denyKey, { "": {} }, deps.runtime, deps.warn),
+		// Thread n is the nth thread on the board, the order Stream Deck's slot n shows with default settings.
+		thread: sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), deps.runtime, deps.warn),
+		activity: sharedKind("activity", activityKey, { "": {} }, deps.runtime, deps.warn),
+		newThread: sharedKind("newThread", newThreadKey, { "": {} }, deps.runtime, deps.warn),
 		prompt: {
 			face: (_index, name) => (isPrompt(name) ? promptFace(name) : ringFace(COLORS.muted, "chat", { dim: true })),
 			press: (_index, name) => {

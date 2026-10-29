@@ -20,6 +20,14 @@
           <source>Steps the thread open in T3 Code to its next access mode.</source>
           <target>將 T3 Code 中開啟的對話切換到下一個權限模式。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ActivityCommand" translate="yes">
+          <source>Activity</source>
+          <target>動態</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ActivityCommand###description" translate="yes">
+          <source>Shows the most urgent thread on your T3 Code board. Choose it to open that thread.</source>
+          <target>顯示 T3 Code 看板上最緊急的對話。選擇即可開啟該對話。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ApproveCommand" translate="yes">
           <source>Approve</source>
           <target>核准</target>
@@ -136,6 +144,14 @@
           <source>Shows what needs you in T3 Code. Choose it to open that thread.</source>
           <target>顯示 T3 Code 中需要你處理的內容。選擇即可開啟該對話。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand" translate="yes">
+          <source>New Thread</source>
+          <target>新對話</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.NewThreadCommand###description" translate="yes">
+          <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
+          <target>在 T3 Code 中開啟的對話所在專案內開始新對話，並在 T3 Code 中開啟以便輸入。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.RunningCommand" translate="yes">
           <source>Running threads</source>
           <target>執行中的對話</target>
@@ -175,6 +191,42 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.StopRunCommand###description" translate="yes">
           <source>Stops the T3 Code run that started last.</source>
           <target>停止 T3 Code 中最後開始的執行。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command" translate="yes">
+          <source>Thread 1</source>
+          <target>對話 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread1Command###description" translate="yes">
+          <source>Shows the thread at this place on your T3 Code board, most urgent first. Choose it to open that thread; on a keypad, hold it to select the thread without opening it.</source>
+          <target>依緊急程度顯示 T3 Code 看板上此位置的對話。選擇即可開啟該對話；在鍵盤上長按則只選取，不開啟。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread2Command" translate="yes">
+          <source>Thread 2</source>
+          <target>對話 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread3Command" translate="yes">
+          <source>Thread 3</source>
+          <target>對話 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread4Command" translate="yes">
+          <source>Thread 4</source>
+          <target>對話 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread5Command" translate="yes">
+          <source>Thread 5</source>
+          <target>對話 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread6Command" translate="yes">
+          <source>Thread 6</source>
+          <target>對話 6</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread7Command" translate="yes">
+          <source>Thread 7</source>
+          <target>對話 7</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread8Command" translate="yes">
+          <source>Thread 8</source>
+          <target>對話 8</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
           <source>Waiting on you</source>

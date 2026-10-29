@@ -1261,6 +1261,9 @@
 				"waiting": { "name": "等你處理", "description": "統計等你處理的 T3 Code 對話。選擇它可開啟最緊急的一個。" },
 				"running": { "name": "執行中的對話", "description": "統計執行中的 T3 Code 對話。選擇它可開啟最近開始的一個。" },
 				"model": { "slot1": "模型 1", "slot2": "模型 2", "slot3": "模型 3", "slot4": "模型 4", "slot5": "模型 5", "description": "將 T3 Code 中開啟的對話切換到 T3 Code 模型選擇器中此位置的模型：收藏優先。" },
+				"thread": { "slot1": "對話 1", "slot2": "對話 2", "slot3": "對話 3", "slot4": "對話 4", "slot5": "對話 5", "slot6": "對話 6", "slot7": "對話 7", "slot8": "對話 8", "description": "依緊急程度顯示 T3 Code 看板上此位置的對話。選擇即可開啟該對話；在鍵盤上長按則只選取，不開啟。" },
+				"activity": { "name": "動態", "description": "顯示 T3 Code 看板上最緊急的對話。選擇即可開啟該對話。" },
+				"newThread": { "name": "新對話", "description": "在 T3 Code 中開啟的對話所在專案內開始新對話，並在 T3 Code 中開啟以便輸入。" },
 				"urgent": {
 					"name": "最緊急的對話",
 					"description": "顯示 T3 Code 中需要你處理的內容。選擇即可開啟該對話。"

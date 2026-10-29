@@ -12,7 +12,7 @@ namespace Loupedeck.TurnkeyPlugin
         {
             "urgent:", "status:", "continue:", "stop:", "stopAll:",
             "prompt:test", "prompt:fix", "prompt:explain", "prompt:commit",
-            "limits:", "settings:",
+            "limits:", "settings:", "activity:",
         };
 
         private readonly Dictionary<String, SidecarFaces> _faces = new Dictionary<String, SidecarFaces>();

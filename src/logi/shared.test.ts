@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { machine, thread } from "../actions/testing/fixtures.js";
+import { machine, RUNNING, thread } from "../actions/testing/fixtures.js";
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { FLASH_MS } from "../core/feedback.js";
 import { t } from "../core/i18n.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
+import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyDefinition } from "../core/keys/key.js";
 import { COLORS, glyph, renderResultKey, renderSkeletonKey, svgImage, svgMarkup } from "../core/render.js";
 import type { Decision, PendingRequest } from "../core/t3/machine.js";
@@ -12,7 +13,7 @@ import { Keys } from "./keys.js";
 import type { SidecarMessage } from "./protocol.js";
 import { glyphResult, ringFace } from "./ring.js";
 import { logiRuntime } from "./runtime.js";
-import { sharedKind } from "./shared.js";
+import { glyphFallback, sharedKind } from "./shared.js";
 
 const decoded = (image: string): string => Buffer.from(image.slice(image.indexOf(",") + 1), "base64").toString("utf8");
 
@@ -33,6 +34,7 @@ function setup(selected: { current: DeckThread | undefined }) {
 		get threads() {
 			return selected.current ? [selected.current] : [];
 		},
+		threadsOn: () => (selected.current ? [selected.current] : []),
 		selectedOn: () => selected.current,
 	} as unknown as ThreadBoard;
 	const runtime = logiRuntime({ machines: () => [machine()], board, openThread, selectThread: () => undefined, repaint });
@@ -201,5 +203,78 @@ describe("sharedKind in Keys", () => {
 		keys.repaint();
 		keys.handle({ type: "press", action: "approve:", heldMs: 100 });
 		expect(sent.at(-1)).toEqual({ type: "image", action: "approve:", svg: decoded(renderResultKey({ ok: false, label: t("result.holdToAllow") })), label: t("result.holdToAllow") });
+	});
+});
+
+describe("sharedKind over the board's threads", () => {
+	/** A board of three threads on one machine, with T3 Code's selection on the first. */
+	function board() {
+		const owner = machine({ projects: [{ id: "project", title: "Project" }] });
+		const threads = ["first", "second", "third"].map((id) => thread({ threadId: id, key: `env/${id}`, title: id, machine: owner }));
+		const running = thread({ threadId: "busy", key: "env/busy", title: "busy", machine: owner, ...RUNNING });
+		const repaint = vi.fn();
+		const openThread = vi.fn(async (_thread: DeckThread) => undefined);
+		const selectThread = vi.fn();
+		const all = [running, ...threads];
+		const world = { threads: all, threadsOn: () => all, selectedOn: () => threads[0] } as unknown as ThreadBoard;
+		const runtime = logiRuntime({ machines: () => [owner], board: world, openThread, selectThread, repaint });
+		const warn = vi.fn<(message: string) => void>();
+		const kind = sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), runtime, warn);
+		return { all, owner, runtime, repaint, openThread, selectThread, kind, warn };
+	}
+
+	it("draws Thread n from the nth thread's tile, the glyph on the Ring and the tile on a keypad", () => {
+		const { kind, all } = board();
+		const ctx = { settings: { slot: 1 }, machine: undefined, runtime: board().runtime, target: () => ({ thread: undefined, pinned: false }) };
+		const busy = decoded(threadKey.tile(threadKey.state(ctx), ctx));
+		expect(kind.face(0, "1", 116)).toBe(busy);
+		expect(kind.face(0, "1", 80)).toBe(glyphFallback(busy, false));
+		expect(kind.label!(0, "1")).toBe(all[0]!.title);
+		expect(kind.label!(0, "3")).toBe("second");
+	});
+
+	it("draws a dim placeholder for a slot past the board, and says why on a press", () => {
+		const { kind, openThread } = board();
+		expect(kind.face(0, "8", 80)).toBe(ringFace(COLORS.accent, "chat", { dim: true }));
+		kind.press!(0, "8");
+		expect(openThread).not.toHaveBeenCalled();
+		expect(kind.label!(0, "8")).toBe(t("reason.noThread"));
+	});
+
+	it("opens the thread on a click or a tap, and only selects it after a keypad hold", () => {
+		const { kind, all, openThread, selectThread } = board();
+		kind.press!(0, "2");
+		kind.press!(0, "2", 100);
+		expect(openThread.mock.calls.map(([each]) => each)).toEqual([all[1], all[1]]);
+		kind.press!(0, "2", 600);
+		expect(selectThread).toHaveBeenCalledExactlyOnceWith(all[1]);
+		expect(openThread).toHaveBeenCalledTimes(2);
+	});
+
+	it("shows the most urgent thread as Activity and opens it", () => {
+		const { runtime, all, openThread } = board();
+		const kind = sharedKind("activity", activityKey, { "": {} }, runtime, () => undefined);
+		expect(kind.label!(0, "")).toBe("busy");
+		kind.press!(0, "", 600);
+		expect(openThread).toHaveBeenCalledExactlyOnceWith(all[0]);
+	});
+
+	it("starts a thread in the open thread's project as New Thread, opening it in T3 Code", async () => {
+		const { runtime, owner } = board();
+		const open = vi.spyOn(runtime, "openExternal").mockResolvedValue(undefined);
+		const select = vi.spyOn(runtime, "selectThread");
+		const kind = sharedKind("newThread", newThreadKey, { "": {} }, runtime, () => undefined);
+		kind.press!(0, "");
+		await settle();
+		expect(owner.launch).toHaveBeenCalledExactlyOnceWith({ projectId: "project" }, "", expect.objectContaining({ fallbackModel: { instanceId: "codex", model: "gpt-5" } }));
+		expect(select).toHaveBeenCalledExactlyOnceWith({ key: "env/new-thread", machine: owner });
+		expect(open).toHaveBeenCalledExactlyOnceWith("t3code://threads/env/new-thread");
+	});
+
+	it("draws the thread faces as recorded", async () => {
+		const { kind } = board();
+		await expect(kind.face(0, "1", 80)).toMatchFileSnapshot("./__goldens__/sharedThread-running-80.svg");
+		await expect(kind.face(0, "2", 80)).toMatchFileSnapshot("./__goldens__/sharedThread-idle-80.svg");
+		await expect(kind.face(0, "8", 80)).toMatchFileSnapshot("./__goldens__/sharedThread-empty-80.svg");
 	});
 });

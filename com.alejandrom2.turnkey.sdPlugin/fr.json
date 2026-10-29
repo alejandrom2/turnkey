@@ -1261,6 +1261,9 @@
 				"waiting": { "name": "Vous attendent", "description": "Compte les fils T3 Code qui vous attendent. Choisissez-le pour ouvrir le plus urgent." },
 				"running": { "name": "Fils en cours", "description": "Compte les fils T3 Code en cours. Choisissez-le pour ouvrir le dernier lancé." },
 				"model": { "slot1": "Modèle 1", "slot2": "Modèle 2", "slot3": "Modèle 3", "slot4": "Modèle 4", "slot5": "Modèle 5", "description": "Passe le fil ouvert dans T3 Code au modèle à cette place de votre sélecteur de modèles T3 Code : favoris d'abord." },
+				"thread": { "slot1": "Fil 1", "slot2": "Fil 2", "slot3": "Fil 3", "slot4": "Fil 4", "slot5": "Fil 5", "slot6": "Fil 6", "slot7": "Fil 7", "slot8": "Fil 8", "description": "Montre le fil à cette place de votre tableau T3 Code, le plus urgent d'abord. Choisissez-le pour l'ouvrir ; sur un pavé, maintenez-le pour le sélectionner sans l'ouvrir." },
+				"activity": { "name": "Activité", "description": "Montre le fil le plus urgent de votre tableau T3 Code. Choisissez-le pour ouvrir ce fil." },
+				"newThread": { "name": "Nouveau fil", "description": "Démarre un nouveau fil dans le projet du fil ouvert dans T3 Code et l'ouvre là-bas pour écrire." },
 				"urgent": {
 					"name": "Fil le plus urgent",
 					"description": "Montre ce qui vous attend dans T3 Code. Choisissez-le pour ouvrir ce fil."
