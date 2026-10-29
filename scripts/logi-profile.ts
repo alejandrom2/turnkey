@@ -57,7 +57,7 @@ const KEYPAD: readonly (readonly [string, string, string])[] = [
 	slot("Thread2Command", "Thread 2"),
 	slot("Thread3Command", "Thread 3"),
 	slot("ApproveCommand", "Approve"),
-	slot("StopRunCommand", "Stop run"),
+	slot("ContinueCommand", "Continue"),
 	slot("DenyCommand", "Deny"),
 	[dynamicFolderAction("TurnkeyFolder"), "Turnkey", "TurnkeyFolder"],
 	slot("EffortCommand", "Effort"),
