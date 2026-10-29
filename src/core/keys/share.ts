@@ -110,8 +110,8 @@ export const shareKey: KeyDefinition<ShareSettings, ShareState> = {
 		if (reason !== undefined || thread === undefined) return { kind: "fail", label: reason ?? t("failure.failed") };
 		if (view === undefined) return { kind: "nothing" };
 		if (view.kind !== "none") {
-			// A hold stops sharing, on Stream Deck or a keypad; a Ring click can't hold, so it never stops.
-			if (input.heldMs >= HOLD_CONFIRM_MS) return { kind: "run", work: () => close(ctx, thread) };
+			// A hold stops sharing, on Stream Deck or a keypad; a Ring click is its own confirmation, so it stops too.
+			if (input.heldMs >= HOLD_CONFIRM_MS || input.confirmBy === "click") return { kind: "run", work: () => close(ctx, thread) };
 			const link = links.get(thread.key);
 			if (view.kind === "active" && link !== undefined && link.shareId === share?.id) return { kind: "run", work: () => copied(ctx.runtime, link.url) };
 			return { kind: "fail", label: t(view.kind === "expired" ? "share.holdToClear" : "share.holdToStop") };

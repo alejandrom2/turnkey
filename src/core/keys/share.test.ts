@@ -91,14 +91,14 @@ describe("Share", () => {
 		expect(world.spawned).toHaveLength(4);
 	});
 
-	it("stops sharing on a hold, never on a Ring click, which can't hold", async () => {
-		const shared = sharing("stop", SHARE);
-		const held = await plan(context(shared), { heldMs: 600, confirmBy: "hold" });
-		if (held.kind !== "run") throw new Error(`expected a run, got ${held.kind}`);
-		await held.work();
-		expect(shared.selected!.machine.closeGuestLink).toHaveBeenCalledOnce();
-		const clicked = sharing("click", SHARE);
-		expect(await plan(context(clicked), { heldMs: 0, confirmBy: "click" })).toEqual({ kind: "fail", label: t("share.holdToStop") });
+	it("stops sharing on a hold, or on a Ring click, which is its own confirmation, never on a keypad tap", async () => {
+		for (const input of [{ heldMs: 600, confirmBy: "hold" }, { heldMs: 0, confirmBy: "click" }] as const) {
+			const shared = sharing(`stop-${input.confirmBy}`, SHARE);
+			const stopped = await plan(context(shared), input);
+			if (stopped.kind !== "run") throw new Error(`expected a run, got ${stopped.kind}`);
+			await stopped.work();
+			expect(shared.selected!.machine.closeGuestLink).toHaveBeenCalledOnce();
+		}
 		expect(await plan(context(sharing("tap", SHARE)), { heldMs: 0, confirmBy: "hold" })).toEqual({ kind: "fail", label: t("share.holdToStop") });
 	});
 
