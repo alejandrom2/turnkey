@@ -7,7 +7,9 @@ import type { ReviewCard } from "../render.js";
 import type { SlotIndex } from "../slots.js";
 import type { Target } from "../target.js";
 import type { UltrathinkArming } from "../ultrathink.js";
+import type { UsageStore } from "../usage/store.js";
 import type { Machine } from "../t3/machine.js";
+import type { OptInScope } from "../t3/pairing.js";
 import type { MachineWatch } from "../watch.js";
 
 /** The global strip appearance settings, as the host resolves them. */
@@ -63,6 +65,17 @@ export interface KeyRuntime {
 	openUrl(url: string): Promise<void>;
 	/** Logs what went wrong in the background, after a press already showed it went ahead. */
 	warn(message: string): void;
+	/** Looks for the machine at `url` (or every machine) again and reconnects now. */
+	retry(url?: string): Promise<void>;
+	/** Reads favorites, providers and Labs flags again from the machine at `url` (or every machine). */
+	refreshConfigs(url?: string): Promise<void>;
+	/**
+	 * Stream Deck only: flags access a standard pairing doesn't ask for, for the machine's next pairing. Logitech never
+	 * asks for it, so keys that need it there only say so.
+	 */
+	optIn?: { requested(url: string, scope: OptInScope): boolean; request(url: string, ...scopes: OptInScope[]): Promise<void> };
+	/** The usage periods Usage keys show, read on demand. */
+	usage: UsageStore;
 }
 
 export type KeyContext<S> = {
@@ -85,6 +98,8 @@ export interface KeyDefinition<S, St> {
 	available?(state: St): boolean;
 	/** Whether the face animates, so the host should ask for frames. */
 	moving?(state: St): boolean;
+	/** Reads what a press must see fresh, before its state is taken. */
+	prepare?(ctx: KeyContext<S>): Promise<void>;
 	press(state: St, ctx: KeyContext<S>, input: PressInput): PressPlan;
 	watch?: ConstructorParameters<typeof MachineWatch>[0];
 }

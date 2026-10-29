@@ -9,7 +9,9 @@ import { approveKey, type ApproveSettings, type ApproveState, denyKey, type Deny
 import { requestFor as coreRequestFor } from "../core/keys/requests.js";
 import { availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
-import { type HealthMachine, healthIssues, summarizeHealth } from "../core/health.js";
+import { healthIssues } from "../core/health.js";
+import { healthKey, type HealthState } from "../core/keys/health.js";
+import { healthMachine } from "../core/keys/health.js";
 import { t } from "../core/i18n.js";
 import { findModel, modelColor, speedToggle } from "../core/models.js";
 import { activityBar, renderActivityBar, renderInfoBar, renderNoticeBar } from "../core/infobar.js";
@@ -17,11 +19,11 @@ import { currentEffort, effortChoices } from "../core/power.js";
 import { modeOf } from "../core/modes.js";
 import { migratePromptSettings, templatePrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
-import { COLORS, type GlyphName, renderControlKey, renderInfoKey } from "../core/render.js";
+import { COLORS, type GlyphName, renderControlKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { pinnedName } from "../core/target.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
-import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
+import type { PendingRequest, SendMode } from "../core/t3/machine.js";
 import { deck } from "../deck.js";
 import { connectionNotice } from "./infobar.js";
 import { connectionOf, threadNeeds } from "./needs.js";
@@ -29,7 +31,6 @@ import {
 	canOperate,
 	DeckAction,
 	LONG_PRESS_MS,
-	machineName,
 	machinesOn,
 	markArt,
 	pressWhileDisconnected,
@@ -39,7 +40,6 @@ import {
 	ultrathinkArmed,
 } from "./base.js";
 import { SharedKey } from "./shared.js";
-import { DeckWatch } from "./watch.js";
 
 const ID = "com.alejandrom2.turnkey";
 
@@ -348,28 +348,14 @@ export class Deny extends SharedKey<JsonObject, DenyState> {
 	protected readonly definition = denyKey;
 }
 
-/** A machine as Health weighs it: its connection, and its providers once connected. */
-export const healthMachine = (machine: Machine): HealthMachine => ({
-	name: machineName(machine),
-	state: machine.state.kind,
-	canOperate: machine.canOperate,
-	message: machine.state.kind === "error" ? machine.state.message : undefined,
-	providers: machine.modelConfig?.providers,
-});
-
-const healthWatch = new DeckWatch({ open: (machine) => machine.watchConfig() });
-
-const HEALTH_COLOR = { error: COLORS.error, attention: COLORS.attention, note: COLORS.done, ok: COLORS.done, connecting: COLORS.muted } as const;
-
 /**
  * The connections to the action's machine (or all of them) and their providers: the worst problem first (offline,
  * needs pairing, a provider not found, not authenticated, on an unsupported version or unavailable), how many more, else that all is
  * ready. Tap reconnects.
  */
 @action({ UUID: `${ID}.health` })
-export class Health extends DeckAction {
-	/** Provider statuses stay live only while a Health key shows them. */
-	protected override readonly watcher = healthWatch;
+export class Health extends SharedKey<JsonObject, HealthState> {
+	protected readonly definition = healthKey;
 	/** Health is the connection's own face. */
 	protected override readonly showsConnection = false;
 
@@ -381,25 +367,6 @@ export class Health extends DeckAction {
 			.filter((issue) => issue.level !== "note")
 			.map((issue) => t(machines.length > 1 ? "needs.problemOn" : "needs.problem", { subject: issue.subject, machine: issue.machine, text: issue.text }));
 		return [{ kind: "paired", connection: connectionOf(this.machineOf(action)) }, { kind: "providers", problems }];
-	}
-
-	protected override async draw(action: Action<JsonObject>): Promise<void> {
-		if (!action.isKey()) return;
-		const url = this.machineOf(action);
-		const machines = machinesOn(url);
-		if (machines.length === 0) {
-			const title = url === undefined ? t("notice.notFound") : t("notice.machineRemoved");
-			return void (await this.setImage(action, renderInfoKey({ glyph: "plug", title, detail: url === undefined ? t("notice.openThenPress") : t("notice.pickAnother"), available: false })));
-		}
-		const summary = summarizeHealth(machines.map(healthMachine));
-		const color = HEALTH_COLOR[summary.level];
-		const loud = summary.level === "error" || summary.level === "attention";
-		const pairing = machines.length === 1 && machines[0]!.state.kind === "signed-out";
-		await this.setImage(action, renderInfoKey({ glyph: pairing ? "key" : "health", color, tint: loud ? color : undefined, title: summary.title, detail: summary.detail }));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		await deck.retry(this.machineOf(ev.action));
 	}
 }
 

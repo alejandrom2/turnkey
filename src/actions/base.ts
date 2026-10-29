@@ -19,7 +19,7 @@ import { openThread as coreOpenThread } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
 import { INFOBAR } from "../core/infobar.js";
-import { type CatalogModel, effortValues, favoriteModels, findModel, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
+import { type CatalogModel, driverMark, driverName, effortValues, favoriteModels, findModel, pickableModels } from "../core/models.js";
 import { powerArt, type UltrathinkControl } from "../core/power.js";
 import {
 	COLORS,
@@ -38,7 +38,7 @@ import type { Need } from "../core/requirements.js";
 import { type ConfirmMode, confirmMode, Reviews } from "../core/review.js";
 import { assignSlots, type SlotIndex } from "../core/slots.js";
 import { pinnedKey, pinnedName, resolveTarget, type Target, type TargetSettings } from "../core/target.js";
-import type { Machine, SendMode } from "../core/t3/machine.js";
+import { type Machine, machineName, type SendMode } from "../core/t3/machine.js";
 import type { ThreadQueue } from "../core/t3/queue.js";
 import { normalizeEnvironmentUrl } from "../core/t3/pairing.js";
 import { ultrathinkControl as coreUltrathinkControl } from "../core/ultrathink.js";
@@ -63,21 +63,12 @@ export const machinesOn = (url: string | undefined): Machine[] => deck.machines.
 export const readyMachines = (url: string | undefined): Machine[] =>
 	machinesOn(url).filter((machine) => machine.state.kind === "ready" && machine.environmentId !== undefined);
 
-/** A machine's name: its label once connected, else the pairing's, else its host. */
-export const machineName = (machine: Machine): string =>
-	machine.state.kind === "ready" ? machine.state.label : machine.credential?.label || new URL(machine.url).host;
+export { machineName };
 
 /** A model's provider mark, as the Model key draws it. */
 export const markArt = (model: CatalogModel): MarkPainter => powerArt({ kind: "mark", model }, { acpIcons: deck.acpIcons });
 
-/** A provider's name from its driver alone (`codex`, `claudeAgent`, …). */
-export const driverName = (driver: string): string => providerDisplayName({ instanceId: driver, driver });
-
-/** A provider's mark from its driver alone. */
-export const driverMark =
-	(driver: string): MarkPainter =>
-	(x, y, size) =>
-		providerMark({ driver, providerName: driverName(driver), accentColor: undefined, iconUrl: undefined, badge: false }, x, y, size);
+export { driverMark, driverName };
 
 type Choice = { label: string; value: string };
 

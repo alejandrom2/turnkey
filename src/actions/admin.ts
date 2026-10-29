@@ -4,19 +4,22 @@ import type { JsonValue } from "@elgato/utils";
 import type { DeckThread } from "../core/board.js";
 import { t } from "../core/i18n.js";
 import { spinAngle } from "../core/motion.js";
-import { COLORS, type GlyphName, renderInfoKey, renderNoticeKey } from "../core/render.js";
+import { COLORS, type GlyphName, renderInfoKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { grants, needsAccessLabel } from "../core/scopes.js";
 import { projectScripts, type ProjectScript, scriptBusy, scriptGlyph, scriptLaunch, scriptState, type ScriptState, scriptTerminalId, START_GRACE_MS, terminalKey } from "../core/scripts.js";
-import { copyText, type GuestShare, shareFailure, ShareStore, shareView, type ShareView } from "../core/share.js";
+import { accessFace } from "../core/keys/access.js";
+import { linkOf, onLinkChange, shareKey, type ShareSettings, type ShareState } from "../core/keys/share.js";
+import { createUpdateKey, updateMachineOf, type UpdateSettings, type UpdateState } from "../core/keys/update.js";
 import { pinnedName } from "../core/target.js";
 import type { Machine } from "../core/t3/machine.js";
-import { ACCESS_SCOPE, isThisComputer, MAINTAIN_SCOPE, type OptInScope, TERMINAL_READ_SCOPE, TERMINAL_SCOPE } from "../core/t3/pairing.js";
-import { RpcError } from "../core/t3/rpc.js";
-import { fetchUpdateTarget, RESTART_TIMEOUT_MS, updateFailure, updateRoute, type UpdateStage } from "../core/update.js";
+import { ACCESS_SCOPE, MAINTAIN_SCOPE, type OptInScope, TERMINAL_READ_SCOPE, TERMINAL_SCOPE } from "../core/t3/pairing.js";
+import { updateRoute } from "../core/update.js";
 import { deck } from "../deck.js";
-import { connectionFace, DeckAction, errorMessage, held, machineName, pressWhileDisconnected, sendChoices } from "./base.js";
+import { connectionFace, DeckAction, held, pressWhileDisconnected, sendChoices } from "./base.js";
 import { connectionOf, threadNeeds } from "./needs.js";
+import { deckRuntime } from "./runtime.js";
+import { SharedKey } from "./shared.js";
 import { DeckWatch } from "./watch.js";
 
 /**
@@ -25,7 +28,6 @@ import { DeckWatch } from "./watch.js";
  * picks a script); that machine's next pairing then requests it.
  */
 const ID = "com.alejandrom2.turnkey";
-const logger = streamDeck.logger.createScope("admin");
 
 
 /** Flags what `machine` lacks of `scopes` for its next pairing; true when it holds them all. */
@@ -38,8 +40,6 @@ async function ensureScopes(machine: Machine, scopes: readonly OptInScope[]): Pr
 /** The machine lacks `scopes` and its next pairing asks for them: the key says to pair again. */
 const awaitingPairing = (machine: Machine, scopes: readonly OptInScope[]): boolean => scopes.some((scope) => !grants(machine.scopes, scope) && deck.scopeRequested(machine.url, scope));
 
-const accessFace = (glyph: GlyphName, title: string) => renderNoticeKey({ glyph, title, detail: t("access.rePair"), tone: "attention" });
-
 /** A spinner while Motion allows one, else a still mark. */
 function busyGlyph(still: GlyphName): { glyph: GlyphName; spin?: number; moving: boolean } {
 	const mode = deck.animator.mode;
@@ -49,152 +49,43 @@ function busyGlyph(still: GlyphName): { glyph: GlyphName; spin?: number; moving:
 const scopeNeeds = (machine: Machine | undefined, scopes: readonly OptInScope[]): Need[] =>
 	machine === undefined ? [] : scopes.map((scope): Need => ({ kind: "scope", scope, ok: grants(machine.scopes, scope) }));
 
-type UpdateSettings = { machine?: string };
-
-const STAGE_TITLE: Record<UpdateStage, Parameters<typeof t>[0]> = {
-	checking: "update.checking",
-	downloading: "update.downloading",
-	installing: "update.installing",
-	restarting: "update.restarting",
-};
-
-/** One update in flight per machine; `target` once known. `restarting` waits for the machine to come back on it. */
-type UpdateRun = { stage: UpdateStage; target?: string; deadline?: number };
-
 /**
  * T3 Code's version on one machine. Holding it updates T3 Code there to the newest release on its channel, as its
  * Update action does; the key shows the stages, then the new version once the server is back.
  */
 @action({ UUID: `${ID}.update` })
-export class UpdateKey extends DeckAction<UpdateSettings> {
-	readonly #runs = new Map<string, UpdateRun>();
-	#watch: ReturnType<typeof setInterval> | undefined;
+export class UpdateKey extends SharedKey<UpdateSettings, UpdateState> {
+	/** Its own updates in flight, as each Update key had them. */
+	protected readonly definition = createUpdateKey();
 	/** Its run's stages show through a restart, and it may follow this computer rather than its Machine setting. */
 	protected override readonly showsConnection = false;
 
 	constructor() {
 		super();
-		deck.onRepaint(() => this.#settle());
+		deck.onRepaint(() => this.definition.settle(deckRuntime));
+		this.definition.onResult((url, label) => this.#flashFor(url, label));
 	}
 
-	/** The picked machine, else T3 Code on this computer, else the only machine there is. */
-	#machine(action: Action<UpdateSettings>): Machine | undefined {
-		const url = this.machineOf(action);
-		const machines = deck.machines;
-		if (url !== undefined) return machines.find((machine) => machine.url === url);
-		return machines.find((machine) => isThisComputer(new URL(machine.url).hostname)) ?? (machines.length === 1 ? machines[0] : undefined);
+	/** A press wakes the machine it would update, which may not be its Machine setting's. */
+	protected override pressMachine(action: Action<UpdateSettings>): string | undefined {
+		return updateMachineOf(deckRuntime, this.machineOf(action))?.url ?? this.machineOf(action);
 	}
 
 	protected override async draw(action: Action<UpdateSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const machine = this.#machine(action);
-		const run = machine && this.#runs.get(machine.url);
-		if (run !== undefined) {
-			const busy = busyGlyph("update");
-			this.animate(action, busy.moving);
-			const detail = run.target ? t("update.toVersion", { version: run.target }) : machineName(machine!);
-			return void (await this.setImage(action, renderInfoKey({ glyph: busy.glyph, spin: busy.spin, title: t(STAGE_TITLE[run.stage]), detail })));
-		}
-		this.animate(action, false);
-		if (machine === undefined) return void (await this.setImage(action, connectionFace(this.machineOf(action)) ?? renderInfoKey({ glyph: "update", title: t("update.title"), detail: t("update.pickMachine"), available: false })));
-		const offline = connectionFace(machine.url);
-		if (offline) return void (await this.setImage(action, offline));
-		if (awaitingPairing(machine, [MAINTAIN_SCOPE])) return void (await this.setImage(action, accessFace("update", t("update.needsAccess"))));
-		const environment = machine.updateEnvironment;
-		const route = updateRoute(environment);
-		const version = environment?.serverVersion;
-		await this.setImage(
-			action,
-			renderInfoKey({
-				glyph: "update",
-				title: version ? t("update.version", { version }) : t("update.noVersion"),
-				detail: route.kind === "manual" ? t(route.reason) : machineName(machine),
-				available: route.kind !== "manual",
-			}),
-		);
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<UpdateSettings>): Promise<void> {
-		const heldMs = this.heldFor(ev.action.id);
-		const machine = this.#machine(ev.action);
-		if (await pressWhileDisconnected(machine?.url ?? this.machineOf(ev.action))) return;
-		if (machine === undefined) return void (await this.flash(ev.action, false, t("update.pickMachine")));
-		if (this.#runs.has(machine.url)) return;
-		if (!(await ensureScopes(machine, [MAINTAIN_SCOPE]))) return void (await this.flash(ev.action, false, needsAccessLabel(MAINTAIN_SCOPE)));
-		const route = updateRoute(machine.updateEnvironment);
-		if (route.kind === "manual") return void (await this.flash(ev.action, false, t(route.reason)));
-		if (!held(heldMs)) return void (await this.flash(ev.action, false, t("update.holdToUpdate")));
-		await this.#update(machine);
-	}
-
-	async #update(machine: Machine): Promise<void> {
-		const route = updateRoute(machine.updateEnvironment);
-		const current = machine.updateEnvironment?.serverVersion;
-		const set = (run: UpdateRun | undefined) => {
-			if (run === undefined) this.#runs.delete(machine.url);
-			else this.#runs.set(machine.url, run);
-			this.#paintFor(machine.url);
-		};
-		set({ stage: "checking" });
-		try {
-			// The desktop app finds its own release; T3 Code's clients send their version, which it ignores.
-			const target = route.kind === "desktop" ? undefined : current === undefined ? undefined : await fetchUpdateTarget(fetch, current);
-			if (route.kind !== "desktop" && target === undefined) {
-				set(undefined);
-				return this.#flashFor(machine.url, t("update.upToDate"));
-			}
-			set({ stage: "downloading", target });
-			const landing = await machine.updateServer(target ?? current ?? "0.0.0", (stage) => set({ stage, target }));
-			set({ stage: "restarting", target: landing, deadline: Date.now() + RESTART_TIMEOUT_MS });
-			this.#syncWatch();
-		} catch (error) {
-			logger.warn(`Updating T3 Code failed: ${errorMessage(error)}${error instanceof RpcError && error.code ? ` (${error.code})` : ""}`);
-			set(undefined);
-			const label = error instanceof RpcError && error.tag === "ServerSelfUpdateError" ? updateFailure(error.code) : error instanceof RpcError && error.reason ? error.reason : updateFailure(undefined);
-			await this.#flashFor(machine.url, label);
-		}
-	}
-
-	/** A restart ends once the machine is back on the new version, or fails when it isn't in time. */
-	#settle(): void {
-		for (const [url, run] of this.#runs) {
-			if (run.stage !== "restarting") continue;
-			const machine = deck.machines.find((candidate) => candidate.url === url);
-			if (machine?.state.kind === "ready" && machine.updateEnvironment?.serverVersion === run.target) {
-				this.#runs.delete(url);
-				this.#paintFor(url);
-			} else if (Date.now() > (run.deadline ?? 0)) {
-				this.#runs.delete(url);
-				void this.#flashFor(url, t("update.noReturn"));
+		const { machine, run } = this.stateOf(action);
+		if (run === undefined) {
+			const offline = machine === undefined ? connectionFace(this.machineOf(action)) : connectionFace(machine.url);
+			if (offline) {
+				this.animate(action, false);
+				return void (await this.setImage(action, offline));
 			}
 		}
-		this.#syncWatch();
-	}
-
-	/** While a server restarts, look for it every few seconds instead of waiting out the reconnect backoff. */
-	#syncWatch(): void {
-		const restarting = [...this.#runs.values()].some((run) => run.stage === "restarting");
-		if (!restarting) {
-			clearInterval(this.#watch);
-			this.#watch = undefined;
-			return;
-		}
-		this.#watch ??= setInterval(() => {
-			for (const [url, run] of this.#runs) {
-				if (run.stage !== "restarting") continue;
-				const machine = deck.machines.find((candidate) => candidate.url === url);
-				if (machine?.state.kind !== "ready") machine?.wake();
-			}
-			this.#settle();
-		}, 5_000);
+		await super.draw(action);
 	}
 
 	#instancesFor(url: string) {
-		return this.actions.filter((instance) => this.#machine(instance as Action<UpdateSettings>)?.url === url);
-	}
-
-	#paintFor(url: string): void {
-		for (const instance of this.#instancesFor(url)) void this.paint(instance as Action<UpdateSettings>);
+		return this.actions.filter((instance) => updateMachineOf(deckRuntime, this.machineOf(instance as Action<UpdateSettings>))?.url === url);
 	}
 
 	async #flashFor(url: string, label: string): Promise<void> {
@@ -202,7 +93,7 @@ export class UpdateKey extends DeckAction<UpdateSettings> {
 	}
 
 	override needs(action: Action<UpdateSettings>): Need[] {
-		const machine = this.#machine(action);
+		const machine = updateMachineOf(deckRuntime, this.machineOf(action));
 		const route = updateRoute(machine?.updateEnvironment);
 		return [
 			{ kind: "paired", connection: connectionOf(machine?.url ?? this.machineOf(action)) },
@@ -381,45 +272,28 @@ export class RunScriptKey extends DeckAction<ScriptSettings> {
 	}
 }
 
-type ShareSettings = { machine?: string; target?: string; thread?: string; threadTitle?: string };
-
-/** Shares of the threads visible Share keys show. */
-const shares = new ShareStore(() => deck.repaint());
-
-/** Links the deck made, by thread key: T3 Code shows a link once, so only these can be copied again. Never persisted. */
-const links = new Map<string, { shareId: string | undefined; url: string }>();
-
 /**
  * Makes a guest link for the target thread and copies it, as T3 Code's Share with guest does; a shared thread shows
  * "Shared", its guest and waiting messages. Hold stops sharing.
  */
 @action({ UUID: `${ID}.share` })
-export class ShareKey extends DeckAction<ShareSettings> {
+export class ShareKey extends SharedKey<ShareSettings, ShareState> {
+	protected readonly definition = shareKey;
 	readonly #expiry = new Map<string, ReturnType<typeof setTimeout>>();
 
-	#state(action: Action<ShareSettings>): { thread: DeckThread | undefined; share: GuestShare | null | undefined; view: ShareView | undefined; reason: string | undefined; pinned: boolean } {
-		const target = this.target(action);
-		const thread = target.thread;
-		// A running thread's row moves with every event; its share is read again when its runs move instead.
-		const share = thread && shares.of({ key: thread.key, stamp: thread.active ? thread.runStamp : String(thread.updatedAt) }, () => thread.machine.guestShare(thread));
-		const view = share === undefined ? undefined : shareView(share, Date.now());
-		const reason = target.gone ?? (thread === undefined ? t("reason.noThread") : view?.kind === "none" && !thread.machine.guestLinksEnabled ? t("share.disabled") : undefined);
-		return { thread, share, view, reason, pinned: target.pinned };
+	constructor() {
+		super();
+		// The pressed key's inspector, if open, shows the link it just made or closed.
+		onLinkChange(async (instance) => {
+			for (const action of this.actions) if (action.id === instance) await this.#sendLink(action as Action<ShareSettings>);
+		});
 	}
 
 	protected override async draw(action: Action<ShareSettings>): Promise<void> {
 		if (!action.isKey()) return;
-		const { thread, share, view, reason, pinned } = this.#state(action);
+		const { view, share } = this.stateOf(action);
 		this.#expireAt(action, view?.kind === "active" ? share?.expiresAt : undefined);
-		const title = thread?.title ?? t("share.title");
-		if (reason !== undefined || thread === undefined) return void (await this.setImage(action, renderInfoKey({ glyph: "share", title: t("share.title"), detail: reason, available: false, pinned })));
-		if (view === undefined || view.kind === "none") {
-			if (view !== undefined && awaitingPairing(thread.machine, [ACCESS_SCOPE])) return void (await this.setImage(action, accessFace("share", t("share.needsAccess"))));
-			return void (await this.setImage(action, renderInfoKey({ glyph: "share", title: t("share.title"), detail: title, available: view !== undefined, pinned })));
-		}
-		if (view.kind === "expired") return void (await this.setImage(action, renderInfoKey({ glyph: "guest", color: COLORS.muted, title: t("share.expired"), detail: t("share.holdToClear"), pinned })));
-		const detail = view.pending > 0 ? (view.pending === 1 ? t("share.pendingOne") : t("share.pending", { count: view.pending })) : view.guest !== null ? t("share.guest", { name: view.guest }) : t("share.unused");
-		await this.setImage(action, renderInfoKey({ glyph: "guest", color: view.pending > 0 ? COLORS.attention : COLORS.done, tint: view.pending > 0 ? COLORS.attention : undefined, title: t("share.shared"), detail, pinned }));
+		await super.draw(action);
 	}
 
 	/** An active link turns to "expired" on its own: repaint then, while the key shows. */
@@ -440,46 +314,6 @@ export class ShareKey extends DeckAction<ShareSettings> {
 		super.onWillDisappear(ev);
 	}
 
-	override async onKeyUp(ev: KeyUpEvent<ShareSettings>): Promise<void> {
-		const heldMs = this.heldFor(ev.action.id);
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		// Guest links may have been turned on in Labs since the config was read; nothing keeps it live here.
-		const before = this.#state(ev.action);
-		if (before.thread !== undefined && !before.thread.machine.guestLinksEnabled) await deck.refreshConfigs(before.thread.machine.url);
-		const { thread, share, view, reason } = this.#state(ev.action);
-		if (reason !== undefined || thread === undefined) return void (await this.flash(ev.action, false, reason ?? t("failure.failed")));
-		if (view === undefined) return;
-		if (view.kind !== "none") {
-			if (held(heldMs)) return this.#close(ev.action, thread);
-			const link = links.get(thread.key);
-			if (view.kind === "active" && link !== undefined && link.shareId === share?.id) return this.run(ev.action, () => copied(link.url));
-			return void (await this.flash(ev.action, false, t(view.kind === "expired" ? "share.holdToClear" : "share.holdToStop")));
-		}
-		if (!(await ensureScopes(thread.machine, [ACCESS_SCOPE]))) return void (await this.flash(ev.action, false, needsAccessLabel(ACCESS_SCOPE)));
-		await this.run(ev.action, async () => {
-			let created: Awaited<ReturnType<Machine["createGuestLink"]>>;
-			try {
-				created = await thread.machine.createGuestLink(thread);
-			} catch (error) {
-				const reason = error instanceof RpcError ? shareFailure(error.code) : undefined;
-				throw reason === undefined ? error : new RpcError((error as RpcError).tag, (error as RpcError).message, reason);
-			}
-			links.set(thread.key, { shareId: created.share?.id, url: created.url });
-			shares.set(thread.key, created.share);
-			await this.#sendLink(ev.action);
-			await copied(created.url);
-		});
-	}
-
-	async #close(action: Action<ShareSettings>, thread: DeckThread): Promise<void> {
-		await this.run(action, async () => {
-			await thread.machine.closeGuestLink(thread);
-			links.delete(thread.key);
-			shares.set(thread.key, null);
-			await this.#sendLink(action);
-		});
-	}
-
 	override async onSendToPlugin(ev: SendToPluginEvent<JsonValue, ShareSettings>): Promise<void> {
 		const payload = ev.payload as { event?: string } | null;
 		if (payload?.event !== "getShareLink") return super.onSendToPlugin(ev);
@@ -489,28 +323,16 @@ export class ShareKey extends DeckAction<ShareSettings> {
 	/** The link this deck made for the target thread, to the open inspector only: it is a credential. */
 	async #sendLink(action: Action<ShareSettings>): Promise<void> {
 		if (streamDeck.ui.action?.id !== action.id) return;
-		const thread = this.target(action).thread;
-		const link = thread && links.get(thread.key);
-		await streamDeck.ui.sendToPropertyInspector({ event: "shareLink", url: link?.url ?? "" });
+		await streamDeck.ui.sendToPropertyInspector({ event: "shareLink", url: linkOf(this.target(action).thread) ?? "" });
 	}
 
 	override needs(action: Action<ShareSettings>): Need[] {
 		const settings = this.settingsOf(action);
-		const { thread, pinned } = this.#state(action);
+		const { thread, pinned } = this.stateOf(action);
 		return [
 			...threadNeeds(this.machineOf(action), thread, true, pinned ? pinnedName(settings) : undefined),
 			...(thread === undefined ? [] : [{ kind: "guestLinks", ok: thread.machine.guestLinksEnabled } satisfies Need]),
 			...scopeNeeds(thread?.machine, [ACCESS_SCOPE]),
 		];
-	}
-}
-
-/** Copies a link; a failed copy still leaves it in the inspector. */
-async function copied(url: string): Promise<void> {
-	try {
-		await copyText(url);
-	} catch (error) {
-		logger.warn(`Copying the guest link failed: ${errorMessage(error)}`);
-		throw new RpcError("Copy", "Copying failed.", t("share.copyFailed"));
 	}
 }

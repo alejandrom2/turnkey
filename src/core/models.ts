@@ -5,7 +5,7 @@
  */
 import { type MessageKey, t } from "./i18n.js";
 import { PROVIDER_MARKS } from "./providerIcons.js";
-import { escapeXml, isHexColor } from "./render.js";
+import { escapeXml, isHexColor, type MarkPainter } from "./render.js";
 import type { ProviderSkill, WorkspaceSnapshot } from "./skills.js";
 import type { ModelSelection, OptionValue, RuntimeMode } from "./t3/shell.js";
 import type { LimitProvider, ServerProviderUsageLimits } from "./usage/types.js";
@@ -512,3 +512,12 @@ export function providerMark(
 	}
 	return parts.join("");
 }
+
+/** A provider's name from its driver alone (`codex`, `claudeAgent`, …). */
+export const driverName = (driver: string): string => providerDisplayName({ instanceId: driver, driver });
+
+/** A provider's mark from its driver alone. */
+export const driverMark =
+	(driver: string): MarkPainter =>
+	(x, y, size) =>
+		providerMark({ driver, providerName: driverName(driver), accentColor: undefined, iconUrl: undefined, badge: false }, x, y, size);
