@@ -860,10 +860,6 @@
 				"reduced": "控えめ",
 				"off": "オフ"
 			},
-			"idlePet": {
-				"off": "オフ",
-				"on": "オン"
-			},
 			"maxEffort": {
 				"gradient": "グラデーション",
 				"solid": "単色",

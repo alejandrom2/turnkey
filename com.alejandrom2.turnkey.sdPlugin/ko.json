@@ -860,10 +860,6 @@
 				"reduced": "줄임",
 				"off": "끔"
 			},
-			"idlePet": {
-				"off": "끔",
-				"on": "켬"
-			},
 			"maxEffort": {
 				"gradient": "그라데이션",
 				"solid": "단색",

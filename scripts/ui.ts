@@ -403,6 +403,9 @@ const field = (label: string, control: string, hint = "", id = "") => `
 						<div class="control">${control}</div>
 					</div>${hint ? `\n\t\t\t\t\t<p class="hint"${text(hint)}</p>` : ""}`;
 
+/** An on/off setting, saved as "on" or "off" like the dropdown it replaced. */
+const toggle = (setting: string, label: string) => `<input type="checkbox" data-setting="${setting}" ${attr("aria-label", label)} />`;
+
 const select = (setting: string, options: [string, string][]) =>
 	`<select class="native" data-setting="${setting}">${options.map(([value, key]) => `<option value="${value}"${text(key)}</option>`).join("")}</select>`;
 
@@ -511,10 +514,7 @@ const settingsPage = `<!doctype html>
 						FEATURES.idlePet
 							? field(
 									"inspector.advanced.idlePet",
-									`${select("idlePet", [
-										["off", "inspector.idlePet.off"],
-										["on", "inspector.idlePet.on"],
-									])}<button class="sd" id="t3-preview-pet" type="button"${text("inspector.advanced.previewPet")}</button>`,
+									`${toggle("idlePet", "inspector.advanced.idlePet")}<button class="sd" id="t3-preview-pet" type="button"${text("inspector.advanced.previewPet")}</button>`,
 									"inspector.advanced.idlePetHint",
 								)
 							: ""
@@ -523,10 +523,7 @@ const settingsPage = `<!doctype html>
 				<section id="section-behavior" hidden>
 					<h1${text("inspector.settings.behavior")}</h1>${field(
 						"inspector.advanced.autoSwitch",
-						select("autoSwitch", [
-							["on", "inspector.idlePet.on"],
-							["off", "inspector.idlePet.off"],
-						]),
+						toggle("autoSwitch", "inspector.advanced.autoSwitch"),
 						"inspector.advanced.autoSwitchHint",
 					)}${field(
 						"inspector.advanced.confirm",
@@ -656,14 +653,14 @@ const settingsPage = `<!doctype html>
 				Object.assign(globals, settings);
 				for (const control of document.querySelectorAll("[data-setting]")) {
 					const value = globals[control.dataset.setting] ?? DEFAULTS[control.dataset.setting];
-					if (control.type === "checkbox") control.checked = value !== false;
+					if (control.type === "checkbox") control.checked = value === "on";
 					else if (document.activeElement !== control) control.value = value;
 				}
 				$("strip-color").hidden = (globals.stripBackground ?? DEFAULTS.stripBackground) !== "custom";
 			}
 			for (const control of document.querySelectorAll("[data-setting]")) {
 				control.addEventListener("change", () => {
-					const patch = { [control.dataset.setting]: control.type === "checkbox" ? control.checked : control.value.trim() };
+					const patch = { [control.dataset.setting]: control.type === "checkbox" ? (control.checked ? "on" : "off") : control.value.trim() };
 					// The plugin ignores a custom background with no color, so save the one the picker shows.
 					if (patch.stripBackground === "custom" && !globals.stripColor) patch.stripColor = DEFAULTS.stripColor;
 					write(patch);

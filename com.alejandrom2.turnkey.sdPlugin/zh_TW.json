@@ -860,10 +860,6 @@
 				"reduced": "減少",
 				"off": "關"
 			},
-			"idlePet": {
-				"off": "關",
-				"on": "開"
-			},
 			"maxEffort": {
 				"gradient": "漸層",
 				"solid": "純色",
