@@ -91,6 +91,19 @@ describe("Keys", () => {
 		expect(pressed).toEqual(["test"]);
 	});
 
+	it("sends a kind's label with its face, and again when only the label changes", () => {
+		let model = "Opus 4.5";
+		const sent: SidecarMessage[] = [];
+		const subject = new Keys({ model: { face: () => "mark", label: () => model } }, (message) => sent.push(message));
+		subject.handle({ type: "appear", action: "model:1", size: 80 });
+		model = "Sonnet 4.5";
+		subject.repaint();
+		expect(sent).toEqual([
+			{ type: "image", action: "model:1", svg: "mark", label: "Opus 4.5" },
+			{ type: "image", action: "model:1", svg: "mark", label: "Sonnet 4.5" },
+		]);
+	});
+
 	it("tells a kind each time its key shows, so it can refresh then instead of polling", () => {
 		let shown = 0;
 		const subject = new Keys({ limits: { face: () => "face", appear: () => void shown++ } }, () => undefined);

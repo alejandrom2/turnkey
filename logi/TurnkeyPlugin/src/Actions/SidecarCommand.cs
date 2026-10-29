@@ -31,6 +31,8 @@ namespace Loupedeck.TurnkeyPlugin
 
         protected override void RunCommand(String actionParameter) => this._faces.Press(actionParameter ?? this._parameter);
 
+        protected override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) => this._faces.Label(actionParameter ?? this._parameter) ?? base.GetCommandDisplayName(actionParameter, imageSize);
+
         protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize) => this._faces.Image(actionParameter ?? this._parameter, imageSize);
     }
 }

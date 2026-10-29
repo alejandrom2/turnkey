@@ -76,6 +76,14 @@ const sendPrompt = (thread: Thread, text: string) => thread.machine.send(thread,
 /** The model, effort or access choices for `thread`, Ultrathink included. */
 const powerOf = (thread: Thread, control: DialControl) => powerState(control, thread.machine.modelConfig, thread, arming.armed(thread.key, modelOf(thread)));
 
+/** The model at `place`, from 1, in the open thread's picker, and the thread's own model's key. */
+function modelAt(place: string): { choice?: Extract<PowerChoice, { kind: "model" }>; current?: string } {
+	const thread = selected();
+	const state = thread && powerOf(thread, "model");
+	const choice = state?.choices[Number(place) - 1];
+	return { choice: choice?.kind === "model" ? choice : undefined, current: state?.current?.key };
+}
+
 const CHANGE: Record<DialControl, string> = { model: "change the model", effort: "change the effort", permissions: "change the access mode" };
 
 /** Applies the choice `choose` picks from the thread's model, effort or access, unless it is the current one. */
@@ -169,11 +177,10 @@ const keys = new Keys(
 		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
 		model: {
 			face: (_index, place) => {
-				const thread = selected();
-				const state = thread && powerOf(thread, "model");
-				const choice = state?.choices[Number(place) - 1];
-				return modelFace(choice?.kind === "model" ? choice.model : undefined, choice !== undefined && choice.key === state?.current?.key);
+				const { choice, current } = modelAt(place);
+				return modelFace(choice?.model, choice !== undefined && choice.key === current);
 			},
+			label: (_index, place) => modelAt(place).choice?.model.label,
 			press: (_index, place) => pick("model", (state) => state.choices[Number(place) - 1]),
 			appear: watchConfigs,
 		},

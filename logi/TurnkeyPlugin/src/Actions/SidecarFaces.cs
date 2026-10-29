@@ -11,6 +11,7 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly Func<Sidecar> _sidecar;
         private readonly Action _changed;
         private readonly ConcurrentDictionary<String, String> _images = new ConcurrentDictionary<String, String>();
+        private readonly ConcurrentDictionary<String, String> _labels = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
         private readonly ConcurrentDictionary<String, ManualResetEventSlim> _waiting = new ConcurrentDictionary<String, ManualResetEventSlim>();
 
@@ -70,6 +71,9 @@ namespace Loupedeck.TurnkeyPlugin
             return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
         }
 
+        // The name the sidecar gave the face, such as the model a slot stands for; null keeps the action's own.
+        public String Label(String actionParameter) => this._labels.TryGetValue(this.ActionId(actionParameter), out var label) ? label : null;
+
         // Logitech's samples draw 80 px faces on the 90 sizes.
         private static Int32 Pixels(PluginImageSize imageSize) => imageSize switch
         {
@@ -98,7 +102,7 @@ namespace Loupedeck.TurnkeyPlugin
 
         private String ActionId(String actionParameter) => $"{this._kind}:{actionParameter ?? ""}";
 
-        private void OnImage(String action, String svg)
+        private void OnImage(String action, String svg, String label)
         {
             if (!action.StartsWith($"{this._kind}:"))
             {
@@ -106,6 +110,15 @@ namespace Loupedeck.TurnkeyPlugin
             }
 
             this._images[action] = svg;
+            if (label == null)
+            {
+                this._labels.TryRemove(action, out _);
+            }
+            else
+            {
+                this._labels[action] = label;
+            }
+
             if (this._waiting.TryRemove(action, out var drawn))
             {
                 drawn.Set();
@@ -123,6 +136,7 @@ namespace Loupedeck.TurnkeyPlugin
         private void OnStopped()
         {
             this._images.Clear();
+            this._labels.Clear();
             this._changed();
         }
     }

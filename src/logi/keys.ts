@@ -6,6 +6,8 @@ import type { HostMessage, SidecarMessage } from "./protocol.js";
  */
 export type KeyKind = {
 	face(index: number, parameter: string): string;
+	/** The name Logi shows for the key, such as the model a slot stands for; the action's own name without one. */
+	label?(index: number, parameter: string): string | undefined;
 	press?(index: number, parameter: string): number | void;
 	turn?(ticks: number, parameter: string): void;
 	appear?(): void;
@@ -17,7 +19,7 @@ const parameterOf = (action: string): string => action.slice(action.indexOf(":")
 export const STALE_MS = 86_400_000;
 
 /** `face` is the last SVG sent, so a repaint that changes nothing sends nothing. `seen` is the last `appear`, press or turn. */
-type Key = { kind: KeyKind; index: number; seen: number; face?: string };
+type Key = { kind: KeyKind; index: number; seen: number; face?: string; label?: string };
 
 /** The plugin's keys and ring slots by action id, `<kind>:<parameter>`, each painted by its kind. */
 export class Keys {
@@ -79,8 +81,10 @@ export class Keys {
 		const key = this.#keys.get(action);
 		if (key === undefined) return;
 		const face = key.kind.face(key.index, parameterOf(action));
-		if (face === key.face) return;
+		const label = key.kind.label?.(key.index, parameterOf(action));
+		if (face === key.face && label === key.label) return;
 		key.face = face;
-		this.send({ type: "image", action, svg: face });
+		key.label = label;
+		this.send({ type: "image", action, svg: face, ...(label === undefined ? {} : { label }) });
 	}
 }
