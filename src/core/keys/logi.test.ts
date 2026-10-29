@@ -27,6 +27,13 @@ describe("Logitech-only keypad tiles", () => {
 		expect(decoded(activityTile(runtimeOf({}), undefined))).toBe(golden("activity-quiet"));
 	});
 
+	it("wear Activity's selected look even when T3 Code has another thread open", () => {
+		const world = STATES.running();
+		const other = STATES.idle().selected;
+		expect(decoded(activityTile(runtimeOf({ ...world, selected: other }), world.selected))).toBe(golden("activity-running"));
+		expect(decoded(activityTile(runtimeOf({ ...world, selected: undefined }), world.selected))).toBe(golden("activity-running"));
+	});
+
 	it("draw Continue as Quick Prompt's Continue", () => expect(decoded(continueTile("send"))).toBe(golden("quick-idle")));
 
 	it("match their goldens", async () => {

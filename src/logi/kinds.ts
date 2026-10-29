@@ -18,6 +18,7 @@ import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { applyChoice, type DialControl, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
+import { STATE_COLOR } from "../core/render.js";
 import { usagePeriod } from "../core/usage/store.js";
 import { continueStep } from "./controls.js";
 import type { KeyKind } from "./keys.js";
@@ -80,6 +81,15 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 	// What Most urgent, Waiting and Running open, so a keypad tile shows the thread a press opens.
 	const firstWaiting = () => board.threads.find((thread) => thread.deck === "approval" || thread.deck === "question");
 	const newestRunning = () => board.threads.find((thread) => thread.deck === "running");
+	// The counts the Ring's glyphs badge, kept on the keypad tile: what waits on you (in amber), what runs (in blue).
+	const waitingTally = () => ({ count: board.threads.filter((thread) => thread.deck === "approval" || thread.deck === "question").length, color: STATE_COLOR.approval });
+	// Most urgent badges what waits on you only while its top thread waits and others do too, in that thread's color.
+	const urgentTally = () => {
+		const top = board.threads[0];
+		const { count } = waitingTally();
+		return top !== undefined && (top.deck === "approval" || top.deck === "question") && count > 1 ? { count, color: STATE_COLOR[top.deck] } : undefined;
+	};
+	const runningTally = () => ({ count: board.threads.filter((thread) => thread.deck === "running").length, color: STATE_COLOR.running });
 	/** The Ring's glyph at 80 px or less, the tile on a keypad. */
 	const sized = (size: number, glyph: () => string, tile: () => string) => (size <= 80 ? glyph() : markup(tile()));
 
@@ -126,7 +136,7 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		},
 		// The Threads folder's halves; the board lists threads most urgent first, and running ones newest first.
 		waiting: {
-			face: (_index, _parameter, size) => sized(size, () => waitingFace(board.threads), () => activityTile(deps.runtime, firstWaiting())),
+			face: (_index, _parameter, size) => sized(size, () => waitingFace(board.threads), () => activityTile(deps.runtime, firstWaiting(), waitingTally())),
 			label: () => statusLabel(threadCounts(board.threads)),
 			press: () => {
 				const top = firstWaiting();
@@ -134,7 +144,7 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 			},
 		},
 		running: {
-			face: (_index, _parameter, size) => sized(size, () => runningFace(board.threads), () => activityTile(deps.runtime, newestRunning())),
+			face: (_index, _parameter, size) => sized(size, () => runningFace(board.threads), () => activityTile(deps.runtime, newestRunning(), runningTally())),
 			label: () => statusLabel(threadCounts(board.threads)),
 			press: () => {
 				const newest = newestRunning();
@@ -148,7 +158,7 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 			},
 		},
 		urgent: {
-			face: (_index, _parameter, size) => sized(size, () => urgentFace(board.threads), () => activityTile(deps.runtime, board.threads[0])),
+			face: (_index, _parameter, size) => sized(size, () => urgentFace(board.threads), () => activityTile(deps.runtime, board.threads[0], urgentTally())),
 			label: () => board.threads[0]?.title,
 			press: () => {
 				const top = board.threads[0];

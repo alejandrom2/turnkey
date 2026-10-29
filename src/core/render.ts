@@ -387,6 +387,8 @@ type ThreadKeyInput = {
 	subagents?: number;
 	/** The thread works in its own worktree: a small folder mark beside the state glyph. */
 	worktree?: boolean;
+	/** How many threads the key stands for (Logitech's Waiting and Running): the info bar's chip, a dot in their color and the count, in a pill. */
+	tally?: { count: number; color: string };
 };
 
 /**
@@ -455,6 +457,17 @@ export function renderThreadKey(input: ThreadKeyInput): string {
 
 	const badges = badgeRow(input.queued, input.subagents, META.right, 40);
 	parts.push(badges.svg);
+	if (input.tally !== undefined) {
+		const label = String(input.tally.count);
+		const width = Math.round(textWidth(label, 14) + 26);
+		const left = badges.right - width;
+		parts.push(
+			`<rect x="${left}" y="40" width="${width}" height="20" rx="10" fill="#FFFFFF" fill-opacity=".14"/>`,
+			`<circle cx="${left + 10.5}" cy="50" r="3.5" fill="${input.tally.color}"/>`,
+			svgText(label, badges.right - 8, 55, 14, 600, COLORS.text, ` text-anchor="end"`),
+		);
+		badges.right = left - 4;
+	}
 	// The worktree mark gives way when the queue and subagent pills need the row.
 	if (input.worktree && badges.right >= 78) parts.push(glyph("worktree", 58, 42, 16, COLORS.muted, 2.2));
 

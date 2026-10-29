@@ -27,7 +27,7 @@ export function stateAt(ctx: KeyContext<unknown>, threads: readonly DeckThread[]
 }
 
 /** A thread's key face, or `emptyLabel` when the slot holds none. */
-export function threadTile({ thread, selected, now, motion }: ThreadState, ctx: KeyContext<unknown>, emptyLabel: string): string {
+export function threadTile({ thread, selected, now, motion }: ThreadState, ctx: KeyContext<unknown>, emptyLabel: string, tally?: { count: number; color: string }): string {
 	if (thread === undefined) return renderNoticeKey({ glyph: "chat", title: emptyLabel, tone: "muted" });
 	return renderThreadKey({
 		state: thread.deck,
@@ -40,6 +40,7 @@ export function threadTile({ thread, selected, now, motion }: ThreadState, ctx: 
 		motion,
 		queued: ctx.runtime.queued(thread),
 		subagents: thread.subagents,
+		tally,
 	});
 }
 
