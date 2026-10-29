@@ -48,11 +48,12 @@ Each device gets a ready-made Turnkey profile, and you can drag any action onto 
 <td><b>Stream Deck, XL and Mini</b><br>The 15-key Stream Deck has four thread keys and the everyday actions, then pages for threads, controls, skills, git and usage. The XL shows eight threads on its first page, and the Mini fits two threads with Activity, Approve and Stop.</td>
 </tr>
 <tr>
-<td width="40%"><img src="docs/readme/neo.png" alt="Three Stream Deck Neo info bars: a thread that needs approval, the selected thread's model with Fast on, and Codex's weekly limit at 62%" width="320"></td>
+<td width="40%"><img src="docs/readme/neo.png" alt="A Stream Deck Neo info bar: Fix flaky auth needs approval, two minutes, with one thread waiting and two running" width="320"></td>
 <td><b>Stream Deck Neo</b><br>The Stream Deck + pages on keys. The info bar follows the page you're on: the most urgent thread on home, the model in Controls, the branch in Git, the pull request in Pull Requests, the queue in Prompts and the tightest limit in Usage.</td>
 </tr>
 <tr>
-<td colspan="2"><b>Logitech Actions Ring</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Each slot shows live state, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.<br><br><img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="100%"></td>
+<td width="40%"><img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="320"></td>
+<td><b>Logitech Actions Ring</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Each slot shows live state, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.</td>
 </tr>
 </table>
 
