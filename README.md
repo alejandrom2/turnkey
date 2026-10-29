@@ -88,7 +88,8 @@ You need Logi Options+ on macOS, an MX mouse or keyboard with the Actions Ring, 
 
 1. **Install.** Download [`Turnkey.lplug4`](https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.lplug4) and open it to install it in Logi Options+.
 2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. Its button opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
-3. **Pick the ring.** On an MX Keypad, Turnkey's default page fills the keys. In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
+3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
+4. **Set up the keypad.** On an MX Keypad, Turnkey's default page fills the keys.
 
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
 

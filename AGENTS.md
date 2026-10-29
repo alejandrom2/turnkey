@@ -15,7 +15,7 @@ Turnkey is a Stream Deck and Logitech plugin that controls [T3 Code](https://git
 ## Rules
 
 - Every user-facing string goes in `en.json` and all seven translations; `src/core/i18n.test.ts` enforces matching keys and placeholders.
-- A successful press shows no confirmation card: `run()` repaints the live face. Failures flash why. Destructive actions on keys need a hold (`HOLD_CONFIRM_MS`); the Actions Ring's open-hover-click is its confirmation, so the Ring never holds. Opt-in scopes are never requested from Logitech: those keys flash "needs access".
+- A successful press shows no confirmation card: `run()` repaints the live face. Failures flash why. Destructive actions on keys need a hold (`HOLD_CONFIRM_MS`); the Actions Ring's open-hover-click is its confirmation, so the Ring never holds, and Logi's existing Stop run and Stop all stay a single press. Opt-in scopes are never requested from Logitech: those keys flash "needs access".
 - Golden snapshots in `src/actions/__goldens__/` and `src/logi/__goldens__/` lock every existing face and press. A changed golden is a bug; add goldens only for new faces.
 - New Logi variant of a key: shared definition in `src/core/keys/`, register `sharedKind` in `src/logi/kinds.ts`, add a thin C# class (or a Turnkey folder entry for folder-only keys), regenerate the xliff units, then `npm run assets`.
 - Colors come from `COLORS` and the paint helpers in `render.ts`. Approvals are T3 Code's amber, questions its indigo. Never orange.

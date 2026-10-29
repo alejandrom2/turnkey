@@ -40,7 +40,7 @@ class Previews {
 	readonly #threads = new Map<string, ThreadPreview>();
 	/** Machines whose preview events stream, by environment. */
 	readonly #streaming = new Set<string>();
-	// shortcut: one repaint per process, the first runtime's; pass it per entry if a process ever hosts two runtimes.
+	// shortcut: one repaint per process, the latest runtime's; pass it per entry if a process ever hosts two runtimes.
 	#repaint: () => void = () => undefined;
 
 	readonly watch = {

@@ -106,6 +106,7 @@ export interface KeyDefinition<S, St> {
 	moving?(state: St): boolean;
 	/** Reads what a press must see fresh, before its state is taken. */
 	prepare?(ctx: KeyContext<S>): Promise<void>;
+	/** Only `confirmBy: "settings"` (Stream Deck) may get a `guard`, which Logitech refuses; a "click" or "hold" gets `run` or `needsHold` (or `fail`/`nothing`) instead. */
 	press(state: St, ctx: KeyContext<S>, input: PressInput): PressPlan;
 	watch?: ConstructorParameters<typeof MachineWatch>[0];
 }
