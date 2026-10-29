@@ -32,6 +32,7 @@ describe("urgentFace goldens", () => {
 	it("failed and unseen", () => golden("urgentFace-failed-unseen", urgentFace([thread("failed", true)])));
 	it("empty board", () => golden("urgentFace-empty", urgentFace([])));
 	it("two waiting", () => golden("urgentFace-two-waiting", urgentFace([thread("approval"), thread("question")])));
+	it("running top with waiting threads behind it", () => golden("urgentFace-running-behind", urgentFace([thread("running"), thread("approval"), thread("question")])));
 	it("badge capped", () => golden("urgentFace-capped", urgentFace(Array.from({ length: 12 }, () => thread("approval")))));
 });
 
@@ -81,6 +82,11 @@ describe("limitsFace goldens", () => {
 	it("stale", () => golden("limitsFace-stale", limitsFace(40, true)));
 	it("clamped over 100", () => golden("limitsFace-over", limitsFace(140, false)));
 	it("with a provider mark", () => golden("limitsFace-provider", limitsFace(40, false, "claudeAgent")));
+	it("exactly 70 is amber", () => golden("limitsFace-70", limitsFace(70, false)));
+	it("exactly 90 is red", () => golden("limitsFace-90", limitsFace(90, false)));
+	it("clamped under 0", () => golden("limitsFace-negative", limitsFace(-5, false)));
+	it("an unknown provider", () => golden("limitsFace-unknown-driver", limitsFace(40, false, "someNewDriver")));
+	it("a provider, stale", () => golden("limitsFace-provider-stale", limitsFace(40, true, "claudeAgent")));
 	it("label", () => golden("limitsLabel", `${limitsLabel("claudeAgent", "5-hour", 82.4)}\n`, "txt"));
 });
 
@@ -88,6 +94,7 @@ describe("statusFace goldens", () => {
 	it("waiting", () => golden("statusFace-waiting", statusFace({ approval: 1, question: 1, running: 3 })));
 	it("running", () => golden("statusFace-running", statusFace({ approval: 0, question: 0, running: 3 })));
 	it("capped", () => golden("statusFace-capped", statusFace({ approval: 12, question: 0, running: 0 })));
+	it("running capped", () => golden("statusFace-running-capped", statusFace({ approval: 0, question: 0, running: 12 })));
 	it("idle", () => golden("statusFace-idle", statusFace({ approval: 0, question: 0, running: 0 })));
 	it("label", () => golden("statusLabel", `${statusLabel({ approval: 1, question: 1, running: 3 })}\n`, "txt"));
 	it("label idle", () => golden("statusLabel-idle", `${statusLabel({ approval: 0, question: 0, running: 0 })}\n`, "txt"));
@@ -119,4 +126,7 @@ describe("modelFace goldens", () => {
 	it("no model", () => golden("modelFace-none", modelFace(undefined, false)));
 	it("other model", () => golden("modelFace-other", modelFace(opus, false)));
 	it("the thread's own", () => golden("modelFace-current", modelFace(opus, true)));
+	it("a driver with no mark", () => golden("modelFace-unknown-driver", modelFace({ ...opus, driver: "someNewDriver", instanceId: "someNewDriver" }, false)));
+	it("with the initials badge", () => golden("modelFace-badge", modelFace({ ...opus, badge: true }, false)));
+	it("without an accent color", () => golden("modelFace-no-accent", modelFace({ ...opus, accentColor: undefined }, false)));
 });
