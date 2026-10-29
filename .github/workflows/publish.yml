@@ -57,7 +57,8 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/Turnkey.streamDeckPlugin --clobber
           else
-            gh release create "$TAG" dist/Turnkey.streamDeckPlugin --title "Turnkey $VERSION" --notes-file notes.md --verify-tag $prerelease
+            # A draft until the logi job adds Turnkey.lplug4: releases are immutable once published.
+            gh release create "$TAG" dist/Turnkey.streamDeckPlugin --draft --title "Turnkey $VERSION" --notes-file notes.md --verify-tag $prerelease
           fi
         env:
           GH_TOKEN: ${{ github.token }}
@@ -86,5 +87,9 @@ jobs:
       - run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
       - run: npm run logi:pack
       - run: gh release upload "$TAG" logi/dist/Turnkey.lplug4 --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Publish the release
+        run: gh release edit "$TAG" --draft=false
         env:
           GH_TOKEN: ${{ github.token }}

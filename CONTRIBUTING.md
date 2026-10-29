@@ -65,7 +65,7 @@ Keep a pull request to one change. For anything you can see on a key or strip, a
 
 ## Releases
 
-`feat:` adds a minor version, `fix:` a patch, and `!` or `BREAKING CHANGE:` a major once past 1.0. On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it lets the release workflow tag that version (`vX.Y.Z`); every `v*` tag, from the workflow or pushed by hand, runs the publish workflow, which checks the tag matches `package.json`, packs `Turnkey.streamDeckPlugin` with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`) and creates the GitHub Release with that version's changelog section. `npm run assets` keeps the manifest's version in step with `package.json`.
+`feat:` adds a minor version, `fix:` a patch, and `!` or `BREAKING CHANGE:` a major once past 1.0. On every push to main, release-please keeps a release pull request open with the next version and its changelog. Merging it lets the release workflow tag that version (`vX.Y.Z`); every `v*` tag, from the workflow or pushed by hand, runs the publish workflow, which checks the tag matches `package.json`, packs `Turnkey.streamDeckPlugin` with Stream Deck's four-part version (`0.9.0` → `0.9.0.0`) and creates the GitHub Release with that version's changelog section as a draft; the Logitech job adds `Turnkey.lplug4` and then publishes it, since a published release can't change. `npm run assets` keeps the manifest's version in step with `package.json`.
 
 ## Using a coding agent
 
