@@ -157,6 +157,39 @@ describe("sidecarKinds presses", () => {
 	});
 });
 
+describe("access, effort and model on the shared keys", () => {
+	it("still do nothing when they can't act, with no flash", () => {
+		const { kinds, machine } = setup([{ key: "a" }], { selected: "a", canOperate: false });
+		for (const kind of ["access", "effort", "model"]) {
+			const face = kinds[kind]!.face(0, "1", 80);
+			kinds[kind]!.press!(0, "1");
+			expect(kinds[kind]!.face(0, "1", 80)).toBe(face);
+			expect(kinds[kind]!.label!(0, "1")).toBeUndefined();
+		}
+		expect(machine.setModelSelection).not.toHaveBeenCalled();
+		expect(machine.setRuntimeMode).not.toHaveBeenCalled();
+	});
+
+	it("log a failed change as before, without a flash", async () => {
+		const { deps, machine } = setup([{ key: "a" }], { selected: "a" });
+		const logged = vi.fn();
+		const kinds = sidecarKinds({ ...deps, failed: (what) => (error) => logged(what, error) });
+		const refused = new Error("refused");
+		machine.setModelSelection.mockRejectedValue(refused);
+		const face = kinds.effort!.face(0, "", 80);
+		kinds.effort!.press!(0, "");
+		await vi.waitFor(() => expect(logged).toHaveBeenCalledExactlyOnceWith("change the effort", refused));
+		expect(kinds.effort!.face(0, "", 80)).toBe(face);
+		expect(kinds.effort!.label!(0, "")).toBe("High");
+	});
+
+	it("label the slot with the thread's current effort and access", () => {
+		const { kinds } = setup([{ key: "a" }], { selected: "a" });
+		expect(kinds.effort!.label!(0, "")).toBe("High");
+		expect(kinds.access!.label!(0, "")).toBe("Auto");
+	});
+});
+
 describe("sidecarKinds faces match their goldens", () => {
 	it("stop", () => {
 		expect(setup([{ key: "a", deck: "running" }], { selected: "a" }).kinds.stop!.face(0, "", 80)).toBe(golden("stopFace-available"));

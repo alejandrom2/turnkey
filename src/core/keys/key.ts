@@ -4,6 +4,7 @@ import type { AcpIcons } from "../models.js";
 import type { MotionMode, Transitions } from "../motion.js";
 import type { SlotIndex } from "../slots.js";
 import type { Target } from "../target.js";
+import type { UltrathinkArming } from "../ultrathink.js";
 import type { Machine } from "../t3/machine.js";
 import type { MachineWatch } from "../watch.js";
 
@@ -50,6 +51,8 @@ export interface KeyRuntime {
 	selectThread(thread: Pick<DeckThread, "key" | "machine">): void;
 	/** The app link scheme T3 Code answers to; undefined for the default. */
 	scheme(): string | undefined;
+	/** Where the host arms Ultrathink; undefined where it sends no prompts of its own to prefix (Logitech). */
+	ultrathink: UltrathinkArming | undefined;
 }
 
 export type KeyContext<S> = {
@@ -73,6 +76,10 @@ export interface KeyDefinition<S, St> {
 	press(state: St, ctx: KeyContext<S>, input: PressInput): PressPlan;
 	watch?: ConstructorParameters<typeof MachineWatch>[0];
 }
+
+/** Whether the machine that owns `thread`, else any machine, may act: with no thread the key's own machine setting is not consulted, as on Stream Deck always. */
+export const canOperate = (ctx: KeyContext<unknown>, thread: DeckThread | undefined): boolean =>
+	thread !== undefined ? thread.machine.canOperate : ctx.runtime.machines().some((machine) => machine.canOperate);
 
 /** Whether an irreversible press may go ahead: "settings" defers to `fromSettings`, the key's own rule. */
 export function confirmed(

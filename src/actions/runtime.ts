@@ -16,4 +16,5 @@ export const deckRuntime: KeyRuntime = {
 	queued: queuedCount,
 	selectThread,
 	scheme: () => deck.scheme,
+	ultrathink: deck.ultrathink,
 };

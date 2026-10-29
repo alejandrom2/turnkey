@@ -2,6 +2,7 @@ import { type Action, action, type KeyUpEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import { activityKey, type ActivitySettings, newThreadKey, type NewThreadSettings, type NewThreadState, threadKey, type ThreadState } from "../core/keys/threads.js";
+import { effortKey, type EffortSettings, modelKey, type ModelSettings, permissionsKey, type PermissionSettings, planKey, type SettingState, speedKey } from "../core/keys/power.js";
 import { approveKey, type ApproveSettings, type ApproveState, denyKey, type DenyState } from "../core/keys/decision.js";
 import { requestFor as coreRequestFor } from "../core/keys/requests.js";
 import { type Availability, availability } from "../core/availability.js";
@@ -10,45 +11,18 @@ import { organize, type OrganizeAction } from "../core/commands.js";
 import { branchSummary } from "../core/git.js";
 import { type HealthMachine, healthIssues, summarizeHealth } from "../core/health.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
-import {
-	cycleValue,
-	effortValues,
-	findModel,
-	modeLabel,
-	modelCatalog,
-	modelColor,
-	nextModel,
-	parseModelKey,
-	RUNTIME_MODES,
-	runtimeModes,
-	speedToggle,
-	switchSelection,
-	withOptionValue,
-} from "../core/models.js";
+import { findModel, modelColor, speedToggle } from "../core/models.js";
 import { activityBar, renderActivityBar, renderInfoBar, renderNoticeBar } from "../core/infobar.js";
-import { applyChoice, currentEffort, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
-import { twinkleStep } from "../core/motion.js";
+import { currentEffort, effortChoices } from "../core/power.js";
 import { modeOf } from "../core/modes.js";
 import { migratePromptSettings, templatePrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
-import {
-	COLORS,
-	dotsCue,
-	type GlyphName,
-	accessTone,
-	ladderCue,
-	maxEffortStyle,
-	modelFill,
-	MODE_GLYPH,
-	paintedGlyphArt,
-	renderControlKey,
-	renderInfoKey,
-} from "../core/render.js";
+import { COLORS, type GlyphName, renderControlKey, renderInfoKey } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { pinnedName } from "../core/target.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
-import { latestSnoozed, type RuntimeMode } from "../core/t3/shell.js";
+import { latestSnoozed } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
 import { gitTarget, statuses } from "./git.js";
 import { connectionNotice } from "./infobar.js";
@@ -66,9 +40,7 @@ import {
 	selectedThread,
 	selectNew,
 	sendToThread,
-	speedPaint,
 	ultrathinkArmed,
-	ultrathinkControl,
 } from "./base.js";
 import { SharedKey } from "./shared.js";
 import { DeckWatch } from "./watch.js";
@@ -382,50 +354,25 @@ export class Organize extends DeckAction<OrganizeSettings> {
 	}
 }
 
-/** A setting key: the current value or the one it applies, highlighted when the thread already has it. */
-abstract class SettingKey<T extends JsonObject> extends DeckAction<T> {
-	/** The face, the availability, what a press applies (undefined: already current), and whether the face moves. */
-	protected abstract state(action: Action<T>): { face: string; check: Availability; apply?: () => Promise<unknown>; moving?: boolean };
-
-	/** The thread the key acts on, with its machine's model config. */
-	protected selection(action: Action<T>) {
-		const target = this.target(action);
-		return { ...target, config: target.thread?.machine.modelConfig };
-	}
-
-	protected override async draw(action: Action<T>): Promise<void> {
-		if (!action.isKey()) return;
-		const state = this.state(action);
-		this.animate(action, state.moving === true);
-		await this.setImage(action, state.face);
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<T>): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { check, apply } = this.state(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		if (apply !== undefined) await this.run(ev.action, apply);
-	}
-}
-
-type ModelSettings = { model?: string; machine?: string; nameColor?: string };
-
 /**
  * Switches the selected thread to one favorite model, or to the next of T3 Code's favorites (else of its
  * provider's models). Another provider's model hands the thread over the way T3 Code's picker does.
  */
 @action({ UUID: `${ID}.model` })
-export class ModelKey extends SettingKey<ModelSettings> {
-	protected override async draw(action: Action<ModelSettings>): Promise<void> {
+export class ModelKey extends SharedKey<ModelSettings & JsonObject, SettingState> {
+	protected readonly definition = modelKey;
+
+	protected override async draw(action: Action<ModelSettings & JsonObject>): Promise<void> {
 		if (action.isNeoInfobar()) return this.#paintBar(action);
 		return super.draw(action);
 	}
 
 	/** On the Neo info bar: the selected thread's model with its mark, its effort and, when on, Fast with a bolt. */
-	async #paintBar(action: Action<ModelSettings>): Promise<void> {
+	async #paintBar(action: Action<ModelSettings & JsonObject>): Promise<void> {
 		const notice = connectionNotice(this.machineOf(action));
 		if (notice) return this.setBar(action, renderNoticeBar(notice));
-		const { thread, config } = this.selection(action);
+		const { thread } = this.target(action);
+		const config = thread?.machine.modelConfig;
 		if (thread === undefined) return this.setBar(action, renderInfoBar({ icon: { glyph: "model", color: COLORS.muted }, title: t("face.model"), detail: t("reason.noThread"), available: false }));
 		const model = findModel(config, thread.model);
 		const effort = effortChoices(model).find((choice) => choice.value === currentEffort(model, thread.model, ultrathinkArmed(thread)))?.label;
@@ -441,145 +388,33 @@ export class ModelKey extends SettingKey<ModelSettings> {
 			}),
 		);
 	}
-
-	protected state(action: Action<ModelSettings>) {
-		const { thread, config, gone, pinned } = this.selection(action);
-		const fixed = parseModelKey(this.settingsOf(action).model);
-		const current = thread && findModel(config, thread.model);
-		const catalog = thread ? modelCatalog(config, thread.model) : [];
-		const target = thread === undefined ? undefined : fixed ? findModel(config, fixed) : nextModel(catalog, thread.model);
-		const missing = fixed ? (target === undefined ? t("reason.unavailable") : undefined) : catalog.length === 0 ? t("reason.noModels") : undefined;
-		const check = availability("model", { thread, gone, canOperate: canOperate(thread), missing });
-		const shown = fixed ? target : current;
-		const label = shown?.name ?? (fixed ? fixed.model : (thread?.model.model ?? t("face.model")));
-		const position = shown === undefined ? -1 : catalog.findIndex((model) => model.key === shown.key);
-		// The shown model's pill takes its color, as on the Power dial.
-		const cue = catalog.length > 1 && position >= 0 ? dotsCue(catalog.length, position, modelFill(maxEffortStyle(deck.appearance.maxEffort), shown && modelColor(shown))) : undefined;
-		// The name takes the model's color unless the key's Name color is White.
-		const labelColor = this.settingsOf(action).nameColor === "white" ? undefined : shown && modelColor(shown);
-		const face = renderControlKey({ glyph: "model", mark: shown && markArt(shown), label, labelColor, available: check.available, active: fixed !== undefined && target?.key === current?.key, cue, pinned });
-		if (thread === undefined || target === undefined) return { face, check };
-		const already = target.instanceId === thread.model.instanceId && target.slug === thread.model.model;
-		return { face, check, apply: already ? undefined : () => thread.machine.setModelSelection(thread, switchSelection(target, thread.model)) };
-	}
 }
-
-type EffortSettings = { effort?: string; machine?: string };
 
 /**
  * Sets the selected thread's reasoning effort to one value, or steps through the values its model offers. Ultrathink
  * arms T3 Code's prompt prefix for the thread's next sends from the deck instead of changing the effort.
  */
 @action({ UUID: `${ID}.effort` })
-export class EffortKey extends SettingKey<EffortSettings> {
-	protected state(action: Action<EffortSettings>) {
-		const { thread, config, gone, pinned } = this.selection(action);
-		const fixed = this.settingsOf(action).effort || undefined;
-		const model = thread && findModel(config, thread.model);
-		const armed = ultrathinkArmed(thread);
-		const choices = effortChoices(model);
-		const values = choices.map((choice) => choice.value);
-		const current = thread && currentEffort(model, thread.model, armed);
-		const missing = choices.length === 0 ? t("reason.noEffort") : fixed !== undefined && !values.includes(fixed) ? t("reason.notOffered") : undefined;
-		const check = availability("effort", { thread, gone, canOperate: canOperate(thread), missing });
-		const labelOf = (value: unknown) =>
-			choices.find((choice) => choice.value === value)?.label ??
-			effortValues(config).find((choice) => choice.value === value)?.label ??
-			(typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : t("face.effort"));
-		const shown = fixed ?? current;
-		const step = choices.findIndex((choice) => choice.value === shown);
-		const max = effortToneOf(choices, choices[step]?.key, maxEffortStyle(deck.appearance.maxEffort), model && modelColor(model));
-		// The upper half of the ladder glitters, twinkling as Motion allows.
-		const place = effortPlace(choices, choices[step]?.key);
-		const twinkle = place !== undefined && place >= 0.5 ? twinkleStep(deck.animator.mode, Date.now()) : undefined;
-		const cue = choices.length > 1 && step >= 0 ? ladderCue(choices.length, step, choices[step]?.ultrathink === true, max?.fill, place, twinkle) : undefined;
-		const face = renderControlKey({
-			glyph: "effort",
-			glyphColor: max?.text,
-			label: labelOf(shown),
-			labelColor: max?.text,
-			available: check.available,
-			active: fixed !== undefined && fixed === current,
-			ultrathink: armed,
-			cue,
-			pinned,
-		});
-		const next = fixed ?? cycleValue(values, current);
-		const choice = choices.find((each) => each.value === next);
-		const moving = twinkle !== undefined;
-		if (thread === undefined || choice === undefined) return { face, check, moving };
-		return { face, check, moving, apply: applyChoice(thread, choice, ultrathinkControl(thread, armed)) };
-	}
+export class EffortKey extends SharedKey<EffortSettings & JsonObject, SettingState> {
+	protected readonly definition = effortKey;
 }
 
 /** Toggles the selected thread's fast mode (Claude's Fast mode, Codex's Fast tier) where its model offers one. */
 @action({ UUID: `${ID}.speed` })
-export class SpeedKey extends SettingKey<JsonObject> {
-	protected state(action: Action<JsonObject>) {
-		const { thread, config, gone, pinned } = this.selection(action);
-		const model = thread && findModel(config, thread.model);
-		const toggle = thread && speedToggle(model, thread.model);
-		const check = availability("speed", { thread, gone, canOperate: canOperate(thread), missing: toggle === undefined ? t("reason.noFastMode") : undefined });
-		const fast = toggle?.fast === true;
-		// Just the bolt: outlined at Standard, filled in the model's color at Fast.
-		const face = renderControlKey({ glyph: fast ? "speedFilled" : "speed", mark: fast ? paintedGlyphArt("speedFilled", speedPaint(model)) : undefined, available: check.available, pinned });
-		if (thread === undefined || toggle === undefined) return { face, check };
-		return {
-			face,
-			check,
-			apply: () => thread.machine.setModelSelection(thread, withOptionValue(thread.model, toggle.option.id, toggle.next)),
-		};
-	}
+export class SpeedKey extends SharedKey<JsonObject, SettingState> {
+	protected readonly definition = speedKey;
 }
-
-type PermissionSettings = { mode?: string; machine?: string };
 
 /** Sets the selected thread's access (Supervised … Full access), or steps through the modes its provider supports. */
 @action({ UUID: `${ID}.permissions` })
-export class Permissions extends SettingKey<PermissionSettings> {
-	protected state(action: Action<PermissionSettings>) {
-		const { thread, config, gone, pinned } = this.selection(action);
-		const fixed = RUNTIME_MODES.find((mode) => mode === this.settingsOf(action).mode);
-		const values = thread ? runtimeModes(config, thread.model.instanceId).map((mode) => mode.value) : [];
-		const current = thread?.runtimeMode;
-		const shown = fixed ?? current ?? "approval-required";
-		const missing = fixed !== undefined && !values.includes(fixed) ? t("reason.notOffered") : undefined;
-		const check = availability("permissions", { thread, gone, canOperate: canOperate(thread), missing });
-		const labelOf = (value: RuntimeMode | undefined) => (value === undefined ? t("face.access") : modeLabel(value));
-		const full = shown === "full-access" && (thread !== undefined || fixed !== undefined);
-		// A track like Effort's: the modes the provider offers, from asking first to hands-off, filled up to the one shown.
-		const step = values.indexOf(shown);
-		const tone = step >= 0 ? accessTone(values.length > 1 ? step / (values.length - 1) : 1) : undefined;
-		const cue = thread && values.length > 1 && step >= 0 ? ladderCue(values.length, step, false, tone!.fill) : undefined;
-		const face = renderControlKey({
-			glyph: MODE_GLYPH[shown],
-			glyphColor: tone?.text,
-			labelColor: tone?.text,
-			wash: full && current === "full-access" ? COLORS.attention : undefined,
-			label: thread || fixed ? labelOf(shown) : t("face.access"),
-			available: check.available,
-			active: fixed !== undefined && fixed === current,
-			cue,
-			pinned,
-		});
-		const next = fixed ?? cycleValue(values, current);
-		if (thread === undefined || next === undefined) return { face, check };
-		return { face, check, apply: next === current ? undefined : () => thread.machine.setRuntimeMode(thread, next) };
-	}
+export class Permissions extends SharedKey<PermissionSettings & JsonObject, SettingState> {
+	protected readonly definition = permissionsKey;
 }
 
 /** Switches the selected thread between Build and Plan. */
 @action({ UUID: `${ID}.plan` })
-export class PlanKey extends SettingKey<JsonObject> {
-	protected state(action: Action<JsonObject>) {
-		const { thread, config, gone, pinned } = this.selection(action);
-		const toggle = thread === undefined ? undefined : config?.providers?.find((provider) => provider.instanceId === thread.model.instanceId)?.showInteractionModeToggle;
-		const check = availability("plan", { thread, gone, canOperate: canOperate(thread), missing: toggle === false ? t("reason.noPlanMode") : undefined });
-		const planning = thread?.interactionMode === "plan";
-		const face = renderControlKey({ glyph: planning ? "modePlan" : "modeBuild", label: t(planning ? "face.plan" : "face.build"), available: check.available, active: planning, pinned });
-		if (thread === undefined) return { face, check };
-		return { face, check, apply: () => thread.machine.setInteractionMode(thread, planning ? "default" : "plan") };
-	}
+export class PlanKey extends SharedKey<JsonObject, SettingState> {
+	protected readonly definition = planKey;
 }
 
 export const requestFor = (thread: DeckThread): PendingRequest | undefined => coreRequestFor(deck, thread);

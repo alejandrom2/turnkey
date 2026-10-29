@@ -5,7 +5,7 @@ import { t } from "../i18n.js";
 import { renderDecisionKey, renderSkeletonKey } from "../render.js";
 import type { ApprovalPress } from "../approvals.js";
 import type { PendingRequest } from "../t3/machine.js";
-import { type KeyContext, type KeyDefinition, type PressPlan, confirmed } from "./key.js";
+import { canOperate, type KeyContext, type KeyDefinition, type PressPlan, confirmed } from "./key.js";
 import { requestFor } from "./requests.js";
 
 /** What a request is about, in a line: the approval's summary, or the heading of one the deck can't answer. */
@@ -17,10 +17,6 @@ export type ApproveSettings = { approvalAuthority?: string; approvalConfirm?: st
 type Decided = { thread: DeckThread | undefined; pinned: boolean; check: Availability; request: PendingRequest | undefined };
 export type ApproveState = Decided & { press: ApprovalPress | undefined; confirm: ReturnType<typeof approvalConfirm>; authority: ReturnType<typeof approvalAuthority> };
 export type DenyState = Decided;
-
-// With no thread, any machine may act: the key's own machine setting is not consulted (as on Stream Deck always).
-const canOperate = (ctx: KeyContext<unknown>, thread: DeckThread | undefined): boolean =>
-	thread !== undefined ? thread.machine.canOperate : ctx.runtime.machines().some((machine) => machine.canOperate);
 
 /** Open the request in T3 Code, or answer it; `answer` is the decision to send, whether it needs confirming first, and the face saying so. */
 function plan(state: Decided, ctx: KeyContext<unknown>, answer: { decision: Parameters<DeckThread["machine"]["respond"]>[2]; allowed: boolean; hold: string } | undefined): PressPlan {

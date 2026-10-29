@@ -12,13 +12,14 @@ import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { HOLD_CONFIRM_MS } from "../core/approvals.js";
 import { LONG_PRESS_MS } from "../core/keys/key.js";
+import { speedPaint as coreSpeedPaint } from "../core/keys/power.js";
 import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openThread as coreOpenThread } from "../core/commands.js";
 import { FLASH_MS, failureLabel } from "../core/feedback.js";
 import { htmlLang, messageTable, t } from "../core/i18n.js";
 import { INFOBAR } from "../core/infobar.js";
-import { type CatalogModel, effortValues, favoriteModels, findModel, modelColor, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
+import { type CatalogModel, effortValues, favoriteModels, findModel, pickableModels, providerDisplayName, providerMark } from "../core/models.js";
 import { powerArt, type UltrathinkControl } from "../core/power.js";
 import {
 	COLORS,
@@ -26,7 +27,6 @@ import {
 	type MarkPainter,
 	maxEffortStyle,
 	type Paint,
-	providerGradient,
 	renderNoticeKey,
 	renderResultKey,
 	renderReviewKey,
@@ -604,11 +604,8 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 
 export const colorStyle = () => maxEffortStyle(deck.appearance.maxEffort);
 
-/** Fast's paint: the model's gradient (or its color), the accent for white marks unless gradients are on. */
-export const speedPaint = (model: CatalogModel | undefined): Paint => {
-	const color = model && modelColor(model);
-	return colorStyle() === "gradient" ? { gradient: providerGradient(color ?? COLORS.accent) } : (color ?? COLORS.accent);
-};
+/** Fast's paint, as the Speed key draws it. */
+export const speedPaint = (model: CatalogModel | undefined): Paint => coreSpeedPaint(model, colorStyle());
 
 /** Sends `text` to an existing thread, with T3 Code's Ultrathink prefix while the deck has it armed there. */
 export function sendToThread(thread: DeckThread, text: string, mode: SendMode): Promise<void> {

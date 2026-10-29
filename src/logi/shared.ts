@@ -20,22 +20,39 @@ export function glyphFallback(tile: string, dim: boolean): string {
 }
 
 /**
- * A Logi kind over a shared definition: each parameter is a variant standing for its settings, on the thread open in
- * T3 Code. The Ring (80 px or less) gets the glyph, a keypad the tile. A press with no hold time is a Ring click, itself
- * the confirmation; one with a hold time is a keypad press, which irreversible keys want held.
+ * How a Logi action that shipped before shared keys still behaves: its glyph at every size, and a press that can't act
+ * does nothing, a failed one only reaching `failed`, as before.
  */
-export function sharedKind<S, St>(name: string, definition: KeyDefinition<S, St>, variants: Record<string, S>, runtime: KeyRuntime, warn: (message: string) => void): KeyKind {
+// shortcut: no keypad tile and no flash for these, so nothing they show changes; drop `legacy` when they get keypad tiles.
+export type Legacy = { failed: (error: unknown) => void };
+
+/**
+ * A Logi kind over a shared definition: each parameter is a variant standing for its settings (a table, or a function
+ * for a kind whose parameter carries a value), on the thread open in T3 Code. The Ring (80 px or less) gets the
+ * glyph, a keypad the tile. A press with no hold time is a Ring click, itself the confirmation; one with a hold time is
+ * a keypad press, which irreversible keys want held.
+ */
+export function sharedKind<S, St>(
+	name: string,
+	definition: KeyDefinition<S, St>,
+	variants: Record<string, S> | ((parameter: string) => S),
+	runtime: KeyRuntime,
+	warn: (message: string) => void,
+	legacy?: Legacy,
+): KeyKind {
 	const flashes = new Map<string, { label: string; timer: ReturnType<typeof setTimeout> }>();
 	let warned = false;
 
 	function contextOf(parameter: string): KeyContext<S> | undefined {
+		const target = () => ({ thread: runtime.board.selectedOn(), pinned: false });
+		if (typeof variants === "function") return { settings: variants(parameter), machine: undefined, runtime, target };
 		if (!Object.hasOwn(variants, parameter)) {
 			// The parameter only reaches the log by kind: Logi could hand any text.
 			if (!warned) warn(`${name}: dropped an action variant Turnkey doesn't know.`);
 			warned = true;
 			return undefined;
 		}
-		return { settings: variants[parameter]!, machine: undefined, runtime, target: () => ({ thread: runtime.board.selectedOn(), pinned: false }) };
+		return { settings: variants[parameter]!, machine: undefined, runtime, target };
 	}
 
 	function clearFlash(parameter: string): void {
@@ -61,7 +78,7 @@ export function sharedKind<S, St>(name: string, definition: KeyDefinition<S, St>
 			const flashing = flashes.get(parameter);
 			if (flashing !== undefined) return size <= 80 ? glyphResult(false, flashing.label) : markup(renderResultKey({ ok: false, label: flashing.label }));
 			const state = definition.state(ctx);
-			if (size > 80) return markup(definition.tile(state, ctx));
+			if (size > 80 && legacy === undefined) return markup(definition.tile(state, ctx));
 			return definition.glyph ? markup(definition.glyph(state, ctx)) : glyphFallback(markup(definition.tile(state, ctx)), definition.available?.(state) === false);
 		},
 		label(_index, parameter) {
@@ -81,12 +98,13 @@ export function sharedKind<S, St>(name: string, definition: KeyDefinition<S, St>
 						runtime.repaint();
 					},
 					(error: unknown) => {
+						if (legacy !== undefined) return legacy.failed(error);
 						// The message only: errors never carry tokens, but their causes might.
 						warn(`${name}: a press failed: ${error instanceof Error ? error.message : String(error)}`);
 						flash(parameter, failureLabel(error));
 					},
 				);
-			else if (plan.kind !== "nothing") flash(parameter, plan.label);
+			else if (plan.kind !== "nothing" && legacy === undefined) flash(parameter, plan.label);
 		},
 	};
 }

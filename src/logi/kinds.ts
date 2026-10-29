@@ -1,18 +1,18 @@
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { threadCounts } from "../core/infobar.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
+import { effortKey, modelKey, permissionsKey } from "../core/keys/power.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
-import { findModel, modelColor } from "../core/models.js";
-import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
+import { applyChoice, type DialControl, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
 import { COLORS } from "../core/render.js";
 import type { Machine } from "../core/t3/machine.js";
 import type { LimitPool, LimitPoolWindow } from "../core/usage/limits.js";
 import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
-import { continueStep, nextChoice } from "./controls.js";
+import { continueStep } from "./controls.js";
 import type { KeyKind } from "./keys.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, limitsLabel, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
+import { continueFace, customPromptFace, limitsFace, limitsLabel, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
 import { sharedKind } from "./shared.js";
 
 /** What the sidecar's keys reach for beyond the board: the machines, opening things, the limits and config watches, and the shared keys' runtime. */
@@ -42,25 +42,10 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 
 	// Ultrathink only prefixes prompts Turnkey sends, and on Logitech you type yours in T3 Code, so it is never offered.
 	const NO_ULTRATHINK: UltrathinkControl = { armed: false, arm: () => undefined, disarm: () => undefined };
-	const modelOf = (thread: Thread) => findModel(thread.machine.modelConfig, thread.model);
 	const sendPrompt = (thread: Thread, text: string) => thread.machine.send(thread, text, "auto");
 
 	/** The model, effort or access choices for `thread`, without prompt-only efforts. */
 	const powerOf = (thread: Thread, control: DialControl) => powerState(control, thread.machine.modelConfig, thread, false, { promptInjected: false });
-
-	/** The model at `place`, from 1, in the open thread's picker, and the thread's own model's key. */
-	function modelAt(place: string): { choice?: Extract<PowerChoice, { kind: "model" }>; current?: string } {
-		const thread = selected();
-		const state = thread && powerOf(thread, "model");
-		const choice = state?.choices[Number(place) - 1];
-		return { choice: choice?.kind === "model" ? choice : undefined, current: state?.current?.key };
-	}
-
-	/** The open thread's current effort or access, as T3 Code names it, for a slot's label. */
-	function currentLabel(control: "effort" | "permissions"): string | undefined {
-		const thread = selected();
-		return thread && powerOf(thread, control).current?.label;
-	}
 
 	const CHANGE: Record<DialControl, string> = { model: "change the model", effort: "change the effort", permissions: "change the access mode" };
 
@@ -129,37 +114,11 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 				if (thread && step === "send") void sendPrompt(thread, QUICK_PROMPTS.continue.text).catch(failed("continue the thread"));
 			},
 		},
-		access: {
-			face: () => modeFace(selected()?.runtimeMode),
-			label: () => currentLabel("permissions"),
-			press: () => pick("permissions", nextChoice),
-			turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)),
-		},
-		effort: {
-			face: () => {
-				const thread = selected();
-				const state = thread && powerOf(thread, "effort");
-				if (thread === undefined || state === undefined || state.choices.length < 2) return effortFace(undefined);
-				const index = Math.max(state.choices.findIndex((choice) => choice.key === state.current?.key), 0);
-				const model = modelOf(thread);
-				// Stream Deck's default effort colors, as Logi has no Colors setting.
-				const tone = effortToneOf(effortChoices(model, { promptInjected: false }), state.current?.key, "gradient", model && modelColor(model));
-				return effortFace({ index, count: state.choices.length, color: tone?.text ?? COLORS.accent });
-			},
-			label: () => currentLabel("effort"),
-			press: () => pick("effort", nextChoice),
-			turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)),
-		},
+		// Access, Effort and Model n were Logitech actions before they were shared; they keep how they looked and acted.
+		access: { ...sharedKind("access", permissionsKey, () => ({}), deps.runtime, deps.warn, { failed: failed(CHANGE.permissions) }), turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)) },
+		effort: { ...sharedKind("effort", effortKey, () => ({}), deps.runtime, deps.warn, { failed: failed(CHANGE.effort) }), turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)) },
 		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
-		model: {
-			face: (_index, place) => {
-				const { choice, current } = modelAt(place);
-				return modelFace(choice?.model, choice !== undefined && choice.key === current);
-			},
-			label: (_index, place) => modelAt(place).choice?.model.label,
-			press: (_index, place) => pick("model", (state) => state.choices[Number(place) - 1]),
-			appear: watchConfigs,
-		},
+		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { failed: failed(CHANGE.model) }), appear: watchConfigs },
 		limit: {
 			face: (_index, place) => {
 				const limit = limitAt(place);
