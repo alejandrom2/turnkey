@@ -4,6 +4,7 @@ import { mkdir, open, stat, writeFile } from "node:fs/promises";
 import { arch } from "node:os";
 import { join } from "node:path";
 
+import { revealCommand } from "./core/commands.js";
 import { diagnosticsReport } from "./core/diagnostics.js";
 import { deck } from "./deck.js";
 
@@ -34,7 +35,7 @@ async function logTail(): Promise<string> {
 /** Runs the OS opener. Explorer exits 1 even when it opened the window, so on Windows only a launch failure counts. */
 function reveal(path: string, select: boolean): Promise<void> {
 	const windows = process.platform === "win32";
-	const [command, args] = windows ? ["explorer", [select ? `/select,${path}` : path]] : ["open", select ? ["-R", path] : [path]];
+	const [command, args] = revealCommand(path, select);
 	return new Promise((resolve, reject) =>
 		execFile(command, args, (error) => (error && (!windows || (error as NodeJS.ErrnoException).code === "ENOENT") ? reject(error) : resolve())),
 	);

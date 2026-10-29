@@ -10,9 +10,22 @@ export function threadDeepLink(thread: Pick<DeckThread, "environmentId" | "threa
 	return `${scheme}://threads/${encodeURIComponent(thread.environmentId)}/${encodeURIComponent(thread.threadId)}`;
 }
 
+/** The OS's opener for `url`. */
+export function openCommand(url: string, platform: NodeJS.Platform = process.platform): [string, string[]] {
+	if (platform === "win32") return ["rundll32", ["url.dll,FileProtocolHandler", url]];
+	return [platform === "linux" ? "xdg-open" : "open", [url]];
+}
+
+/** Shows `path` in Finder or Explorer, selected when `select`; `xdg-open` can't select, so Linux opens the folder. */
+export function revealCommand(path: string, select: boolean, platform: NodeJS.Platform = process.platform): [string, string[]] {
+	if (platform === "win32") return ["explorer", [select ? `/select,${path}` : path]];
+	if (platform === "linux") return ["xdg-open", [path]];
+	return ["open", select ? ["-R", path] : [path]];
+}
+
 /** Stream Deck's `openUrl` refuses custom schemes, so hand the link to the OS. */
 export function openExternal(url: string): Promise<void> {
-	const [command, args] = process.platform === "win32" ? ["rundll32", ["url.dll,FileProtocolHandler", url]] : ["open", [url]];
+	const [command, args] = openCommand(url);
 	return new Promise((resolve, reject) => execFile(command, args, (error) => (error ? reject(error) : resolve())));
 }
 

@@ -37,12 +37,20 @@ const CREATE_FAILURE: Record<string, MessageKey> = {
 /** `GuestShareCreateError`'s reason as a few words for the key. */
 export const shareFailure = (code: string | undefined): string | undefined => (code !== undefined && code in CREATE_FAILURE ? t(CREATE_FAILURE[code]!) : undefined);
 
+/** Linux has no one clipboard tool: Wayland's `wl-copy`, else X11's `xclip`. */
+function clipboardCommand(platform: NodeJS.Platform): [string | undefined, string[]] {
+	if (platform === "darwin") return ["pbcopy", []];
+	if (platform === "win32") return ["clip", []];
+	if (platform === "linux") return process.env.WAYLAND_DISPLAY ? ["wl-copy", []] : ["xclip", ["-selection", "clipboard"]];
+	return [undefined, []];
+}
+
 /** Copies `text` with the OS's own tool; Stream Deck has no clipboard API. */
 export function copyText(text: string, platform: NodeJS.Platform = process.platform): Promise<void> {
-	const command = platform === "darwin" ? "pbcopy" : platform === "win32" ? "clip" : undefined;
+	const [command, args] = clipboardCommand(platform);
 	if (command === undefined) return Promise.reject(new Error("No clipboard tool on this system."));
 	return new Promise((resolve, reject) => {
-		const child = execFile(command, (error) => (error ? reject(error) : resolve()));
+		const child = execFile(command, args, (error) => (error ? reject(error) : resolve()));
 		child.stdin?.end(text);
 	});
 }

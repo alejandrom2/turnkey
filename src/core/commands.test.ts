@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildAnswers, openThread, threadDeepLink } from "./commands.js";
+import { buildAnswers, openCommand, openThread, revealCommand, threadDeepLink } from "./commands.js";
 import { titleSeed } from "./t3/machine.js";
 
 describe("threadDeepLink", () => {
@@ -62,4 +62,17 @@ describe("openThread", () => {
 		await openThread(thread, () => new Promise(() => undefined), undefined, async (url) => void opened.push(url));
 		expect(opened).toEqual(["t3code://threads/env/thread"]);
 	});
+});
+
+describe("openCommand", () => {
+	it("uses xdg-open on Linux", () => expect(openCommand("t3code://x", "linux")).toEqual(["xdg-open", ["t3code://x"]]));
+	it("keeps open on macOS", () => expect(openCommand("t3code://x", "darwin")).toEqual(["open", ["t3code://x"]]));
+	it("keeps rundll32 on Windows", () => expect(openCommand("t3code://x", "win32")).toEqual(["rundll32", ["url.dll,FileProtocolHandler", "t3code://x"]]));
+});
+
+describe("revealCommand", () => {
+	it("opens the folder on Linux, which can't select", () => expect(revealCommand("/l", true, "linux")).toEqual(["xdg-open", ["/l"]]));
+	it("selects in Finder", () => expect(revealCommand("/l", true, "darwin")).toEqual(["open", ["-R", "/l"]]));
+	it("opens the folder in Finder", () => expect(revealCommand("/l", false, "darwin")).toEqual(["open", ["/l"]]));
+	it("selects in Explorer", () => expect(revealCommand("C:\\l", true, "win32")).toEqual(["explorer", ["/select,C:\\l"]]));
 });
