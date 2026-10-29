@@ -240,14 +240,14 @@ describe("ACP registry icons", () => {
 		}
 	});
 
-	it("strips scripts, handlers, styles and outside references, and paints everything one color", () => {
+	it("strips outside references and paints everything one color", () => {
 		const art = sanitizeIconSvg(
-			`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" onload="x()"><script>alert(1)</script><style>.a{fill:red}</style>` +
-				`<path d="M1 1" fill="#ff0000" onclick="y()"/><circle style="stroke: blue; opacity: .5" fill="none"/><rect style="fill: none; stroke: #000" fill="transparent"/>` +
-				`<use href="https://evil.example/x.svg#a"/><use href="#local"/><image href="https://x/y.png"/></svg>`,
+			`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" onload="x()">` +
+				`<path d="M1 1" fill="#ff0000"/><circle style="stroke: blue; opacity: .5" fill="none"/><rect style="fill: none; stroke: #000" fill="transparent"/>` +
+				`<use href="https://evil.example/x.svg#a"/><use href="#local"/></svg>`,
 		)!;
 		expect(art.viewBox).toBe("0 0 24 24");
-		expect(art.body).not.toMatch(/script|onclick|onload|style>|evil|image|#ff0000|blue/);
+		expect(art.body).not.toMatch(/evil|#ff0000|blue/);
 		expect(art.body).toContain(`fill="currentColor"`);
 		expect(art.body).toContain(`fill="none"`);
 		expect(art.body).toContain("stroke:currentColor");
@@ -255,6 +255,17 @@ describe("ACP registry icons", () => {
 		expect(art.body).toContain(`fill="transparent"`);
 		expect(art.body).toContain(`href="#local"`);
 		expect(sanitizeIconSvg("<html>not an svg</html>")).toBeUndefined();
+	});
+
+	it("rejects active SVG markup, including handlers and reconstructed tags", () => {
+		for (const svg of [
+			`<svg><path onclick="x()"/></svg>`,
+			`<svg><path o onload="x()"nclick="y()"/></svg>`,
+			`<svg><script>alert(1)</script></svg>`,
+			`<svg><scr<script>alert(1)</script>ipt>alert(2)</script></svg>`,
+		]) {
+			expect(sanitizeIconSvg(svg)).toBeUndefined();
+		}
 	});
 
 	it("loads each icon once, remembers failures, and repaints when one arrives", async () => {

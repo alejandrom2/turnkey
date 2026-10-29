@@ -373,14 +373,14 @@ export function sanitizeIconSvg(text: string): MarkArt | undefined {
 	const height = Number.parseFloat(attribute("height") ?? "");
 	const viewBox = attribute("viewBox") ?? (width > 0 && height > 0 ? `0 0 ${width} ${height}` : "0 0 24 24");
 	if (!/^[-\d.\s,eE]+$/.test(viewBox)) return undefined;
+	const unsafeMarkup = /<(?:script|style|foreignObject|image)\b|\son[a-z]+\s*=/i;
+	if (unsafeMarkup.test(inner)) return undefined;
 	const body = inner
-		.replace(/<(script|style|foreignObject|image)\b[\s\S]*?<\/\1\s*>/gi, "")
-		.replace(/<(script|style|foreignObject|image)\b[^>]*\/>/gi, "")
-		.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, "")
 		.replace(/\s(?:xlink:)?href\s*=\s*("(?!#)[^"]*"|'(?!#)[^']*')/gi, "")
 		.replace(/\s(fill|stroke|stop-color|color)\s*=\s*("(?!\s*(?:none|transparent)\s*")[^"]*"|'(?!\s*(?:none|transparent)\s*')[^']*')/gi, ` $1="currentColor"`)
 		.replace(/(fill|stroke|stop-color|color)\s*:\s*(?!(?:none|transparent)\b)[^;"'\s][^;"']*/gi, "$1:currentColor");
-	return body.trim() ? { viewBox, body } : undefined;
+	if (!body.trim() || unsafeMarkup.test(body)) return undefined;
+	return { viewBox, body };
 }
 
 const ICON_MAX_BYTES = 100_000;
