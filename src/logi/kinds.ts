@@ -30,8 +30,10 @@ export type SidecarDeps = {
 	board: ThreadBoard;
 	open(thread: DeckThread): void;
 	openExternal(url: string): Promise<void>;
-	refreshLimits(): void;
-	watchConfigs(): void;
+	refreshLimits(action: string): void;
+	/** Keeps the machines' config live for the key `action` while it shows; `unwatchConfigs` lets go when it hides. */
+	watchConfigs(action: string): void;
+	unwatchConfigs(action: string): void;
 	failed(what: string): (error: unknown) => void;
 	settingsUrl(): string;
 	runtime: KeyRuntime;
@@ -39,7 +41,8 @@ export type SidecarDeps = {
 };
 
 export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
-	const { board, failed, open, watchConfigs } = deps;
+	const { board, failed, open, watchConfigs, unwatchConfigs } = deps;
+	const watching = { appear: watchConfigs, disappear: unwatchConfigs };
 
 	/** The thread open in T3 Code, which the prompt, Continue, access and effort actions act on, when its machine lets them. */
 	const selected = () => {
@@ -120,11 +123,11 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		access: { ...sharedKind("access", permissionsKey, () => ({}), deps.runtime, deps.warn, { quiet: failed(CHANGE.permissions) }), turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)) },
 		effort: { ...sharedKind("effort", effortKey, () => ({}), deps.runtime, deps.warn, { quiet: failed(CHANGE.effort) }), turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)) },
 		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
-		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { quiet: failed(CHANGE.model) }), appear: watchConfigs },
+		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { quiet: failed(CHANGE.model) }), ...watching },
 		speed: sharedKind("speed", speedKey, { "": {} }, deps.runtime, deps.warn),
 		plan: sharedKind("plan", planKey, { "": {} }, deps.runtime, deps.warn),
 		// A Limits folder's slots: the parameter is the place, from 1, in T3 Code's Limits.
-		limit: { ...sharedKind("limit", limitsKey, (place) => ({ poolSlot: Number(place) }), deps.runtime, deps.warn, limitsQuiet), appear: deps.refreshLimits, press: deps.refreshLimits },
+		limit: { ...sharedKind("limit", limitsKey, (place) => ({ poolSlot: Number(place) }), deps.runtime, deps.warn, limitsQuiet), appear: deps.refreshLimits, press: () => deps.refreshLimits("limit:press") },
 		limits: { ...limitsFolder, appear: deps.refreshLimits },
 		status: {
 			face: (_index, _parameter, size) => sized(size, () => statusFace(threadCounts(board.threads)), () => statusTile(threadCounts(board.threads))),
@@ -184,16 +187,17 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		// Show is `pr`; of the handoffs only Fix findings needs a keypad hold, as Stream Deck holds it by default.
 		pr: sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime, deps.warn),
 		// The machines' configs (editors, providers, versions, Labs flags) stay live once these show. Preview and Health are in the folder only.
-		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime, deps.warn), appear: watchConfigs },
-		health: { ...sharedKind("health", healthKey, { "": {} }, deps.runtime, deps.warn), appear: watchConfigs },
+		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime, deps.warn), ...watching },
+		health: { ...sharedKind("health", healthKey, { "": {} }, deps.runtime, deps.warn), ...watching },
 		// Update can't be undone: a keypad holds for it, a Ring click is itself the confirmation. Logitech never asks for its access.
-		update: { ...update, appear: watchConfigs },
-		share: { ...sharedKind("share", shareKey, { "": {} }, deps.runtime, deps.warn), appear: watchConfigs },
+		update: { ...update, ...watching },
+		share: { ...sharedKind("share", shareKey, { "": {} }, deps.runtime, deps.warn), ...watching },
 		// No minute tick here: the period is read as the key shows, unless it was read in the last minute, and on a press.
 		usage: {
 			...sharedKind("usage", usageKey, { "": {} }, deps.runtime, deps.warn),
-			appear: () => {
-				watchConfigs();
+			disappear: unwatchConfigs,
+			appear: (action) => {
+				watchConfigs(action);
 				readShown(deps.runtime, undefined, usagePeriod(undefined));
 			},
 		},

@@ -65,8 +65,14 @@ namespace Loupedeck.TurnkeyPlugin
 
         public BitmapImage Image(String actionParameter, PluginImageSize imageSize) => this.Image(actionParameter, Pixels(imageSize));
 
+        // A folder's keys appear and disappear with the folder, not with each image request.
+        public void Appear(String actionParameter, Int32 pixels) =>
+            this._sidecar().Send(new { type = "appear", action = this.ActionId(actionParameter), size = pixels >= 16 ? pixels : 80 });
+
+        public void Disappear(String actionParameter) => this._sidecar().Send(new { type = "disappear", action = this.ActionId(actionParameter) });
+
         // The SDK has no "now visible" event: an image request is when a key shows, as each time the Actions Ring opens.
-        public BitmapImage Image(String actionParameter, Int32 pixels)
+        public BitmapImage Image(String actionParameter, Int32 pixels, Boolean announce = true)
         {
             // An action editor's image request can come without a usable width; the sidecar refuses one under 16.
             pixels = pixels >= 16 ? pixels : 80;
@@ -85,9 +91,12 @@ namespace Loupedeck.TurnkeyPlugin
 
             // A face the sidecar hasn't drawn yet is waited for briefly: an action editor's preview asks once and keeps what it gets.
             var known = this._images.ContainsKey(action);
-            var drawn = known ? null : this._waiting.GetOrAdd(action, _ => new ManualResetEventSlim(false));
-            this._sidecar().Send(new { type = "appear", action, size = pixels });
-            drawn?.Wait(FirstFaceWaitMs);
+            if (announce)
+            {
+                var drawn = known ? null : this._waiting.GetOrAdd(action, _ => new ManualResetEventSlim(false));
+                this._sidecar().Send(new { type = "appear", action, size = pixels });
+                drawn?.Wait(FirstFaceWaitMs);
+            }
 
             return this._images.TryGetValue(action, out var svg) ? BitmapImage.FromSvg(svg) : Blank(pixels);
         }
@@ -96,7 +105,7 @@ namespace Loupedeck.TurnkeyPlugin
         public String Label(String actionParameter) => this._labels.TryGetValue(this.ActionId(actionParameter), out var label) ? label : null;
 
         // Logitech's samples draw 80 px faces on the 90 sizes.
-        private static Int32 Pixels(PluginImageSize imageSize) => imageSize switch
+        public static Int32 Pixels(PluginImageSize imageSize) => imageSize switch
         {
             PluginImageSize.Width60 or PluginImageSize.Width60Pixels => 60,
             PluginImageSize.Width116 or PluginImageSize.Width116Pixels => 116,

@@ -3,7 +3,8 @@ import type { HostMessage, SidecarMessage } from "./protocol.js";
 /**
  * One kind of action: its face for a key's place, parameter (the action id after the kind) and pixel size, or none for
  * a parameter it doesn't know; what a press does (returning the key's next place, or nothing to keep it), with the
- * hold time a keypad reports; what a scroll does, and a hook for each time the key shows.
+ * hold time a keypad reports; what a scroll does, and hooks for each time the key shows (with its action id) and for
+ * when Logi says it is hidden (only the Turnkey folder's keys do).
  */
 export type KeyKind = {
 	face(index: number, parameter: string, size: number): string | undefined;
@@ -11,7 +12,8 @@ export type KeyKind = {
 	label?(index: number, parameter: string): string | undefined;
 	press?(index: number, parameter: string, heldMs?: number): number | void;
 	turn?(ticks: number, parameter: string): void;
-	appear?(): void;
+	appear?(action: string): void;
+	disappear?(action: string): void;
 };
 
 const parameterOf = (action: string): string => action.slice(action.indexOf(":") + 1);
@@ -42,10 +44,11 @@ export class Keys {
 				if (key === undefined) return;
 				key.size = message.size;
 				// An unchanged face isn't resent: the plugin still holds it, and each image makes Logi ask again.
-				key.kind.appear?.();
+				key.kind.appear?.(message.action);
 				break;
 			}
 			case "disappear":
+				this.#keys.get(message.action)?.kind.disappear?.(message.action);
 				this.#keys.delete(message.action);
 				return;
 			case "press": {

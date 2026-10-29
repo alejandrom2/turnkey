@@ -58,20 +58,26 @@ const open = (thread: Parameters<typeof openThread>[0]) => void openThread(threa
  * shows them, through T3 Code's five-minute throttle; nothing polls while the ring is closed.
  */
 const refresher = new LimitsRefresher();
-const watchingConfig = new Set<string>();
+/** The machines' config subscriptions, held while any key that needs them shows. */
+const configWatches = new Map<string, () => void>();
+const configUsers = new Set<string>();
 const ready = () => machines.all.filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
-/** Keeps each machine's config live (limits, models and favorites) once a slot that shows it has appeared. */
-function watchConfigs(): void {
+/** Keeps each machine's config live (limits, models and favorites) while a key that shows it has appeared. */
+function watchConfigs(action: string): void {
+	configUsers.add(action);
 	for (const each of ready()) {
-		// shortcut: held until the sidecar exits, since Logi never says a slot is hidden; release it if Logi adds that.
-		if (!watchingConfig.has(each.url)) {
-			watchingConfig.add(each.url);
-			each.watchConfig();
-		}
+		// shortcut: top-level keys never report hiding, so they hold it until the sidecar exits; the Turnkey folder's keys release it.
+		if (!configWatches.has(each.url)) configWatches.set(each.url, each.watchConfig());
 	}
 }
-function showLimits(): void {
-	watchConfigs();
+function unwatchConfigs(action: string): void {
+	configUsers.delete(action);
+	if (configUsers.size > 0) return;
+	for (const release of configWatches.values()) release();
+	configWatches.clear();
+}
+function showLimits(action: string): void {
+	watchConfigs(action);
 	for (const each of ready()) void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 }
 const keys = new Keys(
@@ -81,6 +87,7 @@ const keys = new Keys(
 		openExternal,
 		refreshLimits: showLimits,
 		watchConfigs,
+		unwatchConfigs,
 		failed,
 		settingsUrl: () => page.url,
 		// `changed` is declared below; the runtime only calls it once keys exist.

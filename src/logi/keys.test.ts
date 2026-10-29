@@ -195,4 +195,15 @@ describe("Keys", () => {
 		subject.repaint();
 		expect(sent).toEqual([]);
 	});
+
+	it("tells a kind its key was hidden, once, and not for a key it never saw", () => {
+		const calls: string[] = [];
+		const watched: KeyKind = { face: () => "x", appear: (action) => calls.push(`on ${action}`), disappear: (action) => calls.push(`off ${action}`) };
+		const subject = new Keys({ watched }, () => undefined);
+		subject.handle({ type: "disappear", action: "watched:a" });
+		subject.handle({ type: "appear", action: "watched:a", size: 80 });
+		subject.handle({ type: "disappear", action: "watched:a" });
+		subject.handle({ type: "disappear", action: "watched:a" });
+		expect(calls).toEqual(["on watched:a", "off watched:a"]);
+	});
 });

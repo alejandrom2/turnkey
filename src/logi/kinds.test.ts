@@ -43,6 +43,7 @@ function setup(threads: Array<Partial<DeckThread> & { key: string }>, options: {
 		openExternal: vi.fn(async () => undefined),
 		refreshLimits: vi.fn(),
 		watchConfigs: vi.fn(),
+		unwatchConfigs: vi.fn(),
 		failed: () => () => undefined,
 		settingsUrl: () => "http://settings",
 		runtime: logiRuntime({ machines: () => [machine as unknown as Machine], board, openThread: async () => undefined, selectThread: () => undefined, repaint: () => undefined, warn: () => undefined }),
@@ -175,12 +176,18 @@ describe("sidecarKinds presses", () => {
 
 	it("the limit slots refresh on appearing, and models watch the config", () => {
 		const { kinds, deps } = setup([]);
-		kinds.limit!.appear!();
-		kinds.limits!.appear!();
+		kinds.limit!.appear!("limit:1");
+		kinds.limits!.appear!("limits:");
 		kinds.limit!.press!(0, "1");
-		kinds.model!.appear!();
+		kinds.model!.appear!("model:1");
 		expect(deps.refreshLimits).toHaveBeenCalledTimes(3);
-		expect(deps.watchConfigs).toHaveBeenCalledOnce();
+		expect(deps.watchConfigs).toHaveBeenCalledExactlyOnceWith("model:1");
+	});
+
+	it("a folder key that hides lets go of the config watch", () => {
+		const { kinds, deps } = setup([]);
+		kinds.health!.disappear!("health:");
+		expect(deps.unwatchConfigs).toHaveBeenCalledExactlyOnceWith("health:");
 	});
 });
 
