@@ -40,7 +40,7 @@ export function sharedKind<S, St>(
 	runtime: KeyRuntime,
 	warn: (message: string) => void,
 	legacy?: Legacy,
-): KeyKind {
+): KeyKind & { flash(parameter: string, label: string): void } {
 	const flashes = new Map<string, { label: string; timer: ReturnType<typeof setTimeout> }>();
 	let warned = false;
 	let refusedGuard = false;
@@ -93,25 +93,38 @@ export function sharedKind<S, St>(
 		press(_index, parameter, heldMs) {
 			const ctx = contextOf(parameter);
 			if (ctx === undefined) return;
-			const plan = definition.press(definition.state(ctx), ctx, { heldMs: heldMs ?? 0, confirmBy: heldMs === undefined ? "click" : "hold" });
-			// A review plan is Stream Deck's alone; running it here would skip a keypad hold, so the definition is at fault.
-			if (plan.kind === "guard") {
-				if (!refusedGuard) warn(`${name}: a key asked for Stream Deck's review, which Logitech doesn't have.`);
-				refusedGuard = true;
-			} else if (plan.kind === "run")
-				void plan.work().then(
-					() => {
+			const act = () => {
+				const plan = definition.press(definition.state(ctx), ctx, { heldMs: heldMs ?? 0, confirmBy: heldMs === undefined ? "click" : "hold" });
+				// A review plan is Stream Deck's alone; running it here would skip a keypad hold, so the definition is at fault.
+				if (plan.kind === "guard") {
+					if (!refusedGuard) warn(`${name}: a key asked for Stream Deck's review, which Logitech doesn't have.`);
+					refusedGuard = true;
+				} else if (plan.kind === "run") {
+					// A press that acts ends the flash a refused one left; a result the work reports itself (Update's) then stays.
+					if (flashes.has(parameter)) {
 						clearFlash(parameter);
 						runtime.repaint();
-					},
-					(error: unknown) => {
-						if (legacy !== undefined) return legacy.quiet(error);
-						// The message only: errors never carry tokens, but their causes might.
-						warn(`${name}: a press failed: ${error instanceof Error ? error.message : String(error)}`);
-						flash(parameter, failureLabel(error));
-					},
-				);
-			else if (plan.kind !== "nothing" && legacy === undefined) flash(parameter, plan.label);
+					}
+					void plan.work().then(
+						() => runtime.repaint(),
+						(error: unknown) => {
+							if (legacy !== undefined) return legacy.quiet(error);
+							// The message only: errors never carry tokens, but their causes might.
+							warn(`${name}: a press failed: ${error instanceof Error ? error.message : String(error)}`);
+							flash(parameter, failureLabel(error));
+						},
+					);
+				} else if (plan.kind !== "nothing" && legacy === undefined) flash(parameter, plan.label);
+			};
+			// What a press must see fresh is read first; the press still acts if that read fails.
+			if (definition.prepare === undefined) act();
+			else
+				void definition.prepare(ctx).then(act, (error: unknown) => {
+					warn(`${name}: a read before a press failed: ${error instanceof Error ? error.message : String(error)}`);
+					act();
+				});
 		},
+		/** A result that arrives after the press, such as how an update ended. */
+		flash,
 	};
 }

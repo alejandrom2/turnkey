@@ -5,7 +5,12 @@ import { gitKey } from "../core/keys/git.js";
 import { pullRequestKey } from "../core/keys/pr.js";
 import { effortKey, modelKey, permissionsKey, planKey, speedKey } from "../core/keys/power.js";
 import { branchKey, forkKey, stopKey } from "../core/keys/lineage.js";
+import { healthKey } from "../core/keys/health.js";
+import { openKey } from "../core/keys/open.js";
 import { ORGANIZE_ACTIONS, organizeKey } from "../core/keys/organize.js";
+import { shareKey } from "../core/keys/share.js";
+import { createUpdateKey } from "../core/keys/update.js";
+import { readShown, usageKey } from "../core/keys/usage.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { applyChoice, type DialControl, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
@@ -13,6 +18,7 @@ import { QUICK_PROMPTS } from "../core/prompts.js";
 import { COLORS } from "../core/render.js";
 import type { Machine } from "../core/t3/machine.js";
 import type { LimitPool, LimitPoolWindow } from "../core/usage/limits.js";
+import { usagePeriod } from "../core/usage/store.js";
 import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
 import { continueStep } from "./controls.js";
 import type { KeyKind } from "./keys.js";
@@ -82,6 +88,11 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		const tightest = pool && tightestWindow([pool]);
 		return tightest && limitOf(tightest, now);
 	}
+
+	// Update's runs live with this host; how one ended flashes on its key, after the press.
+	const updateKey = createUpdateKey();
+	const update = sharedKind("update", updateKey, { "": {} }, deps.runtime, deps.warn);
+	updateKey.onResult((_url, label) => update.flash("", label));
 
 	const operable = () => board.threads.filter((thread) => thread.deck === "running" && thread.machine.canOperate);
 
@@ -205,5 +216,19 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		git: sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), deps.runtime, deps.warn),
 		// Show is `pr`; of the handoffs only Fix findings needs a keypad hold, as Stream Deck holds it by default.
 		pr: sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime, deps.warn),
+		// The machines' configs (editors, providers, versions, Labs flags) stay live once these show. Preview and Health are in the folder only.
+		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime, deps.warn), appear: watchConfigs },
+		health: { ...sharedKind("health", healthKey, { "": {} }, deps.runtime, deps.warn), appear: watchConfigs },
+		// Update can't be undone: a keypad holds for it, a Ring click is itself the confirmation. Logitech never asks for its access.
+		update: { ...update, appear: watchConfigs },
+		share: { ...sharedKind("share", shareKey, { "": {} }, deps.runtime, deps.warn), appear: watchConfigs },
+		// No minute tick here: the period is read as the key shows, unless it was read in the last minute, and on a press.
+		usage: {
+			...sharedKind("usage", usageKey, { "": {} }, deps.runtime, deps.warn),
+			appear: () => {
+				watchConfigs();
+				readShown(deps.runtime, undefined, usagePeriod(undefined));
+			},
+		},
 	};
 }

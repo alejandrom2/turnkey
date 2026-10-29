@@ -6,12 +6,18 @@ import { FLASH_MS } from "../core/feedback.js";
 import { t } from "../core/i18n.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
 import { gitKey } from "../core/keys/git.js";
+import { healthKey } from "../core/keys/health.js";
+import { openKey } from "../core/keys/open.js";
+import { shareKey } from "../core/keys/share.js";
+import { createUpdateKey } from "../core/keys/update.js";
+import { usageKey } from "../core/keys/usage.js";
 import { branchKey, forkKey, stopKey } from "../core/keys/lineage.js";
 import { ORGANIZE_ACTIONS, organizeKey } from "../core/keys/organize.js";
 import { planKey, speedKey } from "../core/keys/power.js";
 import { pullRequestKey } from "../core/keys/pr.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyDefinition } from "../core/keys/key.js";
+import { needsAccessLabel } from "../core/scopes.js";
 import { COLORS, glyph, renderResultKey, renderSkeletonKey, svgImage, svgMarkup } from "../core/render.js";
 import type { Decision, PendingRequest } from "../core/t3/machine.js";
 import { Keys } from "./keys.js";
@@ -497,5 +503,92 @@ describe("sharedKind over the git and pull request keys", () => {
 		expect(open!.machine.send).not.toHaveBeenCalled();
 		pr.press!(0, "ask", 0);
 		expect(openThread).toHaveBeenCalledExactlyOnceWith(open);
+	});
+});
+
+describe("sharedKind over Open, Health, Update T3, Share Thread and Usage", () => {
+	const MAINTAIN = ["orchestration:read", "orchestration:operate", "environment:maintain"];
+	const service = { serverVersion: "1.0.0", capabilities: { serverSelfUpdate: "boot-service", serverSelfUpdateProgress: true } };
+
+	/** The sidecar's runtime over one machine and its open thread, with these kinds as kinds.ts registers them. */
+	function keys(overrides: Parameters<typeof machine>[0] = {}) {
+		const owner = machine({ url: "http://admin-keys:3773", editors: ["vscode"], updateEnvironment: service, refreshConfig: vi.fn(async () => undefined), guestShare: vi.fn(async () => null), rpc: { "preview.list": { sessions: [], revision: 0 } }, ...overrides });
+		const open = thread({ title: "Open thread", machine: owner });
+		const board = { threads: [open], threadsOn: () => [open], selectedOn: () => open } as unknown as ThreadBoard;
+		const repaint = vi.fn();
+		const runtime = logiRuntime({ machines: () => [owner], board, openThread: async () => undefined, selectThread: () => undefined, repaint, warn: () => undefined });
+		const warn = vi.fn<(message: string) => void>();
+		const updateKey = createUpdateKey();
+		const update = sharedKind("update", updateKey, { "": {} }, runtime, warn);
+		updateKey.onResult((_url, label) => update.flash("", label));
+		return {
+			owner,
+			update,
+			open: sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, runtime, warn),
+			health: sharedKind("health", healthKey, { "": {} }, runtime, warn),
+			share: sharedKind("share", shareKey, { "": {} }, runtime, warn),
+			usage: sharedKind("usage", usageKey, { "": {} }, runtime, warn),
+		};
+	}
+
+	it("draws their Ring glyphs and keypad tiles", async () => {
+		const { open, health, update, share, usage } = keys({ scopes: MAINTAIN });
+		share.face(0, "", 80);
+		// The preview's tabs, then (with none) its newest HTML render, are read in turn.
+		open.face(0, "preview", 80);
+		await settle();
+		open.face(0, "preview", 80);
+		await settle();
+		await expect(open.face(0, "editor", 80)).toMatchFileSnapshot("./__goldens__/sharedOpen-editor-80.svg");
+		await expect(open.face(0, "editor", 116)).toMatchFileSnapshot("./__goldens__/sharedOpen-editor-116.svg");
+		await expect(open.face(0, "preview", 80)).toMatchFileSnapshot("./__goldens__/sharedOpen-preview-80.svg");
+		await expect(health.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedHealth-80.svg");
+		await expect(update.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedUpdate-80.svg");
+		await expect(update.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedUpdate-116.svg");
+		await expect(share.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedShare-80.svg");
+		await expect(usage.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedUsage-80.svg");
+		expect(open.label!(0, "editor")).toBe("VS Code");
+		expect(open.face(0, "", 80)).toBeUndefined();
+	});
+
+	it("updates only after a keypad hold, or on a Ring click, and flashes how it ended", async () => {
+		vi.useFakeTimers();
+		vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ latest: "1.0.0" }) })));
+		try {
+			const { update, owner } = keys({ scopes: MAINTAIN, updateServer: vi.fn() });
+			update.press!(0, "", 100);
+			expect(update.label!(0, "")).toBe(t("update.holdToUpdate"));
+			update.press!(0, "");
+			await vi.advanceTimersByTimeAsync(0);
+			// Already on the newest release: nothing to install, and the key says so after the press.
+			expect(owner.updateServer).not.toHaveBeenCalled();
+			expect(update.label!(0, "")).toBe(t("update.upToDate"));
+		} finally {
+			vi.unstubAllGlobals();
+		}
+	});
+
+	it("never asks for access on Logitech, only says it's needed", () => {
+		vi.useFakeTimers();
+		const { update, share } = keys();
+		update.press!(0, "");
+		expect(update.label!(0, "")).toBe(needsAccessLabel("environment:maintain"));
+		share.face(0, "", 80);
+		return vi.advanceTimersByTimeAsync(0).then(async () => {
+			share.press!(0, "");
+			await vi.advanceTimersByTimeAsync(0);
+			expect(share.label!(0, "")).toBe(needsAccessLabel("access:write"));
+		});
+	});
+
+	it("reads the config again before a Share press while guest links look off", async () => {
+		vi.useFakeTimers();
+		const { share, owner } = keys({ guestLinksEnabled: false });
+		share.face(0, "", 80);
+		await vi.advanceTimersByTimeAsync(0);
+		share.press!(0, "");
+		await vi.advanceTimersByTimeAsync(0);
+		expect(owner.refreshConfig).toHaveBeenCalledOnce();
+		expect(share.label!(0, "")).toBe(t("share.disabled"));
 	});
 });

@@ -176,6 +176,14 @@
           <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
           <target>T3 Code で開いているスレッドのプロジェクトに新しいスレッドを作成し、入力できるようにそこで開きます。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OpenEditorCommand" translate="yes">
+          <source>Open in editor</source>
+          <target>エディターで開く</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OpenEditorCommand###description" translate="yes">
+          <source>Opens the folder of the thread open in T3 Code in your editor: its worktree, else its project's folder.</source>
+          <target>T3 Code で開いているスレッドのフォルダーをエディターで開きます。worktree、なければプロジェクトのフォルダーです。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand" translate="yes">
           <source>Archive</source>
           <target>アーカイブ</target>
@@ -247,6 +255,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
           <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
           <target>Turnkey の設定を開きます：マシン、ペアリング、触覚フィードバック。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ShareCommand" translate="yes">
+          <source>Share thread</source>
+          <target>スレッド共有</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ShareCommand###description" translate="yes">
+          <source>Makes a guest link for the thread open in T3 Code and copies it. On a keypad, hold it to stop sharing. Needs sharing access, which pairing from Logitech doesn't ask for.</source>
+          <target>T3 Code で開いているスレッドのゲストリンクを作成してコピーします。キーパッドでは長押しで共有を停止します。共有のアクセス権が必要ですが、Logitech からのペアリングでは求めません。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand" translate="yes">
           <source>Speed</source>
@@ -323,6 +339,22 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread8Command" translate="yes">
           <source>Thread 8</source>
           <target>スレッド 8</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UpdateCommand" translate="yes">
+          <source>Update T3</source>
+          <target>T3 を更新</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UpdateCommand###description" translate="yes">
+          <source>Shows T3 Code's version and updates it to the newest release. On a keypad, hold it. Needs update access, which pairing from Logitech doesn't ask for.</source>
+          <target>T3 Code のバージョンを表示し、最新リリースに更新します。キーパッドでは長押しします。更新のアクセス権が必要ですが、Logitech からのペアリングでは求めません。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UsageCommand" translate="yes">
+          <source>Usage</source>
+          <target>使用量</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UsageCommand###description" translate="yes">
+          <source>Shows what your T3 Code usage cost over the last 30 days. Choose it to read it again; on a keypad, hold it to reload model prices first.</source>
+          <target>過去 30 日間の T3 Code の利用コストを表示します。選ぶと再読み込みし、キーパッドで長押しすると先にモデル価格を再読み込みします。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
           <source>Waiting on you</source>

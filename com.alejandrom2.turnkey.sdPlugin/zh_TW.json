@@ -1271,6 +1271,10 @@
 				"fork": { "description": "從 T3 Code 中開啟的對話最後完成的回合分支出新對話，並開啟它。" },
 				"merge": { "description": "將 T3 Code 中開啟的分支對話合併回原本的對話，並開啟該對話。在小鍵盤上請長按。" },
 				"branch": { "description": "顯示 T3 Code 中開啟的對話所在的分支。選擇即可開啟該對話。" },
+				"openEditor": { "description": "在編輯器中開啟 T3 Code 中目前執行緒的資料夾：其 worktree，否則為其專案的資料夾。" },
+				"update": { "description": "顯示 T3 Code 的版本，並更新到最新版本。在鍵盤上需長按。需要更新權限，而從 Logitech 配對不會要求該權限。" },
+				"share": { "description": "為 T3 Code 中目前執行緒建立訪客連結並複製。在鍵盤上長按可停止分享。需要分享權限，而從 Logitech 配對不會要求該權限。" },
+				"usage": { "description": "顯示過去 30 天 T3 Code 用量的費用。選擇它可重新讀取；在鍵盤上長按會先重新載入模型價格。" },
 				"organize": { "settle": "將 T3 Code 中開啟的對話標為已處理，並從看板移除。", "pin": "釘選 T3 Code 中開啟的對話；已釘選時則取消釘選。", "snooze": "將 T3 Code 中開啟的對話延後一小時。", "archive": "封存 T3 Code 中開啟的對話。在小鍵盤上請長按。", "markUnread": "將 T3 Code 中開啟的對話標為未讀。", "wake": "喚醒你在 T3 Code 中最後延後的對話。" },
 				"urgent": {
 					"name": "最緊急的對話",

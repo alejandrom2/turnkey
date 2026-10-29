@@ -1271,6 +1271,10 @@
 				"fork": { "description": "Forks the thread open in T3 Code from its last finished turn, and opens the fork." },
 				"merge": { "description": "Merges the fork open in T3 Code back into the thread it came from, and opens that thread. On a keypad, hold it." },
 				"branch": { "description": "Shows the branch of the thread open in T3 Code. Choose it to open the thread." },
+				"openEditor": { "description": "Opens the folder of the thread open in T3 Code in your editor: its worktree, else its project's folder." },
+				"update": { "description": "Shows T3 Code's version and updates it to the newest release. On a keypad, hold it. Needs update access, which pairing from Logitech doesn't ask for." },
+				"share": { "description": "Makes a guest link for the thread open in T3 Code and copies it. On a keypad, hold it to stop sharing. Needs sharing access, which pairing from Logitech doesn't ask for." },
+				"usage": { "description": "Shows what your T3 Code usage cost over the last 30 days. Choose it to read it again; on a keypad, hold it to reload model prices first." },
 				"organize": { "settle": "Settles the thread open in T3 Code, taking it off the board.", "pin": "Pins the thread open in T3 Code, or unpins it when it's pinned.", "snooze": "Snoozes the thread open in T3 Code for an hour.", "archive": "Archives the thread open in T3 Code. On a keypad, hold it.", "markUnread": "Marks the thread open in T3 Code unread.", "wake": "Wakes the thread you snoozed last in T3 Code." },
 				"urgent": {
 					"name": "Most urgent thread",

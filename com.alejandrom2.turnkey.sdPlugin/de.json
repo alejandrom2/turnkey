@@ -1271,6 +1271,10 @@
 				"fork": { "description": "Forkt den in T3 Code geöffneten Thread ab seinem letzten fertigen Turn und öffnet den Fork." },
 				"merge": { "description": "Mergt den in T3 Code geöffneten Fork zurück in den Thread, aus dem er stammt, und öffnet diesen. Auf einem Keypad gedrückt halten." },
 				"branch": { "description": "Zeigt den Branch des in T3 Code geöffneten Threads. Wählen, um den Thread zu öffnen." },
+				"openEditor": { "description": "Öffnet den Ordner des in T3 Code geöffneten Threads in deinem Editor: seinen Worktree, sonst den Ordner seines Projekts." },
+				"update": { "description": "Zeigt die Version von T3 Code und aktualisiert es auf das neueste Release. Auf einem Keypad gedrückt halten. Braucht Update-Zugriff, den das Koppeln über Logitech nicht anfragt." },
+				"share": { "description": "Erstellt einen Gastlink für den in T3 Code geöffneten Thread und kopiert ihn. Auf einem Keypad gedrückt halten, um das Teilen zu beenden. Braucht Freigabe-Zugriff, den das Koppeln über Logitech nicht anfragt." },
+				"usage": { "description": "Zeigt, was deine T3-Code-Nutzung in den letzten 30 Tagen gekostet hat. Wählen, um sie neu zu lesen; auf einem Keypad gedrückt halten, um zuerst die Modellpreise neu zu laden." },
 				"organize": { "settle": "Erledigt den in T3 Code geöffneten Thread und nimmt ihn vom Board.", "pin": "Heftet den in T3 Code geöffneten Thread an oder löst ihn, wenn er angeheftet ist.", "snooze": "Stellt den in T3 Code geöffneten Thread für eine Stunde zurück.", "archive": "Archiviert den in T3 Code geöffneten Thread. Auf einem Keypad gedrückt halten.", "markUnread": "Markiert den in T3 Code geöffneten Thread als ungelesen.", "wake": "Weckt den Thread, den du in T3 Code zuletzt zurückgestellt hast." },
 				"urgent": {
 					"name": "Dringendster Thread",

@@ -176,6 +176,14 @@
           <source>Starts a new thread in the project of the thread open in T3 Code, and opens it there to type.</source>
           <target>在 T3 Code 中開啟的對話所在專案內開始新對話，並在 T3 Code 中開啟以便輸入。</target>
         </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OpenEditorCommand" translate="yes">
+          <source>Open in editor</source>
+          <target>在編輯器開啟</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OpenEditorCommand###description" translate="yes">
+          <source>Opens the folder of the thread open in T3 Code in your editor: its worktree, else its project's folder.</source>
+          <target>在編輯器中開啟 T3 Code 中目前執行緒的資料夾：其 worktree，否則為其專案的資料夾。</target>
+        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeArchiveCommand" translate="yes">
           <source>Archive</source>
           <target>封存</target>
@@ -247,6 +255,14 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SettingsCommand###description" translate="yes">
           <source>Opens Turnkey Settings: machines, pairing and haptics.</source>
           <target>開啟 Turnkey 設定：裝置、配對和觸感。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ShareCommand" translate="yes">
+          <source>Share thread</source>
+          <target>分享對話</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.ShareCommand###description" translate="yes">
+          <source>Makes a guest link for the thread open in T3 Code and copies it. On a keypad, hold it to stop sharing. Needs sharing access, which pairing from Logitech doesn't ask for.</source>
+          <target>為 T3 Code 中目前執行緒建立訪客連結並複製。在鍵盤上長按可停止分享。需要分享權限，而從 Logitech 配對不會要求該權限。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.SpeedCommand" translate="yes">
           <source>Speed</source>
@@ -323,6 +339,22 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Thread8Command" translate="yes">
           <source>Thread 8</source>
           <target>對話 8</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UpdateCommand" translate="yes">
+          <source>Update T3</source>
+          <target>更新 T3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UpdateCommand###description" translate="yes">
+          <source>Shows T3 Code's version and updates it to the newest release. On a keypad, hold it. Needs update access, which pairing from Logitech doesn't ask for.</source>
+          <target>顯示 T3 Code 的版本，並更新到最新版本。在鍵盤上需長按。需要更新權限，而從 Logitech 配對不會要求該權限。</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UsageCommand" translate="yes">
+          <source>Usage</source>
+          <target>用量</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.UsageCommand###description" translate="yes">
+          <source>Shows what your T3 Code usage cost over the last 30 days. Choose it to read it again; on a keypad, hold it to reload model prices first.</source>
+          <target>顯示過去 30 天 T3 Code 用量的費用。選擇它可重新讀取；在鍵盤上長按會先重新載入模型價格。</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.WaitingCommand" translate="yes">
           <source>Waiting on you</source>
