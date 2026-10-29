@@ -131,7 +131,7 @@ describe("the controls' faces", () => {
 		const other = modelFace(opus, false);
 		expect(other).not.toContain("Opus");
 		expect(other).not.toContain("<text");
-		expect(modelFace(opus, true)).toContain('<circle cx="72" cy="133" r="5.5" fill="#123456"/>');
+		expect(modelFace(opus, true)).toContain('<circle cx="117" cy="117" r="7" fill="#123456"/>');
 		expect(other).not.toContain("<circle");
 		expect(modelFace(undefined, false)).toBe(ringFace(COLORS.muted, "model", { dim: true }));
 	});
