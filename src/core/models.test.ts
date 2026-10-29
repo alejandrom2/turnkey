@@ -262,6 +262,10 @@ describe("ACP registry icons", () => {
 		expect(art.body).not.toMatch(/\bon[a-z]+\s*=/i);
 	});
 
+	it("removes active elements reconstructed when nested tag text joins", () => {
+		expect(sanitizeIconSvg(`<svg><scr<script>alert(1)</script>ipt>alert(2)</script></svg>`)).toBeUndefined();
+	});
+
 	it("loads each icon once, remembers failures, and repaints when one arrives", async () => {
 		const ok = "https://cdn.agentclientprotocol.com/registry/v1/latest/ok.svg";
 		const bad = "https://cdn.agentclientprotocol.com/registry/v1/latest/bad.svg";
