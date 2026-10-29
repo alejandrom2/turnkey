@@ -87,6 +87,12 @@ You need Logi Options+ on macOS, an MX mouse or keyboard with the Actions Ring, 
 
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
 
+### OpenDeck
+
+Turnkey also runs under [OpenDeck](https://github.com/nekename/OpenDeck), including on Linux. Install the same `.streamDeckPlugin` from OpenDeck's plugin manager. It needs Node.js 22 or newer installed natively (not the Flatpak), and on Linux, Share's copy needs `wl-copy` (Wayland) or `xclip` (X11).
+
+What OpenDeck can't do yet: the ready-made profiles and switching to them when T3 Code opens (use OpenDeck's own per-app profiles instead), and the Neo info bar. On Linux, Turnkey reconnects on its own schedule rather than the moment T3 Code launches.
+
 ## Support Turnkey
 
 Turnkey is free. If it saves you some clicks, a coffee keeps it going. ☕
