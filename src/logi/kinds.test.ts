@@ -47,7 +47,6 @@ function setup(threads: Array<Partial<DeckThread> & { key: string }>, options: {
 		failed: () => () => undefined,
 		settingsUrl: () => "http://settings",
 		runtime: logiRuntime({ machines: () => [machine as unknown as Machine], board, openThread: async () => undefined, selectThread: () => undefined, repaint: () => undefined, warn: () => undefined }),
-		warn: () => undefined,
 	} satisfies SidecarDeps;
 	return { kinds: sidecarKinds(deps), machine, deps, all };
 }

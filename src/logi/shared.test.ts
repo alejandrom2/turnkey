@@ -48,8 +48,8 @@ function setup(selected: { current: DeckThread | undefined }) {
 		threadsOn: () => (selected.current ? [selected.current] : []),
 		selectedOn: () => selected.current,
 	} as unknown as ThreadBoard;
-	const runtime = logiRuntime({ machines: () => [machine()], board, openThread, selectThread: () => undefined, repaint, warn: () => undefined });
 	const warn = vi.fn<(message: string) => void>();
+	const runtime = logiRuntime({ machines: () => [machine()], board, openThread, selectThread: () => undefined, repaint, warn });
 	return { runtime, repaint, openThread, warn };
 }
 
@@ -67,7 +67,7 @@ describe("sharedKind faces", () => {
 	};
 
 	it("draws the glyph at 80 px or less and the tile above, as markup, with Motion off: Logitech draws no frames", () => {
-		const kind = sharedKind("still", still, { "": {} }, setup({ current: undefined }).runtime, () => undefined);
+		const kind = sharedKind("still", still, { "": {} }, setup({ current: undefined }).runtime);
 		expect(kind.face(0, "", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph off"/>`));
 		expect(kind.face(0, "", 60)).toBe(svgMarkup(144, 144, `<circle class="glyph off"/>`));
 		expect(kind.face(0, "", 116)).toBe(svgMarkup(144, 144, `<rect class="tile off"/>`));
@@ -77,8 +77,8 @@ describe("sharedKind faces", () => {
 	it("builds a ring glyph from the tile's icon when a key has no glyph, dimmed as the tile dims it", async () => {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime } = setup(selected);
-		const approve = sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined);
-		const deny = sharedKind("deny", denyKey, { "": {} }, runtime, () => undefined);
+		const approve = sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime);
+		const deny = sharedKind("deny", denyKey, { "": {} }, runtime);
 		// While the request loads the tile is a skeleton, with no icon: a dim placeholder glyph stands in, never the tile.
 		expect(approve.face(0, "", 80)).toBe(ringFace(COLORS.muted, "chat", { dim: true }));
 		expect(approve.face(0, "", 116)).toBe(decoded(renderSkeletonKey()));
@@ -98,7 +98,7 @@ describe("sharedKind faces", () => {
 				available: available === undefined ? undefined : () => available,
 				press: () => ({ kind: "nothing" }),
 			};
-			return sharedKind("probe", key, { "": {} }, setup({ current: undefined }).runtime, () => undefined).face(0, "", 80);
+			return sharedKind("probe", key, { "": {} }, setup({ current: undefined }).runtime).face(0, "", 80);
 		};
 		const check = `<g opacity=".5">${glyph("check", 0, 0, 24, "#fff")}</g>`;
 		// Another key's tile may fade its icon for its own reasons.
@@ -109,7 +109,7 @@ describe("sharedKind faces", () => {
 
 	it("draws nothing for a variant it doesn't have, and says so once", () => {
 		const { runtime, warn } = setup({ current: waiting() });
-		const kind = sharedKind("approve", approveKey, { "": {} }, runtime, warn);
+		const kind = sharedKind("approve", approveKey, { "": {} }, runtime);
 		expect(kind.face(0, "nope", 80)).toBeUndefined();
 		expect(kind.press!(0, "nope")).toBeUndefined();
 		expect(kind.face(0, "other", 116)).toBeUndefined();
@@ -126,7 +126,7 @@ describe("sharedKind presses", () => {
 			tile: () => svgImage(144, 144, "<rect/>"),
 			press: () => ({ kind: "guard", guard: { scope: "", holdHint: "Hold", card: () => ({ glyph: "pin", verb: "Pin", target: "", footer: "" }) }, work }),
 		};
-		const kind = sharedKind("reviewing", reviewing, { "": {} }, runtime, warn);
+		const kind = sharedKind("reviewing", reviewing, { "": {} }, runtime);
 		kind.press!(0, "", 0);
 		kind.press!(0, "");
 		await settle();
@@ -138,7 +138,7 @@ describe("sharedKind presses", () => {
 	async function approve(settings = { approvalAuthority: "once" }) {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime, repaint, warn } = setup(selected);
-		const kind = sharedKind("approve", approveKey, { "": settings }, runtime, warn);
+		const kind = sharedKind("approve", approveKey, { "": settings }, runtime);
 		kind.face(0, "", 80);
 		await settle();
 		return { kind, target: selected.current!, selected, repaint, warn };
@@ -156,7 +156,7 @@ describe("sharedKind presses", () => {
 		vi.useFakeTimers();
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime, repaint } = setup(selected);
-		const kind = sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined);
+		const kind = sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime);
 		kind.face(0, "", 80);
 		await vi.advanceTimersByTimeAsync(0);
 		const live = kind.face(0, "", 80);
@@ -181,7 +181,7 @@ describe("sharedKind presses", () => {
 	it("says Deny needs a hold in Deny's own words", async () => {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime } = setup(selected);
-		const kind = sharedKind("deny", denyKey, { "": {} }, runtime, () => undefined);
+		const kind = sharedKind("deny", denyKey, { "": {} }, runtime);
 		kind.face(0, "", 80);
 		await settle();
 		kind.press!(0, "", 100);
@@ -211,16 +211,16 @@ describe("sharedKind presses", () => {
 	});
 
 	it("flashes a run's notice once its work has started, and keeps it after the work succeeds", async () => {
-		const { runtime, warn } = setup({ current: undefined });
+		const { runtime } = setup({ current: undefined });
 		const work = vi.fn(async () => undefined);
 		const noticing: KeyDefinition<object, null> = { state: () => null, tile: () => renderSkeletonKey(), press: () => ({ kind: "run", work, notice: "Hold to use reset" }) };
-		const kind = sharedKind("noticing", noticing, { "": {} }, runtime, warn);
+		const kind = sharedKind("noticing", noticing, { "": {} }, runtime);
 		kind.press!(0, "");
 		expect(work).toHaveBeenCalledOnce();
 		expect(kind.label!(0, "")).toBe("Hold to use reset");
 		await settle();
 		expect(kind.face(0, "", 80)).toBe(glyphResult(false, "Hold to use reset"));
-		const quiet = sharedKind("quiet", noticing, { "": {} }, runtime, warn, { quiet: () => undefined });
+		const quiet = sharedKind("quiet", noticing, { "": {} }, runtime, { quiet: () => undefined });
 		quiet.press!(0, "");
 		expect(quiet.label!(0, "")).toBeUndefined();
 	});
@@ -240,7 +240,7 @@ describe("sharedKind in Keys", () => {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime } = setup(selected);
 		const sent: SidecarMessage[] = [];
-		const keys = new Keys({ approve: sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined) }, (message) => sent.push(message));
+		const keys = new Keys({ approve: sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime) }, (message) => sent.push(message));
 		keys.handle({ type: "appear", action: "approve:", size: 116 });
 		await settle();
 		keys.repaint();
@@ -260,9 +260,9 @@ describe("sharedKind over the board's threads", () => {
 		const selectThread = vi.fn();
 		const all = [running, ...threads];
 		const world = { threads: all, threadsOn: () => all, selectedOn: () => threads[0] } as unknown as ThreadBoard;
-		const runtime = logiRuntime({ machines: () => [owner], board: world, openThread, selectThread, repaint, warn: () => undefined });
 		const warn = vi.fn<(message: string) => void>();
-		const kind = sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), runtime, warn);
+		const runtime = logiRuntime({ machines: () => [owner], board: world, openThread, selectThread, repaint, warn });
+		const kind = sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), runtime);
 		return { all, owner, runtime, repaint, openThread, selectThread, kind, warn };
 	}
 
@@ -296,7 +296,7 @@ describe("sharedKind over the board's threads", () => {
 
 	it("shows the most urgent thread as Activity and opens it", () => {
 		const { runtime, all, openThread } = board();
-		const kind = sharedKind("activity", activityKey, { "": {} }, runtime, () => undefined);
+		const kind = sharedKind("activity", activityKey, { "": {} }, runtime);
 		expect(kind.label!(0, "")).toBe("busy");
 		kind.press!(0, "", 600);
 		expect(openThread).toHaveBeenCalledExactlyOnceWith(all[0]);
@@ -306,7 +306,7 @@ describe("sharedKind over the board's threads", () => {
 		const { runtime, owner } = board();
 		const open = vi.spyOn(runtime, "openExternal").mockResolvedValue(undefined);
 		const select = vi.spyOn(runtime, "selectThread");
-		const kind = sharedKind("newThread", newThreadKey, { "": {} }, runtime, () => undefined);
+		const kind = sharedKind("newThread", newThreadKey, { "": {} }, runtime);
 		kind.press!(0, "");
 		await settle();
 		expect(owner.launch).toHaveBeenCalledExactlyOnceWith({ projectId: "project" }, "", expect.objectContaining({ fallbackModel: { instanceId: "codex", model: "gpt-5" } }));
@@ -333,7 +333,7 @@ describe("sharedKind for an action that shipped before shared keys", () => {
 	it("takes its settings from the parameter, draws the tile on a keypad, and never flashes", async () => {
 		const { runtime, repaint, warn } = setup({ current: undefined });
 		const failed = vi.fn();
-		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, warn, { quiet: failed });
+		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, { quiet: failed });
 		expect(kind.face(0, "7", 116)).toBe(svgMarkup(144, 144, `<rect class="tile"/>`));
 		kind.press!(0, "0");
 		kind.press!(0, "7", 600);
@@ -351,7 +351,7 @@ describe("sharedKind over the power keys", () => {
 	function power(overrides: Partial<DeckThread> = {}, config: object = modelConfig()) {
 		const selected = { current: thread({ machine: machine({ modelConfig: config }), ...overrides }) };
 		const made = setup(selected);
-		return { ...made, thread: selected.current, speed: sharedKind("speed", speedKey, { "": {} }, made.runtime, made.warn), plan: sharedKind("plan", planKey, { "": {} }, made.runtime, made.warn) };
+		return { ...made, thread: selected.current, speed: sharedKind("speed", speedKey, { "": {} }, made.runtime), plan: sharedKind("plan", planKey, { "": {} }, made.runtime) };
 	}
 	const tile = <S, St>(key: KeyDefinition<S, St>, runtime: ReturnType<typeof setup>["runtime"]) => {
 		const ctx = { settings: {} as S, machine: undefined, runtime, target: () => ({ thread: runtime.board.selectedOn(), pinned: false }) };
@@ -390,14 +390,14 @@ describe("sharedKind over the lineage and organize keys", () => {
 	function lineage(overrides: Partial<DeckThread> = {}) {
 		const selected = { current: thread({ title: "Open thread", machine: machine({ modelConfig: modelConfig() }), ...overrides }) };
 		const made = setup(selected);
-		const organize = sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((which) => [which, { organize: which }])), made.runtime, made.warn);
+		const organize = sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((which) => [which, { organize: which }])), made.runtime);
 		return {
 			...made,
 			thread: selected.current,
-			stopWorkflow: sharedKind("stopWorkflow", stopKey, { "": { mode: "workflow" } }, made.runtime, made.warn),
-			fork: sharedKind("fork", forkKey, { "": {} }, made.runtime, made.warn),
-			merge: sharedKind("merge", forkKey, { "": { mode: "merge" } }, made.runtime, made.warn),
-			branch: sharedKind("branch", branchKey, { "": {} }, made.runtime, made.warn),
+			stopWorkflow: sharedKind("stopWorkflow", stopKey, { "": { mode: "workflow" } }, made.runtime),
+			fork: sharedKind("fork", forkKey, { "": {} }, made.runtime),
+			merge: sharedKind("merge", forkKey, { "": { mode: "merge" } }, made.runtime),
+			branch: sharedKind("branch", branchKey, { "": {} }, made.runtime),
 			organize,
 		};
 	}
@@ -470,8 +470,8 @@ describe("sharedKind over the git and pull request keys", () => {
 		return {
 			...made,
 			thread: selected.current,
-			git: sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), made.runtime, made.warn),
-			pr: sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, made.runtime, made.warn),
+			git: sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), made.runtime),
+			pr: sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, made.runtime),
 		};
 	}
 
@@ -523,18 +523,18 @@ describe("sharedKind over Open, Health, Update T3, Share Thread and Usage", () =
 		const open = thread({ title: "Open thread", machine: owner });
 		const board = { threads: [open], threadsOn: () => [open], selectedOn: () => open } as unknown as ThreadBoard;
 		const repaint = vi.fn();
-		const runtime = logiRuntime({ machines: () => [owner], board, openThread: async () => undefined, selectThread: () => undefined, repaint, warn: () => undefined });
 		const warn = vi.fn<(message: string) => void>();
+		const runtime = logiRuntime({ machines: () => [owner], board, openThread: async () => undefined, selectThread: () => undefined, repaint, warn });
 		const updateKey = createUpdateKey();
-		const update = sharedKind("update", updateKey, { "": {} }, runtime, warn);
+		const update = sharedKind("update", updateKey, { "": {} }, runtime);
 		updateKey.onResult((_url, label) => update.flash("", label));
 		return {
 			owner,
 			update,
-			open: sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, runtime, warn),
-			health: sharedKind("health", healthKey, { "": {} }, runtime, warn),
-			share: sharedKind("share", shareKey, { "": {} }, runtime, warn),
-			usage: sharedKind("usage", usageKey, { "": {} }, runtime, warn),
+			open: sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, runtime),
+			health: sharedKind("health", healthKey, { "": {} }, runtime),
+			share: sharedKind("share", shareKey, { "": {} }, runtime),
+			usage: sharedKind("usage", usageKey, { "": {} }, runtime),
 		};
 	}
 

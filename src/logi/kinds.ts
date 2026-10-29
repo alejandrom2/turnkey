@@ -39,7 +39,6 @@ export type SidecarDeps = {
 	failed(what: string): (error: unknown) => void;
 	settingsUrl(): string;
 	runtime: KeyRuntime;
-	warn(message: string): void;
 };
 
 // The words the Turnkey folder's entries are listed by in Options+, from the translations the manifest already has.
@@ -79,11 +78,11 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 
 	// Limit n and the Limits folder were Logitech actions before they were shared: same Ring faces, and a press only refreshes, as it always did.
 	const limitsQuiet = { quiet: failed("refresh limits") };
-	const { press: _folderPress, ...limitsFolder } = sharedKind("limits", limitsKey, () => ({}), deps.runtime, deps.warn, limitsQuiet);
+	const { press: _folderPress, ...limitsFolder } = sharedKind("limits", limitsKey, () => ({}), deps.runtime, limitsQuiet);
 
 	// Update's runs live with this host; how one ended flashes on its key, after the press.
 	const updateKey = createUpdateKey();
-	const update = sharedKind("update", updateKey, { "": {} }, deps.runtime, deps.warn);
+	const update = sharedKind("update", updateKey, { "": {} }, deps.runtime);
 	updateKey.onResult((_url, label) => update.flash("", label));
 
 	const operable = () => board.threads.filter((thread) => thread.deck === "running" && thread.machine.canOperate);
@@ -104,17 +103,17 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 
 	return {
 		// Approve allows once, as the design has it on Logitech; a keypad holds for it, a Ring click is itself the confirmation.
-		approve: sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, deps.runtime, deps.warn),
-		deny: sharedKind("deny", denyKey, { "": {} }, deps.runtime, deps.warn),
+		approve: sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, deps.runtime),
+		deny: sharedKind("deny", denyKey, { "": {} }, deps.runtime),
 		// Thread n is the nth thread on the board, the order Stream Deck's slot n shows with default settings.
-		thread: sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), deps.runtime, deps.warn),
-		activity: sharedKind("activity", activityKey, { "": {} }, deps.runtime, deps.warn),
-		newThread: sharedKind("newThread", newThreadKey, { "": {} }, deps.runtime, deps.warn),
+		thread: sharedKind("thread", threadKey, Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((slot) => [String(slot), { slot }])), deps.runtime),
+		activity: sharedKind("activity", activityKey, { "": {} }, deps.runtime),
+		newThread: sharedKind("newThread", newThreadKey, { "": {} }, deps.runtime),
 		// Prompt n and Send were Logitech actions before they were shared: they keep their Ring faces and how they acted, sending at once.
 		// A name with no glyph of its own (Continue is its own action) sends nothing, as before.
-		prompt: sharedKind("prompt", sendKey, (name) => (isPrompt(name) ? { template: name } : {}), deps.runtime, deps.warn, { quiet: failed("send the prompt") }),
+		prompt: sharedKind("prompt", sendKey, (name) => (isPrompt(name) ? { template: name } : {}), deps.runtime, { quiet: failed("send the prompt") }),
 		// A prompt written in the action's editor travels as its parameter, so each placed copy is its own key.
-		send: sharedKind("send", sendKey, (text) => ({ template: "custom", prompt: text }), deps.runtime, deps.warn, { quiet: failed("send the prompt") }),
+		send: sharedKind("send", sendKey, (text) => ({ template: "custom", prompt: text }), deps.runtime, { quiet: failed("send the prompt") }),
 		continue: {
 			face: (_index, _parameter, size) => sized(size, () => continueFace(continueStep(selected())), () => continueTile(continueStep(selected()), selected()?.deck)),
 			label: () => selected()?.title,
@@ -126,14 +125,14 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 			},
 		},
 		// Access, Effort and Model n were Logitech actions before they were shared; they keep their Ring faces and how they acted.
-		access: { ...sharedKind("access", permissionsKey, () => ({}), deps.runtime, deps.warn, { quiet: failed(CHANGE.permissions) }), turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)) },
-		effort: { ...sharedKind("effort", effortKey, () => ({}), deps.runtime, deps.warn, { quiet: failed(CHANGE.effort) }), turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)) },
+		access: { ...sharedKind("access", permissionsKey, () => ({}), deps.runtime, { quiet: failed(CHANGE.permissions) }), turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)) },
+		effort: { ...sharedKind("effort", effortKey, () => ({}), deps.runtime, { quiet: failed(CHANGE.effort) }), turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)) },
 		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
-		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { quiet: failed(CHANGE.model) }), ...watching },
-		speed: sharedKind("speed", speedKey, { "": {} }, deps.runtime, deps.warn),
-		plan: sharedKind("plan", planKey, { "": {} }, deps.runtime, deps.warn),
+		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, { quiet: failed(CHANGE.model) }), ...watching },
+		speed: sharedKind("speed", speedKey, { "": {} }, deps.runtime),
+		plan: sharedKind("plan", planKey, { "": {} }, deps.runtime),
 		// A Limits folder's slots: the parameter is the place, from 1, in T3 Code's Limits.
-		limit: { ...sharedKind("limit", limitsKey, (place) => ({ poolSlot: Number(place) }), deps.runtime, deps.warn, limitsQuiet), appear: deps.refreshLimits, press: () => deps.refreshLimits() },
+		limit: { ...sharedKind("limit", limitsKey, (place) => ({ poolSlot: Number(place) }), deps.runtime, limitsQuiet), appear: deps.refreshLimits, press: () => deps.refreshLimits() },
 		limits: { ...limitsFolder, appear: deps.refreshLimits },
 		status: {
 			face: (_index, _parameter, size) => sized(size, () => statusFace(threadCounts(board.threads)), () => statusTile(threadCounts(board.threads))),
@@ -180,33 +179,33 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 			press: () => void deps.openExternal(deps.settingsUrl()).catch(failed("open Turnkey Settings")),
 		},
 		// Stop run was a Logitech action before it was shared: the open thread if it runs, else the newest run, on any press, as it always acted.
-		stop: sharedKind("stop", stopKey, () => ({ fallback: "newestRunning" }), deps.runtime, deps.warn, { quiet: failed("stop the run") }),
+		stop: sharedKind("stop", stopKey, () => ({ fallback: "newestRunning" }), deps.runtime, { quiet: failed("stop the run") }),
 		// Stop workflow and Merge can't be undone: a keypad holds for them, a Ring click is itself the confirmation.
-		stopWorkflow: sharedKind("stopWorkflow", stopKey, { "": { mode: "workflow" } }, deps.runtime, deps.warn),
-		fork: sharedKind("fork", forkKey, { "": {} }, deps.runtime, deps.warn),
-		merge: sharedKind("merge", forkKey, { "": { mode: "merge" } }, deps.runtime, deps.warn),
-		branch: sharedKind("branch", branchKey, { "": {} }, deps.runtime, deps.warn),
+		stopWorkflow: sharedKind("stopWorkflow", stopKey, { "": { mode: "workflow" } }, deps.runtime),
+		fork: sharedKind("fork", forkKey, { "": {} }, deps.runtime),
+		merge: sharedKind("merge", forkKey, { "": { mode: "merge" } }, deps.runtime),
+		branch: sharedKind("branch", branchKey, { "": {} }, deps.runtime),
 		// One action per organize action but Unpin; Snooze takes Stream Deck's default hour, and Pin toggles, as there.
-		organize: sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((organize) => [organize, { organize }])), deps.runtime, deps.warn),
+		organize: sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((organize) => [organize, { organize }])), deps.runtime),
 		// In the Turnkey folder only, as their reads are heavier. Every git action needs a keypad hold; T3 Code writes the commit message.
 		git: {
-			...sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), deps.runtime, deps.warn),
+			...sharedKind("git", gitKey, Object.fromEntries((["commit", "push", "create_pr", "pull"] as const).map((gitAction) => [gitAction, { gitAction }])), deps.runtime),
 			name: (parameter) => GIT_NAMES[parameter] && `${actionName("git")} · ${t(GIT_NAMES[parameter])}`,
 		},
 		// Show is `pr`; of the handoffs only Fix findings needs a keypad hold, as Stream Deck holds it by default.
 		pr: {
-			...sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime, deps.warn),
+			...sharedKind("pr", pullRequestKey, { pr: { mode: "show" }, fix: { mode: "fix" }, explain: { mode: "explain" }, ask: { mode: "ask" }, guide: { mode: "guide" } }, deps.runtime),
 			name: (parameter) => (parameter === "pr" ? actionName("pr") : PR_NAMES[parameter] && `${actionName("pr")} · ${t(PR_NAMES[parameter])}`),
 		},
 		// The machines' configs (editors, providers, versions, Labs flags) stay live once these show. Preview and Health are in the folder only.
-		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime, deps.warn), ...watching, name: (parameter) => (parameter === "preview" ? t("openPreview.title") : undefined) },
-		health: { ...sharedKind("health", healthKey, { "": {} }, deps.runtime, deps.warn), ...watching, name: () => actionName("health") },
+		open: { ...sharedKind("open", openKey, { editor: { mode: "editor" }, preview: { mode: "preview" } }, deps.runtime), ...watching, name: (parameter) => (parameter === "preview" ? t("openPreview.title") : undefined) },
+		health: { ...sharedKind("health", healthKey, { "": {} }, deps.runtime), ...watching, name: () => actionName("health") },
 		// Update can't be undone: a keypad holds for it, a Ring click is itself the confirmation. Logitech never asks for its access.
 		update: { ...update, ...watching },
-		share: { ...sharedKind("share", shareKey, { "": {} }, deps.runtime, deps.warn), ...watching },
+		share: { ...sharedKind("share", shareKey, { "": {} }, deps.runtime), ...watching },
 		// No minute tick here: the period is read as the key shows, unless it was read in the last minute, and on a press.
 		usage: {
-			...sharedKind("usage", usageKey, { "": {} }, deps.runtime, deps.warn),
+			...sharedKind("usage", usageKey, { "": {} }, deps.runtime),
 			disappear: unwatchConfigs,
 			appear: (action) => {
 				watchConfigs(action);

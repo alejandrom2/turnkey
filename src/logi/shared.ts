@@ -36,7 +36,6 @@ export function sharedKind<S, St>(
 	definition: KeyDefinition<S, St>,
 	variants: Record<string, S> | ((parameter: string) => S),
 	runtime: KeyRuntime,
-	warn: (message: string) => void,
 	legacy?: Legacy,
 ): KeyKind & { flash(parameter: string, label: string): void } {
 	const flashes = new Map<string, { label: string; timer: ReturnType<typeof setTimeout> }>();
@@ -49,7 +48,7 @@ export function sharedKind<S, St>(
 		if (typeof variants === "function") return { settings: variants(parameter), machine: undefined, runtime, target, instance };
 		if (!Object.hasOwn(variants, parameter)) {
 			// The parameter only reaches the log by kind: Logi could hand any text.
-			if (!warned) warn(`${name}: dropped an action variant Turnkey doesn't know.`);
+			if (!warned) runtime.warn(`${name}: dropped an action variant Turnkey doesn't know.`);
 			warned = true;
 			return undefined;
 		}
@@ -95,7 +94,7 @@ export function sharedKind<S, St>(
 				const plan = definition.press(definition.state(ctx), ctx, { heldMs: heldMs ?? 0, confirmBy: heldMs === undefined ? "click" : "hold" });
 				// A review plan is Stream Deck's alone; running it here would skip a keypad hold, so the definition is at fault.
 				if (plan.kind === "guard") {
-					if (!refusedGuard) warn(`${name}: a key asked for Stream Deck's review, which Logitech doesn't have.`);
+					if (!refusedGuard) runtime.warn(`${name}: a key asked for Stream Deck's review, which Logitech doesn't have.`);
 					refusedGuard = true;
 				} else if (plan.kind === "run") {
 					// A press that acts ends the flash a refused one left; a result the work reports itself (Update's) then stays.
@@ -110,7 +109,7 @@ export function sharedKind<S, St>(
 						(error: unknown) => {
 							if (legacy !== undefined) return legacy.quiet(error);
 							// The message only: errors never carry tokens, but their causes might.
-							warn(`${name}: a press failed: ${error instanceof Error ? error.message : String(error)}`);
+							runtime.warn(`${name}: a press failed: ${error instanceof Error ? error.message : String(error)}`);
 							flash(parameter, failureLabel(error));
 						},
 					);
@@ -120,7 +119,7 @@ export function sharedKind<S, St>(
 			if (definition.prepare === undefined) act();
 			else
 				void definition.prepare(ctx).then(act, (error: unknown) => {
-					warn(`${name}: a read before a press failed: ${error instanceof Error ? error.message : String(error)}`);
+					runtime.warn(`${name}: a read before a press failed: ${error instanceof Error ? error.message : String(error)}`);
 					act();
 				});
 		},
