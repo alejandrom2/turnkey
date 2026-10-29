@@ -64,6 +64,15 @@ namespace Loupedeck.TurnkeyPlugin
             }
         }
 
+        public override Boolean ProcessButtonEvent2(String actionParameter, DeviceButtonEvent2 buttonEvent) =>
+            SidecarFaces.HandleButton(buttonEvent, held =>
+            {
+                if (this._faces.TryGetValue(KindOf(actionParameter), out var faces))
+                {
+                    faces.Press(ParameterOf(actionParameter), held);
+                }
+            });
+
         private static String KindOf(String action) => action.Split(':')[0];
 
         private static String ParameterOf(String action) => action.Substring(action.IndexOf(':') + 1);

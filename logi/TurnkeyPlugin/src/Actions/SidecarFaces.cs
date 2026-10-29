@@ -38,7 +38,28 @@ namespace Loupedeck.TurnkeyPlugin
             this._sidecar().Stopped -= this.OnStopped;
         }
 
-        public void Press(String actionParameter) => this._sidecar().Send(new { type = "press", action = this.ActionId(actionParameter) });
+        // `heldMs` is left out for a click on the Actions Ring, which is itself the confirmation.
+        public void Press(String actionParameter, Int32? heldMs = null) => this._sidecar().Send(heldMs is Int32 held
+            ? (Object)new { type = "press", action = this.ActionId(actionParameter), heldMs = held }
+            : new { type = "press", action = this.ActionId(actionParameter) });
+
+        // Ring: a click fires at once on Press. Others: act on Release with the hold time, so a press fires once. True for every event so the SDK never also calls RunCommand.
+        public static Boolean HandleButton(DeviceButtonEvent2 e, Action<Int32?> press)
+        {
+            if (e.DeviceType.HasFlag(DeviceType.Loupedeck72))
+            {
+                if (e.EventType == DeviceButtonEventType.Press)
+                {
+                    press(null);
+                }
+            }
+            else if (e.EventType == DeviceButtonEventType.Release)
+            {
+                press(e.PressDuration);
+            }
+
+            return true;
+        }
 
         public void Turn(String actionParameter, Int32 ticks) => this._sidecar().Send(new { type = "turn", action = this.ActionId(actionParameter), ticks });
 
