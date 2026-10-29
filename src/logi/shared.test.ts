@@ -514,7 +514,6 @@ describe("sharedKind over the git and pull request keys", () => {
 });
 
 describe("sharedKind over Open, Health, Update T3, Share Thread and Usage", () => {
-	const MAINTAIN = ["orchestration:read", "orchestration:operate", "environment:maintain"];
 	const service = { serverVersion: "1.0.0", capabilities: { serverSelfUpdate: "boot-service", serverSelfUpdateProgress: true } };
 
 	/** The sidecar's runtime over one machine and its open thread, with these kinds as kinds.ts registers them. */
@@ -539,7 +538,7 @@ describe("sharedKind over Open, Health, Update T3, Share Thread and Usage", () =
 	}
 
 	it("draws their Ring glyphs and keypad tiles", async () => {
-		const { open, health, update, share, usage } = keys({ scopes: MAINTAIN });
+		const { open, health, update, share, usage } = keys();
 		share.face(0, "", 80);
 		// The preview's tabs, then (with none) its newest HTML render, are read in turn.
 		open.face(0, "preview", 80);
@@ -550,29 +549,25 @@ describe("sharedKind over Open, Health, Update T3, Share Thread and Usage", () =
 		await expect(open.face(0, "editor", 116)).toMatchFileSnapshot("./__goldens__/sharedOpen-editor-116.svg");
 		await expect(open.face(0, "preview", 80)).toMatchFileSnapshot("./__goldens__/sharedOpen-preview-80.svg");
 		await expect(health.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedHealth-80.svg");
-		await expect(update.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedUpdate-80.svg");
-		await expect(update.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedUpdate-116.svg");
-		await expect(share.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedShare-80.svg");
+		await expect(update.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedUpdate-needsAccess-80.svg");
+		await expect(update.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedUpdate-needsAccess-116.svg");
+		await expect(share.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedShare-needsAccess-80.svg");
+		await expect(share.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedShare-needsAccess-116.svg");
 		await expect(usage.face(0, "", 80)).toMatchFileSnapshot("./__goldens__/sharedUsage-80.svg");
 		expect(open.label!(0, "editor")).toBe("VS Code");
 		expect(open.face(0, "", 80)).toBeUndefined();
 	});
 
-	it("updates only after a keypad hold, or on a Ring click, and flashes how it ended", async () => {
-		vi.useFakeTimers();
-		vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ latest: "1.0.0" }) })));
-		try {
-			const { update, owner } = keys({ scopes: MAINTAIN, updateServer: vi.fn() });
-			update.press!(0, "", 100);
-			expect(update.label!(0, "")).toBe(t("update.holdToUpdate"));
-			update.press!(0, "");
-			await vi.advanceTimersByTimeAsync(0);
-			// Already on the newest release: nothing to install, and the key says so after the press.
-			expect(owner.updateServer).not.toHaveBeenCalled();
-			expect(update.label!(0, "")).toBe(t("update.upToDate"));
-		} finally {
-			vi.unstubAllGlobals();
-		}
+	it("shows Update T3 and Share Thread unavailable, as Logitech pairings never get their access", async () => {
+		const { update, share } = keys();
+		share.face(0, "", 80);
+		await settle();
+		expect(update.face(0, "", 80)).toBe(ringFace(COLORS.accent, "update", { dim: true }));
+		expect(update.label!(0, "")).toBe(needsAccessLabel("environment:maintain"));
+		expect(share.face(0, "", 80)).toBe(ringFace(COLORS.accent, "share", { dim: true }));
+		expect(share.label!(0, "")).toBe(needsAccessLabel("access:write"));
+		expect(update.face(0, "", 116)).toContain('<g opacity=".5">');
+		expect(share.face(0, "", 116)).toContain('<g opacity=".5">');
 	});
 
 	it("never asks for access on Logitech, only says it's needed", () => {

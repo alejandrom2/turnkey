@@ -25,6 +25,13 @@ export function accessPlan(runtime: Pick<KeyRuntime, "optIn">, machine: Machine,
 	};
 }
 
+/** Why a host that can't ask for access (Logitech) can't act: the first of `scopes` the machine lacks; undefined where it holds them or the host can ask. */
+export function unreachable(runtime: Pick<KeyRuntime, "optIn">, machine: Machine, scopes: readonly OptInScope[]): string | undefined {
+	if (runtime.optIn !== undefined) return undefined;
+	const lacking = scopes.find((scope) => !grants(machine.scopes, scope));
+	return lacking === undefined ? undefined : needsAccessLabel(lacking);
+}
+
 /** The machine lacks `scopes` and its next pairing asks for them: the key says to pair again. */
 export const awaitingPairing = (runtime: Pick<KeyRuntime, "optIn">, machine: Machine, scopes: readonly OptInScope[]): boolean =>
 	scopes.some((scope) => !grants(machine.scopes, scope) && (runtime.optIn?.requested(machine.url, scope) ?? false));

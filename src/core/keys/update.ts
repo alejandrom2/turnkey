@@ -8,7 +8,7 @@ import { type Machine, machineName } from "../t3/machine.js";
 import { isThisComputer, MAINTAIN_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
 import { fetchUpdateTarget, RESTART_TIMEOUT_MS, updateFailure, updateRoute, type UpdateStage } from "../update.js";
-import { accessFace, accessPlan, awaitingPairing } from "./access.js";
+import { accessFace, accessPlan, awaitingPairing, unreachable } from "./access.js";
 import { confirmed, type KeyDefinition, type KeyRuntime } from "./key.js";
 
 export type UpdateSettings = { machine?: string };
@@ -30,7 +30,8 @@ export function updateMachineOf(runtime: Pick<KeyRuntime, "machines">, url: stri
 	return machines.find((machine) => isThisComputer(new URL(machine.url).hostname)) ?? (machines.length === 1 ? machines[0] : undefined);
 }
 
-export type UpdateState = { machine: Machine | undefined; run: UpdateRun | undefined; awaiting: boolean; moving: boolean };
+/** `missing`: the access Logitech can never ask for, so the key can't act there. */
+export type UpdateState = { machine: Machine | undefined; run: UpdateRun | undefined; awaiting: boolean; missing: string | undefined; moving: boolean };
 
 /** A spinner while Motion allows one, else a still mark. */
 function busyGlyph(runtime: Pick<KeyRuntime, "motion">, still: GlyphName): { glyph: GlyphName; spin?: number; moving: boolean } {
@@ -129,10 +130,16 @@ export function createUpdateKey(): UpdateKey {
 		state(ctx) {
 			const machine = updateMachineOf(ctx.runtime, ctx.machine);
 			const run = machine && runs.get(machine.url);
-			return { machine, run, awaiting: machine !== undefined && awaitingPairing(ctx.runtime, machine, [MAINTAIN_SCOPE]), moving: run !== undefined && ctx.runtime.motion() !== "off" };
+			return {
+				machine,
+				run,
+				awaiting: machine !== undefined && awaitingPairing(ctx.runtime, machine, [MAINTAIN_SCOPE]),
+				missing: machine && unreachable(ctx.runtime, machine, [MAINTAIN_SCOPE]),
+				moving: run !== undefined && ctx.runtime.motion() !== "off",
+			};
 		},
 
-		tile({ machine, run, awaiting }, ctx) {
+		tile({ machine, run, awaiting, missing }, ctx) {
 			if (run !== undefined) {
 				const busy = busyGlyph(ctx.runtime, "update");
 				const detail = run.target ? t("update.toVersion", { version: run.target }) : machineName(machine!);
@@ -140,6 +147,7 @@ export function createUpdateKey(): UpdateKey {
 			}
 			if (machine === undefined) return renderInfoKey({ glyph: "update", title: t("update.title"), detail: t("update.pickMachine"), available: false });
 			if (awaiting) return accessFace("update", t("update.needsAccess"));
+			if (missing !== undefined) return renderInfoKey({ glyph: "update", title: t("update.title"), detail: missing, available: false });
 			const environment = machine.updateEnvironment;
 			const route = updateRoute(environment);
 			const version = environment?.serverVersion;
@@ -152,14 +160,15 @@ export function createUpdateKey(): UpdateKey {
 		},
 
 		// Logitech's faces stay still: a running update shows the still mark.
-		glyph: ({ machine, run }) => ringFace(COLORS.accent, "update", { dim: run === undefined && (machine === undefined || updateRoute(machine.updateEnvironment).kind === "manual") }),
-		label({ machine, run }) {
+		glyph: ({ machine, run, missing }) => ringFace(COLORS.accent, "update", { dim: run === undefined && (machine === undefined || missing !== undefined || updateRoute(machine.updateEnvironment).kind === "manual") }),
+		label({ machine, run, missing }) {
 			if (run !== undefined) return t(STAGE_TITLE[run.stage]);
 			if (machine === undefined) return t("update.pickMachine");
+			if (missing !== undefined) return missing;
 			const version = machine.updateEnvironment?.serverVersion;
 			return version ? t("update.version", { version }) : t("update.noVersion");
 		},
-		available: ({ machine, run }) => run !== undefined || (machine !== undefined && updateRoute(machine.updateEnvironment).kind !== "manual"),
+		available: ({ machine, run, missing }) => run !== undefined || (machine !== undefined && missing === undefined && updateRoute(machine.updateEnvironment).kind !== "manual"),
 		moving: ({ moving }) => moving,
 
 		press({ machine, run }, ctx, input) {

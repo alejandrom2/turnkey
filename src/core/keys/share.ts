@@ -6,7 +6,7 @@ import { copyText, type GuestShare, shareFailure, ShareStore, shareView, type Sh
 import type { Machine } from "../t3/machine.js";
 import { ACCESS_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
-import { accessFace, accessPlan, awaitingPairing } from "./access.js";
+import { accessFace, accessPlan, awaitingPairing, unreachable } from "./access.js";
 import type { KeyContext, KeyDefinition, KeyRuntime } from "./key.js";
 
 export type ShareSettings = { machine?: string; target?: string; thread?: string; threadTitle?: string };
@@ -73,7 +73,15 @@ export const shareKey: KeyDefinition<ShareSettings, ShareState> = {
 		// A running thread's row moves with every event; its share is read again when its runs move instead.
 		const share = thread && shares.of({ key: thread.key, stamp: thread.active ? thread.runStamp : String(thread.updatedAt) }, () => thread.machine.guestShare(thread));
 		const view = share === undefined ? undefined : shareView(share, Date.now());
-		const reason = target.gone ?? (thread === undefined ? t("reason.noThread") : view?.kind === "none" && !thread.machine.guestLinksEnabled ? t("share.disabled") : undefined);
+		const reason =
+			target.gone ??
+			(thread === undefined
+				? t("reason.noThread")
+				: view?.kind !== "none"
+					? undefined
+					: !thread.machine.guestLinksEnabled
+						? t("share.disabled")
+						: unreachable(ctx.runtime, thread.machine, [ACCESS_SCOPE]));
 		return { thread, share, view, reason, pinned: target.pinned };
 	},
 
