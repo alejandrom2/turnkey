@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2">
   <file original="$Turnkey___@general" source-language="en-US" target-language="ko-KR" datatype="plaintext">
     <body>
@@ -47,6 +47,42 @@
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.LimitsCommand###description" translate="yes">
           <source>Shows your tightest T3 Code usage limit.</source>
           <target>T3 Code에서 가장 빠듯한 사용량 한도를 보여 줍니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command" translate="yes">
+          <source>Model 1</source>
+          <target>모델 1</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model1Command###description" translate="yes">
+          <source>Switches the thread open in T3 Code to the model at this place in your T3 Code model picker: favorites first.</source>
+          <target>T3 Code에서 열려 있는 스레드를 T3 Code 모델 선택기의 이 위치에 있는 모델로 바꿉니다. 즐겨찾기가 먼저입니다.</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model2Command" translate="yes">
+          <source>Model 2</source>
+          <target>모델 2</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model3Command" translate="yes">
+          <source>Model 3</source>
+          <target>모델 3</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model4Command" translate="yes">
+          <source>Model 4</source>
+          <target>모델 4</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model5Command" translate="yes">
+          <source>Model 5</source>
+          <target>모델 5</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model6Command" translate="yes">
+          <source>Model 6</source>
+          <target>모델 6</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model7Command" translate="yes">
+          <source>Model 7</source>
+          <target>모델 7</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model8Command" translate="yes">
+          <source>Model 8</source>
+          <target>모델 8</target>
         </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
           <source>Most urgent thread</source>
@@ -136,13 +172,13 @@
           <source>Usage</source>
           <target>사용량</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
-          <source>Settings</source>
-          <target>설정</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___GroupName___FD04236EB1B372F00005" translate="yes">
           <source>Model</source>
           <target>모델</target>
+        </trans-unit>
+        <trans-unit id="$Turnkey___GroupName___44063AC974DF77A40008" translate="yes">
+          <source>Settings</source>
+          <target>설정</target>
         </trans-unit>
       </group>
     </body>

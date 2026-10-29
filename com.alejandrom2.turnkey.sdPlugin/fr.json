@@ -1254,6 +1254,7 @@
 				"connected": "Connecté à {name}."
 			},
 			"actions": {
+				"model": { "slot1": "Modèle 1", "slot2": "Modèle 2", "slot3": "Modèle 3", "slot4": "Modèle 4", "slot5": "Modèle 5", "slot6": "Modèle 6", "slot7": "Modèle 7", "slot8": "Modèle 8", "description": "Passe le fil ouvert dans T3 Code au modèle à cette place de votre sélecteur de modèles T3 Code : favoris d'abord." },
 				"urgent": {
 					"name": "Fil le plus urgent",
 					"description": "Montre ce qui vous attend dans T3 Code. Choisissez-le pour ouvrir ce fil."

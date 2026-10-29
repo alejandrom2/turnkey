@@ -1254,6 +1254,7 @@
 				"connected": "Connected to {name}."
 			},
 			"actions": {
+				"model": { "slot1": "Model 1", "slot2": "Model 2", "slot3": "Model 3", "slot4": "Model 4", "slot5": "Model 5", "slot6": "Model 6", "slot7": "Model 7", "slot8": "Model 8", "description": "Switches the thread open in T3 Code to the model at this place in your T3 Code model picker: favorites first." },
 				"urgent": {
 					"name": "Most urgent thread",
 					"description": "Shows what needs you in T3 Code. Choose it to open that thread."

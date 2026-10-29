@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { COLORS, STATE_COLOR } from "../core/render.js";
+import type { CatalogModel } from "../core/models.js";
+import { COLORS, sampleStops, SPECTRUM, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, modelFace, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 
 const thread = (deck: DeckState, unseen = false) => ({ deck, unseen });
 
@@ -102,6 +103,36 @@ describe("the controls' faces", () => {
 		expect(modeFace("full-access")).toBe(ringFace(STATE_COLOR.approval, "modeFullAccess"));
 		expect(modeFace(undefined)).toBe(ringFace(COLORS.muted, "modeSupervised", { dim: true }));
 		expect(effortFace(undefined)).toBe(ringFace(COLORS.muted, "effort", { dim: true }));
-		expect(effortFace({ index: 1, count: 3 })).not.toBe(effortFace({ index: 2, count: 3 }));
+		expect(effortFace({ index: 1, count: 3, color: "#648FFD", ultrathink: false })).not.toBe(effortFace({ index: 2, count: 3, color: "#648FFD", ultrathink: false }));
+	});
+
+	it("colors effort by its level, and Ultrathink across the whole spectrum", () => {
+		expect(effortFace({ index: 1, count: 4, color: "#AD7BF9", ultrathink: false })).toContain('stroke="#AD7BF9"');
+		const ultrathink = effortFace({ index: 3, count: 4, color: "#AD7BF9", ultrathink: true });
+		expect(ultrathink).toContain(`fill="${sampleStops(SPECTRUM, 0)}"`);
+		expect(ultrathink).toContain(`fill="${sampleStops(SPECTRUM, 0.9)}"`);
+		expect(ultrathink).not.toContain("#AD7BF9");
+	});
+
+	it("names a picker model in its color, sets the thread's own apart, and dims an empty slot", () => {
+		const opus: CatalogModel = {
+			key: "claudeAgent:claude-opus-4-5",
+			instanceId: "claudeAgent",
+			slug: "claude-opus-4-5",
+			driver: "claudeAgent",
+			providerName: "Claude",
+			name: "Claude Opus 4.5",
+			label: "Claude · Opus 4.5",
+			accentColor: "#123456",
+			iconUrl: undefined,
+			badge: false,
+			options: [],
+		};
+		const other = modelFace(opus, false);
+		expect(other).toContain(">Opus 4.5<");
+		expect(other).toContain('fill="#123456">Opus');
+		expect(modelFace(opus, true)).toContain('<circle cx="72" cy="72" r="70" fill="#123456"/>');
+		expect(other).not.toContain('r="70"');
+		expect(modelFace(undefined, false)).toBe(ringFace(COLORS.muted, "model", { dim: true }));
 	});
 });

@@ -1,5 +1,6 @@
 import type { DeckThread } from "../core/board.js";
-import { COLORS, glyph, type GlyphName, MODE_GLYPH, STATE_COLOR, svgMarkup } from "../core/render.js";
+import { bareModelName, type CatalogModel, modelColor, providerMark } from "../core/models.js";
+import { COLORS, escapeXml, glyph, type GlyphName, MODE_GLYPH, sampleStops, SPECTRUM, STATE_COLOR, svgMarkup, textWidth } from "../core/render.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 
 /** What the Actions Ring reads from a thread. */
@@ -88,14 +89,35 @@ export function statusFace(counts: { approval: number; question: number; running
 export const modeFace = (mode: RuntimeMode | undefined): string =>
 	mode === undefined ? ringFace(COLORS.muted, "modeSupervised", { dim: true }) : ringFace(mode === "full-access" ? STATE_COLOR.approval : COLORS.accent, MODE_GLYPH[mode]);
 
-/** The selected thread's effort: its glyph over one dot per level, filled up to the current one. */
-export function effortFace(level: { index: number; count: number } | undefined): string {
+/**
+ * The selected thread's effort: its glyph over one dot per level, filled up to the current one, in the level's color.
+ * Ultrathink paints every dot along T3 Code's spectrum; solid colors, as Options+ may not draw gradients.
+ */
+export function effortFace(level: { index: number; count: number; color: string; ultrathink: boolean } | undefined): string {
 	if (level === undefined) return ringFace(COLORS.muted, "effort", { dim: true });
-	const mark = glyph("effort", 34, 8, 76, COLORS.accent, 3.2);
+	const tint = (index: number) => (level.ultrathink ? sampleStops(SPECTRUM, level.count > 1 ? (0.9 * index) / (level.count - 1) : 0.9) : level.color);
+	const mark = glyph("effort", 34, 8, 76, level.ultrathink ? sampleStops(SPECTRUM, 0.72) : level.color, 3.2);
 	const gap = 24;
 	const left = 72 - ((level.count - 1) * gap) / 2;
-	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="114" r="8.5" fill="${COLORS.accent}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
+	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="114" r="8.5" fill="${tint(index)}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");
 	return svgMarkup(144, 144, mark + dots);
+}
+
+/** A model from T3 Code's picker: its provider's mark over its short name, in its color; the thread's own on a disc of it. */
+export function modelFace(model: CatalogModel | undefined, current: boolean): string {
+	if (model === undefined) return ringFace(COLORS.muted, "model", { dim: true });
+	const color = modelColor(model) ?? COLORS.accent;
+	const ink = current ? "#FFFFFF" : color;
+	const name = bareModelName(model);
+	// The disc is about 124 px wide where the name sits; textWidth runs wide of the ring's font, so weight 600 is the closer guess.
+	const size = Math.max(18, Math.min(32, Math.floor((124 * 32) / textWidth(name, 32, 600))));
+	return svgMarkup(
+		144,
+		144,
+		(current ? `<circle cx="72" cy="72" r="70" fill="${color}"/>` : "") +
+			providerMark(model, 50, 22, 44, { color: ink }) +
+			`<text x="72" y="104" font-size="${size}" font-weight="700" text-anchor="middle" fill="${ink}">${escapeXml(name)}</text>`,
+	);
 }
 
 /** A prompt the user wrote in the action's editor, drawn as Stream Deck's Send arrow; dimmed only while it has no text. */

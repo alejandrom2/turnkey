@@ -1254,6 +1254,7 @@
 				"connected": "{name}에 연결됨."
 			},
 			"actions": {
+				"model": { "slot1": "모델 1", "slot2": "모델 2", "slot3": "모델 3", "slot4": "모델 4", "slot5": "모델 5", "slot6": "모델 6", "slot7": "모델 7", "slot8": "모델 8", "description": "T3 Code에서 열려 있는 스레드를 T3 Code 모델 선택기의 이 위치에 있는 모델로 바꿉니다. 즐겨찾기가 먼저입니다." },
 				"urgent": {
 					"name": "가장 급한 스레드",
 					"description": "T3 Code에서 확인이 필요한 항목을 보여 줍니다. 선택하면 해당 스레드를 엽니다."

@@ -114,8 +114,17 @@ const SYMBOLS: Record<string, GlyphName> = {
 	CommitCommand: "gitCommit",
 	SendPromptCommand: "send",
 	TurnkeyFolder: "cube",
-	// Not an action: the icon of the default ring profile's Prompts folder (scripts/logi-profile.ts).
+	Model1Command: "model",
+	Model2Command: "model",
+	Model3Command: "model",
+	Model4Command: "model",
+	Model5Command: "model",
+	Model6Command: "model",
+	Model7Command: "model",
+	Model8Command: "model",
+	// Not actions: the icons of the default ring profile's folders (scripts/logi-profile.ts).
 	PromptsFolder: "chat",
+	ModelsFolder: "model",
 	AccessAdjustment: "permissions",
 	EffortAdjustment: "effort",
 	LimitsCommand: "gauge",

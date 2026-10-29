@@ -1254,6 +1254,7 @@
 				"connected": "Conectado a {name}."
 			},
 			"actions": {
+				"model": { "slot1": "Modelo 1", "slot2": "Modelo 2", "slot3": "Modelo 3", "slot4": "Modelo 4", "slot5": "Modelo 5", "slot6": "Modelo 6", "slot7": "Modelo 7", "slot8": "Modelo 8", "description": "Cambia el hilo abierto en T3 Code al modelo en esta posición de tu selector de modelos de T3 Code: primero los favoritos." },
 				"urgent": {
 					"name": "Hilo más urgente",
 					"description": "Muestra lo que te espera en T3 Code. Elígelo para abrir ese hilo."

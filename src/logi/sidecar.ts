@@ -5,8 +5,8 @@ import { ThreadBoard } from "../core/board.js";
 import { openExternal, openThread } from "../core/commands.js";
 import { threadCounts } from "../core/infobar.js";
 import { COLORS } from "../core/render.js";
-import { findModel } from "../core/models.js";
-import { applyChoice, type PowerChoice, type PowerState, powerState, stepChoice } from "../core/power.js";
+import { findModel, modelColor } from "../core/models.js";
+import { applyChoice, type DialControl, effortChoices, effortToneOf, type PowerChoice, type PowerState, powerState, stepChoice } from "../core/power.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
 import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
 import { LimitsRefresher, refreshLimits } from "../core/usage/refresh.js";
@@ -20,7 +20,7 @@ import { useLanguage } from "./language.js";
 import { startPairingPage } from "./page.js";
 import { encodeMessage, parseHostMessage, type SidecarMessage } from "./protocol.js";
 import { continueStep, nextChoice } from "./controls.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, modelFace, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 import { FileSettings } from "./settings.js";
 import { throttled } from "./resync.js";
 import { keptMachines, machineRows } from "./rows.js";
@@ -73,17 +73,19 @@ const arming = new UltrathinkArming(() => changed());
 const modelOf = (thread: Thread) => findModel(thread.machine.modelConfig, thread.model);
 const sendPrompt = (thread: Thread, text: string) => thread.machine.send(thread, arming.prompt(thread.key, modelOf(thread), text), "auto");
 
-/** The effort or access choices for `thread`, Ultrathink included. */
-const powerOf = (thread: Thread, control: "effort" | "permissions") => powerState(control, thread.machine.modelConfig, thread, arming.armed(thread.key, modelOf(thread)));
+/** The model, effort or access choices for `thread`, Ultrathink included. */
+const powerOf = (thread: Thread, control: DialControl) => powerState(control, thread.machine.modelConfig, thread, arming.armed(thread.key, modelOf(thread)));
 
-/** Applies the choice `choose` picks from the thread's effort or access, unless it is the current one. */
-function pick(control: "effort" | "permissions", choose: (state: PowerState) => PowerChoice | undefined): void {
+const CHANGE: Record<DialControl, string> = { model: "change the model", effort: "change the effort", permissions: "change the access mode" };
+
+/** Applies the choice `choose` picks from the thread's model, effort or access, unless it is the current one. */
+function pick(control: DialControl, choose: (state: PowerState) => PowerChoice | undefined): void {
 	const thread = selected();
 	if (thread === undefined) return;
 	const state = powerOf(thread, control);
 	const choice = choose(state);
 	if (choice === undefined || choice.key === state.current?.key) return;
-	void applyChoice(thread, choice, ultrathinkControl(arming, thread.key, arming.armed(thread.key, modelOf(thread))))?.().catch(failed(choice.kind === "mode" ? "change the access mode" : "change the effort"));
+	void applyChoice(thread, choice, ultrathinkControl(arming, thread.key, arming.armed(thread.key, modelOf(thread))))?.().catch(failed(CHANGE[control]));
 }
 
 /**
@@ -93,15 +95,19 @@ function pick(control: "effort" | "permissions", choose: (state: PowerState) => 
 const refresher = new LimitsRefresher();
 const watchingConfig = new Set<string>();
 const ready = () => machines.all.filter((each) => each.state.kind === "ready" && each.environmentId !== undefined);
-function showLimits(): void {
+/** Keeps each machine's config live (limits, models and favorites) once a slot that shows it has appeared. */
+function watchConfigs(): void {
 	for (const each of ready()) {
 		// shortcut: held until the sidecar exits, since Logi never says a slot is hidden; release it if Logi adds that.
 		if (!watchingConfig.has(each.url)) {
 			watchingConfig.add(each.url);
 			each.watchConfig();
 		}
-		void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 	}
+}
+function showLimits(): void {
+	watchConfigs();
+	for (const each of ready()) void refreshLimits(refresher, each, true).then(changed, failed("refresh limits"));
 }
 function tightestLimit(): { percent: number; stale: boolean } | undefined {
 	const now = Date.now();
@@ -149,11 +155,27 @@ const keys = new Keys(
 			face: () => {
 				const thread = selected();
 				const state = thread && powerOf(thread, "effort");
-				const index = state ? state.choices.findIndex((choice) => choice.key === state.current?.key) : -1;
-				return effortFace(state && state.choices.length > 1 ? { index: Math.max(index, 0), count: state.choices.length } : undefined);
+				if (thread === undefined || state === undefined || state.choices.length < 2) return effortFace(undefined);
+				const index = Math.max(state.choices.findIndex((choice) => choice.key === state.current?.key), 0);
+				const model = modelOf(thread);
+				// Stream Deck's default effort colors, as Logi has no Colors setting.
+				const tone = effortToneOf(effortChoices(model), state.current?.key, "gradient", model && modelColor(model));
+				const current = state.current;
+				return effortFace({ index, count: state.choices.length, color: tone?.text ?? COLORS.accent, ultrathink: current?.kind === "effort" && current.ultrathink });
 			},
 			press: () => pick("effort", nextChoice),
 			turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)),
+		},
+		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
+		model: {
+			face: (_index, place) => {
+				const thread = selected();
+				const state = thread && powerOf(thread, "model");
+				const choice = state?.choices[Number(place) - 1];
+				return modelFace(choice?.kind === "model" ? choice.model : undefined, choice !== undefined && choice.key === state?.current?.key);
+			},
+			press: (_index, place) => pick("model", (state) => state.choices[Number(place) - 1]),
+			appear: watchConfigs,
 		},
 		limits: {
 			face: () => {
