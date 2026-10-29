@@ -137,14 +137,32 @@ const card = `
 				<p class="hint error" id="t3-result" hidden></p>
 			</div>`;
 
-/** Shows the element `id` only while the action's `setting` passes `test`, as it is edited and as settings arrive. */
-const showWhen = (setting: string, id: string, test: string) => `
+/** Shows the element `id` only while the action's `setting` passes its condition, as it is edited and as settings arrive. */
+type VisibilityCondition =
+	| { kind: "equals" | "notEquals"; value: string }
+	| { kind: "oneOf"; values: string[]; fallback?: string };
+
+const scriptLiteral = (value: unknown) => {
+	const json = JSON.stringify(value);
+	if (json === undefined) throw new Error("Cannot serialize a script value");
+	return json.replace(/[<>&\u2028\u2029]/g, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
+};
+
+const showWhen = (setting: string, id: string, condition: VisibilityCondition) => `
 			{
-				const field = document.querySelector('[setting="${setting}"]');
-				const apply = (value) => { $("${id}").hidden = !((value) => ${test})(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === ${scriptLiteral(setting)});
+				const condition = ${scriptLiteral(condition)};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$(${scriptLiteral(id)}).hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
-				client.getSettings().then((payload) => apply(payload?.settings?.["${setting}"]));
-				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["${setting}"]));
+				client.getSettings().then((payload) => apply(payload?.settings?.[${scriptLiteral(setting)}]));
+				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.[${scriptLiteral(setting)}]));
 			}`;
 
 /**
@@ -160,7 +178,7 @@ const modeField = (setting: string, label: string, fallback: string, options: [s
 
 /** Shows `id` only in `modes`; an unsaved mode is the page's `fallback`. */
 const inModes = (setting: string, id: string, fallback: string, modes: string[]) =>
-	showWhen(setting, id, `${JSON.stringify(modes)}.includes(value === "" ? "${fallback}" : value)`);
+	showWhen(setting, id, { kind: "oneOf", values: modes, fallback });
 
 /** An action's own Confirm before sending, over the global one in Turnkey Settings. */
 const confirmField = modeField("confirmSend", "inspector.field.confirm", "", [USE_GLOBAL, ...CHOICES.confirm]);
@@ -170,7 +188,7 @@ const dialAppearance = `${modeField("background", "inspector.field.strip", "", [
 			<sdpi-item ${attr("label", "inspector.field.stripColor")} id="background-color" hidden>
 				<sdpi-color setting="backgroundColor" default="${COLORS.card}"></sdpi-color>
 			</sdpi-item>${modeField("stripStyle", "inspector.field.style", "", [USE_GLOBAL, ...CHOICES.style])}${modeField("textScroll", "inspector.field.longText", "", [USE_GLOBAL, ...CHOICES.scroll])}`;
-const dialAppearanceScript = showWhen("background", "background-color", `value === "custom"`);
+const dialAppearanceScript = showWhen("background", "background-color", { kind: "equals", value: "custom" });
 
 /** Lookups, element helpers and the language swap both pages share; `afterStrings` re-renders runtime copy. */
 const common = (afterStrings: string) => `
@@ -882,7 +900,7 @@ const limitsFields = `
 				</sdpi-select>
 			</sdpi-item>
 			<p class="hint" id="spend-hint" hidden${text("inspector.limits.spendHint")}</p>`;
-const limitsScript = showWhen("resetAction", "spend-hint", `value === "spend"`);
+const limitsScript = showWhen("resetAction", "spend-hint", { kind: "equals", value: "spend" });
 
 /** T3 Code's Usage periods; its page opens on 30 days. */
 const periodField = `
@@ -912,7 +930,9 @@ const targetField = `
 				<sdpi-select setting="thread" datasource="getThreads" hot-reload ${attr("loading", "inspector.loading.threads")}></sdpi-select>
 			</sdpi-item>
 			<p class="hint" id="target-hint" hidden${text("inspector.target.hint")}</p>`;
-const targetScript = showWhen("target", "target-thread", `value === "thread"`) + showWhen("target", "target-hint", `value === "thread"`);
+const targetScript =
+	showWhen("target", "target-thread", { kind: "equals", value: "thread" }) +
+	showWhen("target", "target-hint", { kind: "equals", value: "thread" });
 
 const pages: Record<string, string> = {
 	"environments.html": page("Turnkey"),
@@ -993,7 +1013,8 @@ const pages: Record<string, string> = {
 				<sdpi-textfield setting="title" ${attr("placeholder", "inspector.new.titlePlaceholder")}></sdpi-textfield>
 			</sdpi-item>
 			<p class="hint"${text("inspector.new.hint")}</p>`,
-		showWhen("destination", "project", `value === "project"`) + showWhen("startIn", "worktree-hint", `value === "worktree"`),
+		showWhen("destination", "project", { kind: "equals", value: "project" }) +
+			showWhen("startIn", "worktree-hint", { kind: "equals", value: "worktree" }),
 	),
 	"model.html": page(
 		"Model",
@@ -1083,8 +1104,9 @@ const pages: Record<string, string> = {
 					<option value="off"${text("inspector.organize.confirmOff")}</option>
 				</sdpi-select>
 			</sdpi-item>`,
-		showWhen("organize", "snooze-for", `value === "snooze"`) + showWhen("organize", "confirm-first", `value === "" || value === "settle" || value === "snooze"`) +
-			showWhen("organize", "organize-target", `value !== "wake"`) +
+		showWhen("organize", "snooze-for", { kind: "equals", value: "snooze" }) +
+			showWhen("organize", "confirm-first", { kind: "oneOf", values: ["", "settle", "snooze"] }) +
+			showWhen("organize", "organize-target", { kind: "notEquals", value: "wake" }) +
 			targetScript,
 	),
 	"task.html": page(
@@ -1179,7 +1201,7 @@ const pages: Record<string, string> = {
 				<sdpi-checkbox setting="showEffort" default="true" ${attr("label", "inspector.power.showEffort")}></sdpi-checkbox>
 			</sdpi-item>
 			<p class="hint"${text("inspector.power.hint")}</p>${dialAppearance}`,
-		dialAppearanceScript + showWhen("dialControls", "model-row", `value === "" || value === "model"`),
+		dialAppearanceScript + showWhen("dialControls", "model-row", { kind: "oneOf", values: ["", "model"] }),
 	),
 	"git.html": gitPage("commit"),
 	"git-push.html": gitPage("push"),

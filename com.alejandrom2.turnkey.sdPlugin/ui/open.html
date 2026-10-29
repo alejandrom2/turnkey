@@ -301,29 +301,61 @@ function mergeGlobalSettings(current , patch ) {
 			send("strings");
 			send("status");
 			{
-				const field = document.querySelector('[setting="mode"]');
-				const apply = (value) => { $("open-editor").hidden = !((value) => ["editor"].includes(value === "" ? "editor" : value))(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "mode");
+				const condition = {"kind":"oneOf","values":["editor"],"fallback":"editor"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("open-editor").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["mode"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["mode"]));
 			}
 			{
-				const field = document.querySelector('[setting="mode"]');
-				const apply = (value) => { $("open-preview").hidden = !((value) => ["preview"].includes(value === "" ? "editor" : value))(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "mode");
+				const condition = {"kind":"oneOf","values":["preview"],"fallback":"editor"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("open-preview").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["mode"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["mode"]));
 			}
 			{
-				const field = document.querySelector('[setting="target"]');
-				const apply = (value) => { $("target-thread").hidden = !((value) => value === "thread")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "target");
+				const condition = {"kind":"equals","value":"thread"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("target-thread").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["target"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["target"]));
 			}
 			{
-				const field = document.querySelector('[setting="target"]');
-				const apply = (value) => { $("target-hint").hidden = !((value) => value === "thread")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "target");
+				const condition = {"kind":"equals","value":"thread"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("target-hint").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["target"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["target"]));

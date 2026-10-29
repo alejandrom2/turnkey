@@ -294,8 +294,16 @@ function mergeGlobalSettings(current , patch ) {
 			send("strings");
 			send("status");
 			{
-				const field = document.querySelector('[setting="mode"]');
-				const apply = (value) => { $("pr-fix").hidden = !((value) => ["fix"].includes(value === "" ? "guide" : value))(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "mode");
+				const condition = {"kind":"oneOf","values":["fix"],"fallback":"guide"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("pr-fix").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["mode"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["mode"]));

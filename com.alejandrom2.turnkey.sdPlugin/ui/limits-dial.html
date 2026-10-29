@@ -318,15 +318,31 @@ function mergeGlobalSettings(current , patch ) {
 			send("strings");
 			send("status");
 			{
-				const field = document.querySelector('[setting="background"]');
-				const apply = (value) => { $("background-color").hidden = !((value) => value === "custom")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "background");
+				const condition = {"kind":"equals","value":"custom"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("background-color").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["background"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["background"]));
 			}
 			{
-				const field = document.querySelector('[setting="resetAction"]');
-				const apply = (value) => { $("spend-hint").hidden = !((value) => value === "spend")(value ?? ""); };
+				const field = [...document.querySelectorAll("[setting]")].find((field) => field.getAttribute("setting") === "resetAction");
+				const condition = {"kind":"equals","value":"spend"};
+				const apply = (value) => {
+					const current = value ?? "";
+					const candidate = current === "" && condition.fallback !== undefined ? condition.fallback : current;
+					const matches = condition.kind === "equals" ? current === condition.value
+						: condition.kind === "notEquals" ? current !== condition.value
+							: condition.values.includes(candidate);
+					$("spend-hint").hidden = !matches;
+				};
 				field.addEventListener("valuechange", () => apply(field.value));
 				client.getSettings().then((payload) => apply(payload?.settings?.["resetAction"]));
 				client.didReceiveSettings.subscribe(({ payload }) => apply(payload?.settings?.["resetAction"]));
