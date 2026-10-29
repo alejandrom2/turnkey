@@ -117,7 +117,7 @@
 					<h1 data-i18n="inspector.settings.behavior">Behavior</h1>
 					<div class="field">
 						<label data-i18n="inspector.advanced.autoSwitch">Auto-switch</label>
-						<div class="control"><select class="native" data-setting="autoSwitch"><option value="on" data-i18n="inspector.idlePet.on">On</option><option value="off" data-i18n="inspector.idlePet.off">Off</option></select></div>
+						<div class="control"><input type="checkbox" data-setting="autoSwitch" aria-label="Auto-switch" data-i18n-aria-label="inspector.advanced.autoSwitch" /></div>
 					</div>
 					<p class="hint" data-i18n="inspector.advanced.autoSwitchHint">Puts each Stream Deck on its Turnkey profile when T3 Code opens, and back on the profile before when it quits. A deck you moved to another profile meanwhile stays where it is.</p>
 					<div class="field">
@@ -348,14 +348,14 @@ function mergeGlobalSettings(current , patch ) {
 				Object.assign(globals, settings);
 				for (const control of document.querySelectorAll("[data-setting]")) {
 					const value = globals[control.dataset.setting] ?? DEFAULTS[control.dataset.setting];
-					if (control.type === "checkbox") control.checked = value !== false;
+					if (control.type === "checkbox") control.checked = value === "on";
 					else if (document.activeElement !== control) control.value = value;
 				}
 				$("strip-color").hidden = (globals.stripBackground ?? DEFAULTS.stripBackground) !== "custom";
 			}
 			for (const control of document.querySelectorAll("[data-setting]")) {
 				control.addEventListener("change", () => {
-					const patch = { [control.dataset.setting]: control.type === "checkbox" ? control.checked : control.value.trim() };
+					const patch = { [control.dataset.setting]: control.type === "checkbox" ? (control.checked ? "on" : "off") : control.value.trim() };
 					// The plugin ignores a custom background with no color, so save the one the picker shows.
 					if (patch.stripBackground === "custom" && !globals.stripColor) patch.stripColor = DEFAULTS.stripColor;
 					write(patch);

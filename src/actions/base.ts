@@ -498,8 +498,14 @@ export abstract class DeckAction<T extends JsonObject = JsonObject> extends Sing
 				if (this.#placed.has(action.id)) void this.paint(action);
 			}, FLASH_MS),
 		);
-		if (action.isKey()) await action.setImage(renderResultKey({ ok, label }));
-		else if (action.isDial()) await action.setFeedback(this.flashFeedback(action, ok, label));
+		// Elgato's guidelines require Stream Deck's own alert on a failure, on top of the card saying why.
+		if (action.isKey()) {
+			if (!ok) await action.showAlert();
+			await action.setImage(renderResultKey({ ok, label }));
+		} else if (action.isDial()) {
+			if (!ok) await action.showAlert();
+			await action.setFeedback(this.flashFeedback(action, ok, label));
+		}
 	}
 
 	/** A dial's press result; strip dials draw it in their own appearance. */

@@ -860,10 +860,6 @@
 				"reduced": "Reduced",
 				"off": "Off"
 			},
-			"idlePet": {
-				"off": "Off",
-				"on": "On"
-			},
 			"maxEffort": {
 				"gradient": "Gradient",
 				"solid": "Solid",
