@@ -12,7 +12,7 @@ type RingThread = Pick<DeckThread, "deck" | "unseen">;
  * color, drawn heavy enough for both, plus a count when one matters.
  */
 export function ringFace(color: string, name: GlyphName, options: { badge?: number | string; dim?: boolean } = {}): string {
-	const mark = glyph(name, 28, 28, 88, options.dim ? COLORS.muted : color, 3.2);
+	const mark = glyph(name, 28, 28, 88, options.dim ? COLORS.muted : color, 3.2, 0, true);
 	const badge =
 		options.badge === undefined
 			? ""
@@ -75,7 +75,7 @@ export function limitsFace(percent: number | undefined, stale: boolean, driver?:
 	const ring =
 		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${COLORS.muted}" stroke-opacity=".35" stroke-width="10"/>` +
 		`<circle cx="72" cy="72" r="${radius}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(length * used).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 72 72)"/>` +
-		(driver === undefined ? glyph("gauge", 38, 38, 68, color, 3.2) : providerMarkOf(driver, 28, 88));
+		(driver === undefined ? glyph("gauge", 38, 38, 68, color, 3.2, 0, true) : providerMarkOf(driver, 28, 88));
 	return svgMarkup(144, 144, stale ? `<g opacity=".5">${ring}</g>` : ring);
 }
 
@@ -125,7 +125,7 @@ export const modeFace = (mode: RuntimeMode | undefined): string =>
 export function effortFace(level: { index: number; count: number; color: string; ultrathink: boolean } | undefined): string {
 	if (level === undefined) return ringFace(COLORS.muted, "effort", { dim: true });
 	const tint = (index: number) => (level.ultrathink ? sampleStops(SPECTRUM, level.count > 1 ? (0.9 * index) / (level.count - 1) : 0.9) : level.color);
-	const mark = glyph("effort", 34, 8, 76, level.ultrathink ? sampleStops(SPECTRUM, 0.72) : level.color, 3.2);
+	const mark = glyph("effort", 34, 8, 76, level.ultrathink ? sampleStops(SPECTRUM, 0.72) : level.color, 3.2, 0, true);
 	const gap = 24;
 	const left = 72 - ((level.count - 1) * gap) / 2;
 	const dots = Array.from({ length: level.count }, (_, index) => `<circle cx="${left + index * gap}" cy="114" r="8.5" fill="${tint(index)}"${index <= level.index ? "" : ` fill-opacity=".3"`}/>`).join("");

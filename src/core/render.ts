@@ -233,9 +233,21 @@ export const svgImage = (width: number, height: number, body: string) =>
 
 const keySvg = (body: string) => svgImage(144, 144, body);
 
-export function glyph(name: GlyphName, x: number, y: number, size: number, color: string = COLORS.text, strokeWidth = 2, rotate = 0): string {
+/**
+ * `inline` paints each shape itself rather than through the group, for renderers that don't pass a group's stroke down
+ * to its shapes (Logi Options+ draws those strokes black).
+ */
+export function glyph(name: GlyphName, x: number, y: number, size: number, color: string = COLORS.text, strokeWidth = 2, rotate = 0, inline = false): string {
 	const scale = size / 24;
-	return `<g transform="translate(${x} ${y}) scale(${scale})${rotate ? ` rotate(${rotate} 12 12)` : ""}" fill="none" stroke="${color}" color="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${GLYPHS[name]}</g>`;
+	const paint = `stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
+	const art = inline
+		? GLYPHS[name]
+				.replaceAll("currentColor", color)
+				.replace(/<(path|circle|line|rect|polyline|polygon|ellipse)\b([^>]*?)(\/?)>/g, (_shape, tag: string, rest: string, close: string) =>
+					`<${tag}${rest}${/\bfill=/.test(rest) ? "" : ' fill="none"'}${/\bstroke=/.test(rest) ? "" : ` ${paint}`}${close}>`,
+				)
+		: GLYPHS[name];
+	return `<g transform="translate(${x} ${y}) scale(${scale})${rotate ? ` rotate(${rotate} 12 12)` : ""}" fill="none" stroke="${color}" color="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${art}</g>`;
 }
 
 const NARROW = new Set("ilI1|.,:;'!`");
