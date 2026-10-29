@@ -18,8 +18,9 @@ type Decided = { thread: DeckThread | undefined; pinned: boolean; check: Availab
 export type ApproveState = Decided & { press: ApprovalPress | undefined; confirm: ReturnType<typeof approvalConfirm>; authority: ReturnType<typeof approvalAuthority> };
 export type DenyState = Decided;
 
+// With no thread, any machine may act: the key's own machine setting is not consulted (as on Stream Deck always).
 const canOperate = (ctx: KeyContext<unknown>, thread: DeckThread | undefined): boolean =>
-	thread !== undefined ? thread.machine.canOperate : ctx.runtime.machines().some((machine) => (ctx.machine === undefined || machine.url === ctx.machine) && machine.canOperate);
+	thread !== undefined ? thread.machine.canOperate : ctx.runtime.machines().some((machine) => machine.canOperate);
 
 /** Open the request in T3 Code, or answer it; `answer` is the decision to send and whether it needs confirming first. */
 function plan(state: Decided, ctx: KeyContext<unknown>, answer: { decision: Parameters<DeckThread["machine"]["respond"]>[2]; allowed: boolean } | undefined): PressPlan {

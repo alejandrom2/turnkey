@@ -43,7 +43,11 @@ const states = {
 	},
 } satisfies Record<string, () => GoldenOptions>;
 
+// A key pinned to a machine that can't act, with no thread: availability counts every machine, as it always has.
+const pinned = () => ({ threads: [] as DeckThread[], selected: undefined, machines: [machine({ url: "http://a:1", canOperate: false }), machine({ url: "http://b:2", canOperate: true })], settings: { machine: "http://a:1" } });
+
 describe("Approve goldens", () => {
+	it("face: pinned machine can't act, another can", async () => golden("approve-pinned-machine", (await goldenKey(Approve, pinned())).image));
 	for (const [name, state] of Object.entries(states)) it(`face: ${name}`, async () => golden(`approve-${name}`, (await goldenKey(Approve, state())).image));
 	for (const authority of ["once", "session", "always"]) {
 		it(`face: ${authority}, hold`, async () => golden(`approve-${authority}-hold`, (await goldenKey(Approve, { ...states.approval(), settings: { approvalAuthority: authority } })).image));
@@ -64,6 +68,7 @@ describe("Approve goldens", () => {
 });
 
 describe("Deny goldens", () => {
+	it("face: pinned machine can't act, another can", async () => golden("deny-pinned-machine", (await goldenKey(Deny, pinned())).image));
 	for (const [name, state] of Object.entries(states)) it(`face: ${name}`, async () => golden(`deny-${name}`, (await goldenKey(Deny, state())).image));
 
 	const press = async (name: string, state: GoldenOptions) =>

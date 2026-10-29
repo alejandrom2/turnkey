@@ -150,3 +150,13 @@ describe("Deny press", () => {
 		expect(openThread).toHaveBeenCalledWith(target);
 	});
 });
+
+describe("availability with no thread", () => {
+	it("counts every machine, not just the key's own", () => {
+		const { ctx } = context<ApproveSettings>(undefined, {});
+		const runtime = { ...ctx.runtime, machines: () => [machine({ url: "http://a:1", canOperate: false }), machine({ url: "http://b:2", canOperate: true })] } as KeyRuntime;
+		const pinned = { ...ctx, machine: "http://a:1", runtime };
+		expect(approveKey.state(pinned).check).toEqual({ available: false, reason: t("reason.nothingPending") });
+		expect(denyKey.state(pinned).check).toEqual({ available: false, reason: t("reason.nothingPending") });
+	});
+});
