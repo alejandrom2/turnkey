@@ -2,6 +2,7 @@ import type { DeckThread, ThreadBoard } from "../core/board.js";
 import { threadCounts } from "../core/infobar.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
 import { effortKey, modelKey, permissionsKey, planKey, speedKey } from "../core/keys/power.js";
+import { stopKey } from "../core/keys/lineage.js";
 import { activityKey, newThreadKey, threadKey } from "../core/keys/threads.js";
 import type { KeyRuntime } from "../core/keys/key.js";
 import { applyChoice, type DialControl, type PowerChoice, type PowerState, powerState, stepChoice, type UltrathinkControl } from "../core/power.js";
@@ -12,7 +13,7 @@ import type { LimitPool, LimitPoolWindow } from "../core/usage/limits.js";
 import { limitGauge, machineLimitPools, tightestWindow } from "../core/usage/limitsView.js";
 import { continueStep } from "./controls.js";
 import type { KeyKind } from "./keys.js";
-import { continueFace, customPromptFace, limitsFace, limitsLabel, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, stopFace, stopTarget, urgentFace, runningFace, waitingFace } from "./ring.js";
+import { continueFace, customPromptFace, limitsFace, limitsLabel, PROMPT_GLYPHS, promptFace, ringFace, settingsFace, statusFace, statusLabel, stopAllFace, urgentFace, runningFace, waitingFace } from "./ring.js";
 import { sharedKind } from "./shared.js";
 
 /** What the sidecar's keys reach for beyond the board: the machines, opening things, the limits and config watches, and the shared keys' runtime. */
@@ -188,13 +189,7 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 			face: settingsFace,
 			press: () => void deps.openExternal(deps.settingsUrl()).catch(failed("open Turnkey Settings")),
 		},
-		stop: {
-			face: () => stopFace(stopTarget(board.threads, board.selectedOn())?.machine.canOperate === true),
-			label: () => stopTarget(board.threads, board.selectedOn())?.title,
-			press: () => {
-				const target = stopTarget(board.threads, board.selectedOn());
-				if (target?.machine.canOperate) void target.machine.stopRun(target).catch(failed("stop the run"));
-			},
-		},
+		// Stop run was a Logitech action before it was shared: the open thread if it runs, else the newest run, on any press, as it always acted.
+		stop: sharedKind("stop", stopKey, () => ({ fallback: "newestRunning" }), deps.runtime, deps.warn, { quiet: failed("stop the run"), glyphOnly: true }),
 	};
 }

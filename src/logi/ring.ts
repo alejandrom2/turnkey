@@ -5,7 +5,7 @@ import { COLORS, escapeXml, glyph, type GlyphName, STATE_COLOR, svgMarkup } from
 import { ringFace } from "../core/ring.js";
 
 // The painters shared keys draw on the Ring live in core now; the Ring's own faces still come from here.
-export { effortFace, modeFace, modelFace, ringFace } from "../core/ring.js";
+export { effortFace, modeFace, modelFace, ringFace, stopFace, stopTarget } from "../core/ring.js";
 
 /** What the Actions Ring reads from a thread. */
 type RingThread = Pick<DeckThread, "deck" | "unseen">;
@@ -31,11 +31,6 @@ export function urgentFace(threads: readonly RingThread[]): string {
 	return ringFace(STATE_COLOR.done, "spark");
 }
 
-/** The board lists running threads newest first, so this is the run that started last. */
-export const stopTarget = <T extends Pick<DeckThread, "deck" | "key">>(threads: readonly T[], selected: T | undefined): T | undefined =>
-	(selected?.deck === "running" ? threads.find((thread) => thread.key === selected.key) : undefined) ?? threads.find((thread) => thread.deck === "running");
-
-export const stopFace = (available: boolean): string => ringFace(COLORS.accent, "stop", { dim: !available });
 
 
 export const settingsFace = (): string => ringFace(COLORS.accent, "sliders");

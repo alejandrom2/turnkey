@@ -252,6 +252,7 @@
 			"holdToSend": "長押しで送信",
 			"holdToSettle": "長押しで完了扱い",
 			"holdToSnooze": "長押しでスヌーズ",
+			"holdToArchive": "長押しでアーカイブ",
 			"notWebLink": "Web リンクではない",
 			"holdToRemove": "長押しで削除",
 			"cantSteerYet": "まだ追加できません"

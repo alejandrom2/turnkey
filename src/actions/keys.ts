@@ -3,14 +3,14 @@ import type { JsonObject } from "@elgato/utils";
 
 import { activityKey, type ActivitySettings, newThreadKey, type NewThreadSettings, type NewThreadState, threadKey, type ThreadState } from "../core/keys/threads.js";
 import { effortKey, type EffortSettings, modelKey, type ModelSettings, permissionsKey, type PermissionSettings, planKey, type SettingState, speedKey } from "../core/keys/power.js";
+import { branchKey, type BranchState } from "../core/keys/lineage.js";
+import { asksFirst, organizeKey, type OrganizeSettings, type OrganizeState, snoozeMinutes } from "../core/keys/organize.js";
 import { approveKey, type ApproveSettings, type ApproveState, denyKey, type DenyState } from "../core/keys/decision.js";
 import { requestFor as coreRequestFor } from "../core/keys/requests.js";
-import { type Availability, availability } from "../core/availability.js";
+import { availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
-import { organize, type OrganizeAction } from "../core/commands.js";
-import { branchSummary } from "../core/git.js";
 import { type HealthMachine, healthIssues, summarizeHealth } from "../core/health.js";
-import { elapsed, type MessageKey, t } from "../core/i18n.js";
+import { t } from "../core/i18n.js";
 import { findModel, modelColor, speedToggle } from "../core/models.js";
 import { activityBar, renderActivityBar, renderInfoBar, renderNoticeBar } from "../core/infobar.js";
 import { currentEffort, effortChoices } from "../core/power.js";
@@ -22,9 +22,7 @@ import type { Need } from "../core/requirements.js";
 import { pinnedName } from "../core/target.js";
 import { matchesFilter, type SlotIndex, slotSetting, threadFilter } from "../core/slots.js";
 import type { Machine, PendingRequest, SendMode } from "../core/t3/machine.js";
-import { latestSnoozed } from "../core/t3/shell.js";
 import { deck } from "../deck.js";
-import { gitTarget, statuses } from "./git.js";
 import { connectionNotice } from "./infobar.js";
 import { connectionOf, threadNeeds } from "./needs.js";
 import {
@@ -34,10 +32,8 @@ import {
 	machineName,
 	machinesOn,
 	markArt,
-	openThread,
 	pressWhileDisconnected,
 	queueOf,
-	selectedThread,
 	selectNew,
 	sendToThread,
 	ultrathinkArmed,
@@ -240,77 +236,17 @@ export class NewThread extends SharedKey<NewThreadSettings, NewThreadState> {
 	protected readonly definition = newThreadKey;
 }
 
-type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; confirm?: string; confirmSettle?: string; machine?: string };
-
-const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey]> = {
-	settle: ["settle", "organize.settle"],
-	pin: ["pin", "organize.pin"],
-	unpin: ["pin", "organize.unpin"],
-	snooze: ["moon", "organize.snooze"],
-	archive: ["archive", "organize.archive"],
-	mark_unread: ["chat", "organize.markUnread"],
-	wake: ["moon", "organize.wake"],
-};
-
-const asksFirst = (which: OrganizeAction) => which === "settle" || which === "snooze";
-
-const snoozeMinutes = (settings: OrganizeSettings) => Number(settings.snoozeMinutes ?? 60) || 60;
-
-/** How long the key snoozes for, short: "30m", "1h", "1d". */
-const snoozeLabel = (settings: OrganizeSettings) => {
-	const minutes = snoozeMinutes(settings);
-	if (minutes % 1440 === 0) return t("time.days", { days: minutes / 1440 });
-	return elapsed(0, minutes * 60_000);
-};
-
-/** The thread snoozed last on `url`'s machine (or any), while it still sleeps: what Wake brings back. */
-function latestAsleep(url: string | undefined): DeckThread | undefined {
-	const asleep: DeckThread[] = [];
-	for (const machine of deck.machines) {
-		const environmentId = machine.environmentId;
-		if (machine.state.kind !== "ready" || environmentId === undefined || (url !== undefined && machine.url !== url)) continue;
-		const row = latestSnoozed(machine.everyRow);
-		if (row !== undefined) asleep.push({ ...row, key: `${environmentId}/${row.threadId}`, machine, environmentId });
-	}
-	return latestSnoozed(asleep);
-}
-
 /**
  * Settle, pin or unpin, snooze, archive or mark the selected thread unread, or wake the thread snoozed last. Pin
  * toggles and Wake undoes a Snooze; the rest are undone in T3 Code.
  */
 @action({ UUID: `${ID}.organize` })
-export class Organize extends DeckAction<OrganizeSettings> {
-	#check(action: Action<OrganizeSettings>) {
-		const setting = this.settingsOf(action).organize ?? "settle";
-		if (setting === "wake") {
-			const thread = latestAsleep(this.machineOf(action));
-			const check: Availability = thread === undefined ? { available: false, reason: t("organize.nothingSnoozed") } : availability("organize", { thread, canOperate: canOperate(thread) });
-			return { which: setting, pinned: false, targeted: false, thread, check };
-		}
-		const { thread, gone, pinned: targeted } = this.target(action);
-		const pinning = setting === "pin" || setting === "unpin";
-		const pin = thread?.pinned ? "unpin" : "pin";
-		const which: OrganizeAction = pinning ? pin : setting;
-		const kind = pinning ? pin : "organize";
-		return { which, pinned: pinning && thread?.pinned === true, targeted, thread, check: availability(kind, { thread, gone, canOperate: canOperate(thread) }) };
-	}
-
-	protected override async draw(action: Action<OrganizeSettings>): Promise<void> {
-		if (!action.isKey()) return;
-		const { which, pinned, targeted, thread, check } = this.#check(action);
-		const [glyph, label] = ORGANIZE_FACE[which];
-		if (which === "wake") {
-			const detail = check.available ? thread?.title : check.reason;
-			return void (await this.setImage(action, renderInfoKey({ glyph, title: t(label), detail, available: check.available })));
-		}
-		const text = which === "snooze" ? t("organize.snoozeFor", { duration: snoozeLabel(this.settingsOf(action)) }) : t(label);
-		await this.setImage(action, renderControlKey({ glyph, label: text, available: check.available, active: pinned, pinned: targeted }));
-	}
+export class Organize extends SharedKey<OrganizeSettings & JsonObject, OrganizeState> {
+	protected readonly definition = organizeKey;
 
 	/** Wake reads no target, so it lists its own needs; the others use the shared table. */
-	override needs(action: Action<OrganizeSettings>): Need[] {
-		const { which, thread } = this.#check(action);
+	override needs(action: Action<OrganizeSettings & JsonObject>): Need[] {
+		const { which, thread } = this.stateOf(action);
 		if (which !== "wake") return [];
 		const url = this.machineOf(action);
 		return [
@@ -321,36 +257,14 @@ export class Organize extends DeckAction<OrganizeSettings> {
 	}
 
 	/** Settle and Snooze ask first (Review by default): both take the thread off the board. */
-	protected override confirmModeOf(action: Action<OrganizeSettings>): ConfirmMode {
+	protected override confirmModeOf(action: Action<OrganizeSettings & JsonObject>): ConfirmMode {
 		const { confirm, confirmSettle } = this.settingsOf(action);
-		return asksFirst(this.#check(action).which) ? confirmMode(confirm ?? confirmSettle, "review") : "off";
+		return asksFirst(this.stateOf(action).which) ? confirmMode(confirm ?? confirmSettle, "review") : "off";
 	}
 
-	protected override reviewScope(action: Action<OrganizeSettings>): string | undefined {
-		const { which, thread } = this.#check(action);
+	protected override reviewScope(action: Action<OrganizeSettings & JsonObject>): string | undefined {
+		const { which, thread } = this.stateOf(action);
 		return asksFirst(which) && thread ? JSON.stringify([which, thread.key, snoozeMinutes(this.settingsOf(action))]) : undefined;
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<OrganizeSettings>): Promise<void> {
-		const held = this.heldFor(ev.action.id);
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { which, thread, check } = this.#check(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		const minutes = snoozeMinutes(ev.payload.settings);
-		const duration = snoozeLabel(ev.payload.settings);
-		const go = await this.guard(ev.action, {
-			scope: JSON.stringify([which, thread!.key, minutes]),
-			held,
-			holdHint: t(which === "snooze" ? "result.holdToSnooze" : "result.holdToSettle"),
-			card: () => ({
-				glyph: ORGANIZE_FACE[which][0],
-				verb: which === "snooze" ? t("review.snooze", { duration }) : t("review.settle"),
-				target: thread!.title,
-				footer: t("review.pressAgain"),
-			}),
-		});
-		if (go === undefined) return;
-		await this.run(ev.action, () => organize(thread!, which, minutes));
 	}
 }
 
@@ -491,24 +405,6 @@ export class Health extends DeckAction {
 
 /** The selected thread's branch. Tap opens the thread in T3 Code. */
 @action({ UUID: `${ID}.branch` })
-export class Branch extends DeckAction {
-	protected override async draw(action: Action<JsonObject>): Promise<void> {
-		if (!action.isKey()) return;
-		const machine = this.machineOf(action);
-		const thread = selectedThread(machine);
-		const check = availability("branch", { thread, canOperate: true });
-		// The checkout's status is shared with the git keys: read when it first shows and when the turn moves.
-		const target = check.available ? gitTarget(machine) : undefined;
-		const status = target && statuses.get(target);
-		const face = check.available
-			? renderInfoKey({ glyph: thread!.worktreePath ? "worktree" : "branch", title: thread!.branch!, detail: (status && branchSummary(status)) ?? (thread!.projectTitle || undefined) })
-			: renderInfoKey({ glyph: "branch", title: t("face.branch"), detail: check.reason, available: false });
-		await this.setImage(action, face);
-	}
-
-	override async onKeyUp(ev: KeyUpEvent): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const thread = selectedThread(this.machineOf(ev.action));
-		if (await this.allowed(ev.action, availability("branch", { thread, canOperate: true }))) await this.run(ev.action, () => openThread(thread!));
-	}
+export class Branch extends SharedKey<JsonObject, BranchState> {
+	protected readonly definition = branchKey;
 }

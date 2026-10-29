@@ -2,7 +2,7 @@ import type { Action, KeyUpEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
 import type { SlotIndex } from "../core/slots.js";
-import type { KeyContext, KeyDefinition } from "../core/keys/key.js";
+import type { KeyContext, KeyDefinition, PressInput, PressPlan } from "../core/keys/key.js";
 import type { MachineWatch } from "../core/watch.js";
 import { DeckAction, pressWhileDisconnected } from "./base.js";
 import { deckRuntime } from "./runtime.js";
@@ -18,8 +18,23 @@ export abstract class SharedKey<S extends JsonObject, St> extends DeckAction<S> 
 		return undefined;
 	}
 
+	/** The settings the definition reads: an older UUID's own mode, for one. */
+	protected definitionSettings(action: Action<S>): S {
+		return this.settingsOf(action);
+	}
+
 	#context(action: Action<S>): KeyContext<S> {
-		return { settings: this.settingsOf(action), machine: this.machineOf(action), runtime: deckRuntime, target: () => this.target(action), slot: this.slotFor(action) };
+		return { settings: this.definitionSettings(action), machine: this.machineOf(action), runtime: deckRuntime, target: () => this.target(action), slot: this.slotFor(action) };
+	}
+
+	/** The definition's state for this instance now. */
+	protected stateOf(action: Action<S>): St {
+		return this.definition.state(this.#context(action));
+	}
+
+	/** What a press does; a key with Stream Deck-only behavior of its own wraps it. */
+	protected pressPlan(action: Action<S>, state: St, ctx: KeyContext<S>, input: PressInput): PressPlan {
+		return this.definition.press(state, ctx, input);
 	}
 
 	protected override watching(): MachineWatch | undefined {
@@ -39,8 +54,11 @@ export abstract class SharedKey<S extends JsonObject, St> extends DeckAction<S> 
 		const heldMs = this.heldFor(ev.action.id);
 		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
 		const ctx = this.#context(ev.action);
-		const plan = this.definition.press(this.definition.state(ctx), ctx, { heldMs, confirmBy: "settings" });
+		const plan = this.pressPlan(ev.action, this.definition.state(ctx), ctx, { heldMs, confirmBy: "settings" });
 		if (plan.kind === "run") await this.run(ev.action, plan.work);
+		else if (plan.kind === "guard") {
+			if ((await this.guard(ev.action, { ...plan.guard, held: heldMs })) !== undefined) await this.run(ev.action, plan.work);
+		}
 		else if (plan.kind !== "nothing") await this.flash(ev.action, false, plan.label);
 	}
 }

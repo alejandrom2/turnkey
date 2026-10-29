@@ -1,3 +1,4 @@
+import type { DeckThread } from "./board.js";
 import { type CatalogModel, modelColor, providerMark } from "./models.js";
 import { COLORS, glyph, type GlyphName, MODE_GLYPH, STATE_COLOR, svgMarkup } from "./render.js";
 import type { RuntimeMode } from "./t3/shell.js";
@@ -39,3 +40,9 @@ export function modelFace(model: CatalogModel | undefined, current: boolean): st
 	const color = modelColor(model) ?? COLORS.accent;
 	return svgMarkup(144, 144, providerMark(model, 26, 26, 92, { color }) + (current ? `<circle cx="111" cy="111" r="21" fill="${COLORS.key}"/><path d="M101 112l7 7 12.5-14" fill="none" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>` : ""));
 }
+
+/** The board lists running threads newest first, so this is the run that started last. */
+export const stopTarget = <T extends Pick<DeckThread, "deck" | "key">>(threads: readonly T[], selected: T | undefined): T | undefined =>
+	(selected?.deck === "running" ? threads.find((thread) => thread.key === selected.key) : undefined) ?? threads.find((thread) => thread.deck === "running");
+
+export const stopFace = (available: boolean): string => ringFace(COLORS.accent, "stop", { dim: !available });

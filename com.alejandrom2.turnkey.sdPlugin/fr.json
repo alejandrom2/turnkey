@@ -252,6 +252,7 @@
 			"holdToSend": "Maintenir : envoyer",
 			"holdToSettle": "Maintenir : classer",
 			"holdToSnooze": "Maintenir : reporter",
+			"holdToArchive": "Maintenir : archiver",
 			"notWebLink": "Pas un lien web",
 			"holdToRemove": "Maintenir : supprimer",
 			"cantSteerYet": "Injection pas encore possible"

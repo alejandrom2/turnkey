@@ -23,12 +23,12 @@ import { type CatalogModel, effortValues, favoriteModels, findModel, pickableMod
 import { powerArt, type UltrathinkControl } from "../core/power.js";
 import {
 	COLORS,
-	type GlyphName,
 	type MarkPainter,
 	maxEffortStyle,
 	type Paint,
 	renderNoticeKey,
 	renderResultKey,
+	type ReviewCard,
 	renderReviewKey,
 	renderSkeletonKey,
 	stripCanvas,
@@ -96,8 +96,7 @@ type Placement = { device: string; position?: { row: number; column: number } };
 const reviewEnded = new Map<string, () => void>();
 const reviews = new Reviews((owner) => reviewEnded.get(owner)?.());
 
-/** What a review card shows: what would happen, to which thread, with what, and how to go ahead. */
-export type ReviewCard = { glyph: GlyphName; verb: string; target: string; body?: string; footer: string };
+export type { ReviewCard };
 
 /**
  * A press that sends or changes something, for the Confirm setting: `scope` names the target and content (any

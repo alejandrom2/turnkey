@@ -699,8 +699,11 @@ export function renderSkeletonKey(): string {
 	return keySvg(background(COLORS.key) + `<circle cx="32" cy="32" r="19" ${SKELETON}/>` + skeletonRect(15, 72, 104, 13) + skeletonRect(15, 94, 72, 13));
 }
 
+/** What a review card shows: what would happen, to which thread, with what, and how to go ahead. */
+export type ReviewCard = { glyph: GlyphName; verb: string; target: string; body?: string; footer: string };
+
 /** The card a first press shows before anything is sent: what, to which thread, and the content, then "press again". */
-export function renderReviewKey(input: { glyph: GlyphName; verb: string; target: string; body?: string; footer: string }): string {
+export function renderReviewKey(input: ReviewCard): string {
 	const parts = [background(COLORS.key), overlay(COLORS.accent, 0.12), glyph(input.glyph, 14, 13, 24, COLORS.accent)];
 	const verbSize = textWidth(input.verb, 15) <= 86 ? 15 : 13;
 	parts.push(textBlock(wrapText(input.verb, 86, verbSize, 1, { cut: true }), { x: 44, firstBaseline: 30, lineHeight: 17, size: verbSize, maxWidth: 86, fill: COLORS.accent }));

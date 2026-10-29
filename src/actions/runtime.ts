@@ -1,6 +1,7 @@
 import type { KeyRuntime } from "../core/keys/key.js";
 import { deck } from "../deck.js";
 import { openThread, queuedCount, selectThread } from "./base.js";
+import { gitStatus } from "./git.js";
 import { openExternal } from "../core/commands.js";
 
 export const deckRuntime: KeyRuntime = {
@@ -17,4 +18,5 @@ export const deckRuntime: KeyRuntime = {
 	selectThread,
 	scheme: () => deck.scheme,
 	ultrathink: deck.ultrathink,
+	gitStatus,
 };

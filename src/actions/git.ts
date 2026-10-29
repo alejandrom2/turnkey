@@ -40,9 +40,13 @@ export type GitTarget = { thread: DeckThread; machine: Machine; cwd: string | un
 
 export function gitTarget(machine?: string): GitTarget | undefined {
 	const thread = selectedThread(machine);
-	if (thread === undefined) return undefined;
-	return { thread, machine: thread.machine, cwd: gitCwd(thread, thread.machine.project(thread.projectId)?.workspaceRoot) };
+	return thread && checkoutOf(thread);
 }
+
+const checkoutOf = (thread: DeckThread): GitTarget => ({ thread, machine: thread.machine, cwd: gitCwd(thread, thread.machine.project(thread.projectId)?.workspaceRoot) });
+
+/** The thread's checkout status as the git keys last read it, read again when its turn moved. */
+export const gitStatus = (thread: DeckThread): VcsStatus | undefined => statuses.get(checkoutOf(thread));
 
 /**
  * Each checkout's last `vcs.refreshStatus`, shared by every git key: read when a key first shows a checkout, again

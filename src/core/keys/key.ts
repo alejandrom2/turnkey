@@ -1,7 +1,9 @@
 import { HOLD_CONFIRM_MS } from "../approvals.js";
 import type { DeckThread, ThreadBoard } from "../board.js";
+import type { VcsStatus } from "../git.js";
 import type { AcpIcons } from "../models.js";
 import type { MotionMode, Transitions } from "../motion.js";
+import type { ReviewCard } from "../render.js";
 import type { SlotIndex } from "../slots.js";
 import type { Target } from "../target.js";
 import type { UltrathinkArming } from "../ultrathink.js";
@@ -29,6 +31,8 @@ export type ConfirmBy = "settings" | "hold" | "click";
 export type PressInput = { heldMs: number; confirmBy: ConfirmBy };
 export type PressPlan =
 	| { kind: "run"; work: () => Promise<unknown> }
+	/** Stream Deck only ("settings"): the key's Confirm setting decides, with this review card, hold hint and scope (any change reviews again). */
+	| { kind: "guard"; guard: { scope: string; holdHint: string; card: () => ReviewCard }; work: () => Promise<unknown> }
 	| { kind: "fail"; label: string }
 	| { kind: "needsHold"; label: string }
 	| { kind: "nothing" };
@@ -53,6 +57,8 @@ export interface KeyRuntime {
 	scheme(): string | undefined;
 	/** Where the host arms Ultrathink; undefined where it sends no prompts of its own to prefix (Logitech). */
 	ultrathink: UltrathinkArming | undefined;
+	/** The checkout status the git keys last read for the thread, read on demand; absent where nothing reads it (Logitech). */
+	gitStatus?(thread: DeckThread): VcsStatus | undefined;
 }
 
 export type KeyContext<S> = {

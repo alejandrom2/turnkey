@@ -92,7 +92,8 @@ export function sharedKind<S, St>(
 			const ctx = contextOf(parameter);
 			if (ctx === undefined) return;
 			const plan = definition.press(definition.state(ctx), ctx, { heldMs: heldMs ?? 0, confirmBy: heldMs === undefined ? "click" : "hold" });
-			if (plan.kind === "run")
+			// No Confirm setting on Logitech, so a guarded press (Stream Deck's alone) goes ahead.
+			if (plan.kind === "run" || plan.kind === "guard")
 				void plan.work().then(
 					() => {
 						clearFlash(parameter);
