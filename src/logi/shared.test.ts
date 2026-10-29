@@ -6,7 +6,7 @@ import { FLASH_MS } from "../core/feedback.js";
 import { t } from "../core/i18n.js";
 import { approveKey, denyKey } from "../core/keys/decision.js";
 import type { KeyDefinition } from "../core/keys/key.js";
-import { COLORS, renderResultKey, renderSkeletonKey, svgImage, svgMarkup } from "../core/render.js";
+import { COLORS, glyph, renderResultKey, renderSkeletonKey, svgImage, svgMarkup } from "../core/render.js";
 import type { Decision, PendingRequest } from "../core/t3/machine.js";
 import { Keys } from "./keys.js";
 import type { SidecarMessage } from "./protocol.js";
@@ -54,7 +54,7 @@ describe("sharedKind faces", () => {
 	};
 
 	it("draws the glyph at 80 px or less and the tile above, as markup, with Motion reduced", () => {
-		const kind = sharedKind(still, { "": {} }, setup({ current: undefined }).runtime, () => undefined);
+		const kind = sharedKind("still", still, { "": {} }, setup({ current: undefined }).runtime, () => undefined);
 		expect(kind.face(0, "", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph reduced"/>`));
 		expect(kind.face(0, "", 60)).toBe(svgMarkup(144, 144, `<circle class="glyph reduced"/>`));
 		expect(kind.face(0, "", 116)).toBe(svgMarkup(144, 144, `<rect class="tile reduced"/>`));
@@ -64,10 +64,11 @@ describe("sharedKind faces", () => {
 	it("builds a ring glyph from the tile's icon when a key has no glyph, dimmed as the tile dims it", async () => {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime } = setup(selected);
-		const approve = sharedKind(approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined);
-		const deny = sharedKind(denyKey, { "": {} }, runtime, () => undefined);
-		// While the request loads the tile is a skeleton, with no icon: the tile itself stands in.
-		expect(approve.face(0, "", 80)).toBe(decoded(renderSkeletonKey()));
+		const approve = sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined);
+		const deny = sharedKind("deny", denyKey, { "": {} }, runtime, () => undefined);
+		// While the request loads the tile is a skeleton, with no icon: a dim placeholder glyph stands in, never the tile.
+		expect(approve.face(0, "", 80)).toBe(ringFace(COLORS.muted, "chat", { dim: true }));
+		expect(approve.face(0, "", 116)).toBe(decoded(renderSkeletonKey()));
 		await settle();
 		expect(approve.face(0, "", 80)).toBe(ringFace(COLORS.accent, "check"));
 		expect(deny.face(0, "", 80)).toBe(ringFace(COLORS.accent, "denyCircle"));
@@ -76,9 +77,26 @@ describe("sharedKind faces", () => {
 		expect(deny.face(0, "", 80)).toBe(ringFace(COLORS.accent, "denyCircle", { dim: true }));
 	});
 
+	it("dims a fallback glyph by what the definition says, not by what the tile's markup looks like", () => {
+		const draw = (available: boolean | undefined, tile: string) => {
+			const key: KeyDefinition<object, string> = {
+				state: () => "",
+				tile: () => svgImage(144, 144, tile),
+				available: available === undefined ? undefined : () => available,
+				press: () => ({ kind: "nothing" }),
+			};
+			return sharedKind("probe", key, { "": {} }, setup({ current: undefined }).runtime, () => undefined).face(0, "", 80);
+		};
+		const check = `<g opacity=".5">${glyph("check", 0, 0, 24, "#fff")}</g>`;
+		// Another key's tile may fade its icon for its own reasons.
+		expect(draw(true, check)).toBe(ringFace(COLORS.accent, "check"));
+		expect(draw(undefined, check)).toBe(ringFace(COLORS.accent, "check"));
+		expect(draw(false, glyph("check", 0, 0, 24, "#fff"))).toBe(ringFace(COLORS.accent, "check", { dim: true }));
+	});
+
 	it("draws nothing for a variant it doesn't have, and says so once", () => {
 		const { runtime, warn } = setup({ current: waiting() });
-		const kind = sharedKind(approveKey, { "": {} }, runtime, warn);
+		const kind = sharedKind("approve", approveKey, { "": {} }, runtime, warn);
 		expect(kind.face(0, "nope", 80)).toBeUndefined();
 		expect(kind.press!(0, "nope")).toBeUndefined();
 		expect(kind.face(0, "other", 116)).toBeUndefined();
@@ -90,7 +108,7 @@ describe("sharedKind presses", () => {
 	async function approve(settings = { approvalAuthority: "once" }) {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime, repaint, warn } = setup(selected);
-		const kind = sharedKind(approveKey, { "": settings }, runtime, warn);
+		const kind = sharedKind("approve", approveKey, { "": settings }, runtime, warn);
 		kind.face(0, "", 80);
 		await settle();
 		return { kind, target: selected.current!, selected, repaint, warn };
@@ -108,7 +126,7 @@ describe("sharedKind presses", () => {
 		vi.useFakeTimers();
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime, repaint } = setup(selected);
-		const kind = sharedKind(approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined);
+		const kind = sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined);
 		kind.face(0, "", 80);
 		await vi.advanceTimersByTimeAsync(0);
 		const live = kind.face(0, "", 80);
@@ -133,7 +151,7 @@ describe("sharedKind presses", () => {
 	it("says Deny needs a hold in Deny's own words", async () => {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime } = setup(selected);
-		const kind = sharedKind(denyKey, { "": {} }, runtime, () => undefined);
+		const kind = sharedKind("deny", denyKey, { "": {} }, runtime, () => undefined);
 		kind.face(0, "", 80);
 		await settle();
 		kind.press!(0, "", 100);
@@ -151,13 +169,24 @@ describe("sharedKind presses", () => {
 		expect(kind.face(0, "", 80)).toBe(glyphResult(false, t("reason.nothingPending")));
 	});
 
-	it("flashes and logs a press T3 Code refuses", async () => {
+	it("clears a flash when a later press succeeds", async () => {
+		const { kind, target } = await approve();
+		kind.press!(0, "", 100);
+		expect(kind.label!(0, "")).toBe(t("result.holdToAllow"));
+		kind.press!(0, "", 600);
+		await settle();
+		expect(target.machine.respond).toHaveBeenCalledOnce();
+		expect(kind.label!(0, "")).toBeUndefined();
+		expect(kind.face(0, "", 80)).not.toBe(glyphResult(false, t("result.holdToAllow")));
+	});
+
+	it("flashes and logs a press T3 Code refuses, naming the kind", async () => {
 		const { kind, target, warn } = await approve();
 		vi.mocked(target.machine.respond).mockRejectedValueOnce(new Error("timed out"));
 		kind.press!(0, "");
 		await settle();
 		expect(kind.label!(0, "")).toBe(t("failure.timedOut"));
-		expect(warn).toHaveBeenCalledOnce();
+		expect(warn).toHaveBeenCalledExactlyOnceWith("approve: a press failed: timed out");
 	});
 });
 
@@ -166,7 +195,7 @@ describe("sharedKind in Keys", () => {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime } = setup(selected);
 		const sent: SidecarMessage[] = [];
-		const keys = new Keys({ approve: sharedKind(approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined) }, (message) => sent.push(message));
+		const keys = new Keys({ approve: sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, runtime, () => undefined) }, (message) => sent.push(message));
 		keys.handle({ type: "appear", action: "approve:", size: 116 });
 		await settle();
 		keys.repaint();

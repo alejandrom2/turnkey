@@ -97,8 +97,8 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 
 	return {
 		// Approve allows once, as the design has it on Logitech; a keypad holds for it, a Ring click is itself the confirmation.
-		approve: sharedKind(approveKey, { "": { approvalAuthority: "once" } }, deps.runtime, deps.warn),
-		deny: sharedKind(denyKey, { "": {} }, deps.runtime, deps.warn),
+		approve: sharedKind("approve", approveKey, { "": { approvalAuthority: "once" } }, deps.runtime, deps.warn),
+		deny: sharedKind("deny", denyKey, { "": {} }, deps.runtime, deps.warn),
 		prompt: {
 			face: (_index, name) => (isPrompt(name) ? promptFace(name) : ringFace(COLORS.muted, "chat", { dim: true })),
 			press: (_index, name) => {

@@ -52,6 +52,8 @@ export interface KeyDefinition<S, St> {
 	tile(state: St, ctx: KeyContext<S>): string;
 	glyph?(state: St, ctx: KeyContext<S>): string;
 	label?(state: St, ctx: KeyContext<S>): string | undefined;
+	/** Whether the key can act now; false dims its Ring glyph. Absent means always. */
+	available?(state: St): boolean;
 	press(state: St, ctx: KeyContext<S>, input: PressInput): PressPlan;
 	watch?: ConstructorParameters<typeof MachineWatch>[0];
 }

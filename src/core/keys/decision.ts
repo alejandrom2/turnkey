@@ -33,6 +33,8 @@ function plan(state: Decided, ctx: KeyContext<unknown>, answer: { decision: Para
 }
 
 export const approveKey: KeyDefinition<ApproveSettings, ApproveState> = {
+	available: ({ check }) => check.available,
+
 	state(ctx) {
 		const authority = approvalAuthority(ctx.settings.approvalAuthority);
 		const { thread, gone, pinned } = ctx.target();
@@ -58,6 +60,8 @@ export const approveKey: KeyDefinition<ApproveSettings, ApproveState> = {
 };
 
 export const denyKey: KeyDefinition<Record<string, unknown>, DenyState> = {
+	available: ({ check }) => check.available,
+
 	state(ctx) {
 		const { thread, gone, pinned } = ctx.target();
 		const check = availability("deny", { thread, gone, canOperate: canOperate(ctx, thread) });
