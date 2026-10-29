@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0](https://github.com/alejandrom2/turnkey/compare/v0.12.0...v1.0.0) (2026-10-29)
+
+
+### Chores
+
+* release 1.0.0 ([#25](https://github.com/alejandrom2/turnkey/issues/25)) ([fc8ed06](https://github.com/alejandrom2/turnkey/commit/fc8ed0693884ac77fda2ef14591118756831d116))
+
 ## [0.12.0](https://github.com/alejandrom2/turnkey/compare/v0.11.0...v0.12.0) (2026-10-29)
 
 
