@@ -2,12 +2,11 @@ import { HOLD_CONFIRM_MS } from "../approvals.js";
 import type { DeckThread } from "../board.js";
 import { t } from "../i18n.js";
 import { COLORS, renderInfoKey } from "../render.js";
-import { needsAccessLabel } from "../scopes.js";
 import { copyText, type GuestShare, shareFailure, ShareStore, shareView, type ShareView } from "../share.js";
 import type { Machine } from "../t3/machine.js";
 import { ACCESS_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
-import { accessFace, awaitingPairing, ensureScopes } from "./access.js";
+import { accessFace, accessPlan, awaitingPairing } from "./access.js";
 import type { KeyContext, KeyDefinition, KeyRuntime } from "./key.js";
 
 export type ShareSettings = { machine?: string; target?: string; thread?: string; threadTitle?: string };
@@ -109,7 +108,8 @@ export const shareKey: KeyDefinition<ShareSettings, ShareState> = {
 			if (view.kind === "active" && link !== undefined && link.shareId === share?.id) return { kind: "run", work: () => copied(ctx.runtime, link.url) };
 			return { kind: "fail", label: t(view.kind === "expired" ? "share.holdToClear" : "share.holdToStop") };
 		}
-		if (!ensureScopes(ctx.runtime, thread.machine, [ACCESS_SCOPE])) return { kind: "fail", label: needsAccessLabel(ACCESS_SCOPE) };
+		const access = accessPlan(ctx.runtime, thread.machine, [ACCESS_SCOPE]);
+		if (access !== undefined) return access;
 		return { kind: "run", work: () => create(ctx, thread) };
 	},
 };

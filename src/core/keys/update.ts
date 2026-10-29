@@ -3,12 +3,11 @@ import { t } from "../i18n.js";
 import { spinAngle } from "../motion.js";
 import { COLORS, type GlyphName, renderInfoKey } from "../render.js";
 import { ringFace } from "../ring.js";
-import { needsAccessLabel } from "../scopes.js";
 import { type Machine, machineName } from "../t3/machine.js";
 import { isThisComputer, MAINTAIN_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
 import { fetchUpdateTarget, RESTART_TIMEOUT_MS, updateFailure, updateRoute, type UpdateStage } from "../update.js";
-import { accessFace, awaitingPairing, ensureScopes } from "./access.js";
+import { accessFace, accessPlan, awaitingPairing } from "./access.js";
 import { confirmed, type KeyDefinition, type KeyRuntime } from "./key.js";
 
 export type UpdateSettings = { machine?: string };
@@ -167,7 +166,8 @@ export function createUpdateKey(): UpdateKey {
 		press({ machine, run }, ctx, input) {
 			if (machine === undefined) return { kind: "fail", label: t("update.pickMachine") };
 			if (run !== undefined) return { kind: "nothing" };
-			if (!ensureScopes(ctx.runtime, machine, [MAINTAIN_SCOPE])) return { kind: "fail", label: needsAccessLabel(MAINTAIN_SCOPE) };
+			const access = accessPlan(ctx.runtime, machine, [MAINTAIN_SCOPE]);
+			if (access !== undefined) return access;
 			const route = updateRoute(machine.updateEnvironment);
 			if (route.kind === "manual") return { kind: "fail", label: t(route.reason) };
 			if (!confirmed(input, () => input.heldMs >= HOLD_CONFIRM_MS)) return { kind: "needsHold", label: t("update.holdToUpdate") };

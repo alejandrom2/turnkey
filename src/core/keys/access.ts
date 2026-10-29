@@ -1,18 +1,28 @@
 import { t } from "../i18n.js";
 import { type GlyphName, renderNoticeKey } from "../render.js";
-import { grants } from "../scopes.js";
+import { grants, needsAccessLabel } from "../scopes.js";
 import type { Machine } from "../t3/machine.js";
 import type { OptInScope } from "../t3/pairing.js";
-import type { KeyRuntime } from "./key.js";
+import type { KeyRuntime, PressPlan } from "./key.js";
 
 /**
- * Flags what `machine` lacks of `scopes` for its next pairing, where the host asks for access (Stream Deck, once the
- * user presses a key that needs it); true when it holds them all.
+ * What a press does while `machine` lacks some of `scopes`; undefined when it holds them all. Stream Deck flags the
+ * access for the machine's next pairing first, then flashes that it's needed, in that order as it always did;
+ * Logitech never asks for it, so it only flashes.
  */
-export function ensureScopes(runtime: Pick<KeyRuntime, "optIn" | "warn">, machine: Machine, scopes: readonly OptInScope[]): boolean {
+export function accessPlan(runtime: Pick<KeyRuntime, "optIn">, machine: Machine, scopes: readonly OptInScope[]): PressPlan | undefined {
 	const lacking = scopes.filter((scope) => !grants(machine.scopes, scope));
-	if (lacking.length > 0) void runtime.optIn?.request(machine.url, ...lacking).catch((error: unknown) => runtime.warn(`Flagging access failed: ${error instanceof Error ? error.message : String(error)}`));
-	return lacking.length === 0;
+	if (lacking.length === 0) return undefined;
+	const optIn = runtime.optIn;
+	if (optIn === undefined) return { kind: "fail", label: needsAccessLabel(lacking[0]!) };
+	return {
+		kind: "run",
+		work: async () => {
+			await optIn.request(machine.url, ...lacking);
+			// The press flashes the scope it lacks, as failureLabel reads it.
+			throw Object.assign(new Error("Missing opt-in access"), { requiredPermission: lacking[0]! });
+		},
+	};
 }
 
 /** The machine lacks `scopes` and its next pairing asks for them: the key says to pair again. */

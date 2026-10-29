@@ -6,6 +6,7 @@ import { world } from "../../actions/testing/deck.js";
 import { RUNNING, scene, STATES } from "../../actions/testing/fixtures.js";
 import type { GoldenOptions } from "../../actions/testing/harness.js";
 import type { DeckThread } from "../board.js";
+import { failureLabel } from "../feedback.js";
 import { t } from "../i18n.js";
 import { needsAccessLabel } from "../scopes.js";
 import { resolveTarget, type TargetSettings } from "../target.js";
@@ -104,8 +105,12 @@ describe("Share", () => {
 	it("asks for access on Stream Deck, and only says it needs it on Logitech", async () => {
 		const scopes = ["orchestration:read", "orchestration:operate"];
 		const deck = context(sharing("deck-access", null, { scopes }));
-		expect(await plan(deck, TAP)).toEqual({ kind: "fail", label: needsAccessLabel(ACCESS_SCOPE) });
+		const asked = await plan(deck, TAP);
+		if (asked.kind !== "run") throw new Error(`expected a run, got ${asked.kind}`);
+		// Flagged for the next pairing first, then the press flashes the scope it lacks.
+		const failed = asked.work();
 		expect(deck.runtime.optIn!.request).toHaveBeenCalledExactlyOnceWith("http://studio:3773", ACCESS_SCOPE);
+		await expect(failed).rejects.toSatisfy((error: unknown) => failureLabel(error) === needsAccessLabel(ACCESS_SCOPE));
 		const logi = context(sharing("logi-access", null, { scopes }), {}, false);
 		expect(await plan(logi, { heldMs: 0, confirmBy: "click" })).toEqual({ kind: "fail", label: needsAccessLabel(ACCESS_SCOPE) });
 	});

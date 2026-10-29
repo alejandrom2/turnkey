@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { machine } from "../../actions/testing/fixtures.js";
+import { failureLabel } from "../feedback.js";
 import { t } from "../i18n.js";
 import { needsAccessLabel } from "../scopes.js";
 import type { Machine } from "../t3/machine.js";
@@ -119,10 +120,12 @@ describe("Update T3", () => {
 		expect(press(context([updating()]), { heldMs: 0, confirmBy: "click" }).kind).toBe("run");
 	});
 
-	it("checks access, then the route, then the hold; Logitech never asks for access", () => {
+	it("checks access, then the route, then the hold; Logitech never asks for access", async () => {
 		const scopes = ["orchestration:read"];
 		const deck = context([updating({ scopes, updateEnvironment: { serverVersion: "1.0.0", capabilities: {} } })]);
-		expect(press(deck, { heldMs: 0, confirmBy: "settings" })).toEqual({ kind: "fail", label: needsAccessLabel(MAINTAIN_SCOPE) });
+		const asked = press(deck, { heldMs: 0, confirmBy: "settings" });
+		if (asked.kind !== "run") throw new Error(`expected a run, got ${asked.kind}`);
+		await expect(asked.work()).rejects.toSatisfy((error: unknown) => failureLabel(error) === needsAccessLabel(MAINTAIN_SCOPE));
 		expect(deck.runtime.optIn!.request).toHaveBeenCalledOnce();
 		const logi = context([updating({ scopes })], {}, { optIn: false });
 		expect(press(logi, { heldMs: 0, confirmBy: "click" })).toEqual({ kind: "fail", label: needsAccessLabel(MAINTAIN_SCOPE) });
