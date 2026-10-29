@@ -1,7 +1,8 @@
 import { HOLD_CONFIRM_MS } from "../approvals.js";
 import type { DeckThread, ThreadBoard } from "../board.js";
 import type { AcpIcons } from "../models.js";
-import type { MotionMode } from "../motion.js";
+import type { MotionMode, Transitions } from "../motion.js";
+import type { SlotIndex } from "../slots.js";
 import type { Target } from "../target.js";
 import type { Machine } from "../t3/machine.js";
 import type { MachineWatch } from "../watch.js";
@@ -17,6 +18,9 @@ export type Appearance = {
 	confirmSend?: string;
 	maxEffort?: string;
 };
+
+/** How long a press counts as a hold rather than a tap. */
+export const LONG_PRESS_MS = 500;
 
 export type FaceStyle = "tile" | "glyph";
 /** "settings": Stream Deck, each key's own Confirm/approval setting. "hold": MX Keypad. "click": Actions Ring, already deliberate. */
@@ -38,6 +42,14 @@ export interface KeyRuntime {
 	acpIcons: AcpIcons | undefined;
 	/** Stream Deck: the Motion setting. The sidecar always answers "reduced": Logi faces stay still. */
 	motion(): MotionMode;
+	/** When threads last changed state, for the flash on their faces. */
+	transitions: Pick<Transitions, "age">;
+	/** How many messages wait in the thread's queue, as far as the host knows. */
+	queued(thread: DeckThread): number;
+	/** Selects the thread without opening it. */
+	selectThread(thread: Pick<DeckThread, "key" | "machine">): void;
+	/** The app link scheme T3 Code answers to; undefined for the default. */
+	scheme(): string | undefined;
 }
 
 export type KeyContext<S> = {
@@ -45,6 +57,8 @@ export type KeyContext<S> = {
 	machine: string | undefined;
 	runtime: KeyRuntime;
 	target(): Target<DeckThread>;
+	/** The board slot the host worked out for this key (Stream Deck: by position among its siblings); absent where the settings say. */
+	slot?: SlotIndex;
 };
 
 export interface KeyDefinition<S, St> {
@@ -54,6 +68,8 @@ export interface KeyDefinition<S, St> {
 	label?(state: St, ctx: KeyContext<S>): string | undefined;
 	/** Whether the key can act now; false dims its Ring glyph. Absent means always. */
 	available?(state: St): boolean;
+	/** Whether the face animates, so the host should ask for frames. */
+	moving?(state: St): boolean;
 	press(state: St, ctx: KeyContext<S>, input: PressInput): PressPlan;
 	watch?: ConstructorParameters<typeof MachineWatch>[0];
 }

@@ -35,7 +35,7 @@ function setup(selected: { current: DeckThread | undefined }) {
 		},
 		selectedOn: () => selected.current,
 	} as unknown as ThreadBoard;
-	const runtime = logiRuntime({ machines: () => [machine()], board, openThread, repaint });
+	const runtime = logiRuntime({ machines: () => [machine()], board, openThread, selectThread: () => undefined, repaint });
 	const warn = vi.fn<(message: string) => void>();
 	return { runtime, repaint, openThread, warn };
 }

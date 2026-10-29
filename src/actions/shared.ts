@@ -1,6 +1,7 @@
 import type { Action, KeyUpEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
+import type { SlotIndex } from "../core/slots.js";
 import type { KeyContext, KeyDefinition } from "../core/keys/key.js";
 import type { MachineWatch } from "../core/watch.js";
 import { DeckAction, pressWhileDisconnected } from "./base.js";
@@ -12,8 +13,13 @@ export abstract class SharedKey<S extends JsonObject, St> extends DeckAction<S> 
 	protected abstract readonly definition: KeyDefinition<S, St>;
 	#watch: MachineWatch | undefined;
 
+	/** A key that fills a board slot says which: its place among its siblings. */
+	protected slotFor(_action: Action<S>): SlotIndex | undefined {
+		return undefined;
+	}
+
 	#context(action: Action<S>): KeyContext<S> {
-		return { settings: this.settingsOf(action), machine: this.machineOf(action), runtime: deckRuntime, target: () => this.target(action) };
+		return { settings: this.settingsOf(action), machine: this.machineOf(action), runtime: deckRuntime, target: () => this.target(action), slot: this.slotFor(action) };
 	}
 
 	protected override watching(): MachineWatch | undefined {
@@ -24,7 +30,9 @@ export abstract class SharedKey<S extends JsonObject, St> extends DeckAction<S> 
 	protected override async draw(action: Action<S>): Promise<void> {
 		if (!action.isKey()) return;
 		const ctx = this.#context(action);
-		await this.setImage(action, this.definition.tile(this.definition.state(ctx), ctx));
+		const state = this.definition.state(ctx);
+		if (this.definition.moving) this.animate(action, this.definition.moving(state));
+		await this.setImage(action, this.definition.tile(state, ctx));
 	}
 
 	override async onKeyUp(ev: KeyUpEvent<S>): Promise<void> {

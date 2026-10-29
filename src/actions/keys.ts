@@ -1,11 +1,12 @@
 import { type Action, action, type KeyUpEvent } from "@elgato/streamdeck";
 import type { JsonObject } from "@elgato/utils";
 
+import { activityKey, type ActivitySettings, newThreadKey, type NewThreadSettings, type NewThreadState, threadKey, type ThreadState } from "../core/keys/threads.js";
 import { approveKey, type ApproveSettings, type ApproveState, denyKey, type DenyState } from "../core/keys/decision.js";
 import { requestFor as coreRequestFor } from "../core/keys/requests.js";
 import { type Availability, availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
-import { openExternal, organize, type OrganizeAction, threadDeepLink } from "../core/commands.js";
+import { organize, type OrganizeAction } from "../core/commands.js";
 import { branchSummary } from "../core/git.js";
 import { type HealthMachine, healthIssues, summarizeHealth } from "../core/health.js";
 import { elapsed, type MessageKey, t } from "../core/i18n.js";
@@ -26,7 +27,7 @@ import {
 } from "../core/models.js";
 import { activityBar, renderActivityBar, renderInfoBar, renderNoticeBar } from "../core/infobar.js";
 import { applyChoice, currentEffort, effortChoices, effortPlace, effortToneOf } from "../core/power.js";
-import { threadMotion, twinkleStep } from "../core/motion.js";
+import { twinkleStep } from "../core/motion.js";
 import { modeOf } from "../core/modes.js";
 import { migratePromptSettings, templatePrompt } from "../core/prompts.js";
 import { type ConfirmMode, confirmMode } from "../core/review.js";
@@ -42,8 +43,6 @@ import {
 	paintedGlyphArt,
 	renderControlKey,
 	renderInfoKey,
-	renderNoticeKey,
-	renderThreadKey,
 } from "../core/render.js";
 import type { Need } from "../core/requirements.js";
 import { pinnedName } from "../core/target.js";
@@ -63,11 +62,9 @@ import {
 	markArt,
 	openThread,
 	pressWhileDisconnected,
-	queuedCount,
 	queueOf,
 	selectedThread,
 	selectNew,
-	selectThread,
 	sendToThread,
 	speedPaint,
 	ultrathinkArmed,
@@ -79,82 +76,38 @@ import { DeckWatch } from "./watch.js";
 const ID = "com.alejandrom2.turnkey";
 
 
-/** A thread's key face, moving as the Motion setting allows; `moving` asks for animation frames. */
-function threadFace(thread: DeckThread | undefined, emptyLabel: string, selected: DeckThread | undefined): { face: string; moving: boolean } {
-	if (thread === undefined) return { face: renderNoticeKey({ glyph: "chat", title: emptyLabel, tone: "muted" }), moving: false };
-	const now = Date.now();
-	const { motion, moving } = threadMotion(deck.animator.mode, thread, deck.transitions, now);
-	const face = renderThreadKey({
-		state: thread.deck,
-		title: thread.title,
-		meta: elapsed(thread.active ? thread.activeSince : thread.updatedAt, now),
-		worktree: thread.worktreePath !== undefined,
-		diff: thread.active ? undefined : thread.machine.turnDiff(thread),
-		unseen: thread.unseen,
-		selected: selected === undefined ? undefined : thread.key === selected.key,
-		motion,
-		queued: queuedCount(thread),
-		subagents: thread.subagents,
-	});
-	return { face, moving };
-}
-
-const pick = (threads: readonly DeckThread[], slot: SlotIndex, machine?: string): DeckThread | undefined =>
-	slot === "selected" ? selectedThread(machine) : threads[slot];
-
 type SlotSettings = { slot?: number | string; machine?: string };
 
 /** A board slot: by position on the device, by number, or the selected thread. Tap opens it in T3 Code; hold selects it. */
 @action({ UUID: `${ID}.slot` })
-export class ThreadSlot extends DeckAction<SlotSettings> {
+export class ThreadSlot extends SharedKey<SlotSettings, ThreadState> {
+	protected readonly definition = threadKey;
+
 	protected override slotNumber(settings: SlotSettings): number | undefined {
 		return slotSetting(settings.slot);
 	}
 
-	#threadFor(action: Action<SlotSettings>): DeckThread | undefined {
-		const machine = this.machineOf(action);
-		return pick(deck.board.threadsOn(machine), this.slotOf(action), machine);
-	}
-
-	protected override async draw(action: Action<SlotSettings>): Promise<void> {
-		if (!action.isKey()) return;
-		const { face, moving } = threadFace(this.#threadFor(action), t("face.noThread"), selectedThread(this.machineOf(action)));
-		this.animate(action, moving);
-		await this.setImage(action, face);
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<SlotSettings>): Promise<void> {
-		const long = this.wasLongPress(ev.action.id);
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const thread = this.#threadFor(ev.action);
-		if (!(await this.allowed(ev.action, availability("open", { thread, canOperate: true })))) return;
-		if (!long) return void (await this.run(ev.action, () => openThread(thread!)));
-		selectThread(thread!);
+	protected override slotFor(action: Action<SlotSettings>): SlotIndex {
+		return this.slotOf(action);
 	}
 }
 
-type ActivitySettings = { machine?: string; filter?: string; project?: string };
-
 /** The threads that match a filter, most urgent first, filling keys by position. Tap opens one. */
 @action({ UUID: `${ID}.activity` })
-export class Activity extends DeckAction<ActivitySettings> {
+export class Activity extends SharedKey<ActivitySettings, ThreadState> {
+	protected readonly definition = activityKey;
+
 	protected override slotGroup(settings: ActivitySettings): string {
 		return `${settings.machine ?? ""}|${threadFilter(settings.filter)}|${settings.project ?? ""}`;
 	}
 
-	#threadFor(action: Action<ActivitySettings>): DeckThread | undefined {
-		const machine = this.machineOf(action);
-		const { filter, project } = this.settingsOf(action);
-		const threads = deck.board.threadsOn(machine).filter((thread) => matchesFilter(thread, threadFilter(filter), project || undefined));
-		return pick(threads, this.slotOf(action), machine);
+	protected override slotFor(action: Action<ActivitySettings>): SlotIndex {
+		return this.slotOf(action);
 	}
 
 	protected override async draw(action: Action<ActivitySettings>): Promise<void> {
 		if (action.isNeoInfobar()) return this.#paintBar(action);
-		if (!action.isKey()) return;
-		const { face, moving } = threadFace(this.#threadFor(action), t("face.allQuiet"), selectedThread(this.machineOf(action)));
-		this.animate(action, moving);
-		await this.setImage(action, face);
+		return super.draw(action);
 	}
 
 	/** The info bar shows the most urgent matching thread, whatever Activity keys sit on the same device. */
@@ -165,12 +118,6 @@ export class Activity extends DeckAction<ActivitySettings> {
 		const all = deck.board.threadsOn(machine);
 		const matching = all.filter((thread) => matchesFilter(thread, threadFilter(filter), project || undefined));
 		await this.setBar(action, notice ? renderNoticeBar(notice) : renderActivityBar(activityBar(matching, all, t("face.allQuiet"), Date.now())));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<ActivitySettings>): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const target = this.#threadFor(ev.action);
-		if (await this.allowed(ev.action, availability("open", { thread: target, canOperate: true }))) await this.run(ev.action, () => openThread(target!));
 	}
 }
 
@@ -297,8 +244,6 @@ export class Steer extends PromptKey<PromptSettings> {
 	}
 }
 
-type NewThreadSettings = { prompt?: string; title?: string; destination?: string; project?: string; machine?: string; startIn?: string };
-
 /** The machine a new thread starts on when no thread is near: the action's machine, else the first that may act. */
 const launchMachine = (machine?: string) => machinesOn(machine).find((candidate) => candidate.canOperate);
 
@@ -313,61 +258,14 @@ export async function startThread(near: DeckThread | undefined, machine: string 
 	selectNew(target, created.threadId);
 }
 
-type LaunchPlan = { near: DeckThread | undefined; target: Machine | undefined; where: { projectId: string } | { scratch: true }; missing?: string };
-
 /**
  * Starts a thread where "Create in" says: the selected thread's project (the default, or no project when there
  * is none), no project, or a chosen project on whichever machine has it. Without a prompt it starts empty and
  * opens in T3 Code, where the user types.
  */
 @action({ UUID: `${ID}.new` })
-export class NewThread extends DeckAction<NewThreadSettings> {
-	#plan(action: Action<NewThreadSettings>): LaunchPlan {
-		const { destination, project } = this.settingsOf(action);
-		const machine = this.machineOf(action);
-		const near = selectedThread(machine);
-		if (destination === "scratch") return { near, target: near?.machine ?? launchMachine(machine), where: { scratch: true } };
-		if (destination === "project") {
-			const owner = deck.machines.find((candidate) => (machine === undefined || candidate.url === machine) && candidate.projects.some((known) => known.id === project));
-			return { near, target: owner, where: { projectId: project ?? "" }, missing: !project ? t("reason.pickProject") : owner === undefined ? t("reason.noProject") : undefined };
-		}
-		return { near, target: near?.machine ?? launchMachine(machine), where: near ? { projectId: near.projectId } : { scratch: true } };
-	}
-
-	#check(action: Action<NewThreadSettings>): { plan: LaunchPlan; worktree: boolean; check: Availability } {
-		const plan = this.#plan(action);
-		const settings = this.settingsOf(action);
-		const worktree = settings.startIn === "worktree";
-		// A worktree is made on the first message, as in T3 Code's composer, and needs a project's repository.
-		const missing = plan.missing ?? (!worktree ? undefined : "scratch" in plan.where ? t("worktree.noProject") : !settings.prompt?.trim() ? t("worktree.needsPrompt") : undefined);
-		return { plan, worktree, check: availability("launch", { canOperate: plan.target?.canOperate ?? false, missing }) };
-	}
-
-	protected override async draw(action: Action<NewThreadSettings>): Promise<void> {
-		if (!action.isKey()) return;
-		const { title } = this.settingsOf(action);
-		const { worktree, check } = this.#check(action);
-		await this.setImage(action, renderControlKey({ glyph: worktree ? "worktree" : "compose", label: title || (worktree ? t("worktree.newThread") : undefined), available: check.available }));
-	}
-
-	override async onKeyUp(ev: KeyUpEvent<NewThreadSettings>): Promise<void> {
-		if (await pressWhileDisconnected(this.machineOf(ev.action))) return;
-		const { plan, worktree, check } = this.#check(ev.action);
-		if (!(await this.allowed(ev.action, check))) return;
-		const target = plan.target!;
-		const prompt = ev.payload.settings.prompt?.trim() ?? "";
-		await this.run(
-			ev.action,
-			async () => {
-				const workspaceStrategy = worktree && "projectId" in plan.where ? await target.worktreeStrategy(plan.where.projectId) : undefined;
-				const created = await target.launch(plan.where, prompt, { title: ev.payload.settings.title, fallbackModel: plan.near?.model, workspaceStrategy });
-				selectNew(target, created.threadId);
-				if (prompt === "" && target.environmentId !== undefined) {
-					await openExternal(threadDeepLink({ environmentId: target.environmentId, threadId: created.threadId }, deck.scheme));
-				}
-			},
-		);
-	}
+export class NewThread extends SharedKey<NewThreadSettings, NewThreadState> {
+	protected readonly definition = newThreadKey;
 }
 
 type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; confirm?: string; confirmSettle?: string; machine?: string };

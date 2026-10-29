@@ -11,6 +11,7 @@ import streamDeck, {
 import type { JsonObject, JsonValue } from "@elgato/utils";
 
 import { HOLD_CONFIRM_MS } from "../core/approvals.js";
+import { LONG_PRESS_MS } from "../core/keys/key.js";
 import type { Availability } from "../core/availability.js";
 import type { DeckThread } from "../core/board.js";
 import { openThread as coreOpenThread } from "../core/commands.js";
@@ -45,7 +46,7 @@ import { deck } from "../deck.js";
 import { exportDiagnostics, openLogsFolder } from "../diagnostics.js";
 import type { MachineWatch } from "../core/watch.js";
 
-export const LONG_PRESS_MS = 500;
+export { LONG_PRESS_MS };
 /** At most one animation write per instance in this long. */
 export const FRAME_GAP_MS = 100;
 const logger = streamDeck.logger.createScope("actions");
