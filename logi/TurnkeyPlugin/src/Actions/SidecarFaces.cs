@@ -55,7 +55,7 @@ namespace Loupedeck.TurnkeyPlugin
             }
             else if (e.EventType == DeviceButtonEventType.Release)
             {
-                press(e.PressDuration);
+                press(Math.Clamp(e.PressDuration, 0, 600000));
             }
 
             return true;

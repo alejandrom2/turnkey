@@ -39,7 +39,9 @@ export function parseHostMessage(line: string): HostMessage | undefined {
 		case "disappear":
 			return { type, action };
 		case "press":
-			return Number.isInteger(heldMs) && (heldMs as number) >= 0 && (heldMs as number) <= 600000 ? { type, action, heldMs: heldMs as number } : { type, action };
+			// Only an absent heldMs is a Ring click (confirmed), so a present but bad one reads as a tap, never as a click.
+			if (heldMs === undefined) return { type, action };
+			return { type, action, heldMs: Number.isInteger(heldMs) ? Math.min(Math.max(heldMs as number, 0), 600000) : 0 };
 		case "turn":
 			return Number.isInteger(ticks) ? { type, action, ticks: ticks as number } : undefined;
 		default:
