@@ -1,13 +1,14 @@
 import { readFileSync } from "node:fs";
 
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DeckThread, ThreadBoard } from "../core/board.js";
 import type { ModelConfig } from "../core/models.js";
 import { QUICK_PROMPTS } from "../core/prompts.js";
+import { COLORS } from "../core/render.js";
 import type { Machine } from "../core/t3/machine.js";
 import { type SidecarDeps, sidecarKinds } from "./kinds.js";
-import { effortFace, limitsFace } from "./ring.js";
+import { effortFace, limitsFace, ringFace } from "./ring.js";
 import { logiRuntime } from "./runtime.js";
 
 const golden = (name: string) => readFileSync(new URL(`./__goldens__/${name}.svg`, import.meta.url), "utf8");
@@ -135,17 +136,17 @@ describe("sidecarKinds presses", () => {
 	it("continue sends the continue step for a finished thread and opens one that waits", () => {
 		const done = setup([{ key: "a", deck: "done" }], { selected: "a" });
 		done.kinds.continue!.press!(0, "");
-		expect(done.machine.send).toHaveBeenCalledExactlyOnceWith(expect.anything(), QUICK_PROMPTS.continue.text, "auto");
+		expect(done.machine.send).toHaveBeenCalledExactlyOnceWith(done.all[0], QUICK_PROMPTS.continue.text, "auto");
 		const waiting = setup([{ key: "a", deck: "approval" }], { selected: "a" });
 		waiting.kinds.continue!.press!(0, "");
-		expect(waiting.deps.open).toHaveBeenCalledOnce();
+		expect(waiting.deps.open).toHaveBeenCalledExactlyOnceWith(waiting.all[0]);
 		expect(waiting.machine.send).not.toHaveBeenCalled();
 	});
 
 	it("prompt:test sends the quick prompt's text", () => {
-		const { kinds, machine } = setup([{ key: "a" }], { selected: "a" });
+		const { kinds, machine, all } = setup([{ key: "a" }], { selected: "a" });
 		kinds.prompt!.press!(0, "test");
-		expect(machine.send).toHaveBeenCalledExactlyOnceWith(expect.anything(), QUICK_PROMPTS.test.text, "auto");
+		expect(machine.send).toHaveBeenCalledExactlyOnceWith(all[0], QUICK_PROMPTS.test.text, "auto");
 	});
 
 	it("prompts do nothing without an open thread, or for a name that isn't a prompt", () => {
@@ -158,10 +159,11 @@ describe("sidecarKinds presses", () => {
 	});
 
 	it("send sends the written prompt trimmed, and nothing when it's blank", () => {
-		const { kinds, machine } = setup([{ key: "a" }], { selected: "a" });
+		const { kinds, machine, all } = setup([{ key: "a" }], { selected: "a" });
 		kinds.send!.press!(0, "  hello  ");
 		kinds.send!.press!(0, "   ");
-		expect(machine.send).toHaveBeenCalledExactlyOnceWith(expect.anything(), "hello", "auto");
+		kinds.send!.press!(0, "");
+		expect(machine.send).toHaveBeenCalledExactlyOnceWith(all[0], "hello", "auto");
 	});
 
 	it("settings opens the settings page", () => {
@@ -178,6 +180,150 @@ describe("sidecarKinds presses", () => {
 		kinds.model!.appear!();
 		expect(deps.refreshLimits).toHaveBeenCalledTimes(3);
 		expect(deps.watchConfigs).toHaveBeenCalledOnce();
+	});
+});
+
+describe("prompts, Continue and limits as they have always acted", () => {
+	const FRESH = "2026-06-01T11:58:00Z";
+	const window = (id: string, label: string, usedPercent: number, mins: number) => ({ id, kind: "session", label, usedPercent, resetsAt: "2026-06-01T15:00:00Z", windowDurationMins: mins });
+	const reporting = (driver: string, windows: unknown[], checkedAt = FRESH) => ({ instanceId: driver, driver, enabled: true, installed: true, models: [], auth: { email: `${driver}@example.test` }, usageLimits: { checkedAt, windows } });
+
+	/** A ready machine whose providers report limits: Codex at 30% of its tightest window, Claude at 40%. */
+	function limited(checkedAt = FRESH) {
+		const { deps, machine } = setup([]);
+		Object.assign(machine, {
+			state: { kind: "ready", environmentId: "env", label: "Studio", canOperate: true },
+			environmentId: "env",
+			modelConfig: { providers: [reporting("codex", [window("primary", "Session", 20, 300), window("secondary", "Weekly", 30, 10_080)], checkedAt), reporting("claudeAgent", [window("five", "5-hour", 40, 300)], checkedAt)] },
+		});
+		return { kinds: sidecarKinds(deps), deps };
+	}
+
+	beforeEach(() => void vi.useFakeTimers().setSystemTime(new Date("2026-06-01T12:00:00Z")));
+	afterEach(() => void vi.useRealTimers());
+
+	it("prompt draws each prompt's glyph, and a dim chat glyph for any other name", () => {
+		const { kinds } = setup([{ key: "a" }], { selected: "a" });
+		for (const name of ["test", "fix", "explain", "commit"]) expect(kinds.prompt!.face(0, name, 80)).toBe(golden(`promptFace-${name}`));
+		for (const name of ["nope", "continue", "custom", ""]) expect(kinds.prompt!.face(0, name, 80), name).toBe(ringFace(COLORS.muted, "chat", { dim: true }));
+	});
+
+	it("prompt sends nothing for Continue, Custom or another name that has a template but no glyph", () => {
+		const { kinds, machine } = setup([{ key: "a" }], { selected: "a" });
+		for (const name of ["continue", "custom", "nope", ""]) kinds.prompt!.press!(0, name);
+		expect(machine.send).not.toHaveBeenCalled();
+	});
+
+	it("prompt and send have no label, and Continue's names the open thread only where it can act", () => {
+		const { kinds } = setup([{ key: "a", deck: "done" }], { selected: "a" });
+		expect(kinds.prompt!.label?.(0, "fix")).toBeUndefined();
+		expect(kinds.send!.label?.(0, "hello")).toBeUndefined();
+		expect(kinds.continue!.label!(0, "")).toBe("Thread 0");
+		expect(setup([{ key: "a", deck: "done" }], { selected: "a", canOperate: false }).kinds.continue!.label!(0, "")).toBeUndefined();
+		expect(setup([{ key: "a", deck: "done" }]).kinds.continue!.label!(0, "")).toBeUndefined();
+	});
+
+	it("prompt, send and Continue send nothing where the machine can't act", () => {
+		const { kinds, machine, deps } = setup([{ key: "a", deck: "done" }], { selected: "a", canOperate: false });
+		kinds.prompt!.press!(0, "fix");
+		kinds.send!.press!(0, "hello");
+		kinds.continue!.press!(0, "");
+		expect(machine.send).not.toHaveBeenCalled();
+		expect(deps.open).not.toHaveBeenCalled();
+	});
+
+	it("a keypad hold on prompt or send still sends, never restarts", () => {
+		const { kinds, machine, all } = setup([{ key: "a" }], { selected: "a" });
+		kinds.prompt!.press!(0, "fix", 900);
+		kinds.send!.press!(0, " hi ", 900);
+		kinds.prompt!.press!(0, "commit", 0);
+		expect(machine.send.mock.calls).toEqual([
+			[all[0], QUICK_PROMPTS.fix.text, "auto"],
+			[all[0], "hi", "auto"],
+			[all[0], QUICK_PROMPTS.commit.text, "auto"],
+		]);
+	});
+
+	it("prompt, send and Continue report a failed send to the log only, and keep their faces", async () => {
+		const { deps, machine } = setup([{ key: "a", deck: "done" }], { selected: "a" });
+		const logged = vi.fn();
+		const kinds = sidecarKinds({ ...deps, failed: (what) => (error) => logged(what, error) });
+		const refused = new Error("refused");
+		machine.send.mockRejectedValue(refused);
+		kinds.prompt!.press!(0, "fix");
+		kinds.send!.press!(0, "hello");
+		kinds.continue!.press!(0, "");
+		await vi.waitFor(() => expect(logged).toHaveBeenCalledTimes(3));
+		expect(logged.mock.calls).toEqual([
+			["send the prompt", refused],
+			["send the prompt", refused],
+			["continue the thread", refused],
+		]);
+		expect(kinds.prompt!.face(0, "fix", 80)).toBe(golden("promptFace-fix"));
+		expect(kinds.send!.face(0, "hello", 80)).toBe(golden("customPromptFace-text"));
+		expect(kinds.continue!.face(0, "", 80)).toBe(golden("continueFace-send"));
+	});
+
+	it("Continue opens a thread waiting on a question, and does nothing while it runs or is queued, or with none open", () => {
+		const question = setup([{ key: "a", deck: "question" }], { selected: "a" });
+		question.kinds.continue!.press!(0, "");
+		expect(question.deps.open).toHaveBeenCalledExactlyOnceWith(question.all[0]);
+		expect(question.kinds.continue!.face(0, "", 80)).toBe(golden("continueFace-open"));
+		for (const deck of ["running", "queued"] as const) {
+			const busy = setup([{ key: "a", deck }], { selected: "a" });
+			busy.kinds.continue!.press!(0, "");
+			expect(busy.machine.send).not.toHaveBeenCalled();
+			expect(busy.deps.open).not.toHaveBeenCalled();
+			expect(busy.kinds.continue!.face(0, "", 80)).toBe(golden("continueFace-none"));
+		}
+		const none = setup([{ key: "a", deck: "done" }]);
+		none.kinds.continue!.press!(0, "");
+		expect(none.machine.send).not.toHaveBeenCalled();
+		expect(none.kinds.continue!.face(0, "", 80)).toBe(golden("continueFace-none"));
+	});
+
+	it("Continue opens a waiting thread exactly once, sending nothing", () => {
+		const { kinds, deps, machine, all } = setup([{ key: "a", deck: "approval" }], { selected: "a" });
+		kinds.continue!.press!(0, "", 900);
+		expect(deps.open).toHaveBeenCalledExactlyOnceWith(all[0]);
+		expect(machine.send).not.toHaveBeenCalled();
+	});
+
+	it("limit n draws the nth provider's tightest window, with its mark and label", () => {
+		const { kinds } = limited();
+		expect(kinds.limit!.face(0, "2", 80)).toBe(golden("limitsFace-provider"));
+		expect(kinds.limit!.label!(0, "2")).toBe("Claude · 5-hour: 40% used");
+		expect(kinds.limit!.face(0, "1", 80)).toBe(limitsFace(30, false, "codex"));
+		expect(kinds.limit!.label!(0, "1")).toBe("Codex · Weekly: 30% used");
+	});
+
+	it("limit n draws unavailable, with no label, past the providers or for a place that isn't one", () => {
+		const { kinds } = limited();
+		for (const place of ["0", "3", "9", "abc", ""]) {
+			expect(kinds.limit!.face(0, place, 80), place).toBe(golden("limitsFace-unavailable"));
+			expect(kinds.limit!.label!(0, place), place).toBeUndefined();
+		}
+	});
+
+	it("limit n dims a stale limit", () => {
+		expect(limited("2026-06-01T08:00:00Z").kinds.limit!.face(0, "2", 80)).toBe(golden("limitsFace-provider-stale"));
+	});
+
+	it("the Limits folder draws the tightest window of all, without a mark, and has no press", () => {
+		const { kinds } = limited();
+		expect(kinds.limits!.face(0, "", 80)).toBe(golden("limitsFace-low"));
+		expect(kinds.limits!.face(0, "anything", 80)).toBe(golden("limitsFace-low"));
+		expect(kinds.limits!.label!(0, "")).toBe("Claude · 5-hour: 40% used");
+		expect(kinds.limits!.press).toBeUndefined();
+		expect(setup([]).kinds.limits!.label!(0, "")).toBeUndefined();
+	});
+
+	it("a limit press, Ring click or keypad hold, only refreshes the limits", () => {
+		const { kinds, deps } = limited();
+		kinds.limit!.press!(0, "2");
+		kinds.limit!.press!(0, "2", 900);
+		expect(deps.refreshLimits).toHaveBeenCalledTimes(2);
+		expect(deps.openExternal).not.toHaveBeenCalled();
 	});
 });
 
