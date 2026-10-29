@@ -3,8 +3,7 @@
  * proposes messages the owner sends or dismisses. A link is shown once, when it is made; making another ends the
  * current one. The share lives on the thread's projection, not the shell, so it is read on demand.
  */
-import { execFile } from "node:child_process";
-
+import { launch } from "./commands.js";
 import { type MessageKey, t } from "./i18n.js";
 import { setCapped } from "./capped.js";
 
@@ -49,10 +48,7 @@ function clipboardCommand(platform: NodeJS.Platform): [string | undefined, strin
 export function copyText(text: string, platform: NodeJS.Platform = process.platform): Promise<void> {
 	const [command, args] = clipboardCommand(platform);
 	if (command === undefined) return Promise.reject(new Error("No clipboard tool on this system."));
-	return new Promise((resolve, reject) => {
-		const child = execFile(command, args, (error) => (error ? reject(error) : resolve()));
-		child.stdin?.end(text);
-	});
+	return launch(command, args, text);
 }
 
 /** One read per thread at a time, read again once its stamp moves. */

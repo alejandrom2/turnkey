@@ -1,10 +1,9 @@
 import streamDeck from "@elgato/streamdeck";
-import { execFile } from "node:child_process";
 import { mkdir, open, stat, writeFile } from "node:fs/promises";
 import { arch, release } from "node:os";
 import { join } from "node:path";
 
-import { revealCommand } from "./core/commands.js";
+import { launch, revealCommand } from "./core/commands.js";
 import { diagnosticsReport } from "./core/diagnostics.js";
 import { deck, onOpenDeck } from "./deck.js";
 
@@ -36,9 +35,9 @@ async function logTail(): Promise<string> {
 function reveal(path: string, select: boolean): Promise<void> {
 	const windows = process.platform === "win32";
 	const [command, args] = revealCommand(path, select);
-	return new Promise((resolve, reject) =>
-		execFile(command, args, (error) => (error && (!windows || (error as NodeJS.ErrnoException).code === "ENOENT") ? reject(error) : resolve())),
-	);
+	return launch(command, args).catch((error: NodeJS.ErrnoException) => {
+		if (!windows || error.code === "ENOENT") throw error;
+	});
 }
 
 export const openLogsFolder = (): Promise<void> => reveal(logsDir(), false);
