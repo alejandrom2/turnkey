@@ -1,14 +1,11 @@
 {
 	"$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-	"last-release-sha": "a70d196524cc86eefd6a1c26f8d5103c8018c020",
 	"packages": {
 		".": {
 			"release-type": "node",
 			"package-name": "turnkey",
 			"changelog-path": "CHANGELOG.md",
 			"include-component-in-tag": false,
-			"bump-minor-pre-major": true,
-			"bump-patch-for-minor-pre-major": false,
 			"changelog-sections": [
 				{
 					"type": "feat",
