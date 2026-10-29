@@ -20,11 +20,12 @@ export function glyphFallback(tile: string, dim: boolean): string {
 }
 
 /**
- * How a Logi action that shipped before shared keys still behaves: its glyph at every size, and a press that can't act
- * does nothing, a failed one only reaching `failed`, as before.
+ * How a Logi action that shipped before shared keys keeps behaving as it did. `quiet`: a press that can't act does
+ * nothing and a failed one only reaches this log, never a flash, as the Ring always had it. `glyphOnly`: its glyph at
+ * every size, no keypad tile.
  */
-// shortcut: no keypad tile and no flash for these, so nothing they show changes; drop `legacy` when they get keypad tiles.
-export type Legacy = { failed: (error: unknown) => void };
+// shortcut: glyphOnly keeps the keypad on today's glyph until these kinds get keypad tiles; drop only it then, as quiet is what keeps their Ring faces unchanged.
+export type Legacy = { quiet: (error: unknown) => void; glyphOnly?: boolean };
 
 /**
  * A Logi kind over a shared definition: each parameter is a variant standing for its settings (a table, or a function
@@ -78,7 +79,7 @@ export function sharedKind<S, St>(
 			const flashing = flashes.get(parameter);
 			if (flashing !== undefined) return size <= 80 ? glyphResult(false, flashing.label) : markup(renderResultKey({ ok: false, label: flashing.label }));
 			const state = definition.state(ctx);
-			if (size > 80 && legacy === undefined) return markup(definition.tile(state, ctx));
+			if (size > 80 && legacy?.glyphOnly !== true) return markup(definition.tile(state, ctx));
 			return definition.glyph ? markup(definition.glyph(state, ctx)) : glyphFallback(markup(definition.tile(state, ctx)), definition.available?.(state) === false);
 		},
 		label(_index, parameter) {
@@ -98,7 +99,7 @@ export function sharedKind<S, St>(
 						runtime.repaint();
 					},
 					(error: unknown) => {
-						if (legacy !== undefined) return legacy.failed(error);
+						if (legacy !== undefined) return legacy.quiet(error);
 						// The message only: errors never carry tokens, but their causes might.
 						warn(`${name}: a press failed: ${error instanceof Error ? error.message : String(error)}`);
 						flash(parameter, failureLabel(error));

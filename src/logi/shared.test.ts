@@ -291,7 +291,7 @@ describe("sharedKind for an action that shipped before shared keys", () => {
 	it("takes its settings from the parameter, draws its glyph at every size, and never flashes", async () => {
 		const { runtime, repaint, warn } = setup({ current: undefined });
 		const failed = vi.fn();
-		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, warn, { failed });
+		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, warn, { quiet: failed, glyphOnly: true });
 		expect(kind.face(0, "7", 116)).toBe(svgMarkup(144, 144, `<circle class="glyph 7"/>`));
 		kind.press!(0, "0");
 		kind.press!(0, "7", 600);
@@ -301,6 +301,15 @@ describe("sharedKind for an action that shipped before shared keys", () => {
 		expect(kind.label?.(0, "0")).toBeUndefined();
 		expect(repaint).not.toHaveBeenCalled();
 		expect(warn).not.toHaveBeenCalled();
+	});
+
+	it("draws the tile on a keypad once only quiet is asked for, still without a flash", () => {
+		const { runtime } = setup({ current: undefined });
+		const kind = sharedKind("legacy", refusing, (parameter) => ({ place: Number(parameter) }), runtime, () => undefined, { quiet: () => undefined });
+		expect(kind.face(0, "0", 116)).toBe(svgMarkup(144, 144, `<rect class="tile"/>`));
+		kind.press!(0, "0");
+		expect(kind.face(0, "0", 80)).toBe(svgMarkup(144, 144, `<circle class="glyph 0"/>`));
+		expect(kind.label?.(0, "0")).toBeUndefined();
 	});
 });
 

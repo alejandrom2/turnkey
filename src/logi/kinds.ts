@@ -115,10 +115,10 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 			},
 		},
 		// Access, Effort and Model n were Logitech actions before they were shared; they keep how they looked and acted.
-		access: { ...sharedKind("access", permissionsKey, () => ({}), deps.runtime, deps.warn, { failed: failed(CHANGE.permissions) }), turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)) },
-		effort: { ...sharedKind("effort", effortKey, () => ({}), deps.runtime, deps.warn, { failed: failed(CHANGE.effort) }), turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)) },
+		access: { ...sharedKind("access", permissionsKey, () => ({}), deps.runtime, deps.warn, { quiet: failed(CHANGE.permissions), glyphOnly: true }), turn: (ticks) => pick("permissions", (state) => stepChoice(state, undefined, ticks)) },
+		effort: { ...sharedKind("effort", effortKey, () => ({}), deps.runtime, deps.warn, { quiet: failed(CHANGE.effort), glyphOnly: true }), turn: (ticks) => pick("effort", (state) => stepChoice(state, undefined, ticks)) },
 		// A Models folder's slots: the parameter is the place, from 1, in T3 Code's picker (favorites, else every model).
-		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { failed: failed(CHANGE.model) }), appear: watchConfigs },
+		model: { ...sharedKind("model", modelKey, (place) => ({ pickerSlot: Number(place) }), deps.runtime, deps.warn, { quiet: failed(CHANGE.model), glyphOnly: true }), appear: watchConfigs },
 		speed: sharedKind("speed", speedKey, { "": {} }, deps.runtime, deps.warn),
 		plan: sharedKind("plan", planKey, { "": {} }, deps.runtime, deps.warn),
 		limit: {
