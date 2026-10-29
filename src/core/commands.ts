@@ -1,4 +1,5 @@
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
+import { posix } from "node:path";
 
 import type { DeckThread } from "./board.js";
 import type { Machine, Question } from "./t3/machine.js";
@@ -10,10 +11,36 @@ export function threadDeepLink(thread: Pick<DeckThread, "environmentId" | "threa
 	return `${scheme}://threads/${encodeURIComponent(thread.environmentId)}/${encodeURIComponent(thread.threadId)}`;
 }
 
+/** The OS's opener for `url`. */
+export function openCommand(url: string, platform: NodeJS.Platform = process.platform): [string, string[]] {
+	if (platform === "win32") return ["rundll32", ["url.dll,FileProtocolHandler", url]];
+	return [platform === "linux" ? "xdg-open" : "open", [url]];
+}
+
+/** Shows `path` in Finder or Explorer, selected when `select`; `xdg-open` can't select, so Linux opens the folder. */
+export function revealCommand(path: string, select: boolean, platform: NodeJS.Platform = process.platform): [string, string[]] {
+	if (platform === "win32") return ["explorer", [select ? `/select,${path}` : path]];
+	if (platform === "linux") return ["xdg-open", [select ? posix.dirname(path) : path]];
+	return ["open", select ? ["-R", path] : [path]];
+}
+
+/**
+ * Runs an OS tool and settles when it exits. Not `execFile`: that waits for the output pipes to close, which a process
+ * the tool leaves behind (xclip keeping the clipboard, an app xdg-open launched) holds open indefinitely.
+ */
+export function launch(command: string, args: readonly string[], input?: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const child = spawn(command, args, { stdio: [input === undefined ? "ignore" : "pipe", "ignore", "ignore"] });
+		child.once("error", reject);
+		child.once("exit", (code) => (code === 0 ? resolve() : reject(new Error(`${command} exited with ${code}`))));
+		child.stdin?.on("error", () => undefined).end(input);
+	});
+}
+
 /** Stream Deck's `openUrl` refuses custom schemes, so hand the link to the OS. */
 export function openExternal(url: string): Promise<void> {
-	const [command, args] = process.platform === "win32" ? ["rundll32", ["url.dll,FileProtocolHandler", url]] : ["open", [url]];
-	return new Promise((resolve, reject) => execFile(command, args, (error) => (error ? reject(error) : resolve())));
+	const [command, args] = openCommand(url);
+	return launch(command, args);
 }
 
 /** Selects the thread the way T3 Code's own open does, then opens it in the desktop app, without waiting on the select; a failed select still opens. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	fontFamily,
 	sparkles,
 	accessTone,
 	dotsCue,
@@ -300,5 +301,14 @@ describe("fit", () => {
 		expect(fit("Short", 100, 15)).toBe("Short");
 		for (let width = 10; width < 80; width++) expect(fit("ab🎉🎉🎉🎉🎉🎉", width, 15)).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/);
 		expect(fit("ab🎉🎉🎉🎉🎉🎉", 40, 15)).toMatch(/…$/);
+	});
+});
+
+describe("fontFamily", () => {
+	it("draws the same faces whether macOS or Linux builds the assets", () => expect(fontFamily("linux")).toBe(fontFamily("darwin")));
+	it("falls back to fonts Linux has, then a generic family resvg can resolve", () => expect(fontFamily("linux")).toMatch(/'Noto Sans','DejaVu Sans',sans-serif$/));
+	it("keeps the system fonts on macOS and Windows", () => {
+		expect(fontFamily("darwin")).toMatch(/^-apple-system/);
+		expect(fontFamily("win32")).toMatch(/^'Segoe UI Variable'/);
 	});
 });

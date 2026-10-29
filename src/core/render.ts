@@ -218,8 +218,13 @@ function ultrathinkFrame(width: number, height: number, radius: number, stroke: 
 	);
 }
 
-const FONT_FAMILY =
-	process.platform === "win32" ? `'Segoe UI Variable','Segoe UI',sans-serif` : `-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif`;
+/** One stack for macOS and Linux, so the bundled profiles come out the same on either build machine. */
+export function fontFamily(platform: NodeJS.Platform = process.platform): string {
+	if (platform === "win32") return `'Segoe UI Variable','Segoe UI',sans-serif`;
+	return `-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter','Noto Sans','DejaVu Sans',sans-serif`;
+}
+
+const FONT_FAMILY = fontFamily();
 
 export const escapeXml = (text: string) =>
 	text.replace(/[<>&"']/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[char]!);

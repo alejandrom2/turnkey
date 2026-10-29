@@ -234,7 +234,14 @@ export class RpcSocket {
 		}
 		if (attempt !== this.#attempt || !this.#running) return;
 
-		const socket = this.options.socket(url);
+		let socket: SocketLike;
+		try {
+			socket = this.options.socket(url);
+		} catch (error) {
+			// Node 20 has no global WebSocket: a thrown constructor would reject unhandled and end the plugin.
+			this.#failed(error as Error);
+			return;
+		}
 		this.#socket = socket;
 		this.#openTimer = setTimeout(() => this.#lost(new Error(t("connection.noAnswer"))), OPEN_TIMEOUT_MS);
 		socket.onopen = () => {

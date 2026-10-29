@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { readGuestShare, shareFailure, ShareStore, shareView } from "./share.js";
+import { copyText, readGuestShare, shareFailure, ShareStore, shareView } from "./share.js";
 
 const NOW = Date.parse("2026-10-27T12:00:00Z");
 const share = (patch: Record<string, unknown> = {}) => ({ id: "s1", host: "box.t3.codes", expiresAt: "2026-10-28T10:00:00Z", guestName: null, messages: [], ...patch });
@@ -50,5 +50,16 @@ describe("share store", () => {
 		await vi.waitFor(() => expect(onChange).toHaveBeenCalled());
 		store.set("e/t", readGuestShare({ thread: { guestShare: share() } }));
 		expect(store.of({ key: "e/t", stamp: "1" }, read)?.id).toBe("s1");
+	});
+});
+
+describe("copyText", () => {
+	it("rejects on Linux when no clipboard tool is installed", async () => {
+		vi.stubEnv("PATH", "/nonexistent");
+		try {
+			await expect(copyText("x", "linux")).rejects.toThrow();
+		} finally {
+			vi.unstubAllEnvs();
+		}
 	});
 });
