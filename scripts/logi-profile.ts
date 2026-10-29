@@ -37,6 +37,8 @@ const FOLDERS = [
 const folderAction = (id: string) => `$@Generic___@ProfileAction___${id}`;
 
 /** The ring's eight slots, clockwise from the top, as `[action, its English name, its symbol]`. */
+/** A plugin's own folder (a PluginDynamicFolder) is named by its full type, unlike its commands. */
+const dynamicFolderAction = (name: string) => `$Turnkey___#DynamicFolder___DynamicFolder#Loupedeck.TurnkeyPlugin.${name}`;
 const actionName = (name: string) => `$Turnkey___Loupedeck.TurnkeyPlugin.${name}`;
 const slot = (name: string, displayName: string) => [actionName(name), displayName, name] as const;
 const RING: readonly (readonly [string, string, string])[] = [
@@ -57,7 +59,7 @@ const KEYPAD: readonly (readonly [string, string, string])[] = [
 	slot("ApproveCommand", "Approve"),
 	slot("StopRunCommand", "Stop run"),
 	slot("DenyCommand", "Deny"),
-	slot("TurnkeyFolder", "Turnkey"),
+	[dynamicFolderAction("TurnkeyFolder"), "Turnkey", "TurnkeyFolder"],
 	slot("EffortCommand", "Effort"),
 	slot("LimitsCommand", "Limits"),
 ];
