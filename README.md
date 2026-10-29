@@ -4,7 +4,7 @@
 
 <h1>Turnkey<br><sub>for T3 Code</sub></h1>
 
-**Control [T3 Code](https://github.com/pingdotgg/t3code) from your Stream Deck or your Logitech mouse.**<br>
+**Control [T3 Code](https://github.com/pingdotgg/t3code) from your Stream Deck, your Logitech mouse or your MX Keypad.**<br>
 See every agent thread, approve and answer from a key, switch models and effort on a dial, and run git and pull request actions without switching to T3 Code.
 
 <a href="https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.streamDeckPlugin"><img src="https://img.shields.io/badge/Download-for_Stream_Deck-4a68f0?style=for-the-badge" alt="Download for Stream Deck" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.lplug4"><img src="https://img.shields.io/badge/Download-for_Logitech-4a68f0?style=for-the-badge" alt="Download for Logitech" height="36"></a>&nbsp;&nbsp;<a href="https://github.com/sponsors/alejandrom2"><img src="https://img.shields.io/badge/Buy_me_a_coffee-%E2%98%95-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Buy me a coffee" height="36"></a>
@@ -60,6 +60,10 @@ Each device gets a ready-made Turnkey profile, and you can drag any action onto 
 <td width="40%"><img src="docs/readme/ring.png" alt="Turnkey's Actions Ring for T3 Code: hovering the most urgent thread names it, then the Threads, Prompts, Models and Limits folders open in turn, each with a slot hovered: 2 waiting on you · 3 running, Fix tests, Claude · Opus 5.5 and Claude · 5-hour: 47% used" width="320"></td>
 <td><b>Logitech Actions Ring</b><br>T3 Code gets its own Actions Ring on an MX mouse or keyboard: the thread that needs you, Continue and Stop, and folders for your threads, quick prompts, models and limits. Each slot shows live state, and hovering names its thread, model or limit. An MX Master 4 buzzes when a thread needs approval, asks a question, finishes or fails.</td>
 </tr>
+<tr>
+<td width="40%" align="center"><img src="docs/readme/approve.png" alt="An Approve key: Allow once for npm run db:migrate" width="96"></td>
+<td><b>Logitech MX Keypad</b><br>A ready-made page of nine keys: three threads, then Approve, Continue and Deny, then the Turnkey folder, Effort and Limits. Each key shows the full face as on Stream Deck, and keys that can't be undone, like Approve, act only when held. Git, pull request, health and preview actions wait in the Turnkey folder.</td>
+</tr>
 </table>
 
 ## See it
@@ -89,7 +93,7 @@ You need Logi Options+ on macOS, an MX mouse or keyboard with the Actions Ring, 
 1. **Install.** Download [`Turnkey.lplug4`](https://github.com/alejandrom2/turnkey/releases/latest/download/Turnkey.lplug4) and open it to install it in Logi Options+.
 2. **Pair.** In Options+, Turnkey's actions show a **Pair with T3 Code** banner. Its button opens a Turnkey Settings page on this computer: paste a pair link from T3 Code's **Settings → Sharing & access** and press **Connect**.
 3. **Pick the ring.** In Options+, add T3 Code to the Actions Ring and choose its **Default** profile. Rearrange it as you like, or put Turnkey's actions on any other profile. **Turnkey Settings** on the ring reopens the settings page.
-4. **Set up the keypad.** On an MX Keypad, Turnkey's default page fills the keys.
+4. **Set up the keypad.** On an MX Keypad, choose the T3 Code app's **Default** profile in Options+: three threads, Approve, Continue and Deny, the **Turnkey** folder, Effort and Limits. Hold a key to confirm anything that can't be undone.
 
 The [guide](docs/guide.md) covers every action, the settings window, profiles, extra access and known limits.
 
