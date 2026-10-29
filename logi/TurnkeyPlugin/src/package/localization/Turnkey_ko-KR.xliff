@@ -216,14 +216,6 @@
           <source>Snoozes the thread open in T3 Code for an hour.</source>
           <target>T3 Code에서 열려 있는 스레드를 1시간 동안 미룹니다.</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand" translate="yes">
-          <source>Unpin</source>
-          <target>고정 해제</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand###description" translate="yes">
-          <source>Unpins the thread open in T3 Code, or pins it when it isn't pinned.</source>
-          <target>T3 Code에서 열려 있는 스레드의 고정을 해제하거나, 고정되어 있지 않으면 고정합니다.</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand" translate="yes">
           <source>Wake thread</source>
           <target>스레드 깨우기</target>

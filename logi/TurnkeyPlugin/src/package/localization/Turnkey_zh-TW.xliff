@@ -216,14 +216,6 @@
           <source>Snoozes the thread open in T3 Code for an hour.</source>
           <target>將 T3 Code 中開啟的對話延後一小時。</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand" translate="yes">
-          <source>Unpin</source>
-          <target>取消釘選</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand###description" translate="yes">
-          <source>Unpins the thread open in T3 Code, or pins it when it isn't pinned.</source>
-          <target>取消釘選 T3 Code 中開啟的對話；未釘選時則釘選。</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand" translate="yes">
           <source>Wake thread</source>
           <target>喚醒對話</target>

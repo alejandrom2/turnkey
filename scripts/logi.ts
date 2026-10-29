@@ -91,8 +91,6 @@ const KEYS = [
 	"logi.actions.organize.settle",
 	"organize.pin",
 	"logi.actions.organize.pin",
-	"organize.unpin",
-	"logi.actions.organize.unpin",
 	"organize.snooze",
 	"logi.actions.organize.snooze",
 	"organize.archive",

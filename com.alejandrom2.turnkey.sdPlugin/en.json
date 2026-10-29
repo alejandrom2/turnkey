@@ -1271,7 +1271,7 @@
 				"fork": { "description": "Forks the thread open in T3 Code from its last finished turn, and opens the fork." },
 				"merge": { "description": "Merges the fork open in T3 Code back into the thread it came from, and opens that thread. On a keypad, hold it." },
 				"branch": { "description": "Shows the branch of the thread open in T3 Code. Choose it to open the thread." },
-				"organize": { "settle": "Settles the thread open in T3 Code, taking it off the board.", "pin": "Pins the thread open in T3 Code, or unpins it when it's pinned.", "unpin": "Unpins the thread open in T3 Code, or pins it when it isn't pinned.", "snooze": "Snoozes the thread open in T3 Code for an hour.", "archive": "Archives the thread open in T3 Code. On a keypad, hold it.", "markUnread": "Marks the thread open in T3 Code unread.", "wake": "Wakes the thread you snoozed last in T3 Code." },
+				"organize": { "settle": "Settles the thread open in T3 Code, taking it off the board.", "pin": "Pins the thread open in T3 Code, or unpins it when it's pinned.", "snooze": "Snoozes the thread open in T3 Code for an hour.", "archive": "Archives the thread open in T3 Code. On a keypad, hold it.", "markUnread": "Marks the thread open in T3 Code unread.", "wake": "Wakes the thread you snoozed last in T3 Code." },
 				"urgent": {
 					"name": "Most urgent thread",
 					"description": "Shows what needs you in T3 Code. Choose it to open that thread."

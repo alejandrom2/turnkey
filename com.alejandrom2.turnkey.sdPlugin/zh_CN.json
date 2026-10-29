@@ -1271,7 +1271,7 @@
 				"fork": { "description": "从 T3 Code 中打开的对话最后完成的回合分叉出新对话，并打开它。" },
 				"merge": { "description": "将 T3 Code 中打开的分叉对话合并回原来的对话，并打开该对话。在小键盘上请长按。" },
 				"branch": { "description": "显示 T3 Code 中打开的对话所在的分支。选择即可打开该对话。" },
-				"organize": { "settle": "将 T3 Code 中打开的对话标为已处理，并从看板移除。", "pin": "置顶 T3 Code 中打开的对话；已置顶时则取消置顶。", "unpin": "取消置顶 T3 Code 中打开的对话；未置顶时则置顶。", "snooze": "将 T3 Code 中打开的对话延后一小时。", "archive": "归档 T3 Code 中打开的对话。在小键盘上请长按。", "markUnread": "将 T3 Code 中打开的对话标为未读。", "wake": "唤醒你在 T3 Code 中最后延后的对话。" },
+				"organize": { "settle": "将 T3 Code 中打开的对话标为已处理，并从看板移除。", "pin": "置顶 T3 Code 中打开的对话；已置顶时则取消置顶。", "snooze": "将 T3 Code 中打开的对话延后一小时。", "archive": "归档 T3 Code 中打开的对话。在小键盘上请长按。", "markUnread": "将 T3 Code 中打开的对话标为未读。", "wake": "唤醒你在 T3 Code 中最后延后的对话。" },
 				"urgent": {
 					"name": "最紧急的对话",
 					"description": "显示 T3 Code 中需要你处理的内容。选择即可打开该对话。"

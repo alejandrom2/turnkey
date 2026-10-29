@@ -43,6 +43,7 @@ export function sharedKind<S, St>(
 ): KeyKind {
 	const flashes = new Map<string, { label: string; timer: ReturnType<typeof setTimeout> }>();
 	let warned = false;
+	let refusedGuard = false;
 
 	function contextOf(parameter: string): KeyContext<S> | undefined {
 		const target = () => ({ thread: runtime.board.selectedOn(), pinned: false });
@@ -92,8 +93,11 @@ export function sharedKind<S, St>(
 			const ctx = contextOf(parameter);
 			if (ctx === undefined) return;
 			const plan = definition.press(definition.state(ctx), ctx, { heldMs: heldMs ?? 0, confirmBy: heldMs === undefined ? "click" : "hold" });
-			// No Confirm setting on Logitech, so a guarded press (Stream Deck's alone) goes ahead.
-			if (plan.kind === "run" || plan.kind === "guard")
+			// A review plan is Stream Deck's alone; running it here would skip a keypad hold, so the definition is at fault.
+			if (plan.kind === "guard") {
+				if (!refusedGuard) warn(`${name}: a key asked for Stream Deck's review, which Logitech doesn't have.`);
+				refusedGuard = true;
+			} else if (plan.kind === "run")
 				void plan.work().then(
 					() => {
 						clearFlash(parameter);

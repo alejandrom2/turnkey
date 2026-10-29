@@ -216,14 +216,6 @@
           <source>Snoozes the thread open in T3 Code for an hour.</source>
           <target>Reporte le fil ouvert dans T3 Code d&apos;une heure.</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand" translate="yes">
-          <source>Unpin</source>
-          <target>Désépingler</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeUnpinCommand###description" translate="yes">
-          <source>Unpins the thread open in T3 Code, or pins it when it isn't pinned.</source>
-          <target>Désépingle le fil ouvert dans T3 Code, ou l&apos;épingle s&apos;il ne l&apos;est pas.</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.OrganizeWakeCommand" translate="yes">
           <source>Wake thread</source>
           <target>Réveiller fil</target>

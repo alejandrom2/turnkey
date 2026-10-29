@@ -197,7 +197,7 @@ export function sidecarKinds(deps: SidecarDeps): Record<string, KeyKind> {
 		fork: sharedKind("fork", forkKey, { "": {} }, deps.runtime, deps.warn),
 		merge: sharedKind("merge", forkKey, { "": { mode: "merge" } }, deps.runtime, deps.warn),
 		branch: sharedKind("branch", branchKey, { "": {} }, deps.runtime, deps.warn),
-		// One action per organize action; Snooze takes Stream Deck's default hour, and Pin and Unpin both toggle, as there.
+		// One action per organize action but Unpin; Snooze takes Stream Deck's default hour, and Pin toggles, as there.
 		organize: sharedKind("organize", organizeKey, Object.fromEntries(ORGANIZE_ACTIONS.map((organize) => [organize, { organize }])), deps.runtime, deps.warn),
 	};
 }

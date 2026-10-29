@@ -1271,7 +1271,7 @@
 				"fork": { "description": "從 T3 Code 中開啟的對話最後完成的回合分支出新對話，並開啟它。" },
 				"merge": { "description": "將 T3 Code 中開啟的分支對話合併回原本的對話，並開啟該對話。在小鍵盤上請長按。" },
 				"branch": { "description": "顯示 T3 Code 中開啟的對話所在的分支。選擇即可開啟該對話。" },
-				"organize": { "settle": "將 T3 Code 中開啟的對話標為已處理，並從看板移除。", "pin": "釘選 T3 Code 中開啟的對話；已釘選時則取消釘選。", "unpin": "取消釘選 T3 Code 中開啟的對話；未釘選時則釘選。", "snooze": "將 T3 Code 中開啟的對話延後一小時。", "archive": "封存 T3 Code 中開啟的對話。在小鍵盤上請長按。", "markUnread": "將 T3 Code 中開啟的對話標為未讀。", "wake": "喚醒你在 T3 Code 中最後延後的對話。" },
+				"organize": { "settle": "將 T3 Code 中開啟的對話標為已處理，並從看板移除。", "pin": "釘選 T3 Code 中開啟的對話；已釘選時則取消釘選。", "snooze": "將 T3 Code 中開啟的對話延後一小時。", "archive": "封存 T3 Code 中開啟的對話。在小鍵盤上請長按。", "markUnread": "將 T3 Code 中開啟的對話標為未讀。", "wake": "喚醒你在 T3 Code 中最後延後的對話。" },
 				"urgent": {
 					"name": "最緊急的對話",
 					"description": "顯示 T3 Code 中需要你處理的內容。選擇即可開啟該對話。"

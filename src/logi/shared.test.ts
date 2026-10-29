@@ -110,6 +110,23 @@ describe("sharedKind faces", () => {
 });
 
 describe("sharedKind presses", () => {
+	it("refuses a Stream Deck review plan, saying so once, so nothing skips a keypad hold", async () => {
+		const { runtime, repaint, warn } = setup({ current: undefined });
+		const work = vi.fn(async () => undefined);
+		const reviewing: KeyDefinition<object, null> = {
+			state: () => null,
+			tile: () => svgImage(144, 144, "<rect/>"),
+			press: () => ({ kind: "guard", guard: { scope: "", holdHint: "Hold", card: () => ({ glyph: "pin", verb: "Pin", target: "", footer: "" }) }, work }),
+		};
+		const kind = sharedKind("reviewing", reviewing, { "": {} }, runtime, warn);
+		kind.press!(0, "", 0);
+		kind.press!(0, "");
+		await settle();
+		expect(work).not.toHaveBeenCalled();
+		expect(repaint).not.toHaveBeenCalled();
+		expect(warn).toHaveBeenCalledExactlyOnceWith("reviewing: a key asked for Stream Deck's review, which Logitech doesn't have.");
+	});
+
 	async function approve(settings = { approvalAuthority: "once" }) {
 		const selected = { current: waiting() as DeckThread | undefined };
 		const { runtime, repaint, warn } = setup(selected);
@@ -397,7 +414,7 @@ describe("sharedKind over the lineage and organize keys", () => {
 		const { organize, thread: open } = lineage();
 		organize.press!(0, "settle", 0);
 		organize.press!(0, "snooze", 0);
-		organize.press!(0, "unpin", 0);
+		organize.press!(0, "pin", 0);
 		expect(open!.machine.settle).toHaveBeenCalledExactlyOnceWith(open);
 		expect(open!.machine.snooze).toHaveBeenCalledExactlyOnceWith(open, 60);
 		expect(open!.machine.pin).toHaveBeenCalledExactlyOnceWith(open);

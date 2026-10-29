@@ -1271,7 +1271,7 @@
 				"fork": { "description": "Duplique le fil ouvert dans T3 Code depuis son dernier tour terminé, puis ouvre la copie." },
 				"merge": { "description": "Fusionne la copie ouverte dans T3 Code avec le fil dont elle vient, puis ouvre ce fil. Sur un pavé, maintenez-le." },
 				"branch": { "description": "Affiche la branche du fil ouvert dans T3 Code. Choisissez-le pour ouvrir le fil." },
-				"organize": { "settle": "Règle le fil ouvert dans T3 Code et le retire du tableau.", "pin": "Épingle le fil ouvert dans T3 Code, ou le désépingle s'il l'est déjà.", "unpin": "Désépingle le fil ouvert dans T3 Code, ou l'épingle s'il ne l'est pas.", "snooze": "Reporte le fil ouvert dans T3 Code d'une heure.", "archive": "Archive le fil ouvert dans T3 Code. Sur un pavé, maintenez-le.", "markUnread": "Marque comme non lu le fil ouvert dans T3 Code.", "wake": "Réveille le dernier fil que vous avez reporté dans T3 Code." },
+				"organize": { "settle": "Règle le fil ouvert dans T3 Code et le retire du tableau.", "pin": "Épingle le fil ouvert dans T3 Code, ou le désépingle s'il l'est déjà.", "snooze": "Reporte le fil ouvert dans T3 Code d'une heure.", "archive": "Archive le fil ouvert dans T3 Code. Sur un pavé, maintenez-le.", "markUnread": "Marque comme non lu le fil ouvert dans T3 Code.", "wake": "Réveille le dernier fil que vous avez reporté dans T3 Code." },
 				"urgent": {
 					"name": "Fil le plus urgent",
 					"description": "Montre ce qui vous attend dans T3 Code. Choisissez-le pour ouvrir ce fil."

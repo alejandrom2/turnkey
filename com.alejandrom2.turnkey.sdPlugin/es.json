@@ -1271,7 +1271,7 @@
 				"fork": { "description": "Bifurca el hilo abierto en T3 Code desde su último turno terminado y abre la bifurcación." },
 				"merge": { "description": "Fusiona la bifurcación abierta en T3 Code con el hilo del que salió y abre ese hilo. En un teclado, mantenlo pulsado." },
 				"branch": { "description": "Muestra la rama del hilo abierto en T3 Code. Elígelo para abrir el hilo." },
-				"organize": { "settle": "Da por resuelto el hilo abierto en T3 Code y lo quita del tablero.", "pin": "Fija el hilo abierto en T3 Code, o lo desfija si ya está fijado.", "unpin": "Desfija el hilo abierto en T3 Code, o lo fija si no está fijado.", "snooze": "Pospone el hilo abierto en T3 Code durante una hora.", "archive": "Archiva el hilo abierto en T3 Code. En un teclado, mantenlo pulsado.", "markUnread": "Marca como no leído el hilo abierto en T3 Code.", "wake": "Reactiva el último hilo que pospusiste en T3 Code." },
+				"organize": { "settle": "Da por resuelto el hilo abierto en T3 Code y lo quita del tablero.", "pin": "Fija el hilo abierto en T3 Code, o lo desfija si ya está fijado.", "snooze": "Pospone el hilo abierto en T3 Code durante una hora.", "archive": "Archiva el hilo abierto en T3 Code. En un teclado, mantenlo pulsado.", "markUnread": "Marca como no leído el hilo abierto en T3 Code.", "wake": "Reactiva el último hilo que pospusiste en T3 Code." },
 				"urgent": {
 					"name": "Hilo más urgente",
 					"description": "Muestra lo que te espera en T3 Code. Elígelo para abrir ese hilo."

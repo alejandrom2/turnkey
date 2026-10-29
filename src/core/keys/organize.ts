@@ -8,7 +8,8 @@ import { canOperate, confirmed, type KeyDefinition, type KeyRuntime } from "./ke
 
 export type OrganizeSettings = { organize?: OrganizeAction; snoozeMinutes?: number | string; confirm?: string; confirmSettle?: string; machine?: string };
 
-export const ORGANIZE_ACTIONS = ["settle", "pin", "unpin", "snooze", "archive", "mark_unread", "wake"] as const satisfies readonly OrganizeAction[];
+/** Logitech's organize actions: no Unpin, since Pin toggles as Stream Deck's Organize does, so it would be a second Pin. */
+export const ORGANIZE_ACTIONS = ["settle", "pin", "snooze", "archive", "mark_unread", "wake"] as const satisfies readonly OrganizeAction[];
 
 const ORGANIZE_FACE: Record<OrganizeAction, [GlyphName, MessageKey]> = {
 	settle: ["settle", "organize.settle"],
