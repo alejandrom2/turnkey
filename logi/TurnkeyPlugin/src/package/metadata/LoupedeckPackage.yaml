@@ -41,9 +41,10 @@ pluginFolderMac: bin
 
 # List of devices the plugin is optimized for.
 supportedDevices:
-    # Logitech's own plugins (VS Code, Zoom, Chrome) declare this too; Options+ offers the actions on MX devices and the
-    # Actions Ring either way, and the SDK names no MX value.
+    # Logitech's own plugins (VS Code, Zoom, Chrome) declare LoupedeckCtFamily too; Options+ offers the actions on the
+    # Actions Ring either way. MxCreativeKeypad lists the plugin for the MX Creative Keypad (device 70).
     - LoupedeckCtFamily
+    - MxCreativeKeypad
 
     # LoupedeckPlusFamily covers Loupedeck+ device. Uncomment the following line to support Loupedeck+.
     #- LoupedeckPlusFamily
