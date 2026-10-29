@@ -174,6 +174,18 @@ describe("RpcSocket keepalive and reconnect", () => {
 		rpc.stop();
 	});
 
+	it("retries instead of crashing when the socket can't be made, as on Node 20 with no WebSocket", async () => {
+		const states: RpcState[] = [];
+		const socket = () => {
+			throw new ReferenceError("WebSocket is not defined");
+		};
+		const rpc = new RpcSocket({ authorize: async () => "ws://test/ws", socket, onState: (state) => states.push(state), random: () => 0 });
+		rpc.start();
+		await flush();
+		expect(states.at(-1)).toMatchObject({ kind: "retrying", error: { message: "WebSocket is not defined" } });
+		rpc.stop();
+	});
+
 	it("backs off like T3 Code's supervisor", () => {
 		expect([1, 2, 3, 9, 20].map((failures) => retryDelayMs(failures, 0))).toEqual([1_000, 2_000, 4_000, 150_000, 150_000]);
 		expect(retryDelayMs(1, 1)).toBe(2_000);
