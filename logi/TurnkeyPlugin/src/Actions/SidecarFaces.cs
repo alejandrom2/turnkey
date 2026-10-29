@@ -10,14 +10,17 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly String _kind;
         private readonly Func<Sidecar> _sidecar;
         private readonly Action _changed;
+
         // By action and pixel size: the Ring and a keypad can show one action at once, as a glyph and as a tile.
         private readonly ConcurrentDictionary<(String, Int32), String> _images = new ConcurrentDictionary<(String, Int32), String>();
         private readonly ConcurrentDictionary<String, String> _labels = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, String> _names = new ConcurrentDictionary<String, String>();
         private readonly ConcurrentDictionary<String, Boolean> _announced = new ConcurrentDictionary<String, Boolean>();
         private readonly ConcurrentDictionary<(String, Int32), ManualResetEventSlim> _waiting = new ConcurrentDictionary<(String, Int32), ManualResetEventSlim>();
+        private readonly ConcurrentDictionary<String, Int64> _buttonPressed = new ConcurrentDictionary<String, Int64>();
 
         private const Int32 FirstFaceWaitMs = 250;
+        private const Int64 DoubleFireMs = 1000;
 
         public SidecarFaces(String kind, Func<Sidecar> sidecar, Action changed)
         {
@@ -41,25 +44,46 @@ namespace Loupedeck.TurnkeyPlugin
         }
 
         // `heldMs` is left out for a click on the Actions Ring, which is itself the confirmation.
-        public void Press(String actionParameter, Int32? heldMs = null) => this._sidecar().Send(heldMs is Int32 held
+        private void Press(String actionParameter, Int32? heldMs) => this._sidecar().Send(heldMs is Int32 held
             ? (Object)new { type = "press", action = this.ActionId(actionParameter), heldMs = held }
             : new { type = "press", action = this.ActionId(actionParameter) });
 
-        // Ring: a click fires at once on Press. Others: act on Release with the hold time, so a press fires once. True for every event so the SDK never also calls RunCommand.
-        public static Boolean HandleButton(DeviceButtonEvent2 e, Action<Int32?> press)
+        // RunCommand: a press with no hold time, which the sidecar takes for a confirmed Ring click.
+        public void Run(String actionParameter)
         {
+            // Should the SDK also deliver a press ProcessButtonEvent2 just handled, it would land here as an unheld, confirmed click.
+            if (this._buttonPressed.TryGetValue(this.ActionId(actionParameter), out var at) && Environment.TickCount64 - at < DoubleFireMs)
+            {
+                return;
+            }
+
+            this.Press(actionParameter, null);
+        }
+
+        // Ring: a click fires at once on Press. Others: act on Release with the hold time, so a press fires once. True for every event so the SDK never also calls RunCommand.
+        public Boolean Button(String actionParameter, DeviceButtonEvent2 e)
+        {
+            Int32? held;
             if (e.DeviceType.HasFlag(DeviceType.Loupedeck72))
             {
-                if (e.EventType == DeviceButtonEventType.Press)
+                if (e.EventType != DeviceButtonEventType.Press)
                 {
-                    press(null);
+                    return true;
                 }
+
+                held = null;
             }
             else if (e.EventType == DeviceButtonEventType.Release)
             {
-                press(Math.Clamp(e.PressDuration, 0, 600000));
+                held = Math.Clamp(e.PressDuration, 0, 600000);
+            }
+            else
+            {
+                return true;
             }
 
+            this._buttonPressed[this.ActionId(actionParameter)] = Environment.TickCount64;
+            this.Press(actionParameter, held);
             return true;
         }
 

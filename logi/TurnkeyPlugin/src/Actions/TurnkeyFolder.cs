@@ -114,18 +114,12 @@ namespace Loupedeck.TurnkeyPlugin
         {
             if (this._faces.TryGetValue(KindOf(actionParameter), out var faces))
             {
-                faces.Press(ParameterOf(actionParameter));
+                faces.Run(ParameterOf(actionParameter));
             }
         }
 
         public override Boolean ProcessButtonEvent2(String actionParameter, DeviceButtonEvent2 buttonEvent) =>
-            SidecarFaces.HandleButton(buttonEvent, held =>
-            {
-                if (this._faces.TryGetValue(KindOf(actionParameter), out var faces))
-                {
-                    faces.Press(ParameterOf(actionParameter), held);
-                }
-            });
+            this.Faces(actionParameter)?.Button(ParameterOf(actionParameter), buttonEvent) ?? true;
 
         private SidecarFaces Faces(String action) => this._faces.TryGetValue(KindOf(action ?? ""), out var faces) ? faces : null;
 

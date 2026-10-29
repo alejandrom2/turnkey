@@ -29,10 +29,10 @@ namespace Loupedeck.TurnkeyPlugin
             return true;
         }
 
-        protected override void RunCommand(String actionParameter) => this._faces.Press(actionParameter ?? this._parameter);
+        protected override void RunCommand(String actionParameter) => this._faces.Run(actionParameter ?? this._parameter);
 
         protected override Boolean ProcessButtonEvent2(String actionParameter, DeviceButtonEvent2 buttonEvent) =>
-            SidecarFaces.HandleButton(buttonEvent, held => this._faces.Press(actionParameter ?? this._parameter, held));
+            this._faces.Button(actionParameter ?? this._parameter, buttonEvent);
 
         protected override String GetCommandDisplayName(String actionParameter, PluginImageSize imageSize) => this._faces.Label(actionParameter ?? this._parameter) ?? base.GetCommandDisplayName(actionParameter, imageSize);
 
