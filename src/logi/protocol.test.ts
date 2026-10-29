@@ -3,6 +3,12 @@ import { describe, expect, it } from "vitest";
 import { encodeMessage, parseHostMessage } from "./protocol.js";
 
 describe("parseHostMessage", () => {
+	it("carries a press's hold time only when it is a sane whole number", () => {
+		const press = (heldMs: unknown) => parseHostMessage(JSON.stringify({ type: "press", action: "a:", heldMs }));
+		expect(press(620)).toEqual({ type: "press", action: "a:", heldMs: 620 });
+		for (const bad of [-1, "620", 1.5, 1e9]) expect(press(bad)).toEqual({ type: "press", action: "a:" });
+	});
+
 	it("parses a press", () => {
 		expect(parseHostMessage('{"type":"press","action":"thread"}')).toEqual({ type: "press", action: "thread" });
 	});

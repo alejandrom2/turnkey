@@ -2,7 +2,8 @@
 export type HostMessage =
 	| { type: "appear"; action: string; size: number }
 	| { type: "disappear"; action: string }
-	| { type: "press"; action: string }
+	/** `heldMs` is how long a keypad press was held; none means an Actions Ring click, which is itself the confirmation. */
+	| { type: "press"; action: string; heldMs?: number }
 	/** A scroll on an adjustment: whole ticks, negative for back. */
 	| { type: "turn"; action: string; ticks: number }
 	| { type: "language"; language: string };
@@ -29,15 +30,16 @@ export function parseHostMessage(line: string): HostMessage | undefined {
 		return undefined;
 	}
 	if (typeof value !== "object" || value === null) return undefined;
-	const { type, action, size, language, ticks } = value as Record<string, unknown>;
+	const { type, action, size, language, ticks, heldMs } = value as Record<string, unknown>;
 	if (type === "language") return typeof language === "string" ? { type, language } : undefined;
 	if (typeof action !== "string") return undefined;
 	switch (type) {
 		case "appear":
 			return isSize(size) ? { type, action, size } : undefined;
 		case "disappear":
-		case "press":
 			return { type, action };
+		case "press":
+			return Number.isInteger(heldMs) && (heldMs as number) >= 0 && (heldMs as number) <= 600000 ? { type, action, heldMs: heldMs as number } : { type, action };
 		case "turn":
 			return Number.isInteger(ticks) ? { type, action, ticks: ticks as number } : undefined;
 		default:
