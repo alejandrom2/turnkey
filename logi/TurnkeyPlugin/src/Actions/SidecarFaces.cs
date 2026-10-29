@@ -19,6 +19,9 @@ namespace Loupedeck.TurnkeyPlugin
         private readonly ConcurrentDictionary<(String, Int32), ManualResetEventSlim> _waiting = new ConcurrentDictionary<(String, Int32), ManualResetEventSlim>();
         private readonly ConcurrentDictionary<String, Int64> _buttonPressed = new ConcurrentDictionary<String, Int64>();
 
+        // When each keypad key went down: the service sends the keypad's Release with PressDuration 0.
+        private readonly ConcurrentDictionary<(String, String, Int32), Int64> _downAt = new ConcurrentDictionary<(String, String, Int32), Int64>();
+
         private const Int32 FirstFaceWaitMs = 250;
         private const Int64 DoubleFireMs = 1000;
 
@@ -63,6 +66,10 @@ namespace Loupedeck.TurnkeyPlugin
         // Ring: a click fires at once on Press. Others: act on Release with the hold time, so a press fires once. True for every event so the SDK never also calls RunCommand.
         public Boolean Button(String actionParameter, DeviceButtonEvent2 e)
         {
+            var action = this.ActionId(actionParameter);
+
+            // Every event, so a RunCommand the SDK delivers for any part of this press is the double it is.
+            this._buttonPressed[action] = Environment.TickCount64;
             Int32? held;
             if (e.DeviceType.HasFlag(DeviceType.Loupedeck72))
             {
@@ -73,16 +80,21 @@ namespace Loupedeck.TurnkeyPlugin
 
                 held = null;
             }
+            else if (e.EventType == DeviceButtonEventType.Press)
+            {
+                this._downAt[(action, e.DeviceId, e.ControlId)] = Environment.TickCount64;
+                return true;
+            }
             else if (e.EventType == DeviceButtonEventType.Release)
             {
-                held = Math.Clamp(e.PressDuration, 0, 600000);
+                var timed = this._downAt.TryRemove((action, e.DeviceId, e.ControlId), out var downAt) ? Math.Min(Environment.TickCount64 - downAt, 600000) : 0;
+                held = Math.Clamp(Math.Max(e.PressDuration, (Int32)timed), 0, 600000);
             }
             else
             {
                 return true;
             }
 
-            this._buttonPressed[this.ActionId(actionParameter)] = Environment.TickCount64;
             this.Press(actionParameter, held);
             return true;
         }
