@@ -403,6 +403,8 @@
 			"pressToOpen": "Pulsa para abrir en T3 Code",
 			"openInT3Code": "Abrir en T3 Code",
 			"withHold": "{label} · mantener",
+			"hold": "Mantener",
+			"holdThen": "Mantener · {detail}",
 			"queue": "Cola",
 			"nothingQueued": "Nada en cola",
 			"queuedMessage": "Mensaje en cola",

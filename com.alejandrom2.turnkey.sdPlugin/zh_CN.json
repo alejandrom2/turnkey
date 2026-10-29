@@ -403,6 +403,8 @@
 			"pressToOpen": "按下在 T3 Code 中打开",
 			"openInT3Code": "在 T3 Code 中打开",
 			"withHold": "{label} · 长按",
+			"hold": "长按",
+			"holdThen": "长按 · {detail}",
 			"queue": "队列",
 			"nothingQueued": "队列为空",
 			"queuedMessage": "排队消息",

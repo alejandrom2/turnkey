@@ -29,7 +29,7 @@ import { SOURCE_CONTROL_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
 import type { ThreadPullRequest } from "../t3/shell.js";
 import { setCapped } from "../capped.js";
-import { confirmed, type KeyDefinition, type KeyRuntime, withHold } from "./key.js";
+import { confirmed, holdDetail, type KeyDefinition, type KeyRuntime } from "./key.js";
 
 /** How long a pull request's checks, review and findings stay fresh while a key shows them. */
 const PR_TTL_MS = 60_000;
@@ -385,8 +385,8 @@ export const pullRequestKey: KeyDefinition<PrKeySettings, PrState> = {
 		const handoff = HANDOFFS[state.mode];
 		const { check, detail } = state;
 		if (!check.ok) return renderInfoKey({ glyph: handoff.glyph, title: handoff.label(""), detail: check.reason, available: false });
-		const title = handoff.label(check.pr.url);
-		return renderInfoKey({ glyph: handoff.glyph, title: state.mode === "fix" && detail!.available ? withHold(ctx, title) : title, detail: detail!.text, available: detail!.available, tint: detail!.tint });
+		const text = state.mode === "fix" && detail!.available ? holdDetail(ctx, detail!.text) : detail!.text;
+		return renderInfoKey({ glyph: handoff.glyph, title: handoff.label(check.pr.url), detail: text, available: detail!.available, tint: detail!.tint });
 	},
 
 	label: ({ thread }) => thread?.title,

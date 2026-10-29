@@ -403,6 +403,8 @@
 			"pressToOpen": "Press to open in T3 Code",
 			"openInT3Code": "Open in T3 Code",
 			"withHold": "{label} · hold",
+			"hold": "Hold",
+			"holdThen": "Hold · {detail}",
 			"queue": "Queue",
 			"nothingQueued": "Nothing queued",
 			"queuedMessage": "Queued message",

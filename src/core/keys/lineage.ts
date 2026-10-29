@@ -11,7 +11,7 @@ import { ringFace, stopFace, stopTarget } from "../ring.js";
 import type { Machine } from "../t3/machine.js";
 import { RpcError } from "../t3/rpc.js";
 import { canStopWorkflows } from "../workflows.js";
-import { canOperate, confirmed, type KeyContext, type KeyDefinition, type KeyRuntime, type PressInput, withHold } from "./key.js";
+import { canOperate, confirmed, type KeyContext, type KeyDefinition, type KeyRuntime, type PressInput, holdDetail } from "./key.js";
 
 export type TargetedSettings = { machine?: string; target?: string; thread?: string; threadTitle?: string; mode?: string };
 
@@ -54,7 +54,7 @@ export const stopKey: KeyDefinition<StopSettings, StopState> = {
 	tile({ mode, thread, pinned, check }, ctx) {
 		if (mode === "turn") return renderControlKey({ glyph: "stop", primary: true, available: check.available, pinned });
 		const detail = check.available ? (subagentLine(thread) ?? thread?.title) : check.reason;
-		return renderInfoKey({ glyph: "workflow", title: check.available ? withHold(ctx, t("workflow.stop")) : t("workflow.stop"), detail, available: check.available, pinned });
+		return renderInfoKey({ glyph: "workflow", title: t("workflow.stop"), detail: check.available ? holdDetail(ctx, detail) : detail, available: check.available, pinned });
 	},
 
 	glyph: ({ mode, check }) => (mode === "turn" ? stopFace(check.available) : ringFace(COLORS.accent, "workflow", { dim: !check.available })),
@@ -120,7 +120,7 @@ export const forkKey: KeyDefinition<TargetedSettings, ForkState> = {
 	tile({ mode, pinned, parent, check }, ctx) {
 		if (mode === "merge") {
 			const detail = check.available ? (parent ? t("lineage.into", { thread: parent.title }) : undefined) : check.reason;
-			return renderInfoKey({ glyph: "mergeBack", title: check.available ? withHold(ctx, t("lineage.mergeBack")) : t("lineage.mergeBack"), detail, available: check.available, pinned });
+			return renderInfoKey({ glyph: "mergeBack", title: t("lineage.mergeBack"), detail: check.available ? holdDetail(ctx, detail) : detail, available: check.available, pinned });
 		}
 		return renderControlKey({ glyph: "fork", label: check.available ? t("lineage.fork") : check.reason, available: check.available, pinned, shrink: !check.available });
 	},

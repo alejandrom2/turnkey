@@ -403,6 +403,8 @@
 			"pressToOpen": "눌러서 T3 Code에서 열기",
 			"openInT3Code": "T3 Code에서 열기",
 			"withHold": "{label} · 길게",
+			"hold": "길게",
+			"holdThen": "길게 · {detail}",
 			"queue": "대기열",
 			"nothingQueued": "대기 항목 없음",
 			"queuedMessage": "대기 메시지",

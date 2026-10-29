@@ -422,9 +422,8 @@ describe("sharedKind over the lineage and organize keys", () => {
 		const keys = lineage({ mergeInto: "parent" });
 		await expect(keys.merge.face(0, "", 116)).toMatchFileSnapshot("./__goldens__/sharedMerge-hold-116.svg");
 		await expect(keys.organize.face(0, "archive", 116)).toMatchFileSnapshot("./__goldens__/sharedOrganize-archive-hold-116.svg");
-		const hold = t("strip.withHold", { label: "" });
-		for (const which of ORGANIZE_ACTIONS.filter((which) => which !== "archive")) expect(keys.organize.face(0, which, 116)).not.toContain(hold);
-		expect(keys.fork.face(0, "", 116)).not.toContain(hold);
+		for (const which of ORGANIZE_ACTIONS.filter((which) => which !== "archive")) expect(keys.organize.face(0, which, 116)).not.toContain(t("strip.withHold", { label: "" }));
+		expect(keys.fork.face(0, "", 116)).not.toContain(t("strip.holdThen", { detail: "" }));
 	});
 
 	it("archives only after a keypad hold, or on a Ring click", async () => {
@@ -498,7 +497,7 @@ describe("sharedKind over the git and pull request keys", () => {
 		await expect(pr.face(0, "pr", 80)).toMatchFileSnapshot("./__goldens__/sharedPr-80.svg");
 		await expect(pr.face(0, "fix", 80)).toMatchFileSnapshot("./__goldens__/sharedPr-fix-80.svg");
 		await expect(pr.face(0, "fix", 116)).toMatchFileSnapshot("./__goldens__/sharedPr-fix-hold-116.svg");
-		expect(pr.face(0, "explain", 116)).not.toContain(t("strip.withHold", { label: "" }));
+		expect(pr.face(0, "explain", 116)).not.toContain(t("strip.holdThen", { detail: "" }));
 		expect(git.label!(0, "commit")).toBe("Open thread");
 	});
 

@@ -120,6 +120,10 @@ export const canOperate = (ctx: KeyContext<unknown>, thread: DeckThread | undefi
 /** `label`, saying "hold" where the host's tiles do. */
 export const withHold = (ctx: KeyContext<unknown>, label: string): string => (ctx.runtime.holdHints ? t("strip.withHold", { label }) : label);
 
+/** A detail line that starts with "hold" where the host's tiles say so: a wrapped title would cut the word off. */
+export const holdDetail = (ctx: KeyContext<unknown>, detail: string | undefined): string | undefined =>
+	!ctx.runtime.holdHints ? detail : detail ? t("strip.holdThen", { detail }) : t("strip.hold");
+
 /** Whether an irreversible press may go ahead: "settings" defers to `fromSettings`, the key's own rule. */
 export function confirmed(
 	input: PressInput,

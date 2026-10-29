@@ -403,6 +403,8 @@
 			"pressToOpen": "押して T3 Code で開く",
 			"openInT3Code": "T3 Code で開く",
 			"withHold": "{label} · 長押し",
+			"hold": "長押し",
+			"holdThen": "長押し · {detail}",
 			"queue": "キュー",
 			"nothingQueued": "キューなし",
 			"queuedMessage": "キュー内メッセージ",

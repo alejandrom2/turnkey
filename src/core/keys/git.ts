@@ -19,7 +19,7 @@ import { COLORS, type GlyphName, renderInfoKey } from "../render.js";
 import { grants, needsAccessLabel } from "../scopes.js";
 import { SOURCE_CONTROL_SCOPE } from "../t3/pairing.js";
 import { RpcError } from "../t3/rpc.js";
-import { confirmed, type KeyContext, type KeyDefinition, type KeyRuntime, withHold } from "./key.js";
+import { confirmed, holdDetail, type KeyContext, type KeyDefinition, type KeyRuntime } from "./key.js";
 
 export type GitSettings = { machine?: string; gitAction?: string; commitMessage?: string; confirm?: string; title?: string };
 
@@ -117,7 +117,8 @@ export const gitKey: KeyDefinition<GitSettings, GitState> = {
 				: needsDefaultBranchHold(status, which)
 					? t("repo.holdOnDefault", { branch: status.refName ?? "" })
 					: (gitSummary(status, which) ?? status.refName ?? undefined);
-		return renderInfoKey({ glyph: GLYPH[which], title: withHold(ctx, title), detail });
+		// On the default branch the detail already says to hold.
+		return renderInfoKey({ glyph: GLYPH[which], title, detail: status !== undefined && needsDefaultBranchHold(status, which) ? detail : holdDetail(ctx, detail) });
 	},
 
 	label: ({ check }) => check?.target?.thread.title,
