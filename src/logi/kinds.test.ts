@@ -83,7 +83,7 @@ describe("sidecarKinds presses", () => {
 	it("model:3 applies the third model in the picker", () => {
 		const { kinds, machine } = setup([{ key: "a" }], { selected: "a" });
 		kinds.model!.press!(0, "3");
-		expect(machine.setModelSelection).toHaveBeenCalledExactlyOnceWith(expect.anything(), expect.objectContaining({ model: "gpt-5.4" }));
+		expect(machine.setModelSelection).toHaveBeenCalledExactlyOnceWith(expect.anything(), { instanceId: "codex", model: "gpt-5.4" });
 	});
 
 	it("model does nothing for the thread's own model or a place past the picker", () => {
@@ -100,9 +100,12 @@ describe("sidecarKinds presses", () => {
 	});
 
 	it("effort steps to the next level, wrapping", () => {
-		const { kinds, machine } = setup([{ key: "a" }], { selected: "a" });
-		kinds.effort!.press!(0, "");
-		expect(machine.setModelSelection).toHaveBeenCalledOnce();
+		const top = setup([{ key: "a" }], { selected: "a" });
+		top.kinds.effort!.press!(0, "");
+		expect(top.machine.setModelSelection).toHaveBeenCalledExactlyOnceWith(top.all[0], { instanceId: "claudeAgent", model: "opus", options: [{ id: "effort", value: "low" }] });
+		const low = setup([{ key: "a", model: { instanceId: "claudeAgent", model: "opus", options: [{ id: "effort", value: "low" }] } }], { selected: "a" });
+		low.kinds.effort!.press!(0, "");
+		expect(low.machine.setModelSelection).toHaveBeenCalledExactlyOnceWith(low.all[0], { instanceId: "claudeAgent", model: "opus", options: [{ id: "effort", value: "high" }] });
 	});
 
 	it("continue sends the continue step for a finished thread and opens one that waits", () => {
