@@ -35,6 +35,7 @@ export type Golden = {
 // A thread argument reads as its title, so records do not depend on ids and machine URLs.
 const json = (value: unknown) =>
 	JSON.stringify(value, (_key, item: unknown) => {
+		if (typeof item === "function") return "[function]";
 		const candidate = item as { threadId?: unknown; machine?: unknown; title?: unknown } | null;
 		return candidate !== null && typeof candidate === "object" && "threadId" in candidate && "machine" in candidate ? `thread ${String(candidate.title)}` : item;
 	});
