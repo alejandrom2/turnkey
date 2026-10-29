@@ -104,14 +104,14 @@ export function effortFace(level: { index: number; count: number; color: string;
 }
 
 /**
- * A model from T3 Code's picker: its provider's mark, large, in its color, with a check at the lower right of the thread's own (a disc of
- * the color would leave a rim of Logi's own disc around it). The name is
- * the slot's label: Options+ draws faces at 80 px, too small for a name to read.
+ * A model from T3 Code's picker: its provider's mark, large, in its color. The thread's own wears a black check badge,
+ * whose white check still shows on the disc Logi turns black on hover. The name is the slot's label: Options+ draws
+ * faces at 80 px, too small for a name to read.
  */
 export function modelFace(model: CatalogModel | undefined, current: boolean): string {
 	if (model === undefined) return ringFace(COLORS.muted, "model", { dim: true });
 	const color = modelColor(model) ?? COLORS.accent;
-	return svgMarkup(144, 144, providerMark(model, 26, 26, 92, { color }) + (current ? `<circle cx="116" cy="116" r="13" fill="${color}"/><path d="M110 116.5l4.5 4.5 8-9" fill="none" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>` : ""));
+	return svgMarkup(144, 144, providerMark(model, 26, 26, 92, { color }) + (current ? `<circle cx="116" cy="116" r="13" fill="${COLORS.key}"/><path d="M110 116.5l4.5 4.5 8-9" fill="none" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>` : ""));
 }
 
 /** A prompt the user wrote in the action's editor, drawn as Stream Deck's Send arrow; dimmed only while it has no text. */
