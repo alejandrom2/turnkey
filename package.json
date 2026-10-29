@@ -1,6 +1,6 @@
 {
 	"name": "turnkey",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"private": true,
 	"description": "Stream Deck and Logitech plugins for T3 Code environments, over T3 Code's client API.",
 	"scripts": {
