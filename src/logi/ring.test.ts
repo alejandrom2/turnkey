@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CatalogModel } from "../core/models.js";
 import { COLORS, sampleStops, SPECTRUM, STATE_COLOR } from "../core/render.js";
 import type { DeckState } from "../core/t3/shell.js";
-import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, modelFace, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
+import { continueFace, customPromptFace, effortFace, limitsFace, modeFace, modelFace, modelLines, promptFace, ringFace, settingsFace, statusFace, stopAllFace, stopFace, stopTarget, urgentFace } from "./ring.js";
 
 const thread = (deck: DeckState, unseen = false) => ({ deck, unseen });
 
@@ -134,5 +134,11 @@ describe("the controls' faces", () => {
 		expect(modelFace(opus, true)).toContain('<circle cx="72" cy="72" r="70" fill="#123456"/>');
 		expect(other).not.toContain('r="70"');
 		expect(modelFace(undefined, false)).toBe(ringFace(COLORS.muted, "model", { dim: true }));
+	});
+
+	it("breaks a long model name at the separator nearest its middle", () => {
+		expect(modelLines("Opus 4.5")).toEqual(["Opus 4.5"]);
+		expect(modelLines("GPT-5.1-Codex-Mini")).toEqual(["GPT-5.1", "Codex-Mini"]);
+		expect(modelLines("GPT-5.2 Codex")).toEqual(["GPT-5.2", "Codex"]);
 	});
 });

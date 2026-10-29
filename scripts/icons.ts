@@ -119,9 +119,6 @@ const SYMBOLS: Record<string, GlyphName> = {
 	Model3Command: "model",
 	Model4Command: "model",
 	Model5Command: "model",
-	Model6Command: "model",
-	Model7Command: "model",
-	Model8Command: "model",
 	// Not actions: the icons of the default ring profile's folders (scripts/logi-profile.ts).
 	PromptsFolder: "chat",
 	ModelsFolder: "model",

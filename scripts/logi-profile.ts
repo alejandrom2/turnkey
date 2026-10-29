@@ -24,7 +24,7 @@ const MODIFIED = "2026-10-28T00:00:00Z";
 const FOLDERS = [
 	[PROMPTS_FOLDER, "Prompts", "PromptsFolder", ["FixTestsCommand", "DiagnoseCommand", "ExplainCommand", "CommitCommand"]],
 	// Each slot is a place in T3 Code's model picker, so the folder follows the user's favorites.
-	[MODELS_FOLDER, "Models", "ModelsFolder", Array.from({ length: 8 }, (_, index) => `Model${index + 1}Command`)],
+	[MODELS_FOLDER, "Models", "ModelsFolder", Array.from({ length: 5 }, (_, index) => `Model${index + 1}Command`)],
 ] as const;
 const folderAction = (id: string) => `$@Generic___@ProfileAction___${id}`;
 

@@ -72,18 +72,6 @@
           <source>Model 5</source>
           <target>Modelo 5</target>
         </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model6Command" translate="yes">
-          <source>Model 6</source>
-          <target>Modelo 6</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model7Command" translate="yes">
-          <source>Model 7</source>
-          <target>Modelo 7</target>
-        </trans-unit>
-        <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.Model8Command" translate="yes">
-          <source>Model 8</source>
-          <target>Modelo 8</target>
-        </trans-unit>
         <trans-unit id="$Turnkey___Loupedeck.TurnkeyPlugin.MostUrgentCommand" translate="yes">
           <source>Most urgent thread</source>
           <target>Hilo más urgente</target>

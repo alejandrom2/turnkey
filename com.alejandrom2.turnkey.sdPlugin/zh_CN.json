@@ -1254,7 +1254,7 @@
 				"connected": "已连接到 {name}。"
 			},
 			"actions": {
-				"model": { "slot1": "模型 1", "slot2": "模型 2", "slot3": "模型 3", "slot4": "模型 4", "slot5": "模型 5", "slot6": "模型 6", "slot7": "模型 7", "slot8": "模型 8", "description": "将 T3 Code 中打开的对话切换到 T3 Code 模型选择器中此位置的模型：收藏优先。" },
+				"model": { "slot1": "模型 1", "slot2": "模型 2", "slot3": "模型 3", "slot4": "模型 4", "slot5": "模型 5", "description": "将 T3 Code 中打开的对话切换到 T3 Code 模型选择器中此位置的模型：收藏优先。" },
 				"urgent": {
 					"name": "最紧急的对话",
 					"description": "显示 T3 Code 中需要你处理的内容。选择即可打开该对话。"

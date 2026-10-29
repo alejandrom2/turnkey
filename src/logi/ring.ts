@@ -1,5 +1,5 @@
 import type { DeckThread } from "../core/board.js";
-import { bareModelName, type CatalogModel, modelColor, providerMark } from "../core/models.js";
+import { bareModelName, type CatalogModel, modelColor } from "../core/models.js";
 import { COLORS, escapeXml, glyph, type GlyphName, MODE_GLYPH, sampleStops, SPECTRUM, STATE_COLOR, svgMarkup, textWidth } from "../core/render.js";
 import type { RuntimeMode } from "../core/t3/shell.js";
 
@@ -103,21 +103,31 @@ export function effortFace(level: { index: number; count: number; color: string;
 	return svgMarkup(144, 144, mark + dots);
 }
 
-/** A model from T3 Code's picker: its provider's mark over its short name, in its color; the thread's own on a disc of it. */
+/** `name` as one line, or two split at the space or hyphen nearest its middle when one line would be too small to read. */
+export function modelLines(name: string): string[] {
+	if (textWidth(name, 30, 600) <= 124) return [name];
+	const breaks = [...name.matchAll(/[ -]/g)].map((match) => match.index);
+	if (breaks.length === 0) return [name];
+	const at = breaks.reduce((best, index) => (Math.abs(index - name.length / 2) < Math.abs(best - name.length / 2) ? index : best));
+	return [name.slice(0, at), name.slice(at + 1)];
+}
+
+/**
+ * A model from T3 Code's picker: its short name, as large as the slot allows, in its color; the thread's own on a disc of
+ * it. No provider mark: Options+ draws faces at 80 px, where a mark and a name side by side are both too small to read.
+ */
 export function modelFace(model: CatalogModel | undefined, current: boolean): string {
 	if (model === undefined) return ringFace(COLORS.muted, "model", { dim: true });
 	const color = modelColor(model) ?? COLORS.accent;
-	const ink = current ? "#FFFFFF" : color;
-	const name = bareModelName(model);
-	// The disc is about 124 px wide where the name sits; textWidth runs wide of the ring's font, so weight 600 is the closer guess.
-	const size = Math.max(18, Math.min(32, Math.floor((124 * 32) / textWidth(name, 32, 600))));
-	return svgMarkup(
-		144,
-		144,
-		(current ? `<circle cx="72" cy="72" r="70" fill="${color}"/>` : "") +
-			providerMark(model, 50, 22, 44, { color: ink }) +
-			`<text x="72" y="104" font-size="${size}" font-weight="700" text-anchor="middle" fill="${ink}">${escapeXml(name)}</text>`,
-	);
+	const lines = modelLines(bareModelName(model));
+	// textWidth runs wide of the ring's font, so weight 600 is the closer guess; two lines leave a narrower chord each.
+	const room = lines.length === 1 ? 124 : 116;
+	const size = Math.max(20, Math.min(lines.length === 1 ? 46 : 40, ...lines.map((line) => Math.floor((room * 40) / textWidth(line, 40, 600)))));
+	const baselines = lines.length === 1 ? [72 + 0.35 * size] : [72 - 0.15 * size, 72 + 0.85 * size];
+	const text = lines
+		.map((line, index) => `<text x="72" y="${baselines[index]!.toFixed(1)}" font-size="${size}" font-weight="700" text-anchor="middle" fill="${current ? "#FFFFFF" : color}">${escapeXml(line)}</text>`)
+		.join("");
+	return svgMarkup(144, 144, (current ? `<circle cx="72" cy="72" r="70" fill="${color}"/>` : "") + text);
 }
 
 /** A prompt the user wrote in the action's editor, drawn as Stream Deck's Send arrow; dimmed only while it has no text. */

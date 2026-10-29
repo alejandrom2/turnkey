@@ -1254,7 +1254,7 @@
 				"connected": "Verbunden mit {name}."
 			},
 			"actions": {
-				"model": { "slot1": "Modell 1", "slot2": "Modell 2", "slot3": "Modell 3", "slot4": "Modell 4", "slot5": "Modell 5", "slot6": "Modell 6", "slot7": "Modell 7", "slot8": "Modell 8", "description": "Wechselt den in T3 Code geöffneten Thread zum Modell an dieser Stelle deiner Modellauswahl in T3 Code: Favoriten zuerst." },
+				"model": { "slot1": "Modell 1", "slot2": "Modell 2", "slot3": "Modell 3", "slot4": "Modell 4", "slot5": "Modell 5", "description": "Wechselt den in T3 Code geöffneten Thread zum Modell an dieser Stelle deiner Modellauswahl in T3 Code: Favoriten zuerst." },
 				"urgent": {
 					"name": "Dringendster Thread",
 					"description": "Zeigt, was in T3 Code auf dich wartet. Wähle es, um diesen Thread zu öffnen."
