@@ -36,6 +36,9 @@
 		"@elgato/streamdeck": "3.0.3",
 		"@elgato/utils": "0.6.1"
 	},
+	"overrides": {
+		"zod": "4.6.7"
+	},
 	"license": "MIT",
 	"author": "Alejandro Martinez"
 }
