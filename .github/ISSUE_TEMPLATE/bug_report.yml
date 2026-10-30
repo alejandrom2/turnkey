@@ -38,6 +38,7 @@ body:
         - Stream Deck Mini
         - Virtual Stream Deck
         - Logitech Actions Ring (MX mouse or keyboard)
+        - Logitech MX Keypad
         - Other
     validations:
       required: true
@@ -68,4 +69,4 @@ body:
     id: diagnostics
     attributes:
       label: Diagnostics
-      description: Attach the file from Turnkey settings → Diagnostics → Export diagnostics, or paste recent errors. It leaves out tokens and pair links.
+      description: On Stream Deck, attach the file from Turnkey settings → Diagnostics → Export diagnostics; it leaves out tokens and pair links. Logitech has no export yet, so describe what the key or slot showed.

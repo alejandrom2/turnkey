@@ -22,6 +22,8 @@ export type PageActions = {
 /** A pair link is a URL; anything much longer isn't one. */
 const MAX_BODY = 8_192;
 
+const REPORT_URL = "https://github.com/alejandrom2/turnkey/issues/new?template=bug_report.yml";
+
 const HEADERS = {
 	"content-type": "text/html; charset=utf-8",
 	"cache-control": "no-store",
@@ -73,6 +75,8 @@ function page(actions: PageActions, notice?: { ok: boolean; text: string }): str
 			(notice ? `<p class="${notice.ok ? "ok" : "bad"}">${escapeXml(notice.text)}</p>` : "") +
 			`<form method="post"><input name="link" type="url" required autocomplete="off" placeholder="${escapeXml(t("inspector.card.linkPlaceholder"))}"><button>${escapeXml(t("inspector.card.connect"))}</button></form>` +
 			haptics(actions.haptics()) +
+			// noreferrer: the page's path is its secret, so it must not reach GitHub.
+			`<p><a href="${REPORT_URL}" target="_blank" rel="noopener noreferrer">${escapeXml(t("inspector.diagnostics.reportBug"))}</a></p>` +
 			`<p><small>${escapeXml(t("inspector.settings.independent"))}</small></p>`,
 	);
 }

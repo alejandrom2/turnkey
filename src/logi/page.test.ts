@@ -44,6 +44,12 @@ describe("the Turnkey Settings page", () => {
 		for (const text of [t("inspector.settings.title"), t("inspector.card.machines"), t("logi.page.haptics"), t("logi.page.hapticsHint")]) expect(html).toContain(escapeXml(text));
 	});
 
+	it("links to a bug report without sending its secret address along", async () => {
+		page = await startPairingPage(actions());
+		const html = await (await fetch(page.url)).text();
+		expect(html).toMatch(/<a href="https:\/\/github\.com\/alejandrom2\/turnkey\/issues\/new\?template=bug_report\.yml" target="_blank" rel="noopener noreferrer">/);
+	});
+
 	it("turns haptics off and on, showing which is current", async () => {
 		const subject = actions();
 		page = await startPairingPage(subject);
