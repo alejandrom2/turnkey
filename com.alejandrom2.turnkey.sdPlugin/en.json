@@ -792,6 +792,7 @@
 				"openLogs": "Open logs folder",
 				"report": "Report",
 				"export": "Export diagnostics",
+				"reportBug": "Report a bug on GitHub",
 				"exportHint": "Saves versions, machines (host, state and access only), action counts and recent errors to a file in the logs folder and shows it. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report."
 			},
 			"settings": {

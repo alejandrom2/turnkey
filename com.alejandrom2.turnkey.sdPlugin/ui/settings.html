@@ -144,7 +144,7 @@
 					</div>
 					<div class="field">
 						<label data-i18n="inspector.diagnostics.report">Report</label>
-						<div class="control"><button class="sd" id="t3-export" type="button" data-i18n="inspector.diagnostics.export">Export diagnostics</button></div>
+						<div class="control"><button class="sd" id="t3-export" type="button" data-i18n="inspector.diagnostics.export">Export diagnostics</button><button class="sd" id="t3-report" type="button" data-i18n="inspector.diagnostics.reportBug">Report a bug on GitHub</button></div>
 					</div>
 					<p class="hint" data-i18n="inspector.diagnostics.exportHint">Saves versions, machines (host, state and access only), action counts and recent errors to a file in the logs folder and shows it. Tokens, pair links and full addresses are left out, so it is safe to attach to a bug report.</p>
 					<p class="hint error" id="t3-diagnostics-result" hidden data-i18n="inspector.card.diagnosticsFailed">That didn't work. Open the logs folder to look yourself.</p>
@@ -249,6 +249,7 @@ function mergeGlobalSettings(current , patch ) {
 			}
 
 			const README = "https://github.com/alejandrom2/turnkey#readme";
+			const REPORT = "https://github.com/alejandrom2/turnkey/issues/new?template=bug_report.yml";
 
 			/** Every bridge call goes through here: a closed or replaced opener detaches the window instead of failing. */
 			let bridge;
@@ -419,6 +420,7 @@ function mergeGlobalSettings(current , patch ) {
 			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
 			$("t3-preview-pet")?.addEventListener("click", () => send("previewPet"));
 			$("t3-readme").addEventListener("click", () => call((b) => b.openUrl(README)));
+			$("t3-report").addEventListener("click", () => call((b) => b.openUrl(REPORT)));
 			wirePairing(send);
 			renderGlobals({});
 

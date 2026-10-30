@@ -792,6 +792,7 @@
 				"openLogs": "Ouvrir le dossier des logs",
 				"report": "Rapport",
 				"export": "Exporter le diagnostic",
+				"reportBug": "Signaler un bug sur GitHub",
 				"exportHint": "Enregistre les versions, les machines (hôte, état et accès uniquement), le nombre d'actions et les erreurs récentes dans un fichier du dossier des logs, puis l'affiche. Les tokens, liens d'association et adresses complètes sont exclus : il peut donc être joint sans risque à un rapport de bug."
 			},
 			"settings": {

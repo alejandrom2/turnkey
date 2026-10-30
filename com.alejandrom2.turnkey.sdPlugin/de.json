@@ -792,6 +792,7 @@
 				"openLogs": "Log-Ordner öffnen",
 				"report": "Bericht",
 				"export": "Diagnose exportieren",
+				"reportBug": "Fehler auf GitHub melden",
 				"exportHint": "Speichert Versionen, Rechner (nur Host, Zustand und Zugriff), Aktionszähler und letzte Fehler in eine Datei im Log-Ordner und zeigt sie an. Tokens, Kopplungslinks und vollständige Adressen werden weggelassen, sodass sie sicher an einen Fehlerbericht angehängt werden kann."
 			},
 			"settings": {

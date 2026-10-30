@@ -792,6 +792,7 @@
 				"openLogs": "Abrir carpeta de registros",
 				"report": "Informe",
 				"export": "Exportar diagnóstico",
+				"reportBug": "Informar de un error en GitHub",
 				"exportHint": "Guarda versiones, máquinas (solo host, estado y acceso), recuentos de acciones y errores recientes en un archivo de la carpeta de registros y lo muestra. Se omiten tokens, enlaces de vinculación y direcciones completas, así que es seguro adjuntarlo a un informe de error."
 			},
 			"settings": {

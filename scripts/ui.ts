@@ -539,7 +539,9 @@ const settingsPage = `<!doctype html>
 					<p class="hint" id="t3-verbose-state"${text("inspector.card.verboseOff")}</p>${field(
 						"inspector.diagnostics.logs",
 						`<button class="sd" id="t3-open-logs" type="button"${text("inspector.diagnostics.openLogs")}</button>`,
-					)}${field("inspector.diagnostics.report", `<button class="sd" id="t3-export" type="button"${text("inspector.diagnostics.export")}</button>`, "inspector.diagnostics.exportHint")}
+					)}${field("inspector.diagnostics.report", `<button class="sd" id="t3-export" type="button"${text("inspector.diagnostics.export")}</button><button class="sd" id="t3-report" type="button"${text("inspector.diagnostics.reportBug")}</button>`,
+						"inspector.diagnostics.exportHint",
+					)}
 					<p class="hint error" id="t3-diagnostics-result" hidden${text("inspector.card.diagnosticsFailed")}</p>
 				</section>
 				<section id="section-about" hidden>
@@ -554,6 +556,7 @@ const settingsPage = `<!doctype html>
 		<script>${common("if (lastStatus) renderStatus(lastStatus);\n\t\t\t\telse syncPairButton();")}
 
 			const README = "https://github.com/alejandrom2/turnkey#readme";
+			const REPORT = "https://github.com/alejandrom2/turnkey/issues/new?template=bug_report.yml";
 
 			/** Every bridge call goes through here: a closed or replaced opener detaches the window instead of failing. */
 			let bridge;
@@ -724,6 +727,7 @@ const settingsPage = `<!doctype html>
 			$("t3-export").addEventListener("click", () => send("exportDiagnostics"));
 			$("t3-preview-pet")?.addEventListener("click", () => send("previewPet"));
 			$("t3-readme").addEventListener("click", () => call((b) => b.openUrl(README)));
+			$("t3-report").addEventListener("click", () => call((b) => b.openUrl(REPORT)));
 			wirePairing(send);
 			renderGlobals({});
 
