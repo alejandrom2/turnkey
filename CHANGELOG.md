@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/alejandrom2/turnkey/compare/v1.2.0...v1.3.0) (2026-10-30)
+
+
+### Features
+
+* add direct bug report links to settings ([#46](https://github.com/alejandrom2/turnkey/issues/46)) ([d4c8985](https://github.com/alejandrom2/turnkey/commit/d4c898594fa1b1020057a7a217dc0a2b3334e079))
+
+
+### Fixes
+
+* **deps:** override zod to 4.6.7 for GHSA-mrhx-c7xc-m3w5 ([#48](https://github.com/alejandrom2/turnkey/issues/48)) ([45d663b](https://github.com/alejandrom2/turnkey/commit/45d663b4151f343ae23888f2b082c85803282206))
+
 ## [1.2.0](https://github.com/alejandrom2/turnkey/compare/v1.1.2...v1.2.0) (2026-10-29)
 
 
