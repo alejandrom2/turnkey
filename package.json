@@ -27,7 +27,7 @@
 		"esbuild": "0.28.2",
 		"imagetracerjs": "1.2.6",
 		"oxlint": "1.90.0",
-		"rollup": "4.65.0",
+		"rollup": "4.66.0",
 		"rollup-plugin-esbuild": "6.2.1",
 		"typescript": "7.0.2",
 		"vitest": "5.0.5"
